@@ -1,8 +1,14 @@
-import React from "react";
-import PageLogin from "./auth/page";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-function Home() {
-  return <h3>home page</h3>;
+async function Home() {
+  const session = await auth();
+
+  if (session?.user) {
+    return redirect("/app/checador?view_type=form");
+  } else {
+    return redirect("/auth");
+  }
 }
 
 export default Home;

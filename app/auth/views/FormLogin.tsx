@@ -1,5 +1,7 @@
 "use client";
 
+import { userLogin } from "@/app/actions/user-actions";
+import { useModals } from "@/context/ModalContext";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -11,9 +13,10 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
+import toast from "react-hot-toast";
 
 type TInputs = {
-  login: string;
+  email: string;
   password: string;
 };
 
@@ -24,14 +27,27 @@ function FormLogin() {
     formState: { isSubmitting, errors },
   } = useForm<TInputs>({
     defaultValues: {
-      login: "",
+      email: "",
       password: "",
     },
   });
 
   const router = useRouter();
+  const { modalError } = useModals();
 
-  const onSubmit: SubmitHandler<TInputs> = async () => {};
+  const onSubmit: SubmitHandler<TInputs> = async (data) => {
+    const res = await userLogin(data);
+
+    console.log(res.data);
+
+    if (!res.success) {
+      modalError("Credenciales incorrectas");
+      return;
+    }
+
+    toast.success("Se ha iniciado sesión");
+    router.replace("/app/checador?view_type=form");
+  };
 
   return (
     <Container>
@@ -41,7 +57,7 @@ function FormLogin() {
             onSubmit={handleSubmit(onSubmit)}
             className="card shadow-md mt-5 bg-body-tertiary"
           >
-            <fieldset className="card-body">
+            <fieldset className="card-body" disabled={isSubmitting}>
               <legend className="card-title d-flex justify-content-between">
                 Inicio de sesión
               </legend>
@@ -50,7 +66,7 @@ function FormLogin() {
                   <i className="bi bi-person-fill"></i>
                 </InputGroup.Text>
                 <Form.Control
-                  {...register("login", {
+                  {...register("email", {
                     required: "Este campo es requerido",
                   })}
                   className="text-center"
@@ -58,10 +74,10 @@ function FormLogin() {
                   type="text"
                   autoComplete="off"
                   autoFocus
-                  isInvalid={!!errors.login}
+                  isInvalid={!!errors.email}
                 />
                 <Form.Control.Feedback type="invalid">
-                  {errors.login?.message}
+                  {errors.email?.message}
                 </Form.Control.Feedback>
               </InputGroup>
               <InputGroup className="mb-2">
@@ -87,7 +103,7 @@ function FormLogin() {
                   {isSubmitting ? (
                     <>
                       <Spinner size="sm" animation="border" />
-                      <span className="ms-2">Validando</span>
+                      <span className="ms-2">Iniciando...</span>
                     </>
                   ) : (
                     <>Entrar</>
