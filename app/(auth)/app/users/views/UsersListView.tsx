@@ -52,7 +52,7 @@ function UsersListView({ users }: { users: User[] }) {
   return (
     <ListView>
       <ListView.Header
-        title="Usuarios"
+        title={`Usuarios (${users.length})`}
         formView="/app/users?view_type=form&id=null"
       ></ListView.Header>
       <ListView.Body>

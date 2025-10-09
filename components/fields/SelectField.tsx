@@ -6,7 +6,7 @@ import { UseFormRegisterReturn } from "react-hook-form";
 type FieldSelectProps = {
   label: string;
   register: UseFormRegisterReturn;
-  options: { value: string; label: string }[];
+  options: { value: string | number; label: string }[];
   readonly?: boolean;
   required?: boolean;
   invalid?: boolean;

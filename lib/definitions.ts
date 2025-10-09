@@ -43,6 +43,24 @@ export type UserRole =
   | "EMPLOYEE"
   | "CHECADOR";
 
+export interface Department {
+  _id?: string;
+  id?: number;
+  nameDepartment: string;
+  description: string;
+  idLeader: number | null;
+  positions: Position[];
+  cretedAt?: string;
+}
+
+export interface Position {
+  _id?: string;
+  id?: number;
+  namePosition: string;
+  idDepartment: number;
+  cretedAt?: string;
+}
+
 export interface ModalBasicProps {
   show: boolean;
   onHide: () => void;

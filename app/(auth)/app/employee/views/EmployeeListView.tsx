@@ -14,21 +14,17 @@ function EmployeeListView({ employees }: { employees: User[] }) {
   return (
     <ListView>
       <ListView.Header
-        title="Empleados"
+        title={`Empleados (${employees.length})`}
         formView="/app/employee?view_type=form&id=null"
       ></ListView.Header>
       <ListView.Body>
-        {employees.length > 0 ? (
-          <TableTemplate
-            getRowId={(row) => row.id}
-            data={employees}
-            columns={columns}
-            onSelectionChange={setSelectedIds}
-            viewForm="/app/employee?view_type=form"
-          />
-        ) : (
-          <h3 className="text-center">NO HAY DATOS AÚN</h3>
-        )}
+        <TableTemplate
+          getRowId={(row) => row.id}
+          data={employees}
+          columns={columns}
+          onSelectionChange={setSelectedIds}
+          viewForm="/app/employee?view_type=form"
+        />
       </ListView.Body>
     </ListView>
   );
