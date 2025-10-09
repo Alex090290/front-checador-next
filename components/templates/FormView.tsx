@@ -67,7 +67,7 @@ function FormView({
   return (
     <Row className="h-100 overflow-auto">
       <Col xs="12" md="8" className="h-100">
-        <Form className="card d-flex flex-column shadow h-100">
+        <Form className="card d-flex flex-column h-100">
           <fieldset
             className="card-header d-flex justify-content-between gap-2"
             disabled={disabled}
@@ -267,7 +267,7 @@ export const FormBook = ({
   dKey: string;
 }) => {
   return (
-    <Col md="12">
+    <Col md="12" className="mt-2">
       <Tabs defaultActiveKey={dKey} transition={false}>
         {children}
       </Tabs>
@@ -292,7 +292,11 @@ export const FormPage = ({
 };
 
 export const FormSheet = ({ children }: { children: React.ReactNode }) => {
-  return <Row className="gy-2 my-1">{children}</Row>;
+  return (
+    <Container>
+      <Row>{children}</Row>
+    </Container>
+  );
 };
 
 export default FormView;

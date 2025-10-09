@@ -38,15 +38,16 @@ function FormLogin() {
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     const res = await userLogin(data);
 
-    console.log(res.data);
+    console.log(res);
 
     if (!res.success) {
-      modalError("Credenciales incorrectas");
+      modalError(res.message);
       return;
     }
 
     toast.success("Se ha iniciado sesión");
-    router.replace("/app/checador?view_type=form");
+    // router.replace("/app/checador?view_type=form");
+    router.replace("/");
   };
 
   return (

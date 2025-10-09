@@ -3,7 +3,8 @@
 import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
 import Clock from "@/components/top-nav/Clock";
 import { formatDate } from "@/lib/helpers";
-import { Card, Col, Container, Row } from "react-bootstrap";
+import { signOut } from "next-auth/react";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 
 function ChecadorFormView() {
   return (
@@ -11,7 +12,10 @@ function ChecadorFormView() {
       <Col md="12" className="h-100">
         <Card className="d-flex flex-column shadow h-100">
           <Card.Header>
-            <h3 className="text-end fw-bolder">
+            <h3 className="d-flex justify-content-between fw-bolder">
+              <Button onClick={() => signOut()} variant="link">
+                Salir
+              </Button>
               <span className="shadow-sm px-2 rounded">
                 {formatDate(new Date())}
               </span>

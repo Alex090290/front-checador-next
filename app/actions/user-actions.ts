@@ -22,7 +22,11 @@ export async function userLogin({
   password: string;
 }): Promise<ActionResponse<boolean>> {
   try {
-    await signIn("credentials", { email, password, redirect: false });
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
 
     return {
       success: true,
@@ -35,7 +39,7 @@ export async function userLogin({
     console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: String(error?.cause?.err ?? error.message),
     };
   }
 }
@@ -48,20 +52,27 @@ export async function userLoginCredentials({
   password: string;
 }): Promise<ActionResponse<ApiResponse<string>>> {
   try {
-    const response = await axios.post(`${API_URL}/users/login`, {
-      email,
-      password,
-    });
+    const response = await axios
+      .post(`${API_URL}/users/login`, {
+        email,
+        password,
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        return err.response;
+      });
 
     return {
       success: true,
-      message: response.data.status,
-      data: response.data,
+      message: response.data,
+      data: response,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.log(error);
+    console.log(error.mesaage);
     return {
       success: false,
       message: error.message,

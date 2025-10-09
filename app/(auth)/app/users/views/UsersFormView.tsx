@@ -14,7 +14,7 @@ import { Permission, User, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { Button, Col, Form, ListGroup, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, ListGroup, Row } from "react-bootstrap";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -209,7 +209,7 @@ function UsersFormView({
           eventKey="permissions"
         >
           <FormSheet>
-            <Row xs={1} sm={2} md={3} lg={4} className="g-2">
+            <Row xs={1} sm={2} md={3} lg={4} className="g-1">
               {permisos.map((p, index) => (
                 <Col key={p.id}>
                   <ListGroup>

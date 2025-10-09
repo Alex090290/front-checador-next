@@ -1,31 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { NavDropdown } from "react-bootstrap";
+import { Nav } from "react-bootstrap";
 
 function TopNavItems() {
   return (
-    <NavDropdown
-      title={
-        <>
-          <i className="bi bi-journal-album me-1"></i>
-          <span>Catálogos</span>
-        </>
-      }
-    >
-      <NavDropdown.Item as={Link} href="/app/users?view_type=list&id=null">
+    <Nav className="flex-column" defaultActiveKey="/app/users" variant="pills">
+      <Nav.Link as={Link} href="/app/users?view_type=list&id=null">
         <i className="bi bi-people-fill me-1"></i>
         <span>Usuarios</span>
-      </NavDropdown.Item>
-      <NavDropdown.Item as={Link} href="/app/employee?view_type=list&id=null">
+      </Nav.Link>
+      <Nav.Link
+        eventKey="/app/employee"
+        as={Link}
+        href="/app/employee?view_type=list&id=null"
+      >
         <i className="bi bi-person-bounding-box me-1"></i>
         <span>Empleados</span>
-      </NavDropdown.Item>
-      <NavDropdown.Item as={Link} href="/app/companies?view_type=list&id=null">
+      </Nav.Link>
+      <Nav.Link
+        eventKey="/app/companies"
+        as={Link}
+        href="/app/companies?view_type=list&id=null"
+      >
         <i className="bi bi-building me-1"></i>
         <span>Sucursales</span>
-      </NavDropdown.Item>
-    </NavDropdown>
+      </Nav.Link>
+      <Nav.Link
+        eventKey="/app/departments"
+        as={Link}
+        href="/app/departments?view_type=list&id=null"
+      >
+        <i className="bi bi-columns-gap me-1"></i>
+        <span>Departamentos</span>
+      </Nav.Link>
+      <Nav.Link
+        eventKey="/app/positions"
+        as={Link}
+        href="/app/positions?view_type=list&id=null"
+      >
+        <i className="bi bi-grid me-1"></i>
+        <span>Puestos</span>
+      </Nav.Link>
+    </Nav>
   );
 }
 

@@ -9,10 +9,10 @@ async function EmployeeMainView({
   viewType: string;
   id: string;
 }) {
-  let employees: User[] = [];
+  // let employees: User[] = [];
 
   if (viewType === "list") {
-    return <CatalogListView employees={employees} />;
+    return <CatalogListView employees={[]} />;
   } else if (viewType === "form") {
     return <h3>Formulario de usuarios</h3>;
   } else {

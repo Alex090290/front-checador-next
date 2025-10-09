@@ -1,5 +1,5 @@
-function PageApp() {
-  return <h2>Page app</h2>;
+async function PageApp() {
+  return <h2>Administración</h2>;
 }
 
 export default PageApp;

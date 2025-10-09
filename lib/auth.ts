@@ -19,6 +19,10 @@ export const authOptions = {
           password: password as string,
         });
 
+        if (!user.success) {
+          throw new Error(user.message);
+        }
+
         if (user.data?.message !== "OK") {
           throw new Error("Credenciales inválidas");
         }
@@ -45,6 +49,7 @@ export const authOptions = {
     // updateAge: 60 * 5, // Opcional: actualiza el token cada 5 minutos si hay actividad
   },
   secret: process.env.NEXT_AUTH_SECRET,
+  trustHost: true,
   pages: {
     signIn: "/",
   },
