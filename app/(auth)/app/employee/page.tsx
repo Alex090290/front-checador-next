@@ -1,4 +1,4 @@
-import Loading from "@/components/templates/Loaging";
+import LoadingPage from "@/app/LoadingPage";
 import { lazy, Suspense } from "react";
 
 const EmployeeMainView = lazy(() => import("./views/EmployeeMainView"));
@@ -11,7 +11,7 @@ async function PageEmployee({
   const { view_type: viewType, id } = await searchParams;
 
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<LoadingPage />}>
       <EmployeeMainView viewType={viewType} id={id} />
     </Suspense>
   );

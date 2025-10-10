@@ -1,4 +1,4 @@
-import Loading from "@/components/templates/Loaging";
+import LoadingPage from "@/app/LoadingPage";
 import { lazy, Suspense } from "react";
 
 const DepartmentsMainView = lazy(() => import("./views/DepartmentsMainView"));
@@ -10,7 +10,7 @@ async function PageDepartments({
 }) {
   const { view_type: ViewType, id } = await searchParams;
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<LoadingPage />}>
       <DepartmentsMainView viewType={ViewType} id={Number(id)} />
     </Suspense>
   );
