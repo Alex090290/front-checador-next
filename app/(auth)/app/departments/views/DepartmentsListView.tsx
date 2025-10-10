@@ -30,13 +30,13 @@ function DepartmentsListView({ deparments }: { deparments: Department[] }) {
   return (
     <ListView>
       <ListView.Header
-        title={`Departamentos (${deparments.length})`}
+        title={`Departamentos (${deparments?.length ?? 0})`}
         formView="/app/departments?view_type=form&id=null"
       ></ListView.Header>
       <ListView.Body>
         <TableTemplate
           getRowId={(row) => row.id ?? 0}
-          data={deparments}
+          data={deparments ?? []}
           columns={columns}
           onSelectionChange={setSelectedIds}
           viewForm="/app/departments?view_type=form"

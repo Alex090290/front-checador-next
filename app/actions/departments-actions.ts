@@ -1,8 +1,9 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { Department } from "@/lib/definitions";
-import axios, { AxiosResponse } from "axios";
+import { ActionResponse, Department } from "@/lib/definitions";
+import axios from "axios";
+import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.API_URL;
 
@@ -23,7 +24,7 @@ export async function fetchDepartments(): Promise<Department[]> {
       return err.response;
     });
 
-  return response.data.data;
+  return response.data;
 }
 
 export async function findDepartmentById({
@@ -38,7 +39,7 @@ export async function findDepartmentById({
 
   let params = {};
 
-  if (_id) params = { idMongo: String(_id) };
+  if (_id) params = { id: String(_id) };
   if (id) params = { id: Number(id) };
 
   const response = await axios
@@ -56,4 +57,53 @@ export async function findDepartmentById({
     });
 
   return response.data.data;
+}
+
+export async function createDepartment({
+  data,
+}: {
+  data: Department;
+}): Promise<ActionResponse<Department | null>> {
+  try {
+    const session = await auth();
+    const apiToken = session?.user?.apiToken;
+
+    const response = await axios
+      .post(
+        `${API_URL}/department`,
+        {
+          nameDepartment: data.nameDepartment,
+          description: data.description,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        return err.response;
+      });
+
+    if (response.data.status === 400) {
+      throw new Error(response.data.message);
+    }
+
+    revalidatePath("/app/departments");
+
+    return {
+      success: true,
+      message: "Departamento creado",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
 }
