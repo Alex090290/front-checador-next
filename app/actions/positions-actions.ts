@@ -7,24 +7,18 @@ import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.API_URL;
 
-// export async function fetchPositions(): Promise<ActionResponse<Position[]>> {
-//   try {
-//     const response = await axios
-//       .get(`${API_URL}/`)
-//       .then((res) => {
-//         return res;
-//       })
-//       .catch((err) => {
-//         return err;
-//       });
-//   } catch (error: any) {
-//     console.log(error);
-//     return {
-//       success: false,
-//       message: error.message,
-//     };
-//   }
-// }
+export async function fetchPositions(): Promise<ActionResponse<Position[]>> {
+  const response = await axios
+    .get(`${API_URL}/`)
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      return err.response;
+    });
+
+  return response.data;
+}
 
 export async function createPosition({
   namePosition,

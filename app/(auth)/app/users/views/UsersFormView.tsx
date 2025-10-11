@@ -116,7 +116,7 @@ function UsersFormView({
   return (
     <FormView
       reverse={handleReverse}
-      title="Usuarios"
+      title="Usuario"
       onSubmit={handleSubmit(onSubmit)}
       name={user?.name || null}
       disabled={isSubmitting}

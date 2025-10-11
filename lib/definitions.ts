@@ -61,6 +61,75 @@ export interface Position {
   cretedAt?: string;
 }
 
+export interface Branch {
+  _id?: string;
+  id?: number;
+  name: string;
+  idManager?: number | null;
+  address?: BranchAddress;
+  coordinates?: {
+    lat: number | null;
+    lng: number | null;
+  };
+  lat?: number | null;
+  lng?: number | null;
+  country?: string;
+  municipality?: string;
+  state?: string;
+  street?: string;
+  numberOut?: string;
+  numberIn?: string | null;
+  zipCode?: number;
+  neighborhood?: string;
+}
+
+type BranchAddress = {
+  country: string;
+  municipality: string;
+  state: string;
+  street: string;
+  numberOut: string;
+  numberIn: string | null;
+  zipCode: number;
+  neighborhood: string;
+  coordinates?: {
+    lat: number | null;
+    lng: number | null;
+  };
+};
+
+export interface Employee {
+  _id?: string;
+  id?: number;
+  name: string | null;
+  lastName: string | null;
+  phonePersonal: PhoneNumberFormat | null;
+  emailPersonal: string | null;
+  idCheck: number | null;
+  passwordCheck: string | null;
+  entryOffice: string | null;
+  exitOffice: string | null;
+  entryLunch: string | null;
+  exitLunch: string | null;
+  idDepartment: number | null;
+  department?: Department;
+  idPosition: number | null;
+  position?: Position;
+  branch: Branch | null;
+  gender: "HOMBRE" | "MUJER";
+  scheduleOffice?: {
+    entry: string;
+    exit: string;
+  };
+  scheduleLunch?: {
+    entry: string;
+    exit: string;
+  };
+  status?: 1 | 2 | 3;
+  role?: UserRole;
+  leader?: Employee | null;
+}
+
 export interface ModalBasicProps {
   show: boolean;
   onHide: () => void;

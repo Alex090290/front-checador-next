@@ -34,7 +34,7 @@ type FormViewProps = {
 };
 
 type TFormActions = {
-  string: string | number;
+  string: string | number | React.JSX.Element;
   action: () => void;
   invisible?: boolean;
   readonly?: boolean;
@@ -143,7 +143,7 @@ function FormView({
             disabled={disabled}
           >
             <div className="d-flex justify-content-between align-items-center">
-              <legend className="card-title h3 fw-semibold">
+              <legend className="card-title h3 fw-semibold text-uppercase">
                 {name ?? "Nuevo"}
               </legend>
               {/* STATEBAR DESKTOP VIEW */}

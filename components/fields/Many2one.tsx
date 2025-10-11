@@ -186,7 +186,7 @@ export function Many2one<T extends Many2OneOption>({
             }}
             className="p-0"
           >
-            {filteredOptions.slice(0, 5).map((option, index) => (
+            {filteredOptions.slice(0, 8).map((option, index) => (
               <Dropdown.Item
                 key={option.id}
                 onMouseDown={() => handleSelect(option)}

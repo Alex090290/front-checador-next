@@ -25,7 +25,7 @@ function TopNavItems() {
       <Nav.Link
         eventKey="/app/companies"
         as={Link}
-        href="/app/companies?view_type=list&id=null"
+        href="/app/branches?view_type=list&id=null"
       >
         <i className="bi bi-building me-1"></i>
         <span>Sucursales</span>

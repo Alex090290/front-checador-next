@@ -12,7 +12,7 @@ import { useModals } from "@/context/ModalContext";
 import { Department, User } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, Col, ListGroup, Row } from "react-bootstrap";
+import { Button, Col, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import PositionFormCreate from "./PositionFormCreate";
@@ -82,7 +82,6 @@ function DepartmentsFormView({
       };
       reset(values);
       originalValuesRef.current = values;
-      console.log(department);
     }
   }, [department, reset]);
 
@@ -96,7 +95,7 @@ function DepartmentsFormView({
         id={id}
         isDirty={isDirty}
         onSubmit={handleSubmit(onSubmit)}
-        title="Departamentos"
+        title="Departamento"
       >
         <FieldGroup>
           <Entry
