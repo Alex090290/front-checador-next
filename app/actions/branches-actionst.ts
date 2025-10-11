@@ -25,7 +25,7 @@ export async function fetchBranches(): Promise<Branch[]> {
         return err.response;
       });
 
-    return response.data.data;
+    return response.data.data ?? [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

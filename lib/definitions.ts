@@ -49,6 +49,7 @@ export interface Department {
   nameDepartment: string;
   description: string;
   idLeader: number | null;
+  leader?: Employee | null;
   positions: Position[];
   cretedAt?: string;
 }

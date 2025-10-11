@@ -21,7 +21,7 @@ export async function fetchPermissions(): Promise<Permission[]> {
       throw new Error("Acceso denegado (401)");
     }
 
-    return response.data.data[0].permissions;
+    return response.data.data[0].permissions ?? [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

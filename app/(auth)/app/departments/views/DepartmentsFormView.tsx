@@ -1,6 +1,9 @@
 "use client";
 
-import { createDepartment } from "@/app/actions/departments-actions";
+import {
+  createDepartment,
+  updateDepartment,
+} from "@/app/actions/departments-actions";
 import { Entry, RelationField } from "@/components/fields";
 import FormView, {
   FieldGroup,
@@ -9,22 +12,24 @@ import FormView, {
   FormSheet,
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
-import { Department, User } from "@/lib/definitions";
+import { Department, Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import PositionFormCreate from "./PositionFormCreate";
+import OverLay from "@/components/templates/OverLay";
+import { deletePosition } from "@/app/actions/positions-actions";
 
 function DepartmentsFormView({
   department,
   id,
-  usersRelation,
+  employees,
 }: {
   department: Department | null;
   id: number;
-  usersRelation: User[];
+  employees: Employee[];
 }) {
   const {
     register,
@@ -37,7 +42,7 @@ function DepartmentsFormView({
 
   const [puestos] = watch(["positions"]);
 
-  const { modalError } = useModals();
+  const { modalError, modalConfirm } = useModals();
 
   const originalValuesRef = useRef<Department | null>(null);
   const router = useRouter();
@@ -54,6 +59,15 @@ function DepartmentsFormView({
 
       toast.success(res.message);
       router.back();
+    } else {
+      const res = await updateDepartment({ data, id });
+
+      if (!res.success) {
+        modalError(res.message);
+        return;
+      }
+
+      toast.success(res.message);
     }
   };
 
@@ -61,6 +75,21 @@ function DepartmentsFormView({
     if (originalValuesRef.current) {
       reset(originalValuesRef.current);
     }
+  };
+
+  const handleDeletePuesto = async (activeId: number) => {
+    modalConfirm("Confirmar accion", () => deletePuesto(activeId));
+  };
+
+  const deletePuesto = async (activeId: number) => {
+    const res = await deletePosition({ id: activeId });
+    if (!res.success) {
+      modalError(res.message);
+      return;
+    }
+    // const changedPuestos = puestos.filter((puesto) => puesto.id !== activeId);
+    // reset({ positions: changedPuestos });
+    toast.success(res.message);
   };
 
   useEffect(() => {
@@ -114,10 +143,11 @@ function DepartmentsFormView({
             label="Líder:"
             control={control}
             callBackMode="id"
-            options={usersRelation.map((user) => ({
-              id: user.id,
-              displayName: user.name,
-              name: user.name,
+            className="text-capitalize"
+            options={employees.map((emp) => ({
+              id: emp.id ?? 0,
+              displayName: `${emp.name} ${emp.lastName}`,
+              name: `${emp.name} ${emp.lastName}`,
             }))}
           />
         </FieldGroup>
@@ -140,8 +170,23 @@ function DepartmentsFormView({
               <Row className="g-1">
                 {puestos?.map((puesto) => (
                   <Col md="4" key={puesto._id}>
-                    <div className="p-2 border rounded text-center bg-body-tertiary">
-                      {puesto.namePosition}
+                    <div className="p-2 border border-2 rounded text-center text-capitalize bg-body-tertiary d-flex justify-content-between align-items-center">
+                      <span className="fw-semibold">{puesto.namePosition}</span>
+                      <div className="d-flex gap-1">
+                        <OverLay string="Editar">
+                          <Button variant="link">
+                            <i className="bi bi-pencil text-info"></i>
+                          </Button>
+                        </OverLay>
+                        <OverLay string="Eliminar">
+                          <Button
+                            variant="link"
+                            onClick={() => handleDeletePuesto(puesto.id ?? 0)}
+                          >
+                            <i className="bi bi-trash text-danger"></i>
+                          </Button>
+                        </OverLay>
+                      </div>
                     </div>
                   </Col>
                 ))}

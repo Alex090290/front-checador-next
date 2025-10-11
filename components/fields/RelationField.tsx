@@ -12,6 +12,7 @@ type FieldMany2oneProps = {
   label: string;
   readonly?: boolean;
   callBackMode: "object" | "id";
+  className?: string;
 };
 
 export function RelationField({
@@ -21,6 +22,7 @@ export function RelationField({
   options,
   callBackMode,
   readonly,
+  className,
 }: FieldMany2oneProps) {
   return (
     <Form.Group className="mb-3">
@@ -32,6 +34,7 @@ export function RelationField({
         control={control}
         callBackMode={callBackMode}
         size="sm"
+        className={className}
       />
     </Form.Group>
   );

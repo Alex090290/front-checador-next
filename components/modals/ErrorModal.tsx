@@ -11,7 +11,6 @@ function ErrorModal({ show, onHide, string }: ModalBasicProps) {
       keyboard={false}
       backdrop="static"
       centered
-      animation={false}
     >
       <Modal.Body>
         <Modal.Title>

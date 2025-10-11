@@ -13,13 +13,7 @@ function ConfirmModal({ show, onHide, string, action }: ModalBasicProps) {
     onHide();
   };
   return (
-    <Modal
-      show={show}
-      onHide={onHide}
-      backdrop="static"
-      centered
-      animation={false}
-    >
+    <Modal show={show} onHide={onHide} backdrop="static" centered>
       <Modal.Header closeButton>
         <Modal.Title>
           <i className="bi bi-question-square me-2 text-info"></i>

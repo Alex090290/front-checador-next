@@ -131,7 +131,7 @@ export async function fetchUsers(): Promise<User[]> {
       throw new Error("La sesión ha expirado");
     }
 
-    return response.data.data;
+    return response.data.data ?? [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

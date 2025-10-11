@@ -24,7 +24,7 @@ export async function fetchDepartments(): Promise<Department[]> {
       return err.response;
     });
 
-  return response.data;
+  return response.data || [];
 }
 
 export async function findDepartmentById({
@@ -74,6 +74,7 @@ export async function createDepartment({
         {
           nameDepartment: data.nameDepartment,
           description: data.description,
+          idLeader: data.idLeader,
         },
         {
           headers: {
@@ -97,6 +98,114 @@ export async function createDepartment({
     return {
       success: true,
       message: "Departamento creado",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
+export async function updateDepartment({
+  data,
+  id,
+}: {
+  data: Department;
+  id: number;
+}): Promise<ActionResponse<Department | null>> {
+  try {
+    const session = await auth();
+    const apiToken = session?.user?.apiToken;
+
+    if (!id) {
+      throw new Error("No se ha definido ID");
+    }
+
+    console.log(data);
+
+    const response = await axios
+      .put(
+        `${API_URL}/department/${id}`,
+        {
+          nameDepartment: data.nameDepartment,
+          description: data.description,
+          idLeader: data.idLeader,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        return err.response;
+      });
+
+    if (response.data.status === 400) {
+      throw new Error(response.data.message);
+    }
+
+    if (response.data.status === 404) {
+      throw new Error(response.data.message);
+    }
+
+    revalidatePath("/app/departments");
+
+    return {
+      success: true,
+      message: "Departamento actualizado",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
+export async function deleteDepartment({
+  id,
+}: {
+  id: number;
+}): Promise<ActionResponse<Department | null>> {
+  try {
+    const session = await auth();
+    const apiToken = session?.user?.apiToken;
+
+    if (!id) {
+      throw new Error("No se ha definido ID");
+    }
+
+    const response = await axios
+      .delete(`${API_URL}/department/${id}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        return err.response;
+      });
+
+    if (response.data?.status === 400) {
+      throw new Error(response.data.message);
+    }
+
+    revalidatePath("/app/departments");
+
+    return {
+      success: true,
+      message: "Departamento eliminado",
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

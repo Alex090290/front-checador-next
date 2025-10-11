@@ -26,7 +26,7 @@ export async function fetchEmployees(): Promise<Employee[]> {
         return err.response;
       });
 
-    return response.data;
+    return response.data ?? [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

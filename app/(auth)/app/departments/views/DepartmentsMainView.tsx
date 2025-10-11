@@ -1,12 +1,13 @@
 import NotFound from "@/app/not-found";
 import DepartmentsFormView from "./DepartmentsFormView";
 import DepartmentsListView from "./DepartmentsListView";
-import { Department, User } from "@/lib/definitions";
+import { Department, Employee, User } from "@/lib/definitions";
 import {
   fetchDepartments,
   findDepartmentById,
 } from "@/app/actions/departments-actions";
 import { fetchUsers } from "@/app/actions/user-actions";
+import { fetchEmployees } from "@/app/actions/employee-actions";
 
 async function DepartmentsMainView({
   viewType,
@@ -18,23 +19,24 @@ async function DepartmentsMainView({
   let departments: Department[] = [];
   let department: Department | null = null;
   let users: User[] = [];
+  let employees: Employee[] = [];
 
   if (id && !isNaN(id)) {
     department = await findDepartmentById({ id });
-  } else {
-    departments = await fetchDepartments();
   }
 
+  departments = await fetchDepartments();
   users = await fetchUsers();
+  employees = await fetchEmployees();
 
   if (viewType === "list") {
-    return <DepartmentsListView deparments={departments} />;
+    return <DepartmentsListView deparments={departments || []} />;
   } else if (viewType === "form") {
     return (
       <DepartmentsFormView
         department={department}
         id={id}
-        usersRelation={users}
+        employees={employees || []}
       />
     );
   } else {
