@@ -1,7 +1,11 @@
 "use client";
 
-import { createPosition } from "@/app/actions/positions-actions";
+import {
+  createPosition,
+  updatePosition,
+} from "@/app/actions/positions-actions";
 import { Entry } from "@/components/fields";
+import { useModals } from "@/context/ModalContext";
 import { useState } from "react";
 import { Button, Form, Modal, Spinner } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -15,10 +19,15 @@ function PositionFormCreate({
   show,
   onHide,
   idDepartment,
+  positionData,
 }: {
   show: boolean;
   onHide: () => void;
   idDepartment: number;
+  positionData: {
+    activeId: number | null;
+    namePosition: string;
+  };
 }) {
   const {
     reset,
@@ -32,21 +41,36 @@ function PositionFormCreate({
     },
   });
 
-  const [errorMessage, setErrorMessage] = useState("");
+  const { modalError } = useModals();
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
-    const res = await createPosition({
-      idDepartment,
-      namePosition: data.namePosition,
-    });
+    if (!positionData.activeId) {
+      const res = await createPosition({
+        idDepartment,
+        namePosition: data.namePosition,
+      });
 
-    if (!res.success) {
-      setErrorMessage(res.message);
-      return;
+      if (!res.success) {
+        modalError(res.message);
+        return;
+      }
+
+      toast.success(res.message);
+      handleClose();
+    } else {
+      const res = await updatePosition({
+        id: positionData.activeId,
+        namePosition: data.namePosition,
+      });
+
+      if (!res.success) {
+        modalError(res.message);
+        return;
+      }
+
+      toast.success(res.message);
+      handleClose();
     }
-
-    toast.success(res.message);
-    handleClose();
   };
 
   const handleClose = () => {
@@ -65,9 +89,12 @@ function PositionFormCreate({
       backdrop="static"
       centered
       onEntered={handleEntered}
+      onEntering={() => reset({ namePosition: positionData.namePosition })}
     >
       <Modal.Header closeButton>
-        <Modal.Title>Nuevo puesto</Modal.Title>
+        <Modal.Title>
+          {positionData.activeId ? "Editar Puesto" : "Crear puesto"}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit(onSubmit)}>
@@ -87,7 +114,7 @@ function PositionFormCreate({
                 {isSubmitting ? (
                   <Spinner animation="border" size="sm" />
                 ) : (
-                  "Crear"
+                  <>{positionData.activeId ? "Editar" : "Crear"}</>
                 )}
               </Button>
             </Form.Group>

@@ -109,7 +109,9 @@ export interface Employee {
   idCheck: number | null;
   passwordCheck: string | null;
   entryOffice: string | null;
+  entrySaturdayOffice: string | null;
   exitOffice: string | null;
+  exitSaturdayOffice: string | null;
   entryLunch: string | null;
   exitLunch: string | null;
   idDepartment: number | null;
@@ -125,6 +127,10 @@ export interface Employee {
   scheduleLunch?: {
     entry: string;
     exit: string;
+  };
+  scheduleSaturday?: {
+    entrySaturdayOffice: string | null;
+    exitSaturdayOffice: string | null;
   };
   status?: 1 | 2 | 3;
   role?: UserRole;

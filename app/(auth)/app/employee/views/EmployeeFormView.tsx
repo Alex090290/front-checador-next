@@ -18,7 +18,9 @@ type TInputs = {
   idCheck: number | null;
   passwordCheck: string | null;
   entryOffice: string | null;
+  entrySaturdayOffice: string | null;
   exitOffice: string | null;
+  exitSaturdayOffice: string | null;
   entryLunch: string | null;
   exitLunch: string | null;
   idDepartment: number | null;
@@ -47,7 +49,7 @@ function EmployeeFormView({
     formState: { errors, isSubmitting, isDirty },
   } = useForm<TInputs>();
 
-  const [deps, idPuesto] = watch(["idDepartment", "idPosition"]);
+  const [deps] = watch(["idDepartment"]);
 
   const { modalError } = useModals();
 
@@ -85,6 +87,8 @@ function EmployeeFormView({
         idCheck: null,
         passwordCheck: null,
         entryOffice: null,
+        entrySaturdayOffice: "08:30",
+        exitSaturdayOffice: "14:00",
         exitLunch: null,
         entryLunch: null,
         exitOffice: null,
@@ -105,7 +109,10 @@ function EmployeeFormView({
         idCheck: employee.idCheck || null,
         passwordCheck: employee.passwordCheck,
         entryOffice: employee.scheduleOffice?.entry || null,
+        entrySaturdayOffice:
+          employee.scheduleSaturday?.entrySaturdayOffice || null,
         exitOffice: employee.scheduleOffice?.exit || null,
+        exitSaturdayOffice: employee.exitSaturdayOffice || null,
         exitLunch: employee.scheduleLunch?.entry || null,
         entryLunch: employee.scheduleLunch?.exit || null,
         idDepartment: employee.department?.id || 0,
@@ -227,7 +234,25 @@ function EmployeeFormView({
             })}
             invalid={!!errors.exitLunch}
             feedBack={errors.exitLunch?.message}
-            label="Salida comedors:"
+            label="Salida comedor:"
+          />
+        </FieldGroup.Stack>
+        <FieldGroup.Stack>
+          <Entry
+            register={register("entrySaturdayOffice", {
+              required: "Este campo es requerido",
+            })}
+            invalid={!!errors.entryLunch}
+            feedBack={errors.entryLunch?.message}
+            label="Entrada sabatina:"
+          />
+          <Entry
+            register={register("exitSaturdayOffice", {
+              required: "Este campo es requerido",
+            })}
+            invalid={!!errors.exitLunch}
+            feedBack={errors.exitLunch?.message}
+            label="Salida sabatina:"
           />
         </FieldGroup.Stack>
         <FieldGroup.Stack>

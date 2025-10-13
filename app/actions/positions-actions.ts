@@ -7,18 +7,20 @@ import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.API_URL;
 
-export async function fetchPositions(): Promise<ActionResponse<Position[]>> {
-  const response = await axios
-    .get(`${API_URL}/`)
-    .then((res) => {
-      return res.data;
-    })
-    .catch((err) => {
-      return err.response;
-    });
+// export async function fetchPositions(): Promise<ActionResponse<Position[]>> {
+//   const response = await axios
+//     .get(`${API_URL}`)
+//     .then((res) => {
+//       return res.data;
+//     })
+//     .catch((err) => {
+//       return err.response;
+//     });
 
-  return response.data ?? [];
-}
+//   console.log(response.data);
+
+//   return response.data ?? [];
+// }
 
 export async function createPosition({
   namePosition,
@@ -73,8 +75,10 @@ export async function createPosition({
 
 export async function updatePosition({
   id,
+  namePosition,
 }: {
   id: number;
+  namePosition: string;
 }): Promise<ActionResponse<boolean>> {
   try {
     const session = await auth();
@@ -85,19 +89,23 @@ export async function updatePosition({
     }
 
     const response = await axios
-      .delete(`${API_URL}/position/${String(id)}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
+      .put(
+        `${API_URL}/position/${String(id)}`,
+        {
+          namePosition,
         },
-      })
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
       .then((res) => {
         return res.data;
       })
       .catch((err) => {
         return err.response;
       });
-
-    console.log(response.data);
 
     if (response.data?.status === 400) {
       throw new Error(response.data.message);

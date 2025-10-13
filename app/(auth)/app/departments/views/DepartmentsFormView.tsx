@@ -48,6 +48,10 @@ function DepartmentsFormView({
   const router = useRouter();
 
   const [positionFormShow, setPositionFormShow] = useState(false);
+  const [positionData, setPositionData] = useState<{
+    activeId: number | null;
+    namePosition: string;
+  }>({ activeId: null, namePosition: "" });
 
   const onSubmit: SubmitHandler<Department> = async (data) => {
     if (isNaN(id)) {
@@ -90,6 +94,14 @@ function DepartmentsFormView({
     // const changedPuestos = puestos.filter((puesto) => puesto.id !== activeId);
     // reset({ positions: changedPuestos });
     toast.success(res.message);
+  };
+
+  const handleEditPosition = (
+    activeId: number | null,
+    namePosition: string
+  ) => {
+    setPositionData({ activeId, namePosition });
+    setPositionFormShow(!positionFormShow);
   };
 
   useEffect(() => {
@@ -174,7 +186,15 @@ function DepartmentsFormView({
                       <span className="fw-semibold">{puesto.namePosition}</span>
                       <div className="d-flex gap-1">
                         <OverLay string="Editar">
-                          <Button variant="link">
+                          <Button
+                            variant="link"
+                            onClick={() =>
+                              handleEditPosition(
+                                puesto.id || null,
+                                puesto.namePosition
+                              )
+                            }
+                          >
                             <i className="bi bi-pencil text-info"></i>
                           </Button>
                         </OverLay>
@@ -196,6 +216,7 @@ function DepartmentsFormView({
         </FormBook>
       </FormView>
       <PositionFormCreate
+        positionData={positionData}
         idDepartment={id}
         show={positionFormShow}
         onHide={() => setPositionFormShow(!positionFormShow)}
