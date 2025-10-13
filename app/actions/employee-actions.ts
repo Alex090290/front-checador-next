@@ -137,8 +137,7 @@ export async function createEmployee({
     console.log(response.data);
 
     if (response.data.status === 400) {
-      let errs: string;
-      errs = response.data.errors
+      const errs = response.data.errors
         .map((err: { message: string }) => err.message)
         .join("\n");
 

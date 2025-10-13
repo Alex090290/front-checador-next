@@ -61,6 +61,55 @@ export async function createPosition({
       success: true,
       message: "Puesto creado",
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
+export async function updatePosition({
+  id,
+}: {
+  id: number;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const session = await auth();
+    const apiToken = session?.user?.apiToken;
+
+    if (!id) {
+      throw new Error("No se ha definido ID");
+    }
+
+    const response = await axios
+      .delete(`${API_URL}/position/${String(id)}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        return err.response;
+      });
+
+    console.log(response.data);
+
+    if (response.data?.status === 400) {
+      throw new Error(response.data.message);
+    }
+
+    revalidatePath("/app/departments");
+
+    return {
+      success: true,
+      message: "Puesto eliminado",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(error);
     return {
