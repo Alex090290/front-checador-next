@@ -33,7 +33,7 @@ export async function createPosition({
     const session = await auth();
     const apiToken = session?.user?.apiToken;
 
-    const response = await axios
+    await axios
       .post(
         `${API_URL}/position`,
         {
@@ -50,12 +50,10 @@ export async function createPosition({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        console.log("----------POSITIONS ACTIONS ERROR----------");
+        console.log(err.response.data);
+        return null;
       });
-
-    if (response.data.status === 400) {
-      throw new Error(response.data.message);
-    }
 
     revalidatePath("/app/departments");
 
@@ -88,7 +86,7 @@ export async function updatePosition({
       throw new Error("No se ha definido ID");
     }
 
-    const response = await axios
+    await axios
       .put(
         `${API_URL}/position/${String(id)}`,
         {
@@ -104,12 +102,9 @@ export async function updatePosition({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        console.log(err.response.data);
+        return null;
       });
-
-    if (response.data?.status === 400) {
-      throw new Error(response.data.message);
-    }
 
     revalidatePath("/app/departments");
 
@@ -140,7 +135,7 @@ export async function deletePosition({
       throw new Error("No se ha definido ID");
     }
 
-    const response = await axios
+    await axios
       .delete(`${API_URL}/position/${String(id)}`, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
@@ -150,14 +145,9 @@ export async function deletePosition({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        console.log(err.response.data);
+        return null;
       });
-
-    console.log(response.data);
-
-    if (response.data?.status === 400) {
-      throw new Error(response.data.message);
-    }
 
     revalidatePath("/app/departments");
 

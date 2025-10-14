@@ -32,14 +32,14 @@ type FooterProps = { children: React.ReactNode };
 // Subcomponentes
 function Header({ children, formView, title, actions }: HeaderProps) {
   return (
-    <Card.Header>
+    <Card.Header className="border-bottom-0">
       <Container fluid>
-        <Row className="gy-1">
+        <Row className="g-1">
           <Col xs="12" sm="11" md="3" lg="4" xl="3">
-            <div className="d-flex gap-2 align-items-center">
+            <div className="d-flex gap-2 align-items-center p-0">
               {formView && (
                 <OverLay string="Crear registro">
-                  <Link className="btn btn-primary" href={formView}>
+                  <Link className="btn btn-primary btn-sm" href={formView}>
                     Nuevo
                   </Link>
                 </OverLay>
@@ -102,7 +102,7 @@ type ListViewProps = {
 };
 
 function ListView({ children }: ListViewProps) {
-  return <Card className="h-100 d-flex flex-column">{children}</Card>;
+  return <Card className="h-100 d-flex flex-column border-0">{children}</Card>;
 }
 
 ListView.Header = Header;

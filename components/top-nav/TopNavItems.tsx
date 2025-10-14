@@ -1,19 +1,23 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Nav } from "react-bootstrap";
 
 function TopNavItems() {
+  const { data: session } = useSession();
   return (
     <Nav className="flex-column" defaultActiveKey="/app/users" variant="pills">
       <Nav.Link as={Link} href="/app">
         <i className="bi bi-speedometer me-1"></i>
         <span>Dashboard</span>
       </Nav.Link>
-      <Nav.Link as={Link} href="/app/users?view_type=list&id=null">
-        <i className="bi bi-people-fill me-1"></i>
-        <span>Usuarios</span>
-      </Nav.Link>
+      {session?.user?.role === "SUPER_ADMIN" && (
+        <Nav.Link as={Link} href="/app/users?view_type=list&id=null">
+          <i className="bi bi-people-fill me-1"></i>
+          <span>Usuarios</span>
+        </Nav.Link>
+      )}
       <Nav.Link
         eventKey="/app/employee"
         as={Link}

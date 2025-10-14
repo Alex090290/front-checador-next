@@ -6,7 +6,6 @@ import {
 } from "@/app/actions/positions-actions";
 import { Entry } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
-import { useState } from "react";
 import { Button, Form, Modal, Spinner } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -103,6 +102,11 @@ function PositionFormCreate({
               <Entry
                 register={register("namePosition", {
                   required: "Nombre es requerido",
+                  maxLength: {
+                    value: 50,
+                    message:
+                      "El nombre del puesto no puede exceder los 50 caracteres",
+                  },
                 })}
                 label="Nombre:"
                 invalid={!!errors.namePosition}

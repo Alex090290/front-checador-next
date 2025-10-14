@@ -15,7 +15,7 @@ import { useModals } from "@/context/ModalContext";
 import { Department, Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, Col, Row } from "react-bootstrap";
+import { Button, Col, Row, Table } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import PositionFormCreate from "./PositionFormCreate";
@@ -180,36 +180,56 @@ function DepartmentsFormView({
                 </Col>
               </Row>
               <Row className="g-1">
-                {puestos?.map((puesto) => (
-                  <Col md="4" key={puesto._id}>
-                    <div className="p-2 border border-2 rounded text-center text-capitalize bg-body-tertiary d-flex justify-content-between align-items-center">
-                      <span className="fw-semibold">{puesto.namePosition}</span>
-                      <div className="d-flex gap-1">
-                        <OverLay string="Editar">
-                          <Button
-                            variant="link"
-                            onClick={() =>
-                              handleEditPosition(
-                                puesto.id || null,
-                                puesto.namePosition
-                              )
-                            }
+                <Col md="12">
+                  <Table borderless hover responsive>
+                    <thead>
+                      <tr className="border-end border-bottom table-active text-nowrap">
+                        <th>Nombre</th>
+                        <th className="text-center">Editar</th>
+                        <th className="text-center">Eliminar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {puestos?.map((puesto) => (
+                        <tr key={puesto._id} className="border-bottom">
+                          <td
+                            className="text-nowrap text-capitalize"
+                            valign="middle"
                           >
-                            <i className="bi bi-pencil text-info"></i>
-                          </Button>
-                        </OverLay>
-                        <OverLay string="Eliminar">
-                          <Button
-                            variant="link"
-                            onClick={() => handleDeletePuesto(puesto.id ?? 0)}
-                          >
-                            <i className="bi bi-trash text-danger"></i>
-                          </Button>
-                        </OverLay>
-                      </div>
-                    </div>
-                  </Col>
-                ))}
+                            {puesto.namePosition}
+                          </td>
+                          <td className="text-center">
+                            <OverLay string="Editar">
+                              <Button
+                                variant="link"
+                                onClick={() =>
+                                  handleEditPosition(
+                                    puesto.id || null,
+                                    puesto.namePosition
+                                  )
+                                }
+                              >
+                                <i className="bi bi-pencil text-info"></i>
+                              </Button>
+                            </OverLay>
+                          </td>
+                          <td className="text-center">
+                            <OverLay string="Eliminar">
+                              <Button
+                                variant="link"
+                                onClick={() =>
+                                  handleDeletePuesto(puesto.id ?? 0)
+                                }
+                              >
+                                <i className="bi bi-trash text-danger"></i>
+                              </Button>
+                            </OverLay>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Col>
               </Row>
             </FormSheet>
           </FormPage>

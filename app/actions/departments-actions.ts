@@ -8,23 +8,34 @@ import { revalidatePath } from "next/cache";
 const API_URL = process.env.API_URL;
 
 export async function fetchDepartments(): Promise<Department[]> {
-  const session = await auth();
-  const apiToken = session?.user?.apiToken;
+  try {
+    const session = await auth();
+    const apiToken = session?.user?.apiToken;
 
-  const response = await axios
-    .get(`${API_URL}/department/listAll`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
-    })
-    .then((res) => {
-      return res.data;
-    })
-    .catch((err) => {
-      return err.response;
-    });
+    const response = await axios
+      .get(`${API_URL}/department/listAll`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err.response.data);
+        return [];
+      });
 
-  return response.data || [];
+    if (response.status >= 400) {
+      throw new Error(`${response.response.data.message}`);
+    }
+
+    return response.data || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return [];
+  }
 }
 
 export async function findDepartmentById({
@@ -56,7 +67,7 @@ export async function findDepartmentById({
       return err.response;
     });
 
-  return response.data.data;
+  return response.data;
 }
 
 export async function createDepartment({

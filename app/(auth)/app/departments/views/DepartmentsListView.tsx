@@ -7,8 +7,7 @@ import TableTemplate, {
 } from "@/components/templates/TableTemplate";
 import { useModals } from "@/context/ModalContext";
 import { Department } from "@/lib/definitions";
-import { useMemo, useState } from "react";
-import toast from "react-hot-toast";
+import { useState } from "react";
 
 function DepartmentsListView({ deparments }: { deparments: Department[] }) {
   const { modalError, modalConfirm } = useModals();

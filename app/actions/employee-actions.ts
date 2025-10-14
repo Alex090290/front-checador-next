@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { ActionResponse, Branch, Employee } from "@/lib/definitions";
+import { ActionResponse, Employee } from "@/lib/definitions";
 import { sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
@@ -23,10 +23,13 @@ export async function fetchEmployees(): Promise<Employee[]> {
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        console.log(err.response.data);
+        return [];
       });
 
-    return response.data ?? [];
+    if (response.data.status >= 400) return [];
+
+    return response.data || [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -133,8 +136,6 @@ export async function createEmployee({
       .catch((err) => {
         return err.response;
       });
-
-    console.log(response.data);
 
     if (response.data.status === 400) {
       const errs = response.data.errors

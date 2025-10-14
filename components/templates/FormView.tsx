@@ -67,9 +67,9 @@ function FormView({
   return (
     <Row className="h-100 overflow-auto">
       <Col xs="12" md="8" className="h-100">
-        <Form className="card d-flex flex-column h-100">
+        <Form className="card d-flex flex-column h-100 border-0">
           <fieldset
-            className="card-header d-flex justify-content-between gap-2"
+            className="card-header d-flex justify-content-between gap-2 border-bottom-0"
             disabled={disabled}
           >
             {/* BOTONES DE FORMULARIO */}
@@ -78,6 +78,7 @@ function FormView({
                 <OverLay string="Crear nuevo registro">
                   <Button
                     type="button"
+                    size="sm"
                     onClick={() => router.replace(cleanUrl)}
                   >
                     Nuevo
@@ -85,7 +86,12 @@ function FormView({
                 </OverLay>
               )}
               <OverLay string="Guardar">
-                <Button type="button" disabled={!isDirty} onClick={onSubmit}>
+                <Button
+                  size="sm"
+                  type="button"
+                  disabled={!isDirty}
+                  onClick={onSubmit}
+                >
                   {disabled ? (
                     <Spinner size="sm" animation="border" />
                   ) : (
@@ -94,7 +100,12 @@ function FormView({
                 </Button>
               </OverLay>
               <OverLay string="Deshacer cambios">
-                <Button type="button" onClick={reverse} disabled={!isDirty}>
+                <Button
+                  size="sm"
+                  type="button"
+                  onClick={reverse}
+                  disabled={!isDirty}
+                >
                   <i className="bi bi-arrow-counterclockwise"></i>
                 </Button>
               </OverLay>
@@ -133,7 +144,11 @@ function FormView({
               </DropdownButton>
             </div>
             <OverLay string="Regresar">
-              <Button onClick={() => router.back()} disabled={isDirty}>
+              <Button
+                size="sm"
+                onClick={() => router.back()}
+                disabled={isDirty}
+              >
                 <i className="bi bi-arrow-left"></i>
               </Button>
             </OverLay>

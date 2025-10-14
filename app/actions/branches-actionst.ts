@@ -22,10 +22,11 @@ export async function fetchBranches(): Promise<Branch[]> {
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        console.log(err.response.data);
+        return [];
       });
 
-    return response.data.data ?? [];
+    return response.data ?? [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -64,7 +65,7 @@ export async function findBranchById({
         return err.response;
       });
 
-    return response.data.data;
+    return response.data;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

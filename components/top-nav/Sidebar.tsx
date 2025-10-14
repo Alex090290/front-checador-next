@@ -39,12 +39,12 @@ export default function Sidebar() {
 
       {/* Static sidebar - only for large screens */}
       <Card
-        className="d-none d-lg-block border-end h-100"
+        className="d-none d-lg-block border-0 h-100 me-1"
         style={{ width: "180px" }}
       >
-        <Card.Header>
+        {/* <Card.Header>
           <Card.Title>Menú Principal</Card.Title>
-        </Card.Header>
+        </Card.Header> */}
         <Card.Body className="p-0">{renderMenu()}</Card.Body>
       </Card>
     </>

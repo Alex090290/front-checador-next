@@ -117,21 +117,21 @@ export async function fetchUsers(): Promise<User[]> {
     const session = await auth();
     const apiToken = session?.user?.apiToken;
 
-    const response = await axios.get(`${API_URL}/allUsers`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
-    });
+    const response = await axios
+      .get(`${API_URL}/allUsers`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err.response.data);
+        return [];
+      });
 
-    if (response.data.status === 401) {
-      throw new Error("Acceso denegado (401)");
-    }
-
-    if (response.data.status === 403) {
-      throw new Error("La sesión ha expirado");
-    }
-
-    return response.data.data ?? [];
+    return response.data ?? [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -156,22 +156,22 @@ export async function findUserById({
     if (_id) params = { idMongo: String(_id) };
     if (id) params = { id: Number(id) };
 
-    const response = await axios.get(`${API_URL}/user`, {
-      params,
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
-    });
+    const response = await axios
+      .get(`${API_URL}/user`, {
+        params,
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err.response.data);
+        return null;
+      });
 
-    if (response.data.status === 401) {
-      throw new Error("Acceso denegado (401)");
-    }
-
-    if (response.data.status === 403) {
-      throw new Error("La sesión ha expirado");
-    }
-
-    return response.data.data;
+    return response.data;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -206,7 +206,7 @@ export async function createUser({
 
   const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
 
-  const response = await axios
+  await axios
     .post(
       `${API_URL}/users`,
       {
@@ -226,28 +226,13 @@ export async function createUser({
         },
       }
     )
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .then((res: any) => {
+    .then((res) => {
       return res.data;
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .catch((err: any) => {
-      return err.response;
+    .catch((err) => {
+      console.log(err.response.data);
+      return null;
     });
 
-  if (!response) {
-    throw new Error("No hubo respuesta del servidor");
-  }
-
-  if (response.data.status === 400) {
-    throw new Error(response.data.message);
-  }
-
-  const newUser = await findUserById({
-    _id: response.data.insertedId as string,
-  });
-
   revalidatePath("/app/users");
-
-  return newUser;
 }

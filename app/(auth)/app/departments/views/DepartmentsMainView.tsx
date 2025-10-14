@@ -18,7 +18,6 @@ async function DepartmentsMainView({
 }) {
   let departments: Department[] = [];
   let department: Department | null = null;
-  let users: User[] = [];
   let employees: Employee[] = [];
 
   if (id && !isNaN(id)) {
@@ -26,7 +25,6 @@ async function DepartmentsMainView({
   }
 
   departments = await fetchDepartments();
-  users = await fetchUsers();
   employees = await fetchEmployees();
 
   if (viewType === "list") {
