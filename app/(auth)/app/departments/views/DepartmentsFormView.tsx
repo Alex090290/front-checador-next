@@ -164,10 +164,7 @@ function DepartmentsFormView({
           />
         </FieldGroup>
         <FormBook dKey="positions">
-          <FormPage
-            title={`Puestos (${department?.positions.length ?? 0})`}
-            eventKey="positions"
-          >
+          <FormPage title="Puestos" eventKey="positions">
             <FormSheet>
               <Row className="g-1">
                 <Col md="3">
