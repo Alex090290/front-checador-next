@@ -10,8 +10,8 @@ function ChecadorFormView() {
   return (
     <Row className="h-100 overflow-auto">
       <Col md="12" className="h-100">
-        <Card className="d-flex flex-column shadow h-100">
-          <Card.Header>
+        <Card className="d-flex flex-column shadow h-100 border-0">
+          <Card.Header className="border-0">
             <h3 className="d-flex justify-content-between fw-bolder">
               <Button onClick={() => signOut()} variant="link">
                 Salir

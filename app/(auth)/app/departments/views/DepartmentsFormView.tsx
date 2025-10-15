@@ -91,8 +91,7 @@ function DepartmentsFormView({
       modalError(res.message);
       return;
     }
-    // const changedPuestos = puestos.filter((puesto) => puesto.id !== activeId);
-    // reset({ positions: changedPuestos });
+
     toast.success(res.message);
   };
 

@@ -20,16 +20,10 @@ async function UsersMainView({
 
   if (id && id !== "null") {
     // Ejecutamos ambos fetches en paralelo
-    [users, user, permissions] = await Promise.all([
-      fetchUsers(),
-      findUserById({ id: Number(id) }),
-      fetchPermissions(),
-    ]);
-  } else {
-    // Solo necesitamos users
-    users = await fetchUsers();
-    permissions = await fetchPermissions();
+    [user] = await Promise.all([findUserById({ id: Number(id) })]);
   }
+
+  [users, permissions] = await Promise.all([fetchUsers(), fetchPermissions()]);
 
   getUsers = users.filter((u) => u.role !== "EMPLOYEE");
 

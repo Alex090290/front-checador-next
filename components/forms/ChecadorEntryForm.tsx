@@ -43,7 +43,7 @@ function ChecadorEntryForm() {
     <div className="row align-items-stretch">
       <div className="col-md-5">
         <Form
-          className="card bg-body-tertiary"
+          className="card bg-body-tertiary border-0"
           onSubmit={handleSubmit(onSubmit)}
         >
           <fieldset className="card-body" disabled={isSubmitting}>
@@ -88,7 +88,7 @@ function ChecadorEntryForm() {
           </fieldset>
         </Form>
       </div>
-      <div className="col-md-7 border border-2 bg-body-tertiary text-center">
+      <div className="col-md-7 bg-body-tertiary text-center">
         {message && <div className="fw-bold">{message}</div>}
         {error && <div className="alert alert-danger">{error}</div>}
       </div>

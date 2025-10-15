@@ -306,10 +306,30 @@ export const FormPage = ({
   );
 };
 
-export const FormSheet = ({ children }: { children: React.ReactNode }) => {
+export const PageSheet = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <Container fluid className={`${className}`}>
+      {children}
+    </Container>
+  );
+};
+
+export const FormSheet = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
   return (
     <Container>
-      <Row>{children}</Row>
+      <Row className={`${className}`}>{children}</Row>
     </Container>
   );
 };

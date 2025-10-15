@@ -234,10 +234,7 @@ export default function TableTemplate<T>({
     <Table borderless hover>
       <thead className="sticky-top" style={{ zIndex: 1 }}>
         <tr>
-          <th
-            style={{ width: 40 }}
-            className="text-center border-end border-bottom table-active"
-          >
+          <th className="text-center border-end border-bottom table-active">
             <Form.Check
               type="checkbox"
               checked={

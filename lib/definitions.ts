@@ -108,6 +108,7 @@ export interface Employee {
   emailPersonal: string | null;
   idCheck: number | null;
   passwordCheck: string | null;
+  passwordSystem: string;
   entryOffice: string | null;
   entrySaturdayOffice: string | null;
   exitOffice: string | null;
@@ -119,7 +120,7 @@ export interface Employee {
   idPosition: number | null;
   position?: Position;
   branch: Branch | null;
-  gender: "HOMBRE" | "MUJER";
+  gender: "MASCULINO" | "FEMENINO";
   scheduleOffice?: {
     entry: string;
     exit: string;
@@ -129,13 +130,50 @@ export interface Employee {
     exit: string;
   };
   scheduleSaturday?: {
-    entrySaturdayOffice: string | null;
-    exitSaturdayOffice: string | null;
+    entry: string | null;
+    exit: string | null;
   };
   status?: 1 | 2 | 3;
-  role?: UserRole;
+  role?: UserRole[];
   leader?: Employee | null;
+  phoneCompany: PhoneNumberFormat | null;
+  phoneExtCompany: number | 0;
+  address: BranchAddress;
+  emailCompany: string;
+  scheduleDescription: string;
+  policies: string;
+  group: string;
+  homePhone: PhoneNumberFormat;
+  sons: number | 0;
+  daughters: number | 0;
+  birthDate: string;
+  nationality: string;
+  socialSecurityNumber: string;
+  rfc: string;
+  curp: string;
+  weight: string;
+  height: string;
+  bloodType: string;
+  constitution: string;
+  healthStatus: string;
+  education: string;
+  skills: string;
+  comments: string;
+  emergencyContacts: EmergencyContact[];
+  keyAspelNOI: string;
+  keyCONTPAQi: string;
+  admissionDate: string;
+  anniversaryLetter: string;
+  visibleRecords: boolean;
+  dischargeDate: string;
+  dischargeReason: string;
 }
+
+type EmergencyContact = {
+  name: string;
+  kinship: string;
+  phone: PhoneNumberFormat;
+};
 
 export interface ModalBasicProps {
   show: boolean;

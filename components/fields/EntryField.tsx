@@ -28,7 +28,7 @@ export const Entry = ({
   autoFocus,
 }: FieldEntryProps) => {
   return (
-    <Form.Group controlId={label} className="mb-3">
+    <Form.Group controlId={label} className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>
       <Form.Control
         className={className}

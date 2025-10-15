@@ -6,7 +6,6 @@ import {
   fetchDepartments,
   findDepartmentById,
 } from "@/app/actions/departments-actions";
-import { fetchUsers } from "@/app/actions/user-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
 
 async function DepartmentsMainView({
@@ -24,8 +23,10 @@ async function DepartmentsMainView({
     department = await findDepartmentById({ id });
   }
 
-  departments = await fetchDepartments();
-  employees = await fetchEmployees();
+  [departments, employees] = await Promise.all([
+    fetchDepartments(),
+    fetchEmployees(),
+  ]);
 
   if (viewType === "list") {
     return <DepartmentsListView deparments={departments || []} />;

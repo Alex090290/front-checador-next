@@ -25,9 +25,11 @@ async function EmployeeMainView({
     employee = await findEmployeeById({ id });
   }
 
-  employees = await fetchEmployees();
-  departments = await fetchDepartments();
-  branches = await fetchBranches();
+  [employees, departments, branches] = await Promise.all([
+    fetchEmployees(),
+    fetchDepartments(),
+    fetchBranches(),
+  ]);
 
   if (viewType === "list") {
     return <CatalogListView employees={employees} />;
