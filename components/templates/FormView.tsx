@@ -85,20 +85,18 @@ function FormView({
                   </Button>
                 </OverLay>
               )}
-              <OverLay string="Guardar">
-                <Button
-                  size="sm"
-                  type="button"
-                  disabled={!isDirty}
-                  onClick={onSubmit}
-                >
-                  {disabled ? (
-                    <Spinner size="sm" animation="border" />
-                  ) : (
-                    <i className="bi bi-cloud-arrow-up-fill"></i>
-                  )}
-                </Button>
-              </OverLay>
+              <Button
+                size="sm"
+                type="button"
+                disabled={!isDirty}
+                onClick={onSubmit}
+              >
+                {disabled ? (
+                  <Spinner size="sm" animation="border" />
+                ) : (
+                  <i className="bi bi-cloud-arrow-up-fill"></i>
+                )}
+              </Button>
               <OverLay string="Deshacer cambios">
                 <Button
                   size="sm"
@@ -167,9 +165,11 @@ function FormView({
                   {formStates?.map((st, index) => (
                     <Button
                       key={`${st.label}-${st.name}-${index}`}
-                      variant={st.name === state ? st.decoration : "secondary"}
+                      variant={
+                        st.name === state ? st.decoration : "outline-light"
+                      }
                       className={`${
-                        st.name === state ? "fw-semibold" : "text-black"
+                        st.name === state ? "fw-semibold" : "text-dark"
                       } text-uppercase`}
                     >
                       {st.label}

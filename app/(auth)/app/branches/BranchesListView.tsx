@@ -8,8 +8,6 @@ import { Branch } from "@/lib/definitions";
 import { useState } from "react";
 
 function BranchesListView({ branches }: { branches: Branch[] }) {
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-
   const columns: TableTemplateColumn<Branch>[] = [
     {
       key: "name",
@@ -81,7 +79,6 @@ function BranchesListView({ branches }: { branches: Branch[] }) {
           getRowId={(branch) => branch.id ?? 0}
           data={branches || []}
           columns={columns}
-          onSelectionChange={setSelectedIds}
           viewForm="/app/branches?view_type=form"
         />
       </ListView.Body>

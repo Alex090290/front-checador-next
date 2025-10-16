@@ -1,7 +1,7 @@
 import NotFound from "@/app/not-found";
 import DepartmentsFormView from "./DepartmentsFormView";
 import DepartmentsListView from "./DepartmentsListView";
-import { Department, Employee, User } from "@/lib/definitions";
+import { Department, Employee } from "@/lib/definitions";
 import {
   fetchDepartments,
   findDepartmentById,

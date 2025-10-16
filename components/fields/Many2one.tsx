@@ -146,7 +146,7 @@ export function Many2one<T extends Many2OneOption>({
   };
 
   return (
-    <div ref={containerRef} className={className}>
+    <div ref={containerRef}>
       <Form.Control
         ref={inputRef}
         type="text"
@@ -168,6 +168,7 @@ export function Many2one<T extends Many2OneOption>({
         disabled={disabled}
         size={size}
         required={required}
+        className={className}
       />
       <Form.Control.Feedback type="invalid">
         {error?.message}

@@ -25,7 +25,7 @@ export function RelationField({
   className,
 }: FieldMany2oneProps) {
   return (
-    <Form.Group className="mb-3">
+    <Form.Group className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>
       <Many2one
         disabled={readonly}

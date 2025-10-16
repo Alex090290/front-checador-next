@@ -1,10 +1,11 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { ActionResponse, Employee } from "@/lib/definitions";
-import { sanitizePhoneNumber } from "@/lib/sinitizePhone";
+import { ActionResponse, Department, Employee } from "@/lib/definitions";
+import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
+import { TInputsEmployee } from "../(auth)/app/employee/definition";
 
 const API_URL = process.env.API_URL;
 
@@ -93,7 +94,7 @@ export async function createEmployee({
     exitLunch: string | null;
     entrySaturdayOffice: string | null;
     exitSaturdayOffice: string | null;
-    idDepartment: number | null;
+    idDepartment: Department | null;
     idPosition: number | null;
     branch: number | null;
     gender: "MASCULINO" | "FEMENINO";
@@ -124,7 +125,7 @@ export async function createEmployee({
           exitLunch: data.exitLunch,
           entrySaturdayOffice: data.entrySaturdayOffice,
           exitSaturdayOffice: data.exitSaturdayOffice,
-          idDepartment: data.idDepartment,
+          idDepartment: data.idDepartment?.id,
           idPosition: data.idPosition,
           branch: data.branch,
           gender: data.gender,
@@ -172,25 +173,7 @@ export async function updateEmploye({
   data,
   id,
 }: {
-  data: {
-    name: string;
-    lastName: string;
-    phonePersonal: string | null;
-    emailPersonal: string | null;
-    idCheck: number | null;
-    passwordCheck: string | null;
-    entryOffice: string | null;
-    exitOffice: string | null;
-    entryLunch: string | null;
-    exitLunch: string | null;
-    entrySaturdayOffice: string | null;
-    exitSaturdayOffice: string | null;
-    idDepartment: number | null;
-    idPosition: number | null;
-    branch: number | null;
-    gender: "MASCULINO" | "FEMENINO";
-    status: 1 | 2 | 3;
-  };
+  data: TInputsEmployee;
   id: number | null;
 }): Promise<ActionResponse<boolean>> {
   try {
@@ -201,9 +184,33 @@ export async function updateEmploye({
       throw new Error("No se ha definido ID");
     }
 
-    const sanitizedPhone = sanitizePhoneNumber(
+    const sanitizedPhonePersonal = sanitizePhoneNumber(
       data.phonePersonal as unknown as string
     );
+
+    const sanitizedPhoneCompany = data.phoneCompany
+      ? sanitizePhoneNumber(data.phoneCompany)
+      : ({
+          countryCode: "MX",
+          dialCode: "",
+          e164Number: "",
+          internationalNumber: "",
+          nationalNumber: "",
+          number: "",
+        } as PhoneNumberFormat);
+
+    const sanitizedEmergencyContacts = data.emergencyContacts.map((contact) => {
+      return {
+        ...contact,
+        phone: sanitizePhoneNumber(
+          contact.phone.internationalNumber as unknown as string
+        ),
+      };
+    });
+
+    const sanitizedHomePhone = data.homePhone
+      ? sanitizePhoneNumber(data.homePhone)
+      : null;
 
     const response = await axios
       .put(
@@ -211,7 +218,7 @@ export async function updateEmploye({
         {
           name: data.name,
           lastName: data.lastName,
-          phonePersonal: sanitizedPhone,
+          phonePersonal: sanitizedPhonePersonal,
           emailPersonal: data.emailPersonal,
           idCheck: data.idCheck,
           passwordCheck: data.passwordCheck,
@@ -221,11 +228,45 @@ export async function updateEmploye({
           exitLunch: data.exitLunch,
           entrySaturdayOffice: data.entrySaturdayOffice,
           exitSaturdayOffice: data.exitSaturdayOffice,
-          idDepartment: data.idDepartment,
+          idDepartment: data.idDepartment?.id || 0,
           idPosition: data.idPosition,
           branch: data.branch,
           gender: data.gender,
           status: data.status,
+          emergencyContacts: sanitizedEmergencyContacts,
+          phoneCompany: sanitizedPhoneCompany,
+          homePhone: sanitizedHomePhone,
+          phoneExtCompany: !isNaN(data.phoneExtCompany)
+            ? data.phoneExtCompany
+            : 0,
+          address: data.address,
+          emailCompany: data.emailCompany || "",
+          scheduleDescription: data.scheduleDescription,
+          policies: data.policies,
+          group: data.group,
+          sons: data.sons,
+          daughters: data.daughters,
+          birthDate: data.birthDate,
+          nationality: data.nationality,
+          socialSecurityNumber: data.socialSecurityNumber,
+          rfc: data.rfc,
+          curp: data.curp,
+          weight: data.weight,
+          height: data.height,
+          bloodType: data.bloodType.toUpperCase(),
+          constitution: data.constitution,
+          healthStatus: data.healthStatus,
+          education: data.education,
+          skills: data.skills,
+          comments: data.comments,
+          keyAspelNOI: data.keyAspelNOI,
+          keyCONTPAQi: data.keyCONTPAQi,
+          admissionDate: data.admissionDate,
+          dischargeDate: data.dischargeDate,
+          anniversaryLetter: data.anniversaryLetter,
+          dischargeReason: data.dischargeReason,
+          role: data.role,
+          visibleRecords: true,
         },
         {
           headers: {

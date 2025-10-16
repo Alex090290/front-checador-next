@@ -1,25 +1,28 @@
-import { UserRole } from "@/lib/definitions";
+import { Department, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 
 export type TInputsEmployee = {
   name: string;
   lastName: string;
-  phonePersonal: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  phonePersonal: string;
   emailPersonal: string | null;
-  idCheck: number | null;
+  idCheck: number;
   passwordCheck: string | null;
   entryOffice: string | null;
-  entrySaturdayOffice: string | null;
-  exitOffice: string | null;
-  exitSaturdayOffice: string | null;
-  entryLunch: string | null;
-  exitLunch: string | null;
-  idDepartment: number | null;
+  entrySaturdayOffice: string;
+  exitOffice: string;
+  exitSaturdayOffice: string;
+  entryLunch: string;
+  exitLunch: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  idDepartment: Department | null;
   idPosition: number | null;
   branch: number | null;
   gender: "MASCULINO" | "FEMENINO";
   status: 1 | 2 | 3;
-  phoneCompany: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  phoneCompany: string | any;
   phoneExtCompany: number | 0;
   address: {
     street: string;
@@ -35,7 +38,8 @@ export type TInputsEmployee = {
   scheduleDescription: string;
   policies: string;
   group: string;
-  homePhone: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  homePhone: string | any;
   sons: number | 0;
   daughters: number | 0;
   birthDate: string;
@@ -51,11 +55,14 @@ export type TInputsEmployee = {
   education: string;
   skills: string;
   comments: string;
-  emergencyContacts: {
-    name: string;
-    kinship: string;
-    phone: PhoneNumberFormat;
-  }[];
+  emergencyContacts:
+    | {
+        id?: number;
+        name: string;
+        kinship: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        phone: PhoneNumberFormat | any;
+      }[];
   keyAspelNOI: string;
   keyCONTPAQi: string;
   admissionDate: string;

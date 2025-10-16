@@ -1,26 +1,11 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { ActionResponse, Position } from "@/lib/definitions";
+import { ActionResponse } from "@/lib/definitions";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.API_URL;
-
-// export async function fetchPositions(): Promise<ActionResponse<Position[]>> {
-//   const response = await axios
-//     .get(`${API_URL}`)
-//     .then((res) => {
-//       return res.data;
-//     })
-//     .catch((err) => {
-//       return err.response;
-//     });
-
-//   console.log(response.data);
-
-//   return response.data ?? [];
-// }
 
 export async function createPosition({
   namePosition,

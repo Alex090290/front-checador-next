@@ -145,6 +145,7 @@ function DepartmentsFormView({
             label="Nombre:"
             invalid={!!errors.nameDepartment}
             feedBack={errors.nameDepartment?.message}
+            className="text-uppercase"
           />
           <Entry register={register("description")} label="Descripción:" />
         </FieldGroup>
@@ -154,7 +155,7 @@ function DepartmentsFormView({
             label="Líder:"
             control={control}
             callBackMode="id"
-            className="text-capitalize"
+            className="text-uppercase"
             options={employees.map((emp) => ({
               id: emp.id ?? 0,
               displayName: `${emp.name} ${emp.lastName}`,

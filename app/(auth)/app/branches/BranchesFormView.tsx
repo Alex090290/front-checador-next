@@ -19,7 +19,6 @@ function BranchesFormView({
 }) {
   const {
     register,
-    control,
     reset,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty },
@@ -48,16 +47,6 @@ function BranchesFormView({
       reset(originalValuesRef.current);
     }
   };
-
-  // const handleGetLocation = () => {
-  //   if (!navigator.geolocation) return;
-
-  //   navigator.geolocation.getCurrentPosition((position) => {
-  //     const lat = position.coords.latitude;
-  //     const lng = position.coords.longitude;
-  //     reset({ lat, lng });
-  //   });
-  // };
 
   useEffect(() => {
     if (!branch) {

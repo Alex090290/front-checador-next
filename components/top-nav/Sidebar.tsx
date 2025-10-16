@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Offcanvas, Button, Nav, Card } from "react-bootstrap";
+import { Offcanvas, Button, Card } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import TopNavItems from "../top-nav/TopNavItems";
 

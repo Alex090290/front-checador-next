@@ -5,11 +5,8 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { User } from "@/lib/definitions";
-import { useState } from "react";
 
 function UsersListView({ users }: { users: User[] }) {
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-
   const columns: TableTemplateColumn<User>[] = [
     {
       key: "name",
@@ -60,7 +57,6 @@ function UsersListView({ users }: { users: User[] }) {
           getRowId={(row) => row.id}
           data={users}
           columns={columns}
-          onSelectionChange={setSelectedIds}
           viewForm="/app/users?view_type=form"
         />
       </ListView.Body>

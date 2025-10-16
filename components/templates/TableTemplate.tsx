@@ -232,7 +232,7 @@ export default function TableTemplate<T>({
 
   return (
     <Table borderless hover>
-      <thead className="sticky-top" style={{ zIndex: 1 }}>
+      <thead className="sticky-top text-uppercase" style={{ zIndex: 1 }}>
         <tr>
           <th className="text-center border-end border-bottom table-active">
             <Form.Check

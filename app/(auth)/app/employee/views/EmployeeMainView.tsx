@@ -40,6 +40,7 @@ async function EmployeeMainView({
         id={id}
         departments={departments || []}
         branches={branches || []}
+        employees={employees || []}
       />
     );
   } else {
