@@ -172,7 +172,7 @@ function DepartmentsFormView({
                     variant="info"
                     onClick={() => setPositionFormShow(!positionFormShow)}
                   >
-                    Crear
+                    Nuevo
                   </Button>
                 </Col>
               </Row>

@@ -234,7 +234,7 @@ function EmployeeFormView({
     } else {
       setPuestos([]);
     }
-  }, [deps, watch]);
+  }, [deps, watch, departments]);
 
   return (
     <FormView
@@ -272,108 +272,135 @@ function EmployeeFormView({
               />
               <FieldGroup.Stack>
                 <Entry register={register("phonePersonal")} label="Celuar:" />
-                <Entry
-                  register={register("homePhone")}
-                  label="Teléfono fijo:"
-                />
+                {!isNaN(id) && (
+                  <Entry
+                    register={register("homePhone")}
+                    label="Teléfono fijo:"
+                  />
+                )}
               </FieldGroup.Stack>
             </FieldGroup>
-            <FieldGroup>
-              <Entry register={register("address.street")} label="Calle:" />
-              <FieldGroup.Stack>
-                <Entry
-                  register={register("address.numberOut")}
-                  label="No. Exterior:"
-                />
-                <Entry
-                  register={register("address.numberIn")}
-                  label="No. Interior:"
-                />
-              </FieldGroup.Stack>
-              <FieldGroup.Stack>
-                <Entry
-                  register={register("address.neighborhood")}
-                  label="Colonia:"
-                />
-                <Entry register={register("address.zipCode")} label="C.P." />
-              </FieldGroup.Stack>
-              <FieldGroup.Stack>
-                <Entry register={register("address.state")} label="Estado:" />
-                <Entry register={register("address.country")} label="País:" />
-              </FieldGroup.Stack>
-            </FieldGroup>
-            <FieldGroup>
-              <FieldGroup.Stack>
-                <Entry
-                  register={register("birthDate")}
-                  type="date"
-                  label="Nacimiento:"
-                />
-                <Entry
-                  register={register("nationality")}
-                  label="Nacionalidad:"
-                />
-              </FieldGroup.Stack>
-              <FieldGroup.Stack>
-                <Entry
-                  register={register("socialSecurityNumber")}
-                  label="NSS:"
-                />
-                <Entry
-                  register={register("rfc")}
-                  label="R.F.C."
-                  className="text-uppercase"
-                />
-              </FieldGroup.Stack>
-              <FieldGroup.Stack>
-                <Entry
-                  register={register("curp")}
-                  label="CURP:"
-                  className="text-uppercase"
-                />
-              </FieldGroup.Stack>
-              <Entry register={register("comments")} label="Comentarios:" />
-            </FieldGroup>
-            <FieldGroup>
-              <FieldGroup.Stack>
-                <FieldSelect
-                  options={[
-                    { value: "MASCULINO", label: "MASCULINO" },
-                    { value: "FEMENINO", label: "FEMENINO" },
-                  ]}
-                  label="Género:"
-                  register={register("gender")}
-                />
-                <Entry
-                  register={register("bloodType")}
-                  label="Grupo sanguíneo:"
-                  className="text-center"
-                />
-              </FieldGroup.Stack>
-              <FieldGroup.Stack>
-                <Entry register={register("weight")} label="Peso:" />
-                <Entry register={register("height")} label="Altura:" />
-              </FieldGroup.Stack>
-              <Entry
-                register={register("constitution")}
-                label="Constitución:"
-              />
-              <Entry
-                register={register("healthStatus")}
-                label="Estado de salud:"
-              />
-            </FieldGroup>
-            <FieldGroup>
-              <Entry
-                register={register("education")}
-                label="Formación académica:"
-              />
-              <Entry register={register("skills")} label="Habilidades:" />
-              <FieldGroup.Stack>
-                <Entry register={register("sons")} label="Hijos:" />
-                <Entry register={register("daughters")} label="Hijas:" />
-              </FieldGroup.Stack>
-            </FieldGroup>
+            {!isNaN(id) && (
+              <>
+                <FieldGroup>
+                  <Entry register={register("address.street")} label="Calle:" />
+                  <FieldGroup.Stack>
+                    <Entry
+                      register={register("address.numberOut")}
+                      label="No. Exterior:"
+                    />
+                    <Entry
+                      register={register("address.numberIn")}
+                      label="No. Interior:"
+                    />
+                  </FieldGroup.Stack>
+                  <FieldGroup.Stack>
+                    <Entry
+                      register={register("address.neighborhood")}
+                      label="Colonia:"
+                    />
+                    <Entry
+                      register={register("address.zipCode")}
+                      label="C.P."
+                    />
+                  </FieldGroup.Stack>
+                  <FieldGroup.Stack>
+                    <Entry
+                      register={register("address.state")}
+                      label="Estado:"
+                    />
+                    <Entry
+                      register={register("address.country")}
+                      label="País:"
+                    />
+                  </FieldGroup.Stack>
+                </FieldGroup>
+                <FieldGroup>
+                  <FieldGroup.Stack>
+                    <Entry
+                      register={register("birthDate")}
+                      type="date"
+                      label="Nacimiento:"
+                    />
+                    <Entry
+                      register={register("nationality")}
+                      label="Nacionalidad:"
+                    />
+                  </FieldGroup.Stack>
+                  <FieldGroup.Stack>
+                    <Entry
+                      register={register("socialSecurityNumber")}
+                      label="NSS:"
+                    />
+                    <Entry
+                      register={register("rfc")}
+                      label="R.F.C."
+                      className="text-uppercase"
+                    />
+                  </FieldGroup.Stack>
+                  <FieldGroup.Stack>
+                    <Entry
+                      register={register("curp")}
+                      label="CURP:"
+                      className="text-uppercase"
+                    />
+                  </FieldGroup.Stack>
+                </FieldGroup>
+                <FieldGroup>
+                  <FieldGroup.Stack>
+                    <FieldSelect
+                      options={[
+                        { value: "MASCULINO", label: "MASCULINO" },
+                        { value: "FEMENINO", label: "FEMENINO" },
+                      ]}
+                      label="Género:"
+                      register={register("gender")}
+                    />
+                    <Entry
+                      register={register("bloodType")}
+                      label="Grupo sanguíneo:"
+                      className="text-center"
+                    />
+                  </FieldGroup.Stack>
+                  <FieldGroup.Stack>
+                    <Entry register={register("weight")} label="Peso:" />
+                    <Entry register={register("height")} label="Altura:" />
+                  </FieldGroup.Stack>
+                  <Entry
+                    register={register("constitution")}
+                    label="Constitución:"
+                  />
+                  <Entry
+                    register={register("healthStatus")}
+                    label="Estado de salud:"
+                  />
+                </FieldGroup>
+                <FieldGroup>
+                  <Entry
+                    register={register("education")}
+                    label="Formación académica:"
+                  />
+                  <Entry register={register("skills")} label="Habilidades:" />
+                  <FieldGroup.Stack>
+                    <Entry register={register("sons")} label="Hijos:" />
+                    <Entry register={register("daughters")} label="Hijas:" />
+                  </FieldGroup.Stack>
+                </FieldGroup>
+                <FieldGroup>
+                  {/* <Entry register={register("comments")} label="Comentarios:" /> */}
+                  <Form.Group>
+                    <Form.Label className="fw-semibold">
+                      Obersevaciones generales:
+                    </Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      {...register("comments")}
+                      rows={8}
+                    />
+                  </Form.Group>
+                </FieldGroup>
+              </>
+            )}
           </FormSheet>
         </FormPage>
         <FormPage title="Información Laboral" eventKey="jobInfo">
@@ -441,7 +468,7 @@ function EmployeeFormView({
                 label="Sucursal"
                 className="text-uppercase"
               />
-              <Entry register={register("policies")} label="Políticas:" />
+              {/* <Entry register={register("policies")} label="Políticas:" /> */}
             </FieldGroup>
             <FieldGroup>
               <FieldGroup.Stack>
@@ -479,7 +506,7 @@ function EmployeeFormView({
                 register={register("scheduleDescription")}
                 label="Descripción del horario:"
               />
-              <Entry register={register("group")} label="Grupo:" />
+              {/* <Entry register={register("group")} label="Grupo:" /> */}
             </FieldGroup>
             <FieldGroup>
               <FieldGroup.Stack>
@@ -529,7 +556,7 @@ function EmployeeFormView({
             </FieldGroup>
           </FormSheet>
         </FormPage>
-        <FormPage title="Contactos" eventKey="contacts">
+        <FormPage title="Contactos" eventKey="contacts" invisible={true}>
           <FormSheet className="g-0">
             <Table size="sm" borderless hover responsive>
               <thead>
@@ -614,6 +641,5 @@ function EmployeeFormView({
     </FormView>
   );
 }
-1;
 
 export default EmployeeFormView;

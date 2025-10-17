@@ -189,17 +189,15 @@ export async function createUser({
   permissions,
   status,
   phone,
-  password,
 }: {
   name: string;
   lastName: string;
   email: string;
-  gender: "HOMBRE" | "MUJER" | null;
+  gender: "MASCULINO" | "FEMENINO" | null;
   role: UserRole | null;
   permissions: Permission[];
   status: number;
   phone: PhoneNumberFormat | string | null;
-  password?: string;
 }) {
   const session = await auth();
   const apiToken = session?.user?.apiToken;
@@ -218,7 +216,6 @@ export async function createUser({
         permissions,
         status,
         phone: sanitizedPhone,
-        password,
       },
       {
         headers: {
@@ -235,4 +232,101 @@ export async function createUser({
     });
 
   revalidatePath("/app/users");
+}
+
+export async function updateUser({
+  name,
+  lastName,
+  email,
+  gender,
+  role,
+  permissions,
+  status,
+  phone,
+  id,
+}: {
+  name: string;
+  lastName: string;
+  email: string;
+  gender: "MASCULINO" | "FEMENINO" | null;
+  role: UserRole | null;
+  permissions: Permission[];
+  status: number;
+  phone: PhoneNumberFormat | string | null;
+  id: number;
+}): Promise<string | boolean> {
+  const session = await auth();
+  const apiToken = session?.user?.apiToken;
+
+  const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
+
+  const response = await axios
+    .put(
+      `${API_URL}/users/${id}`,
+      {
+        name,
+        lastName,
+        email,
+        gender,
+        role,
+        permissions,
+        status: Number(status),
+        phone: sanitizedPhone,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    )
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      return err.response.data;
+    });
+
+  if (response.status === 400) {
+    return response.message;
+  }
+
+  revalidatePath("/app/users");
+  return true;
+}
+
+export async function updatePasswordUser({
+  password,
+  id,
+}: {
+  password: string;
+  id: number;
+}): Promise<boolean> {
+  const session = await auth();
+  const apiToken = session?.user?.apiToken;
+
+  const response = await axios
+    .put(
+      `${API_URL}/users/${id}/password`,
+      {
+        password,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    )
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      console.log(err.response.data);
+      return null;
+    });
+
+  if (response.status === 200) {
+    return true;
+  } else {
+    return false;
+  }
 }

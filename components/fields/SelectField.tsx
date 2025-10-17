@@ -12,6 +12,7 @@ type FieldSelectProps = {
   invalid?: boolean;
   feedBack?: React.ReactNode;
   className?: string;
+  invisble?: boolean;
 };
 
 export const FieldSelect = ({
@@ -23,7 +24,9 @@ export const FieldSelect = ({
   invalid,
   feedBack,
   className,
+  invisble,
 }: FieldSelectProps) => {
+  if (invisble) return null;
   return (
     <Form.Group controlId={label} className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>

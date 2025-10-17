@@ -119,6 +119,7 @@ function FormView({
                   onClick={action.action}
                   disabled={action.readonly}
                   style={{ display: action.invisible ? "none" : "block" }}
+                  size="sm"
                 >
                   {action.string}
                 </Button>
@@ -126,12 +127,17 @@ function FormView({
             </div>
             {/* BOTONES VISTA MÓVIL */}
             <div className="d-flex d-md-none">
-              <DropdownButton variant="light" title="Acciones" align="end">
+              <DropdownButton
+                variant="info"
+                title="Acciones"
+                align="end"
+                size="sm"
+              >
                 {actions.map((action, index) => (
                   <Dropdown.Item
                     key={`${action.string}-${index}`}
                     as={Button}
-                    variant={action.variant ?? "light"}
+                    variant={action.variant ?? "primary"}
                     onClick={action.action}
                     disabled={action.readonly}
                     style={{ display: action.invisible ? "none" : "block" }}
@@ -298,6 +304,7 @@ export const FormPage = ({
   children: React.ReactNode;
   eventKey: string;
   title: string;
+  invisible?: boolean;
 }) => {
   return (
     <Tab eventKey={eventKey} title={title}>

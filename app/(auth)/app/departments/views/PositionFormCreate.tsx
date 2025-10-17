@@ -92,7 +92,7 @@ function PositionFormCreate({
     >
       <Modal.Header closeButton>
         <Modal.Title>
-          {positionData.activeId ? "Editar Puesto" : "Crear puesto"}
+          {positionData.activeId ? "Editar Puesto" : "Nuevo"}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

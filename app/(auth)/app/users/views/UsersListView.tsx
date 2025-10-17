@@ -5,6 +5,13 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { User } from "@/lib/definitions";
+import { Badge } from "react-bootstrap";
+
+const userStatus = {
+  1: "activo",
+  2: "suspendido",
+  3: "eliminado",
+};
 
 function UsersListView({ users }: { users: User[] }) {
   const columns: TableTemplateColumn<User>[] = [
@@ -23,6 +30,27 @@ function UsersListView({ users }: { users: User[] }) {
       filterable: true,
       type: "string",
       render: (u) => <div className="text-capitalize">{u.lastName}</div>,
+    },
+    {
+      key: "status",
+      label: "Estado",
+      accessor: (u) => userStatus[u.status as keyof typeof userStatus] ?? "",
+      filterable: true,
+      type: "string",
+      render: (u) => (
+        <div className="text-capitalize text-center">
+          <Badge
+            pill
+            bg={
+              userStatus[u.status as keyof typeof userStatus] === "activo"
+                ? "success"
+                : "warning"
+            }
+          >
+            {`${userStatus[u.status as keyof typeof userStatus]}`}
+          </Badge>
+        </div>
+      ),
     },
     {
       key: "email",

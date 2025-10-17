@@ -5,7 +5,6 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { Branch } from "@/lib/definitions";
-import { useState } from "react";
 
 function BranchesListView({ branches }: { branches: Branch[] }) {
   const columns: TableTemplateColumn<Branch>[] = [

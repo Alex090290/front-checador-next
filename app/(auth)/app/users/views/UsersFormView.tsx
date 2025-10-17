@@ -1,33 +1,31 @@
 "use client";
 
-import { createUser } from "@/app/actions/user-actions";
+import { createUser, updateUser } from "@/app/actions/user-actions";
 import { Entry, FieldSelect } from "@/components/fields";
 import FormView, {
   FieldGroup,
   FormBook,
   FormPage,
-  FormSheet,
 } from "@/components/templates/FormView";
-import OverLay from "@/components/templates/OverLay";
 import { useModals } from "@/context/ModalContext";
 import { Permission, User, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
-import { Button, Col, Form, ListGroup, Row } from "react-bootstrap";
-import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
+import ChangePasswordModal from "./ModalChangePassword";
 
 type TInputs = {
   name: string;
   lastName: string;
   email: string;
-  gender: "HOMBRE" | "MUJER" | null;
+  gender: "MASCULINO" | "FEMENINO" | null;
   role: UserRole | null;
   permissions: Permission[];
   phone: PhoneNumberFormat | string | null;
-  status: number;
-  password?: string;
+  status: 1 | 2 | 3;
 };
 
 function UsersFormView({
@@ -44,22 +42,15 @@ function UsersFormView({
     control,
     reset,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<TInputs>();
 
   const { modalError } = useModals();
-
-  const {
-    append,
-    fields: permisos,
-    remove,
-  } = useFieldArray({
-    control,
-    name: "permissions",
-  });
-
-  const originalValuesRef = useRef<TInputs | null>(null);
   const router = useRouter();
+  const originalValuesRef = useRef<TInputs | null>(null);
+  const [modalChangePassword, setModalChangePassword] = useState(false);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     if (isNaN(id)) {
@@ -72,6 +63,15 @@ function UsersFormView({
         modalError(error.message);
         return error.message;
       }
+    } else {
+      const res = await updateUser({ ...data, id });
+      console.log(res);
+      if (!res) {
+        modalError(String(res));
+        return;
+      }
+
+      toast.success("Registro editado");
     }
   };
 
@@ -91,8 +91,7 @@ function UsersFormView({
         role: null,
         permissions: [],
         phone: null,
-        password: "",
-        status: 1,
+        status: 3,
       };
       reset(values);
       originalValuesRef.current = values;
@@ -101,11 +100,10 @@ function UsersFormView({
         name: user.name,
         lastName: user.lastName,
         email: user.email,
-        gender: user.gender as "HOMBRE" | "MUJER",
+        gender: user.gender as "MASCULINO" | "FEMENINO",
         role: user.role,
         permissions: user.permissions,
         phone: user.phone.internationalNumber,
-        password: "",
         status: user.status,
       };
       reset(values);
@@ -113,144 +111,188 @@ function UsersFormView({
     }
   }, [user, reset]);
 
+  // 👇 Watch permisos seleccionados
+  const permisosSeleccionados = watch("permissions") || [];
+
+  const isPermSelected = (id: number) =>
+    permisosSeleccionados.some((perm: Permission) => perm.id === id);
+
+  const toggleSelectAll = () => {
+    const allSelected = perms.every((perm) => isPermSelected(perm.id || 0));
+    if (allSelected) {
+      setValue("permissions", []);
+    } else {
+      setValue("permissions", [...perms]);
+    }
+  };
+
   return (
-    <FormView
-      reverse={handleReverse}
-      title="Usuario"
-      onSubmit={handleSubmit(onSubmit)}
-      name={user?.name || null}
-      disabled={isSubmitting}
-      isDirty={isDirty}
-      id={id}
-      cleanUrl="/app/users?view_type=form&id=null"
-    >
-      <FieldGroup>
-        <Entry
-          register={register("name", {
-            required: "Nombre de usuario es requerido, honey!",
-          })}
-          label="Nombre:"
-          invalid={!!errors.name}
-          feedBack={errors.name?.message}
-        />
-        <Entry
-          register={register("lastName", {
-            required: "Apellidos es requerido",
-          })}
-          label="Apellidos:"
-          invalid={!!errors.lastName}
-          feedBack={errors.lastName?.message}
-        />
-        <FieldSelect
-          register={register("gender", { required: "Este campo es requerido" })}
-          options={[
-            { value: "HOMBRE", label: "Hombre" },
-            { value: "MUJER", label: "Mujer" },
-          ]}
-          label="Género:"
-          invalid={!!errors.gender}
-          feedBack={errors.gender?.message}
-        />
-        <Entry
-          register={register("phone", { required: "Correo es requerido" })}
-          label="Teléfono:"
-          invalid={!!errors.phone}
-          feedBack={errors.phone?.message}
-        />
-      </FieldGroup>
-      <FieldGroup>
-        <Entry
-          register={register("email", {
-            required: "Correo es requerido",
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Correo electrónico inválido",
-            },
-          })}
-          label="Correo:"
-          invalid={!!errors.email}
-          feedBack={errors.email?.message}
-          type="email"
-        />
-        <Entry
-          register={register("password", {
-            required: "Contraseña es requerido",
-            minLength: {
-              value: 8,
-              message: "La contraseña debe tener al menos 8 caracteres",
-            },
-            pattern: {
-              value:
-                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-              message:
-                "Debe contener al menos una mayúscula, una minúscula, un número y un carácter especial",
-            },
-          })}
-          label="Contraseña:"
-          invalid={!!errors.password}
-          feedBack={errors.password?.message}
-          type="password"
-        />
-        <FieldSelect
-          register={register("role", { required: "Este campo es requerido" })}
-          options={[
-            { value: "SUPER_ADMIN", label: "SUPER ADMIN" },
-            { value: "ADMIN", label: "ADMIN" },
-            { value: "CHECADOR", label: "CHECADOR" },
-          ]}
-          label="Rol:"
-          invalid={!!errors.role}
-          feedBack={errors.role?.message}
-        />
-      </FieldGroup>
-      <FormBook dKey="permissions">
-        <FormPage
-          title={`Permisos (${user?.permissions.length ?? 0})`}
-          eventKey="permissions"
-        >
-          <FormSheet>
-            <Row xs={1} sm={2} md={3} lg={4} className="g-1">
-              {permisos.map((p, index) => (
-                <Col key={p.id}>
-                  <ListGroup>
-                    <ListGroup.Item className="d-flex justify-content-between align-items-center bg-body-tertiary">
-                      <Form.Select
-                        size="sm"
-                        {...register(`permissions.${index}.id`)}
-                      >
-                        {perms.map((perm) => (
-                          <option key={perm.text} value={perm.id ?? 0}>
-                            {perm.text}
-                          </option>
-                        ))}
-                      </Form.Select>
-                      <OverLay string="Eliminar">
-                        <Button
-                          size="sm"
-                          variant="link"
-                          onClick={() => remove(index)}
-                        >
-                          <i className="bi bi-trash"></i>
-                        </Button>
-                      </OverLay>
-                    </ListGroup.Item>
-                  </ListGroup>
+    <>
+      <FormView
+        reverse={handleReverse}
+        title="Usuario"
+        onSubmit={handleSubmit(onSubmit)}
+        name={user?.name || null}
+        disabled={isSubmitting}
+        isDirty={isDirty}
+        id={id}
+        cleanUrl="/app/users?view_type=form&id=null"
+        actions={[
+          {
+            action: () => setModalChangePassword(!modalChangePassword),
+            string: "Cambiar contraseña",
+            variant: "info",
+          },
+        ]}
+      >
+        <FieldGroup>
+          <Entry
+            register={register("name", {
+              required: "Nombre de usuario es requerido, honey!",
+            })}
+            label="Nombre:"
+            invalid={!!errors.name}
+            feedBack={errors.name?.message}
+          />
+          <Entry
+            register={register("lastName", {
+              required: "Apellidos es requerido",
+            })}
+            label="Apellidos:"
+            invalid={!!errors.lastName}
+            feedBack={errors.lastName?.message}
+          />
+          <FieldSelect
+            register={register("gender", {
+              required: "Este campo es requerido",
+            })}
+            options={[
+              { value: "MASCULINO", label: "Masculino" },
+              { value: "FEMENINO", label: "Femenino" },
+            ]}
+            label="Género:"
+            invalid={!!errors.gender}
+            feedBack={errors.gender?.message}
+          />
+        </FieldGroup>
+
+        <FieldGroup>
+          <Entry
+            register={register("phone", {
+              required: "Teléfono es requerido",
+            })}
+            label="Teléfono:"
+            invalid={!!errors.phone}
+            feedBack={errors.phone?.message}
+          />
+          <Entry
+            register={register("email", {
+              required: "Correo es requerido",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Correo electrónico inválido",
+              },
+            })}
+            label="Correo:"
+            invalid={!!errors.email}
+            feedBack={errors.email?.message}
+            type="email"
+          />
+          <FieldSelect
+            register={register("role", {
+              required: "Este campo es requerido",
+            })}
+            options={[
+              { value: "SUPER_ADMIN", label: "SUPER ADMIN" },
+              { value: "ADMIN", label: "ADMIN" },
+              { value: "CHECADOR", label: "CHECADOR" },
+            ]}
+            label="Rol:"
+            invalid={!!errors.role}
+            feedBack={errors.role?.message}
+            invisble={!isNaN(id)}
+          />
+          <FieldSelect
+            register={register("status", {
+              required: "Este campo es requerido",
+            })}
+            options={[
+              { value: 1, label: "Activo" },
+              { value: 2, label: "Suspendido" },
+              { value: 3, label: "Eliminado" },
+            ]}
+            label="Status:"
+            invalid={!!errors.role}
+            feedBack={errors.role?.message}
+          />
+        </FieldGroup>
+
+        <FormBook dKey="permissions">
+          <FormPage
+            title={`Permisos (${permisosSeleccionados.length})`}
+            eventKey="permissions"
+          >
+            <Container>
+              <Row>
+                <Col md="12">
+                  <Button size="sm" className="my-1" onClick={toggleSelectAll}>
+                    {perms.every((perm) => isPermSelected(perm.id ?? 0))
+                      ? "Deseleccionar todos"
+                      : "Seleccionar todos"}
+                  </Button>
                 </Col>
-              ))}
-              <Col>
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => append({ id: null, text: "" })}
-                >
-                  Agregar
-                </Button>
-              </Col>
-            </Row>
-          </FormSheet>
-        </FormPage>
-      </FormBook>
-    </FormView>
+              </Row>
+              <Row>
+                {perms.map((permiso) => (
+                  <Col key={permiso.id} md="4">
+                    <div className="p-2 bg-body-tertiary m-1 text-uppercase rounded fw-semibold">
+                      <Controller
+                        name="permissions"
+                        control={control}
+                        defaultValue={[]} // ← aseguramos valor inicial
+                        render={({ field }) => {
+                          const selectedPermissions = field.value || []; // aseguramos array
+                          const isChecked = selectedPermissions.some(
+                            (p: Permission) => p.id === permiso.id
+                          );
+
+                          const handleChange = () => {
+                            if (isChecked) {
+                              field.onChange(
+                                selectedPermissions.filter(
+                                  (p: Permission) => p.id !== permiso.id
+                                )
+                              );
+                            } else {
+                              field.onChange([...selectedPermissions, permiso]);
+                            }
+                          };
+
+                          return (
+                            <Form.Check
+                              type="checkbox"
+                              label={permiso.text
+                                .replace("_", " ")
+                                .replace("_", " ")}
+                              checked={isChecked}
+                              onChange={handleChange}
+                            />
+                          );
+                        }}
+                      />
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </Container>
+          </FormPage>
+        </FormBook>
+      </FormView>
+      <ChangePasswordModal
+        show={modalChangePassword}
+        onHide={() => setModalChangePassword(!modalChangePassword)}
+      />
+    </>
   );
 }
 

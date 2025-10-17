@@ -30,7 +30,9 @@ async function UsersMainView({
   if (viewType === "list") {
     return <UsersListView users={getUsers} />;
   } else if (viewType === "form") {
-    return <UsersFormView user={user} id={Number(id)} perms={permissions} />;
+    return (
+      <UsersFormView user={user} id={Number(id)} perms={permissions || []} />
+    );
   } else {
     return <NotFound />;
   }
