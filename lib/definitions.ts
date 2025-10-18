@@ -182,3 +182,24 @@ export interface ModalBasicProps {
   string?: string;
   title?: string;
 }
+
+export interface ICheckInFeedback {
+  _id: string;
+  id: number;
+  checks: {
+    id: number;
+    timestamp: string;
+    type: string;
+    status: string | null;
+    minutesDifference: number;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+  user: User;
+  employee: Employee;
+  departmentEmployee: Department;
+  positionEmployee: Position;
+  branchEmployee: Branch;
+}

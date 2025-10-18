@@ -288,11 +288,9 @@ export const FormBook = ({
   dKey: string;
 }) => {
   return (
-    <Col md="12" className="mt-2">
-      <Tabs defaultActiveKey={dKey} transition={false}>
-        {children}
-      </Tabs>
-    </Col>
+    <Tabs defaultActiveKey={dKey} transition={false}>
+      {children}
+    </Tabs>
   );
 };
 
@@ -304,7 +302,6 @@ export const FormPage = ({
   children: React.ReactNode;
   eventKey: string;
   title: string;
-  invisible?: boolean;
 }) => {
   return (
     <Tab eventKey={eventKey} title={title}>
@@ -335,7 +332,7 @@ export const FormSheet = ({
   className?: string;
 }) => {
   return (
-    <Container>
+    <Container fluid>
       <Row className={`${className}`}>{children}</Row>
     </Container>
   );

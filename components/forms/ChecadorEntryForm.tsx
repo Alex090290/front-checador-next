@@ -1,16 +1,20 @@
 "use client";
 
-import { getWelcome } from "@/app/actions/entry-actions";
-import { useRef, useState } from "react";
+import { TCheckData } from "@/app/(auth)/app/checador/views/ChecadorFormView";
+import { useEffect, useRef } from "react";
 import { Form } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 type TInputs = {
-  code: string;
-  password: string;
+  idCheck: string;
+  passwordCheck: string;
 };
 
-function ChecadorEntryForm() {
+function ChecadorEntryForm({
+  receiveCheckData,
+}: {
+  receiveCheckData: (data: TCheckData) => void;
+}) {
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -18,80 +22,81 @@ function ChecadorEntryForm() {
     handleSubmit,
     reset,
     setFocus,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<TInputs>({
     defaultValues: {
-      code: "",
-      password: "",
+      idCheck: "",
+      passwordCheck: "",
     },
   });
 
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
-  const onSubmit: SubmitHandler<TInputs> = async (formData) => {
-    const res = await getWelcome();
-    console.log(res.data);
-    setMessage(res.data?.data?.name as unknown as string);
-    reset({ code: "", password: "" });
+  const onSubmit: SubmitHandler<TInputs> = (formData) => {
+    receiveCheckData(formData);
+    reset({ idCheck: "", passwordCheck: "" });
     setTimeout(() => {
-      setFocus("code");
+      setFocus("idCheck");
     }, 100);
   };
 
-  return (
-    <div className="row align-items-stretch">
-      <div className="col-md-5">
-        <Form
-          className="card bg-body-tertiary border-0"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <fieldset className="card-body" disabled={isSubmitting}>
-            <Form.Group className="mb-2">
-              <Form.Control
-                type="text"
-                placeholder="Código"
-                className="text-center fw-bold"
-                size="lg"
-                autoComplete="off"
-                autoFocus
-                {...register("code")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    passwordRef.current?.focus();
-                  }
-                }}
-              />
-            </Form.Group>
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "/") {
+        e.preventDefault();
+        setFocus("idCheck");
+      }
+    };
 
-            <Form.Group>
-              <Form.Control
-                type="password"
-                placeholder="Contraseña"
-                className="text-center fw-bold"
-                size="lg"
-                autoComplete="off"
-                {...register("password")}
-                ref={(e) => {
-                  register("password").ref(e);
-                  passwordRef.current = e;
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSubmit(onSubmit)();
-                  }
-                }}
-              />
-            </Form.Group>
-          </fieldset>
-        </Form>
-      </div>
-      <div className="col-md-7 bg-body-tertiary text-center">
-        {message && <div className="fw-bold">{message}</div>}
-        {error && <div className="alert alert-danger">{error}</div>}
-      </div>
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [setFocus]);
+
+  return (
+    <div className="col-md-5">
+      <Form
+        className="card bg-body-tertiary border-0"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <fieldset className="card-body" disabled={isSubmitting}>
+          <Form.Group className="mb-2">
+            <Form.Control
+              type="text"
+              placeholder="Código"
+              className="text-center fw-bold"
+              size="lg"
+              autoComplete="off"
+              autoFocus
+              {...register("idCheck")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  passwordRef.current?.focus();
+                }
+              }}
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Control
+              type="password"
+              placeholder="Contraseña"
+              className="text-center fw-bold"
+              size="lg"
+              autoComplete="off"
+              {...register("passwordCheck")}
+              ref={(e) => {
+                register("passwordCheck").ref(e);
+                passwordRef.current = e;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSubmit(onSubmit)();
+                }
+              }}
+            />
+          </Form.Group>
+        </fieldset>
+      </Form>
     </div>
   );
 }

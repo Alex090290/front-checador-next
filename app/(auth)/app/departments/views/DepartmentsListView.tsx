@@ -8,6 +8,7 @@ import TableTemplate, {
 import { useModals } from "@/context/ModalContext";
 import { Department } from "@/lib/definitions";
 import { useState } from "react";
+import { Form } from "react-bootstrap";
 
 function DepartmentsListView({ deparments }: { deparments: Department[] }) {
   const { modalError, modalConfirm } = useModals();
@@ -40,6 +41,21 @@ function DepartmentsListView({ deparments }: { deparments: Department[] }) {
       accessor: (u) => u.positions.length,
       filterable: false,
       type: "number",
+      render: (u) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <Form.Select
+            size="sm"
+            className="text-uppercase shadow-none border-0"
+          >
+            <option>{u.positions.length}</option>
+            {u.positions.map((p) => (
+              <option key={`${p.id}-${p.namePosition}`}>
+                {p.namePosition}
+              </option>
+            ))}
+          </Form.Select>
+        </div>
+      ),
     },
   ];
 

@@ -5,7 +5,7 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { User } from "@/lib/definitions";
-import { Badge } from "react-bootstrap";
+import { Badge, Form } from "react-bootstrap";
 
 const userStatus = {
   1: "activo",
@@ -72,6 +72,21 @@ function UsersListView({ users }: { users: User[] }) {
       accessor: (u) => u.permissions.length,
       filterable: false,
       type: "number",
+      render: (u) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <Form.Select
+            size="sm"
+            className="text-uppercase shadow-none border-0"
+          >
+            <option>{u.permissions.length}</option>
+            {u.permissions.map((p) => (
+              <option key={`${p.id}-${p.text}`}>
+                {p.text.replace("_", " ").replace("_", " ")}
+              </option>
+            ))}
+          </Form.Select>
+        </div>
+      ),
     },
   ];
   return (

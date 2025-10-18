@@ -7,7 +7,7 @@ export const hourClock = (): string => {
   });
 };
 
-export const formatDate = (
+export const formatDatelocal = (
   date: Date | string | number | null
 ): string | null => {
   if (!date || date === "") return null;

@@ -1,12 +1,130 @@
 "use client";
 
+import { checkIn, fetchCheckInFeedback } from "@/app/actions/entry-actions";
 import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
 import Clock from "@/components/top-nav/Clock";
-import { formatDate } from "@/lib/helpers";
+import { useModals } from "@/context/ModalContext";
 import { signOut } from "next-auth/react";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react";
+import { formatDate } from "date-fns";
+import { Button, Card, Col, Container, Row, Table } from "react-bootstrap";
+import { formatDatelocal } from "@/lib/helpers";
+import toast from "react-hot-toast";
+
+export type TCheckData = {
+  idCheck: string;
+  passwordCheck: string;
+};
+
+interface IFeedbackDisplay {
+  id: number;
+  name: string;
+  timestamp: string;
+  department: string;
+  position: string;
+}
 
 function ChecadorFormView() {
+  const { modalError } = useModals();
+  let toastId: string = "";
+
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
+    null
+  );
+  const [feedbackDisplay, setFeedbackDisplay] = useState<IFeedbackDisplay[]>(
+    []
+  );
+
+  const feedbackContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const receiveCheckData = async (data: TCheckData) => {
+    toastId = toast.loading("Enviando datos...", {
+      position: "top-center",
+    });
+    const newObj = {
+      ...data,
+      lat: location?.lat || 0,
+      lng: location?.lon || 0,
+    };
+
+    const res = await checkIn(newObj);
+    if (!res.success) {
+      modalError(res.message);
+      return;
+    }
+
+    handleFetchFeedback();
+  };
+
+  const handleFetchFeedback = async () => {
+    let toastLoading: string = "";
+    if (toastId !== "") {
+      toast.loading("Esperando respuesta...", { id: toastId });
+    } else {
+      toastLoading = toast.loading("Cargando registros...");
+    }
+
+    const res = await fetchCheckInFeedback();
+
+    if (!res.success) {
+      modalError(res.message);
+      return;
+    }
+
+    const newFeedback: IFeedbackDisplay[] =
+      res.data?.map((feed) => ({
+        id: feed.checks.id,
+        name: `${feed.employee.lastName} ${feed.employee.name}`,
+        timestamp: formatDate(feed.checks.timestamp, "HH:mm"),
+        department: feed.departmentEmployee.nameDepartment,
+        position: feed.positionEmployee.namePosition,
+      })) || [];
+
+    setFeedbackDisplay(newFeedback);
+    // toast.dismiss(toastId);
+
+    if (toastId !== "") {
+      toast.success("Registro completado...", { id: toastId });
+    } else {
+      toast.success("Se han cargado los registros...", { id: toastLoading });
+    }
+  };
+
+  useEffect(() => {
+    handleFetchFeedback();
+  }, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.log("Geolocalización no soportada por este navegador.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ lat: latitude, lon: longitude });
+      },
+      (err) => {
+        console.log(`Error obteniendo la ubicación: ${err.message}`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
+  }, []);
+
+  // 👇 Auto-scroll cuando cambia feedbackDisplay
+  useEffect(() => {
+    if (feedbackContainerRef.current) {
+      feedbackContainerRef.current.scrollTo({
+        top: feedbackContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [feedbackDisplay]);
+
   return (
     <Row className="h-100 overflow-auto">
       <Col md="12" className="h-100">
@@ -17,12 +135,17 @@ function ChecadorFormView() {
                 Salir
               </Button>
               <span className="shadow-sm px-2 rounded">
-                {formatDate(new Date())}
+                {formatDatelocal(new Date())}
               </span>
             </h3>
             <Row>
               <Col md="6">
-                <ChecadorEntryForm />
+                <div className="row align-items-stretch">
+                  <ChecadorEntryForm receiveCheckData={receiveCheckData} />
+                  <div className="col-md-7 bg-body-tertiary text-center">
+                    avisos
+                  </div>
+                </div>
               </Col>
               <Col md="6" className="text-center text-uppercase fw-semibold">
                 <div style={{ fontSize: "4rem" }}>
@@ -34,8 +157,41 @@ function ChecadorFormView() {
           <Card.Body className="flex-fill overflow-auto p-1">
             <Container fluid className="h-100">
               <Row className="h-100">
-                <Col md="6" className="overflow-auto h-100 bg-body-tertiary">
-                  Eventos
+                <Col
+                  md="6"
+                  className="overflow-auto h-100 bg-body-tertiary px-0"
+                  id="feedback-container"
+                  ref={feedbackContainerRef} // 👈 Referencia al contenedor
+                >
+                  <Table
+                    size="sm"
+                    borderless
+                    hover
+                    striped
+                    className="text-uppercase"
+                    style={{ fontSize: "0.9rem" }}
+                  >
+                    <thead>
+                      <tr className="border-end border-bottom table-active sticky-top">
+                        <th className="border-end">Nombre</th>
+                        <th className="border-end">Hora</th>
+                        <th className="border-end">Departamento</th>
+                        <th className="border-end">Puesto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {feedbackDisplay.map((feed) => (
+                        <tr key={feed.id} className="border-bottom">
+                          <td className="text-nowrap">{feed.name}</td>
+                          <td className="text-nowrap text-center fw-semibold">
+                            {feed.timestamp}
+                          </td>
+                          <td className="text-nowrap">{feed.department}</td>
+                          <td className="text-nowrap">{feed.position}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 </Col>
                 <Col md="6" className="h-100">
                   Anuncios
