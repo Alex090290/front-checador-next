@@ -1,6 +1,7 @@
 "use client";
 
 import { TCheckData } from "@/app/(auth)/app/checador/views/ChecadorFormView";
+import { ActionResponse } from "@/lib/definitions";
 import { useEffect, useRef } from "react";
 import { Form } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -13,7 +14,7 @@ type TInputs = {
 function ChecadorEntryForm({
   receiveCheckData,
 }: {
-  receiveCheckData: (data: TCheckData) => void;
+  receiveCheckData: (data: TCheckData) => Promise<ActionResponse<boolean>>;
 }) {
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -22,7 +23,8 @@ function ChecadorEntryForm({
     handleSubmit,
     reset,
     setFocus,
-    formState: { isSubmitting },
+    setError,
+    formState: { isSubmitting, errors },
   } = useForm<TInputs>({
     defaultValues: {
       idCheck: "",
@@ -30,12 +32,17 @@ function ChecadorEntryForm({
     },
   });
 
-  const onSubmit: SubmitHandler<TInputs> = (formData) => {
-    receiveCheckData(formData);
+  const onSubmit: SubmitHandler<TInputs> = async (formData) => {
+    const res = await receiveCheckData(formData);
+
+    if (!res.success) {
+      setError("passwordCheck", { type: "custom", message: res.message });
+      setTimeout(() => setFocus("passwordCheck"), 100);
+      return; // ❗️No reseteamos si hubo error
+    }
+
     reset({ idCheck: "", passwordCheck: "" });
-    setTimeout(() => {
-      setFocus("idCheck");
-    }, 100);
+    setTimeout(() => setFocus("idCheck"), 100);
   };
 
   useEffect(() => {
@@ -93,7 +100,11 @@ function ChecadorEntryForm({
                   handleSubmit(onSubmit)();
                 }
               }}
+              isInvalid={!!errors.passwordCheck}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.passwordCheck?.message}
+            </Form.Control.Feedback>
           </Form.Group>
         </fieldset>
       </Form>

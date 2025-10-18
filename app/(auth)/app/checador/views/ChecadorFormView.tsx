@@ -3,13 +3,13 @@
 import { checkIn, fetchCheckInFeedback } from "@/app/actions/entry-actions";
 import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
 import Clock from "@/components/top-nav/Clock";
-import { useModals } from "@/context/ModalContext";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { formatDate } from "date-fns";
 import { Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { formatDatelocal } from "@/lib/helpers";
 import toast from "react-hot-toast";
+import { ActionResponse } from "@/lib/definitions";
 
 export type TCheckData = {
   idCheck: string;
@@ -25,7 +25,6 @@ interface IFeedbackDisplay {
 }
 
 function ChecadorFormView() {
-  const { modalError } = useModals();
   let toastId: string = "";
 
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
@@ -37,7 +36,9 @@ function ChecadorFormView() {
 
   const feedbackContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const receiveCheckData = async (data: TCheckData) => {
+  const receiveCheckData = async (
+    data: TCheckData
+  ): Promise<ActionResponse<boolean>> => {
     toastId = toast.loading("Enviando datos...", {
       position: "top-center",
     });
@@ -49,11 +50,13 @@ function ChecadorFormView() {
 
     const res = await checkIn(newObj);
     if (!res.success) {
-      modalError(res.message);
-      return;
+      toast.error(res.message, { id: toastId });
+      return res;
     }
 
     handleFetchFeedback();
+
+    return res;
   };
 
   const handleFetchFeedback = async () => {
@@ -67,7 +70,7 @@ function ChecadorFormView() {
     const res = await fetchCheckInFeedback();
 
     if (!res.success) {
-      modalError(res.message);
+      toast.error(res.message, { id: toastId });
       return;
     }
 

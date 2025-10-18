@@ -58,7 +58,7 @@ export async function checkIn({
   try {
     const { apiToken, apiUrl } = await storeToken();
 
-    await axios
+    const response = await axios
       .post(
         `${apiUrl}/checador`,
         {
@@ -76,9 +76,13 @@ export async function checkIn({
       .then((res) => {
         return res.data;
       })
-      .then((err) => {
-        return err;
+      .catch((err) => {
+        return err.response.data;
       });
+
+    if (response.status >= 400) {
+      throw new Error(response.message);
+    }
 
     return {
       success: true,
