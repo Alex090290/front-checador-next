@@ -21,6 +21,7 @@ type TInputs = {
   name: string;
   lastName: string;
   email: string;
+  password: string;
   gender: "MASCULINO" | "FEMENINO" | null;
   role: UserRole | null;
   permissions: Permission[];
@@ -92,6 +93,7 @@ function UsersFormView({
         permissions: [],
         phone: null,
         status: 3,
+        password: "",
       };
       reset(values);
       originalValuesRef.current = values;
@@ -105,6 +107,7 @@ function UsersFormView({
         permissions: user.permissions,
         phone: user.phone.internationalNumber,
         status: user.status,
+        password: "",
       };
       reset(values);
       originalValuesRef.current = values;
@@ -162,6 +165,14 @@ function UsersFormView({
             invalid={!!errors.lastName}
             feedBack={errors.lastName?.message}
           />
+          <Entry
+            register={register("phone", {
+              required: "Teléfono es requerido",
+            })}
+            label="Teléfono:"
+            invalid={!!errors.phone}
+            feedBack={errors.phone?.message}
+          />
           <FieldSelect
             register={register("gender", {
               required: "Este campo es requerido",
@@ -175,16 +186,7 @@ function UsersFormView({
             feedBack={errors.gender?.message}
           />
         </FieldGroup>
-
         <FieldGroup>
-          <Entry
-            register={register("phone", {
-              required: "Teléfono es requerido",
-            })}
-            label="Teléfono:"
-            invalid={!!errors.phone}
-            feedBack={errors.phone?.message}
-          />
           <Entry
             register={register("email", {
               required: "Correo es requerido",
@@ -198,6 +200,17 @@ function UsersFormView({
             feedBack={errors.email?.message}
             type="email"
           />
+          {isNaN(id) && (
+            <Entry
+              register={register("password", {
+                required: "Contraseña es requerido",
+              })}
+              type="password"
+              label="Contraseña:"
+              invalid={!!errors.password}
+              feedBack={errors.password?.message}
+            />
+          )}
           <FieldSelect
             register={register("role", {
               required: "Este campo es requerido",

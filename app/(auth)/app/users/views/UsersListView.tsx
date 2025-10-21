@@ -43,9 +43,10 @@ function UsersListView({ users }: { users: User[] }) {
             pill
             bg={
               userStatus[u.status as keyof typeof userStatus] === "activo"
-                ? "success"
-                : "warning"
+                ? "custom-success"
+                : "custom-warning"
             }
+            className="bg-brand-primary"
           >
             {`${userStatus[u.status as keyof typeof userStatus]}`}
           </Badge>

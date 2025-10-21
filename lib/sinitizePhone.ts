@@ -49,6 +49,16 @@ const VALID_MEXICAN_AREA_CODES: MexicanAreaCode[] = [
 ];
 
 export function sanitizePhoneNumber(phoneNumber: string): PhoneNumberFormat {
+  if (!phoneNumber || phoneNumber === "null") {
+    return {
+      number: "",
+      internationalNumber: "",
+      nationalNumber: "",
+      e164Number: "",
+      countryCode: CountryCode.MX,
+      dialCode: "+52",
+    };
+  }
   if (!phoneNumber?.trim()) {
     throw new Error("El número de teléfono no puede estar vacío");
   }

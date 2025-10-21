@@ -189,6 +189,7 @@ export async function createUser({
   permissions,
   status,
   phone,
+  password,
 }: {
   name: string;
   lastName: string;
@@ -198,6 +199,7 @@ export async function createUser({
   permissions: Permission[];
   status: number;
   phone: PhoneNumberFormat | string | null;
+  password: string;
 }) {
   const session = await auth();
   const apiToken = session?.user?.apiToken;
@@ -216,6 +218,7 @@ export async function createUser({
         permissions,
         status,
         phone: sanitizedPhone,
+        password,
       },
       {
         headers: {
