@@ -1,16 +1,13 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { ActionResponse, Branch } from "@/lib/definitions";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
-
-const API_URL = process.env.API_URL;
+import { storeAction } from "./storeActions";
 
 export async function fetchBranches(): Promise<Branch[]> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     const response = await axios
       .get(`${API_URL}/branch/listAll`, {
@@ -22,11 +19,15 @@ export async function fetchBranches(): Promise<Branch[]> {
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response.data);
-        return [];
+        console.log(err);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
-    return response.data ?? [];
+    return response.data || [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -43,8 +44,7 @@ export async function findBranchById({
   _id?: string;
 }): Promise<Branch | null> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     let params = {};
 
@@ -62,10 +62,15 @@ export async function findBranchById({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        console.log(err);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
-    return response.data;
+    return response.data || null;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -80,10 +85,9 @@ export async function createBranch({
   branch: Branch;
 }): Promise<ActionResponse<Branch | null>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
-    const response = await axios
+    await axios
       .post(
         `${API_URL}/branch`,
         {
@@ -109,12 +113,13 @@ export async function createBranch({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        console.log(err);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response.data.status === 400) {
-      throw new Error(response.data.message);
-    }
 
     revalidatePath("/app/branches");
 

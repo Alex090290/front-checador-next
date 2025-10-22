@@ -1,16 +1,13 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { ActionResponse, Department } from "@/lib/definitions";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
-
-const API_URL = process.env.API_URL;
+import { storeAction } from "./storeActions";
 
 export async function fetchDepartments(): Promise<Department[]> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     const response = await axios
       .get(`${API_URL}/department/listAll`, {
@@ -22,13 +19,12 @@ export async function fetchDepartments(): Promise<Department[]> {
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response.data);
-        return [];
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response.status >= 400) {
-      throw new Error(`${response.response.data.message}`);
-    }
 
     return response.data || [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,8 +41,7 @@ export async function findDepartmentById({
   id?: number | null;
   _id?: string;
 }): Promise<Department | null> {
-  const session = await auth();
-  const apiToken = session?.user?.apiToken;
+  const { apiToken, API_URL } = await storeAction();
 
   let params = {};
 
@@ -64,10 +59,14 @@ export async function findDepartmentById({
       return res.data;
     })
     .catch((err) => {
-      return err.response;
+      throw new Error(
+        err.response.data.message
+          ? err.response.data.message
+          : "Error en la respuesta"
+      );
     });
 
-  return response.data;
+  return response.data || null;
 }
 
 export async function createDepartment({
@@ -76,10 +75,9 @@ export async function createDepartment({
   data: Department;
 }): Promise<ActionResponse<Department | null>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
-    const response = await axios
+    await axios
       .post(
         `${API_URL}/department`,
         {
@@ -97,12 +95,12 @@ export async function createDepartment({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response.data.status === 400) {
-      throw new Error(response.data.message);
-    }
 
     revalidatePath("/app/departments");
 
@@ -128,16 +126,13 @@ export async function updateDepartment({
   id: number;
 }): Promise<ActionResponse<Department | null>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     if (!id) {
       throw new Error("No se ha definido ID");
     }
 
-    console.log(data);
-
-    const response = await axios
+    await axios
       .put(
         `${API_URL}/department/${id}`,
         {
@@ -155,16 +150,12 @@ export async function updateDepartment({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response.data.status === 400) {
-      throw new Error(response.data.message);
-    }
-
-    if (response.data.status === 404) {
-      throw new Error(response.data.message);
-    }
 
     revalidatePath("/app/departments");
 
@@ -188,14 +179,13 @@ export async function deleteDepartment({
   id: number;
 }): Promise<ActionResponse<Department | null>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     if (!id) {
       throw new Error("No se ha definido ID");
     }
 
-    const response = await axios
+    await axios
       .delete(`${API_URL}/department/${id}`, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
@@ -205,12 +195,12 @@ export async function deleteDepartment({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response.data?.status === 400) {
-      throw new Error(response.data.message);
-    }
 
     revalidatePath("/app/departments");
 

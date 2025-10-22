@@ -1,18 +1,15 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { ActionResponse, Employee } from "@/lib/definitions";
 import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { TInputsEmployee } from "../(auth)/app/employee/definition";
-
-const API_URL = process.env.API_URL;
+import { storeAction } from "./storeActions";
 
 export async function fetchEmployees(): Promise<Employee[]> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     const response = await axios
       .get(`${API_URL}/employee/listall`, {
@@ -24,11 +21,12 @@ export async function fetchEmployees(): Promise<Employee[]> {
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response.data);
-        return [];
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response.data.status >= 400) return [];
 
     return response.data || [];
 
@@ -47,8 +45,7 @@ export async function findEmployeeById({
   _id?: string;
 }): Promise<Employee | null> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     let params = {};
 
@@ -66,10 +63,14 @@ export async function findEmployeeById({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
-    return response.data;
+    return response.data || null;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -84,8 +85,7 @@ export async function createEmployee({
   data: TInputsEmployee;
 }): Promise<ActionResponse<Employee | null>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     const sanitizedPhone = sanitizePhoneNumber(
       data.phonePersonal as unknown as string
@@ -121,7 +121,7 @@ export async function createEmployee({
       ? sanitizePhoneNumber(data.homePhone)
       : null;
 
-    const response = await axios
+    await axios
       .post(
         `${API_URL}/employee`,
         {
@@ -182,16 +182,20 @@ export async function createEmployee({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
-    if (response.data.status === 400) {
+    /* if (response.data.status === 400) {
       const errs = response.data.errors
         .map((err: { message: string }) => err.message)
         .join("\n");
 
       throw new Error(`${errs}`);
-    }
+    } */
 
     revalidatePath("/app/employee");
 
@@ -218,8 +222,7 @@ export async function updateEmploye({
   id: number | null;
 }): Promise<ActionResponse<boolean>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     if (!id) {
       throw new Error("No se ha definido ID");
@@ -228,8 +231,6 @@ export async function updateEmploye({
     const sanitizedPhonePersonal = sanitizePhoneNumber(
       data.phonePersonal as unknown as string
     );
-
-    console.log(data.birthDate);
 
     const sanitizedPhoneCompany = data.phoneCompany
       ? sanitizePhoneNumber(data.phoneCompany)
@@ -257,7 +258,7 @@ export async function updateEmploye({
       ? sanitizePhoneNumber(data.homePhone)
       : null;
 
-    const response = await axios
+    await axios
       .put(
         `${API_URL}/employee/${String(id)}`,
         {
@@ -323,17 +324,21 @@ export async function updateEmploye({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
-    if (response.data.status === 400) {
+    /* if (response.data.status === 400) {
       const errs = response.data.errors
         .map((err: { message: string }) => err.message)
         .join("\n");
 
       console.log(errs);
       throw new Error(`${errs}`);
-    }
+    } */
 
     revalidatePath("/app/employee");
 
@@ -362,10 +367,9 @@ export async function deleteEmployee({
   try {
     if (!id) throw Error("ID NO ESPECIFICADO");
 
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
-    const response = await axios
+    await axios
       .delete(`${API_URL}/employee/${String(id)}`, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
@@ -375,10 +379,12 @@ export async function deleteEmployee({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    console.log(response);
 
     revalidatePath("/app/employee");
 

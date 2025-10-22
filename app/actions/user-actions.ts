@@ -1,6 +1,6 @@
 "use server";
 
-import { auth, signIn } from "@/lib/auth";
+import { signIn } from "@/lib/auth";
 import {
   ActionResponse,
   ApiResponse,
@@ -11,8 +11,7 @@ import {
 import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
-
-const API_URL = process.env.API_URL;
+import { storeAction } from "./storeActions";
 
 export async function userLogin({
   email,
@@ -52,6 +51,8 @@ export async function userLoginCredentials({
   password: string;
 }): Promise<ActionResponse<ApiResponse<string>>> {
   try {
+    const { API_URL } = await storeAction();
+
     const response = await axios
       .post(`${API_URL}/users/login`, {
         email,
@@ -61,7 +62,11 @@ export async function userLoginCredentials({
         return res.data;
       })
       .catch((err) => {
-        return err.response;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
     return {
@@ -86,20 +91,29 @@ export async function getUserData({
   apiToken: string;
 }): Promise<ActionResponse<ApiResponse<User>>> {
   try {
-    const response = await axios.get(`${API_URL}/me`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
-    });
+    const { API_URL } = await storeAction();
 
-    if (response.data.status === 401) {
-      throw new Error("Acceso denegado (401)");
-    }
+    const response = await axios
+      .get(`${API_URL}/me`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
 
     return {
       success: true,
       message: response.data.mesaage,
-      data: response.data.data,
+      data: response.data,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -114,8 +128,7 @@ export async function getUserData({
 
 export async function fetchUsers(): Promise<User[]> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     const response = await axios
       .get(`${API_URL}/allUsers`, {
@@ -127,11 +140,14 @@ export async function fetchUsers(): Promise<User[]> {
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response.data);
-        return [];
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
-    return response.data ?? [];
+    return response.data || [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -148,8 +164,7 @@ export async function findUserById({
   _id?: string;
 }): Promise<User | null> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     let params = {};
 
@@ -167,11 +182,14 @@ export async function findUserById({
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response.data);
-        return null;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
-    return response.data;
+    return response.data || null;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -201,8 +219,7 @@ export async function createUser({
   phone: PhoneNumberFormat | string | null;
   password: string;
 }) {
-  const session = await auth();
-  const apiToken = session?.user?.apiToken;
+  const { apiToken, API_URL } = await storeAction();
 
   const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
 
@@ -230,8 +247,11 @@ export async function createUser({
       return res.data;
     })
     .catch((err) => {
-      console.log(err.response.data);
-      return null;
+      throw new Error(
+        err.response.data.message
+          ? err.response.data.message
+          : "Error en la respuesta"
+      );
     });
 
   revalidatePath("/app/users");
@@ -258,12 +278,11 @@ export async function updateUser({
   phone: PhoneNumberFormat | string | null;
   id: number;
 }): Promise<string | boolean> {
-  const session = await auth();
-  const apiToken = session?.user?.apiToken;
+  const { apiToken, API_URL } = await storeAction();
 
   const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
 
-  const response = await axios
+  await axios
     .put(
       `${API_URL}/users/${id}`,
       {
@@ -286,12 +305,12 @@ export async function updateUser({
       return res.data;
     })
     .catch((err) => {
-      return err.response.data;
+      throw new Error(
+        err.response.data.message
+          ? err.response.data.message
+          : "Error en la respuesta"
+      );
     });
-
-  if (response.status === 400) {
-    return response.message;
-  }
 
   revalidatePath("/app/users");
   return true;
@@ -304,8 +323,7 @@ export async function updatePasswordUser({
   password: string;
   id: number;
 }): Promise<boolean> {
-  const session = await auth();
-  const apiToken = session?.user?.apiToken;
+  const { apiToken, API_URL } = await storeAction();
 
   const response = await axios
     .put(
@@ -323,8 +341,11 @@ export async function updatePasswordUser({
       return res.data;
     })
     .catch((err) => {
-      console.log(err.response.data);
-      return null;
+      throw new Error(
+        err.response.data.message
+          ? err.response.data.message
+          : "Error en la respuesta"
+      );
     });
 
   if (response.status === 200) {

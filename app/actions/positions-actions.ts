@@ -1,11 +1,9 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { ActionResponse } from "@/lib/definitions";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
-
-const API_URL = process.env.API_URL;
+import { storeAction } from "./storeActions";
 
 export async function createPosition({
   namePosition,
@@ -15,8 +13,7 @@ export async function createPosition({
   idDepartment: number;
 }): Promise<ActionResponse<number | null>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     await axios
       .post(
@@ -35,9 +32,11 @@ export async function createPosition({
         return res.data;
       })
       .catch((err) => {
-        console.log("----------POSITIONS ACTIONS ERROR----------");
-        console.log(err.response.data);
-        return null;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
     revalidatePath("/app/departments");
@@ -64,8 +63,7 @@ export async function updatePosition({
   namePosition: string;
 }): Promise<ActionResponse<boolean>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     if (!id) {
       throw new Error("No se ha definido ID");
@@ -87,8 +85,11 @@ export async function updatePosition({
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response.data);
-        return null;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
     revalidatePath("/app/departments");
@@ -113,8 +114,7 @@ export async function deletePosition({
   id: number;
 }): Promise<ActionResponse<boolean>> {
   try {
-    const session = await auth();
-    const apiToken = session?.user?.apiToken;
+    const { apiToken, API_URL } = await storeAction();
 
     if (!id) {
       throw new Error("No se ha definido ID");
@@ -130,8 +130,11 @@ export async function deletePosition({
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response.data);
-        return null;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
 
     revalidatePath("/app/departments");

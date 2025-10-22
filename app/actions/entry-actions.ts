@@ -58,7 +58,7 @@ export async function checkIn({
   try {
     const { apiToken, apiUrl } = await storeToken();
 
-    const response = await axios
+    await axios
       .post(
         `${apiUrl}/checador`,
         {
@@ -77,12 +77,12 @@ export async function checkIn({
         return res.data;
       })
       .catch((err) => {
-        return err.response.data;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response.status >= 400) {
-      throw new Error(response.message);
-    }
 
     return {
       success: true,
@@ -115,12 +115,12 @@ export async function fetchCheckInFeedback(): Promise<
         return res.data;
       })
       .catch((err) => {
-        return err.response.data;
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
       });
-
-    if (response?.status !== 200) {
-      throw new Error(response.message);
-    }
 
     return {
       success: true,
