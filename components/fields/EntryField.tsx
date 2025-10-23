@@ -14,6 +14,7 @@ type FieldEntryProps = {
   feedBack?: React.ReactNode;
   className?: string;
   autoFocus?: boolean;
+  as?: React.ElementType;
 };
 
 export const Entry = ({
@@ -27,6 +28,7 @@ export const Entry = ({
   invalid,
   autoFocus,
   invisible,
+  as,
 }: FieldEntryProps) => {
   if (invisible) return null;
   return (
@@ -42,6 +44,7 @@ export const Entry = ({
         required={required}
         isInvalid={invalid}
         autoFocus={autoFocus}
+        as={as}
       />
       {feedBack && (
         <Form.Control.Feedback type="invalid">{feedBack}</Form.Control.Feedback>

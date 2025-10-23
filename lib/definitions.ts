@@ -167,6 +167,12 @@ export interface Employee {
   visibleRecords: boolean;
   dischargeDate: string;
   dischargeReason: string;
+  reEntry?: {
+    _id: string;
+    reEntryDate: string;
+    dischargeDate: string;
+    dischargeReason: string;
+  }[];
 }
 
 type EmergencyContact = {

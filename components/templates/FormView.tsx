@@ -4,7 +4,6 @@ import {
   Button,
   ButtonGroup,
   Col,
-  Container,
   Dropdown,
   DropdownButton,
   Form,
@@ -31,9 +30,18 @@ type FormViewProps = {
   onSubmit: React.MouseEventHandler<HTMLButtonElement>;
   reverse: () => void;
   modelThread?: string;
+  superActions?: TFormSuperActions[];
 };
 
 type TFormActions = {
+  string: string | number | React.JSX.Element;
+  action: () => void;
+  invisible?: boolean;
+  readonly?: boolean;
+  variant?: ButtonVariant | "light";
+};
+
+type TFormSuperActions = {
   string: string | number | React.JSX.Element;
   action: () => void;
   invisible?: boolean;
@@ -58,6 +66,7 @@ function FormView({
   isDirty,
   actions = [],
   disabled,
+  superActions,
   onSubmit,
   reverse,
   modelThread,
@@ -73,7 +82,7 @@ function FormView({
             disabled={disabled}
           >
             {/* BOTONES DE FORMULARIO */}
-            <div className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center gap-2">
               {!isNaN(id) && (
                 <OverLay string="Crear nuevo registro">
                   <Button
@@ -107,6 +116,27 @@ function FormView({
                   <i className="bi bi-arrow-counterclockwise"></i>
                 </Button>
               </OverLay>
+              {superActions && (
+                <DropdownButton
+                  size="sm"
+                  title={<i className="bi bi-gear"></i>}
+                >
+                  {superActions.map((action, index) => {
+                    if (action.invisible) return null;
+                    return (
+                      <Dropdown.Item
+                        key={`${action.string}-${index}`}
+                        as={Button}
+                        variant={action.variant ?? "primary"}
+                        onClick={action.action}
+                        disabled={action.readonly}
+                      >
+                        {action.string}
+                      </Dropdown.Item>
+                    );
+                  })}
+                </DropdownButton>
+              )}
               {title && <h4 className="m-0">{title}</h4>}
             </div>
             {/* BOTONES VISTA ESCRITORIO */}
@@ -133,18 +163,20 @@ function FormView({
                 align="end"
                 size="sm"
               >
-                {actions.map((action, index) => (
-                  <Dropdown.Item
-                    key={`${action.string}-${index}`}
-                    as={Button}
-                    variant={action.variant ?? "primary"}
-                    onClick={action.action}
-                    disabled={action.readonly}
-                    style={{ display: action.invisible ? "none" : "block" }}
-                  >
-                    {action.string}
-                  </Dropdown.Item>
-                ))}
+                {actions.map((action, index) => {
+                  if (action.invisible) return null;
+                  return (
+                    <Dropdown.Item
+                      key={`${action.string}-${index}`}
+                      as={Button}
+                      variant={action.variant ?? "primary"}
+                      onClick={action.action}
+                      disabled={action.readonly}
+                    >
+                      {action.string}
+                    </Dropdown.Item>
+                  );
+                })}
               </DropdownButton>
             </div>
             <OverLay string="Regresar">
@@ -220,7 +252,15 @@ export const FieldGroup = ({
 }) => {
   if (invisible) return null;
   return (
-    <Col className={className} xs="12" sm="6" md="6" lg="6" xl="6" xxl="6">
+    <Col
+      className={`${className} my-1`}
+      xs="12"
+      sm="6"
+      md="6"
+      lg="6"
+      xl="6"
+      xxl="6"
+    >
       <fieldset disabled={readonly} className="rounded bg-body-tertiary p-2">
         {children}
       </fieldset>
@@ -249,7 +289,6 @@ FieldGroup.Stack = FieldGroupStack;
 export const FieldGroupFluid = ({
   children,
   readonly,
-  invisible,
   className,
 }: {
   children: React.ReactNode;
@@ -313,7 +352,7 @@ export const FormSheet = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  return <Row className={`${className} gap-2`}>{children}</Row>;
+  return <Row className={`${className}`}>{children}</Row>;
 };
 
 export default FormView;

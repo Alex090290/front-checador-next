@@ -354,3 +354,97 @@ export async function updatePasswordUser({
     return false;
   }
 }
+
+export async function unsubscribeUser({
+  dischargeReason,
+  id,
+}: {
+  dischargeReason: string;
+  id: number | null;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios
+      .put(
+        `${API_URL}/employee/unsubscribe/${id}`,
+        {
+          dischargeReason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: "",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
+export async function reEntryUser({
+  id,
+}: {
+  id: number | null;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios
+      .put(
+        `${API_URL}/employee/reEntry/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: "Reingreso completado",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
