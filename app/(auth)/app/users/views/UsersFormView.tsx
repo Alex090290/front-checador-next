@@ -145,6 +145,7 @@ function UsersFormView({
             action: () => setModalChangePassword(!modalChangePassword),
             string: "Cambiar contraseña",
             variant: "info",
+            invisible: isNaN(id),
           },
         ]}
       >
@@ -225,6 +226,7 @@ function UsersFormView({
             feedBack={errors.role?.message}
             invisble={!isNaN(id)}
           />
+
           <FieldSelect
             register={register("status", {
               required: "Este campo es requerido",
@@ -237,6 +239,7 @@ function UsersFormView({
             label="Status:"
             invalid={!!errors.role}
             feedBack={errors.role?.message}
+            invisble={isNaN(id)}
           />
         </FieldGroup>
 

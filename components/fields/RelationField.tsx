@@ -13,6 +13,8 @@ type FieldMany2oneProps = {
   readonly?: boolean;
   callBackMode: "object" | "id";
   className?: string;
+  invalid?: boolean;
+  feedBack?: React.ReactNode;
 };
 
 export function RelationField({
@@ -23,6 +25,8 @@ export function RelationField({
   callBackMode,
   readonly,
   className,
+  feedBack,
+  invalid,
 }: FieldMany2oneProps) {
   return (
     <Form.Group className="mb-2">
@@ -35,7 +39,11 @@ export function RelationField({
         callBackMode={callBackMode}
         size="sm"
         className={className}
+        isInvalid={invalid}
       />
+      {feedBack && (
+        <Form.Control.Feedback type="invalid">{feedBack}</Form.Control.Feedback>
+      )}
     </Form.Group>
   );
 }

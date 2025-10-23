@@ -26,7 +26,9 @@ export const Entry = ({
   className,
   invalid,
   autoFocus,
+  invisible,
 }: FieldEntryProps) => {
+  if (invisible) return null;
   return (
     <Form.Group controlId={label} className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>

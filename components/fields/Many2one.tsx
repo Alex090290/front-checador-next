@@ -23,6 +23,7 @@ type Props<T extends Many2OneOption> = {
   callBackMode: "object" | "id";
   className?: string;
   required?: boolean;
+  isInvalid?: boolean;
 };
 
 export function Many2one<T extends Many2OneOption>({
@@ -35,6 +36,7 @@ export function Many2one<T extends Many2OneOption>({
   callBackMode = "id",
   className,
   required,
+  isInvalid,
 }: Props<T>) {
   const {
     field: { value, onChange },
@@ -164,7 +166,7 @@ export function Many2one<T extends Many2OneOption>({
         onKeyDown={handleKeyDown}
         placeholder={label || "Buscar..."}
         autoComplete="off"
-        isInvalid={!!error}
+        isInvalid={isInvalid}
         disabled={disabled}
         size={size}
         required={required}

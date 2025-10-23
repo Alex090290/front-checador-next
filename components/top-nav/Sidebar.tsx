@@ -40,7 +40,7 @@ export default function Sidebar() {
       {/* Static sidebar - only for large screens */}
       <Card
         className="d-none d-lg-block border-0 h-100 me-1"
-        style={{ width: "225px" }}
+        style={{ width: "300px" }}
       >
         {/* <Card.Header>
           <Card.Title>Menú Principal</Card.Title>

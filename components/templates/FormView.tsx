@@ -198,9 +198,7 @@ function FormView({
                 </div>
               )}
             </div>
-            <Container fluid>
-              <FormSheet>{children}</FormSheet>
-            </Container>
+            <FormSheet>{children}</FormSheet>
           </fieldset>
         </Form>
       </Col>
@@ -220,18 +218,10 @@ export const FieldGroup = ({
   invisible?: boolean;
   className?: string;
 }) => {
+  if (invisible) return null;
   return (
-    <Col
-      className={className}
-      style={{ display: invisible ? "none" : "inline-block" }}
-      xs="12"
-      sm="6"
-      md="6"
-      lg="6"
-      xl="6"
-      xxl="6"
-    >
-      <fieldset disabled={readonly} className="p-3 rounded bg-body-tertiary">
+    <Col className={className} xs="12" sm="6" md="6" lg="6" xl="6" xxl="6">
+      <fieldset disabled={readonly} className="rounded bg-body-tertiary p-2">
         {children}
       </fieldset>
     </Col>
@@ -268,11 +258,7 @@ export const FieldGroupFluid = ({
   className?: string;
 }) => {
   return (
-    <Col
-      className={className}
-      style={{ display: invisible ? "none" : "inline-block" }}
-      md="12"
-    >
+    <Col className={className} md="12">
       <fieldset disabled={readonly} className="p-3 rounded bg-body-tertiary">
         {children}
       </fieldset>
@@ -317,11 +303,7 @@ export const PageSheet = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  return (
-    <Container fluid className={`${className}`}>
-      {children}
-    </Container>
-  );
+  return <Row className={`${className}`}>{children}</Row>;
 };
 
 export const FormSheet = ({
@@ -331,11 +313,7 @@ export const FormSheet = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  return (
-    <Container fluid>
-      <Row className={`${className}`}>{children}</Row>
-    </Container>
-  );
+  return <Row className={`${className} gap-2`}>{children}</Row>;
 };
 
 export default FormView;

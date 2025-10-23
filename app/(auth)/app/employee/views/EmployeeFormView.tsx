@@ -7,6 +7,7 @@ import FormView, {
   FormBook,
   FormPage,
   FormSheet,
+  PageSheet,
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import { Branch, Department, Employee, Position } from "@/lib/definitions";
@@ -247,14 +248,14 @@ function EmployeeFormView({
       disabled={isSubmitting}
       cleanUrl="/app/employee?view_type=form&id=null"
       state={employeeStatus[employee?.status as keyof typeof employeeStatus]}
-      formStates={[
-        { name: "activo", decoration: "success", label: "Activo" },
-        { name: "baja", decoration: "danger", label: "baja" },
-      ]}
+      // formStates={[
+      //   { name: "activo", decoration: "success", label: "Activo" },
+      //   { name: "baja", decoration: "danger", label: "baja" },
+      // ]}
     >
       <FormBook dKey="personalInfo">
         <FormPage title="Información Personal" eventKey="personalInfo">
-          <FormSheet className="g-2">
+          <PageSheet>
             <FieldGroup>
               <Entry
                 register={register("name", { required: true })}
@@ -271,7 +272,11 @@ function EmployeeFormView({
                 label="Correo personal:"
               />
               <FieldGroup.Stack>
-                <Entry register={register("phonePersonal")} label="Celuar:" />
+                <Entry
+                  register={register("phonePersonal", { required: true })}
+                  label="Celular:"
+                  invalid={!!errors.phonePersonal}
+                />
 
                 <Entry
                   register={register("homePhone")}
@@ -282,11 +287,16 @@ function EmployeeFormView({
 
             <>
               <FieldGroup>
-                <Entry register={register("address.street")} label="Calle:" />
+                <Entry
+                  register={register("address.street", { required: true })}
+                  label="Calle:"
+                  invalid={!!errors.address?.street}
+                />
                 <FieldGroup.Stack>
                   <Entry
-                    register={register("address.numberOut")}
+                    register={register("address.numberOut", { required: true })}
                     label="No. Exterior:"
+                    invalid={!!errors.address?.numberOut}
                   />
                   <Entry
                     register={register("address.numberIn")}
@@ -295,44 +305,66 @@ function EmployeeFormView({
                 </FieldGroup.Stack>
                 <FieldGroup.Stack>
                   <Entry
-                    register={register("address.neighborhood")}
+                    register={register("address.neighborhood", {
+                      required: true,
+                    })}
                     label="Colonia:"
+                    invalid={!!errors.address?.neighborhood}
                   />
-                  <Entry register={register("address.zipCode")} label="C.P." />
+                  <Entry
+                    register={register("address.zipCode", { required: true })}
+                    label="C.P."
+                    invalid={!!errors.address?.zipCode}
+                  />
                 </FieldGroup.Stack>
                 <FieldGroup.Stack>
-                  <Entry register={register("address.state")} label="Estado:" />
-                  <Entry register={register("address.country")} label="País:" />
+                  <Entry
+                    register={register("address.state", { required: true })}
+                    label="Estado:"
+                    invalid={!!errors.address?.state}
+                  />
+                  <Entry
+                    register={register("address.country", { required: true })}
+                    label="País:"
+                    invalid={!!errors.address?.country}
+                  />
                 </FieldGroup.Stack>
               </FieldGroup>
               <FieldGroup>
                 <FieldGroup.Stack>
                   <Entry
-                    register={register("birthDate")}
+                    register={register("birthDate", { required: true })}
                     type="date"
                     label="Nacimiento:"
+                    invalid={!!errors?.birthDate}
                   />
                   <Entry
-                    register={register("nationality")}
+                    register={register("nationality", { required: true })}
                     label="Nacionalidad:"
+                    invalid={!!errors.nationality}
                   />
                 </FieldGroup.Stack>
                 <FieldGroup.Stack>
                   <Entry
-                    register={register("socialSecurityNumber")}
+                    register={register("socialSecurityNumber", {
+                      required: true,
+                    })}
                     label="NSS:"
+                    invalid={!!errors.socialSecurityNumber}
                   />
                   <Entry
-                    register={register("rfc")}
+                    register={register("rfc", { required: true })}
                     label="R.F.C."
                     className="text-uppercase"
+                    invalid={!!errors.rfc}
                   />
                 </FieldGroup.Stack>
                 <FieldGroup.Stack>
                   <Entry
-                    register={register("curp")}
+                    register={register("curp", { required: true })}
                     label="CURP:"
                     className="text-uppercase"
+                    invisible={!!errors.curp}
                   />
                 </FieldGroup.Stack>
               </FieldGroup>
@@ -344,7 +376,8 @@ function EmployeeFormView({
                       { value: "FEMENINO", label: "FEMENINO" },
                     ]}
                     label="Género:"
-                    register={register("gender")}
+                    register={register("gender", { required: true })}
+                    invalid={!!errors.gender}
                   />
                   <Entry
                     register={register("bloodType")}
@@ -390,10 +423,10 @@ function EmployeeFormView({
                 </Form.Group>
               </FieldGroup>
             </>
-          </FormSheet>
+          </PageSheet>
         </FormPage>
         <FormPage title="Información Laboral" eventKey="jobInfo">
-          <FormSheet className="g-2">
+          <PageSheet>
             <FieldGroup>
               <FieldGroup.Stack>
                 <Entry
@@ -408,7 +441,7 @@ function EmployeeFormView({
               <Entry register={register("emailCompany")} label="Correo:" />
               <FieldGroup.Stack>
                 <RelationField
-                  register={register("idDepartment.id")}
+                  register={register("idDepartment.id", { required: true })}
                   options={departments.map((d) => ({
                     id: d.id || 0,
                     displayName: d.nameDepartment,
@@ -418,6 +451,7 @@ function EmployeeFormView({
                   control={control}
                   callBackMode="id"
                   className="text-uppercase"
+                  invalid={!!errors?.idDepartment}
                 />
                 <RelationField
                   options={puestos.map((p) => ({
@@ -425,11 +459,12 @@ function EmployeeFormView({
                     displayName: p.namePosition,
                     name: p.namePosition,
                   }))}
-                  register={register("idPosition")}
+                  register={register("idPosition", { required: true })}
                   control={control}
                   callBackMode="id"
                   label="Puesto:"
                   className="text-uppercase"
+                  invalid={!!errors.idPosition}
                 />
               </FieldGroup.Stack>
               <RelationField
@@ -447,7 +482,7 @@ function EmployeeFormView({
               />
               <RelationField
                 control={control}
-                register={register("branch")}
+                register={register("branch", { required: true })}
                 options={branches.map((b) => ({
                   id: b.id || 0,
                   displayName: b.name,
@@ -456,39 +491,57 @@ function EmployeeFormView({
                 callBackMode="id"
                 label="Sucursal"
                 className="text-uppercase"
+                invalid={!!errors.branch}
               />
               {/* <Entry register={register("policies")} label="Políticas:" /> */}
             </FieldGroup>
             <FieldGroup>
               <FieldGroup.Stack>
-                <Entry register={register("idCheck")} label="ID Checador:" />
                 <Entry
-                  register={register("passwordCheck")}
-                  label="Clave checador:"
+                  register={register("idCheck", { required: true })}
+                  label="ID Checador:"
+                  invalid={!!errors.idCheck}
+                />
+                <Entry
+                  register={register("passwordCheck", { required: true })}
+                  label="Contraseña de checador:"
+                  invalid={!!errors.passwordCheck}
                 />
               </FieldGroup.Stack>
               <FieldGroup.Stack>
-                <Entry register={register("entryOffice")} label="Entrada:" />
-                <Entry register={register("exitOffice")} label="Salida:" />
+                <Entry
+                  register={register("entryOffice", { required: true })}
+                  label="Entrada:"
+                  invalid={!!errors.entryOffice}
+                />
+                <Entry
+                  register={register("exitOffice", { required: true })}
+                  label="Salida:"
+                  invalid={!!errors.exitOffice}
+                />
               </FieldGroup.Stack>
               <FieldGroup.Stack>
                 <Entry
-                  register={register("exitLunch")}
+                  register={register("exitLunch", { required: true })}
                   label="Salida comedor:"
+                  invalid={!!errors.exitLunch}
                 />
                 <Entry
-                  register={register("entryLunch")}
+                  register={register("entryLunch", { required: true })}
                   label="Entrada comedor:"
+                  invalid={!!errors.entryLunch}
                 />
               </FieldGroup.Stack>
               <FieldGroup.Stack>
                 <Entry
-                  register={register("entrySaturdayOffice")}
+                  register={register("entrySaturdayOffice", { required: true })}
                   label="Entrada sabatina:"
+                  invalid={!!errors.entrySaturdayOffice}
                 />
                 <Entry
-                  register={register("exitSaturdayOffice")}
+                  register={register("exitSaturdayOffice", { required: true })}
                   label="Salida sabatina:"
+                  invalid={!!errors.exitSaturdayOffice}
                 />
               </FieldGroup.Stack>
               <Entry
@@ -503,11 +556,13 @@ function EmployeeFormView({
                   type="date"
                   register={register("admissionDate")}
                   label="Inicio de relación:"
+                  invisible={isNaN(id)}
                 />
                 <Entry
                   type="date"
                   register={register("dischargeDate")}
                   label="Fin de relación:"
+                  invisible={isNaN(id)}
                 />
               </FieldGroup.Stack>
               <FieldGroup.Stack>
@@ -543,7 +598,7 @@ function EmployeeFormView({
                 label="Motivo de la baja:"
               />
             </FieldGroup>
-          </FormSheet>
+          </PageSheet>
         </FormPage>
         <FormPage title="Contactos" eventKey="contacts">
           <FormSheet>
@@ -634,6 +689,9 @@ function EmployeeFormView({
               </Table>
             </Col>
           </FormSheet>
+        </FormPage>
+        <FormPage title="Ingresos y Bajas" eventKey="historical">
+          <h2>historial</h2>
         </FormPage>
       </FormBook>
     </FormView>
