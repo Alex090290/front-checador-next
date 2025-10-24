@@ -10,7 +10,7 @@ import FormView, {
 import { useModals } from "@/context/ModalContext";
 import { Permission, User, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
