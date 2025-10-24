@@ -5,7 +5,6 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { Employee } from "@/lib/definitions";
-import { useState } from "react";
 import { Badge } from "react-bootstrap";
 
 const employeeStatus = {

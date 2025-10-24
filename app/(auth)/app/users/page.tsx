@@ -8,11 +8,11 @@ async function PageUsers({
 }: {
   searchParams: Promise<{ [key: string]: string }>;
 }) {
-  const { view_type: viewType, id } = await searchParams;
+  const { view_type: viewType, id, profile } = await searchParams;
 
   return (
     <Suspense fallback={<LoadingPage />}>
-      <UsersMainView viewType={viewType} id={id} />
+      <UsersMainView viewType={viewType} id={id} profile={profile} />
     </Suspense>
   );
 }

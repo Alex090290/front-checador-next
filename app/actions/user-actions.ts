@@ -448,3 +448,35 @@ export async function reEntryUser({
     };
   }
 }
+
+export async function loadAvatar(): Promise<ActionResponse<string>> {
+  try {
+    const { API_URL: apiUrl, apiToken } = await storeAction();
+    // Obtener imagen en binario
+    if (!apiToken) throw new Error("TOKEN IS REQUIRED");
+    const resImg = await axios.get(`${apiUrl}/users/imgProfile`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+      responseType: "arraybuffer",
+    });
+
+    // Convertir a base64
+    const base64 = Buffer.from(resImg.data, "binary").toString("base64");
+    const imageBase64Url = `data:image/jpeg;base64,${base64}`;
+
+    return {
+      success: true,
+      message: "Imagen cargada",
+      data: imageBase64Url,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}

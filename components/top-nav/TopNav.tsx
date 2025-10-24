@@ -5,6 +5,7 @@ import { Container, Navbar, Nav } from "react-bootstrap";
 import NavUserInfo from "../top-nav/NavUserInfo";
 import Link from "next/link";
 import OverLay from "../templates/OverLay";
+import { Suspense } from "react";
 
 function TopNav() {
   return (
@@ -16,7 +17,9 @@ function TopNav() {
           </OverLay>
         </Navbar.Brand>
         <Nav className="ms-auto">
-          <NavUserInfo />
+          <Suspense fallback={<div>Loading user info...</div>}>
+            <NavUserInfo />
+          </Suspense>
         </Nav>
       </Container>
     </Navbar>

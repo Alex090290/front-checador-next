@@ -5,10 +5,16 @@ import { useEffect, useState } from "react";
 import { Button, Dropdown, Stack } from "react-bootstrap";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { loadAvatar } from "@/app/actions/user-actions";
+import { useSearchParams } from "next/navigation";
 
 function NavUserInfo() {
   const { data: session } = useSession();
   const [darkMode, setDarkMode] = useState(false);
+  const [imgAvatar, setImgAvatar] = useState<string | null>(null);
+
+  const params = useSearchParams();
+  const profile = params.get("profile") || null;
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -32,6 +38,17 @@ function NavUserInfo() {
     }
   }, []);
 
+  useEffect(() => {
+    if (session && session.user) {
+      const loadImgAvatar = async () => {
+        const res = await loadAvatar();
+        if (!res.success) setImgAvatar(null);
+        setImgAvatar(res.data || null);
+      };
+      loadImgAvatar();
+    }
+  }, [session, profile]);
+
   return (
     <Stack direction="horizontal" gap={2}>
       <Dropdown>
@@ -43,7 +60,7 @@ function NavUserInfo() {
             width={26}
             height={26}
             unoptimized
-            src={session?.user?.image ?? "/image/avatar_default.svg"}
+            src={imgAvatar ?? "/image/avatar_default.svg"}
             alt=""
             className="me-2 rounded"
           />
@@ -52,7 +69,7 @@ function NavUserInfo() {
         <Dropdown.Menu>
           <Dropdown.Item
             as={Link}
-            href={`/app/profile/${session?.user?.id}?view_type=form`}
+            href={`/app/users?view_type=form&id=${session?.user?.id}&profile=true`}
           >
             <i className="bi bi-person-circle me-2"></i>
             <span>Perfil</span>

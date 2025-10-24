@@ -231,7 +231,7 @@ export default function TableTemplate<T>({
     .flatMap(([_, rows]) => rows.map(getRowId));
 
   return (
-    <Table borderless hover>
+    <Table borderless hover style={{ fontSize: "0.9rem" }}>
       <thead className="sticky-top text-uppercase" style={{ zIndex: 1 }}>
         <tr>
           <th className="text-center border-end border-bottom table-active">
