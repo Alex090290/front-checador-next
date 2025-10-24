@@ -35,10 +35,12 @@ function UsersFormView({
   user,
   id,
   perms,
+  profile,
 }: {
   user: User | null;
   id: number;
   perms: Permission[];
+  profile: string;
 }) {
   const {
     register,
@@ -53,9 +55,6 @@ function UsersFormView({
   const { modalError } = useModals();
 
   const router = useRouter();
-
-  const params = useSearchParams();
-  const profile = params.get("profile") || false;
 
   const originalValuesRef = useRef<TInputs | null>(null);
 

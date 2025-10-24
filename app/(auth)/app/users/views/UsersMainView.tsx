@@ -10,9 +10,11 @@ import { Spinner } from "react-bootstrap";
 async function UsersMainView({
   viewType,
   id,
+  profile,
 }: {
   viewType: string;
   id: string;
+  profile: string;
 }) {
   let users: User[] = [];
   let user: User | null = null;
@@ -34,7 +36,12 @@ async function UsersMainView({
   } else if (viewType === "form") {
     return (
       <Suspense fallback={<Spinner size="sm" animation="border" />}>
-        <UsersFormView user={user} id={Number(id)} perms={permissions || []} />
+        <UsersFormView
+          user={user}
+          id={Number(id)}
+          perms={permissions || []}
+          profile={profile}
+        />
       </Suspense>
     );
   } else {
