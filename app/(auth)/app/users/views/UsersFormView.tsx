@@ -1,6 +1,6 @@
 "use client";
 
-import { createUser, updateUser } from "@/app/actions/user-actions";
+import { createUser, loadAvatar, updateUser } from "@/app/actions/user-actions";
 import { Entry, FieldSelect } from "@/components/fields";
 import FormView, {
   FieldGroup,
@@ -10,12 +10,13 @@ import FormView, {
 import { useModals } from "@/context/ModalContext";
 import { Permission, User, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
 import ChangePasswordModal from "./ModalChangePassword";
+import { ImageField } from "@/components/fields/ImageField";
 
 type TInputs = {
   name: string;
@@ -27,6 +28,7 @@ type TInputs = {
   permissions: Permission[];
   phone: PhoneNumberFormat | string | null;
   status: 1 | 2 | 3;
+  imageUrl?: string | null;
 };
 
 function UsersFormView({
@@ -49,8 +51,14 @@ function UsersFormView({
   } = useForm<TInputs>();
 
   const { modalError } = useModals();
+
   const router = useRouter();
+
+  const params = useSearchParams();
+  const profile = params.get("profile") || false;
+
   const originalValuesRef = useRef<TInputs | null>(null);
+
   const [modalChangePassword, setModalChangePassword] = useState(false);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
@@ -94,6 +102,7 @@ function UsersFormView({
         phone: null,
         status: 3,
         password: "",
+        imageUrl: null,
       };
       reset(values);
       originalValuesRef.current = values;
@@ -108,6 +117,7 @@ function UsersFormView({
         phone: user.phone.internationalNumber,
         status: user.status,
         password: "",
+        imageUrl: null,
       };
       reset(values);
       originalValuesRef.current = values;
@@ -129,11 +139,22 @@ function UsersFormView({
     }
   };
 
+  useEffect(() => {
+    const loadImage = async () => {
+      if (profile && profile === "true") {
+        const res = await loadAvatar();
+        if (!res.success) return modalError(res.message);
+        setValue("imageUrl", res.data, { shouldDirty: false });
+      }
+    };
+    loadImage();
+  }, [user, setValue]);
+
   return (
     <>
       <FormView
         reverse={handleReverse}
-        title="Usuario"
+        title={profile ? "Mi Perfil" : "Usuario"}
         onSubmit={handleSubmit(onSubmit)}
         name={user?.name || null}
         disabled={isSubmitting}
@@ -149,7 +170,7 @@ function UsersFormView({
           },
         ]}
       >
-        <FieldGroup>
+        <FieldGroup readonly={profile === "true"}>
           <Entry
             register={register("name", {
               required: "Nombre de usuario es requerido, honey!",
@@ -187,7 +208,19 @@ function UsersFormView({
             feedBack={errors.gender?.message}
           />
         </FieldGroup>
-        <FieldGroup>
+        <FieldGroup invisible={!profile}>
+          <div className="text-center">
+            <ImageField
+              {...register("imageUrl")}
+              width={150}
+              height={150}
+              folder="users"
+              control={control}
+              editable={true}
+            />
+          </div>
+        </FieldGroup>
+        <FieldGroup readonly={profile === "true"}>
           <Entry
             register={register("email", {
               required: "Correo es requerido",
@@ -243,66 +276,75 @@ function UsersFormView({
           />
         </FieldGroup>
 
-        <FormBook dKey="permissions">
-          <FormPage
-            title={`Permisos (${permisosSeleccionados.length})`}
-            eventKey="permissions"
-          >
-            <Container>
-              <Row>
-                <Col md="12">
-                  <Button size="sm" className="my-1" onClick={toggleSelectAll}>
-                    {perms.every((perm) => isPermSelected(perm.id ?? 0))
-                      ? "Deseleccionar todos"
-                      : "Seleccionar todos"}
-                  </Button>
-                </Col>
-              </Row>
-              <Row>
-                {perms.map((permiso) => (
-                  <Col key={permiso.id} md="4">
-                    <div className="p-2 bg-body-tertiary m-1 text-uppercase rounded fw-semibold">
-                      <Controller
-                        name="permissions"
-                        control={control}
-                        defaultValue={[]} // ← aseguramos valor inicial
-                        render={({ field }) => {
-                          const selectedPermissions = field.value || []; // aseguramos array
-                          const isChecked = selectedPermissions.some(
-                            (p: Permission) => p.id === permiso.id
-                          );
-
-                          const handleChange = () => {
-                            if (isChecked) {
-                              field.onChange(
-                                selectedPermissions.filter(
-                                  (p: Permission) => p.id !== permiso.id
-                                )
-                              );
-                            } else {
-                              field.onChange([...selectedPermissions, permiso]);
-                            }
-                          };
-
-                          return (
-                            <Form.Check
-                              type="checkbox"
-                              label={permiso.text
-                                .replace("_", " ")
-                                .replace("_", " ")}
-                              checked={isChecked}
-                              onChange={handleChange}
-                            />
-                          );
-                        }}
-                      />
-                    </div>
+        {!profile && (
+          <FormBook dKey="permissions">
+            <FormPage
+              title={`Permisos (${permisosSeleccionados.length})`}
+              eventKey="permissions"
+            >
+              <Container>
+                <Row>
+                  <Col md="12">
+                    <Button
+                      size="sm"
+                      className="my-1"
+                      onClick={toggleSelectAll}
+                    >
+                      {perms.every((perm) => isPermSelected(perm.id ?? 0))
+                        ? "Deseleccionar todos"
+                        : "Seleccionar todos"}
+                    </Button>
                   </Col>
-                ))}
-              </Row>
-            </Container>
-          </FormPage>
-        </FormBook>
+                </Row>
+                <Row>
+                  {perms.map((permiso) => (
+                    <Col key={permiso.id} md="4">
+                      <div className="p-2 bg-body-tertiary m-1 text-uppercase rounded fw-semibold">
+                        <Controller
+                          name="permissions"
+                          control={control}
+                          defaultValue={[]} // ← aseguramos valor inicial
+                          render={({ field }) => {
+                            const selectedPermissions = field.value || []; // aseguramos array
+                            const isChecked = selectedPermissions.some(
+                              (p: Permission) => p.id === permiso.id
+                            );
+
+                            const handleChange = () => {
+                              if (isChecked) {
+                                field.onChange(
+                                  selectedPermissions.filter(
+                                    (p: Permission) => p.id !== permiso.id
+                                  )
+                                );
+                              } else {
+                                field.onChange([
+                                  ...selectedPermissions,
+                                  permiso,
+                                ]);
+                              }
+                            };
+
+                            return (
+                              <Form.Check
+                                type="checkbox"
+                                label={permiso.text
+                                  .replace("_", " ")
+                                  .replace("_", " ")}
+                                checked={isChecked}
+                                onChange={handleChange}
+                              />
+                            );
+                          }}
+                        />
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </Container>
+            </FormPage>
+          </FormBook>
+        )}
       </FormView>
       <ChangePasswordModal
         show={modalChangePassword}

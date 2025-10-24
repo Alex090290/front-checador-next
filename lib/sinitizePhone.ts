@@ -31,24 +31,24 @@ type MexicanAreaCode =
   | "73"
   | "47";
 
-// const VALID_MEXICAN_AREA_CODES: MexicanAreaCode[] = [
-//   "33",
-//   "55",
-//   "56",
-//   "81",
-//   "22",
-//   "44",
-//   "66",
-//   "87",
-//   "61",
-//   "89",
-//   "99",
-//   "83",
-//   "77",
-//   "74",
-//   "73",
-//   "47",
-// ];
+const VALID_MEXICAN_AREA_CODES: MexicanAreaCode[] = [
+  "33",
+  "55",
+  "56",
+  "81",
+  "22",
+  "44",
+  "66",
+  "87",
+  "61",
+  "89",
+  "99",
+  "83",
+  "77",
+  "74",
+  "73",
+  "47",
+];
 
 export function sanitizePhoneNumber(phoneNumber: string): PhoneNumberFormat {
   if (!phoneNumber || phoneNumber === "null") {
@@ -86,9 +86,9 @@ export function sanitizePhoneNumber(phoneNumber: string): PhoneNumberFormat {
 
   // Validar código de área
   const areaCode: string = cleanNumber.substring(0, 2);
-  // if (!VALID_MEXICAN_AREA_CODES.includes(areaCode as MexicanAreaCode)) {
-  //   throw new Error(`Código de área ${areaCode} no válido para México`);
-  // }
+  if (!VALID_MEXICAN_AREA_CODES.includes(areaCode as MexicanAreaCode)) {
+    throw new Error(`Código de área ${areaCode} no válido para México`);
+  }
 
   const firstPart: string = cleanNumber.substring(2, 6);
   const secondPart: string = cleanNumber.substring(6, 10);

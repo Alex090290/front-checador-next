@@ -14,6 +14,7 @@ export const authOptions = {
         const { email, password } = credentials;
         let user = null;
 
+        console.log("Validando credenciales...");
         user = await userLoginCredentials({
           email: email as string,
           password: password as string,
@@ -27,6 +28,7 @@ export const authOptions = {
           throw new Error("Credenciales inválidas");
         }
 
+        console.log("Cargando datos de sesión...");
         const meData = await getUserData({ apiToken: user.data.data });
 
         const userData = meData.data as unknown as User;
