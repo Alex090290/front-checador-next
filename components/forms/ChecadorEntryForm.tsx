@@ -14,7 +14,7 @@ type TInputs = {
 function ChecadorEntryForm({
   receiveCheckData,
 }: {
-  receiveCheckData: (data: TCheckData) => Promise<ActionResponse<boolean>>;
+  receiveCheckData: (data: TCheckData) => Promise<ActionResponse<string>>;
 }) {
   const passwordRef = useRef<HTMLInputElement>(null);
 

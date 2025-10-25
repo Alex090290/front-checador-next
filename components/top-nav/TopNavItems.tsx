@@ -42,6 +42,14 @@ function TopNavItems() {
         <i className="bi bi-columns-gap me-1"></i>
         <span>Departamentos</span>
       </Nav.Link>
+      <Nav.Link
+        eventKey="/app/eventos"
+        as={Link}
+        href="/app/eventos?view_type=list&id=null"
+      >
+        <i className="bi bi-list-columns-reverse me-1"></i>
+        <span>Checador</span>
+      </Nav.Link>
     </Nav>
   );
 }

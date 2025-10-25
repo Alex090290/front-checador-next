@@ -1,7 +1,7 @@
 import { PhoneNumberFormat } from "./sinitizePhone";
 
 export interface ActionResponse<T> {
-  success: boolean | number;
+  success: boolean;
   message: string;
   data?: T;
 }

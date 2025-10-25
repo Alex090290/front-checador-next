@@ -54,11 +54,11 @@ export async function checkIn({
   passwordCheck: string;
   lat: number;
   lng: number;
-}): Promise<ActionResponse<boolean>> {
+}): Promise<ActionResponse<string>> {
   try {
     const { apiToken, apiUrl } = await storeToken();
 
-    await axios
+    const response = await axios
       .post(
         `${apiUrl}/checador`,
         {
@@ -87,6 +87,7 @@ export async function checkIn({
     return {
       success: true,
       message: "REGISTRO CORRECTO",
+      data: response.data.message,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

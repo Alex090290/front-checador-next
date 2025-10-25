@@ -23,8 +23,7 @@ async function UsersMainView({
   let getUsers: User[] = [];
 
   if (id && id !== "null") {
-    // Ejecutamos ambos fetches en paralelo
-    [user] = await Promise.all([findUserById({ id: Number(id) })]);
+    user = await findUserById({ id: Number(id) });
   }
 
   [users, permissions] = await Promise.all([fetchUsers(), fetchPermissions()]);

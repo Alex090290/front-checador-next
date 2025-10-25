@@ -22,6 +22,7 @@ interface IFeedbackDisplay {
   timestamp: string;
   department: string;
   position: string;
+  type: string;
 }
 
 function ChecadorFormView() {
@@ -34,11 +35,13 @@ function ChecadorFormView() {
     []
   );
 
+  const [message, setMessage] = useState<string>("");
+
   const feedbackContainerRef = useRef<HTMLDivElement | null>(null);
 
   const receiveCheckData = async (
     data: TCheckData
-  ): Promise<ActionResponse<boolean>> => {
+  ): Promise<ActionResponse<string>> => {
     toastId = toast.loading("Enviando datos...", {
       position: "top-center",
     });
@@ -53,6 +56,8 @@ function ChecadorFormView() {
       toast.error(res.message, { id: toastId });
       return res;
     }
+
+    setMessage(res?.data || "");
 
     handleFetchFeedback();
 
@@ -81,6 +86,7 @@ function ChecadorFormView() {
         timestamp: formatDate(feed.checks.timestamp, "HH:mm"),
         department: feed.departmentEmployee.nameDepartment,
         position: feed.positionEmployee.namePosition,
+        type: feed.checks.type,
       })) || [];
 
     setFeedbackDisplay(newFeedback);
@@ -145,8 +151,10 @@ function ChecadorFormView() {
               <Col md="6">
                 <div className="row align-items-stretch">
                   <ChecadorEntryForm receiveCheckData={receiveCheckData} />
-                  <div className="col-md-7 bg-body-tertiary text-center">
-                    avisos
+                  <div className="col-md-7 bg-body-tertiary">
+                    <div>
+                      <h2 className="text-center">{message}</h2>
+                    </div>
                   </div>
                 </div>
               </Col>
@@ -178,6 +186,7 @@ function ChecadorFormView() {
                       <tr className="border-end border-bottom table-active sticky-top">
                         <th className="border-end">Nombre</th>
                         <th className="border-end">Hora</th>
+                        <th className="border-end">Evento</th>
                         <th className="border-end">Departamento</th>
                         <th className="border-end">Puesto</th>
                       </tr>
@@ -188,6 +197,9 @@ function ChecadorFormView() {
                           <td className="text-nowrap">{feed.name}</td>
                           <td className="text-nowrap text-center fw-semibold">
                             {feed.timestamp}
+                          </td>
+                          <td>
+                            {feed.type.replace("_", " ").replace("_", " ")}
                           </td>
                           <td className="text-nowrap">{feed.department}</td>
                           <td className="text-nowrap">{feed.position}</td>
