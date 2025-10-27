@@ -153,7 +153,9 @@ function EventosListView({
       accessor: (row) => row.checks.minutesDifference,
       render: (row) => (
         <div className=" text-center fw-semibold">
-          {row.checks.minutesDifference}
+          <div className="text-end" style={{ width: "50%" }}>
+            {row.checks.minutesDifference}
+          </div>
         </div>
       ),
     },
