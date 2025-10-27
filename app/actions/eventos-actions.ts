@@ -159,9 +159,6 @@ export async function searchEventosParams({
       ...(idUser ? { idUser } : {}),
     };
 
-    console.log(params);
-
-    console.log(params);
     const response = await axios
       .get(`${API_URL}/checador/view`, {
         params,
