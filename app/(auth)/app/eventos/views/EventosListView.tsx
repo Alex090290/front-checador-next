@@ -3,22 +3,67 @@
 import ListView from "@/components/templates/ListView";
 import TableTemplate, {
   TableTemplateColumn,
+  TableTemplateRef,
 } from "@/components/templates/TableTemplate";
 import { useModals } from "@/context/ModalContext";
-import { ActionResponse, Employee, ICheckInFeedback } from "@/lib/definitions";
+import {
+  ActionResponse,
+  Employee,
+  ICheckInFeedback,
+  User,
+} from "@/lib/definitions";
 import { formatDate } from "date-fns";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ModifyModalForm from "./ModifyModalForm";
-import { updateRegristrosChecador } from "@/app/actions/eventos-actions";
+import {
+  searchEventosParams,
+  updateRegristrosChecador,
+} from "@/app/actions/eventos-actions";
+import { Button, Form } from "react-bootstrap";
+import { Many2one } from "@/components/fields/Many2one";
+import { useForm, SubmitHandler } from "react-hook-form";
 
-function EventosListView({ eventos }: { eventos: ICheckInFeedback[] }) {
+type TSearchInputs = {
+  date: string | null;
+  idEmployee: number | null;
+  idUser: number | null;
+};
+
+function EventosListView({
+  users,
+  eventos,
+  employees,
+}: {
+  users: User[];
+  employees: Employee[];
+  eventos: ICheckInFeedback[];
+}) {
+  const {
+    reset,
+    control,
+    register,
+    handleSubmit,
+    formState: { isSubmitting, isDirty },
+  } = useForm<TSearchInputs>({
+    defaultValues: {
+      date: null,
+      idEmployee: null,
+      idUser: null,
+    },
+  });
+
   const { modalError } = useModals();
+
+  const tableRef = useRef<TableTemplateRef>(null);
+
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
   const [modalModify, setModalModify] = useState<{
     show: boolean;
     type: string;
     status: string;
   }>({ show: false, type: "", status: "" });
+
+  const [eventosList, setEventosList] = useState<ICheckInFeedback[]>([]);
 
   const getSechedule = (type: string, schedules: Employee) => {
     let string: string = "";
@@ -65,10 +110,13 @@ function EventosListView({ eventos }: { eventos: ICheckInFeedback[] }) {
     {
       key: "employee",
       label: "Empleado",
-      accessor: (row) => row.employee.name,
+      accessor: (row) =>
+        `${row.employee.lastName?.toUpperCase()} ${row.employee.name?.toUpperCase()}`,
       filterable: true,
       render: (row) => (
-        <div className="text-uppercase">{row.employee.name}</div>
+        <div className="text-uppercase">
+          {row.employee.lastName} {row.employee.name}
+        </div>
       ),
     },
     {
@@ -197,7 +245,7 @@ function EventosListView({ eventos }: { eventos: ICheckInFeedback[] }) {
     type: string,
     status: string
   ): Promise<ActionResponse<boolean>> => {
-    const registro = eventos.find(
+    const registro = eventosList.find(
       (even) => even.checks.id === Number(selectedIds)
     );
 
@@ -211,14 +259,61 @@ function EventosListView({ eventos }: { eventos: ICheckInFeedback[] }) {
       type,
     });
 
+    if (!res.success) {
+      modalError(res.message);
+      return res;
+    }
+
+    const changedList = eventosList.map((evento) => {
+      if (evento.checks.id === idCheck && evento.id === idRegistro) {
+        evento = {
+          ...evento,
+          checks: {
+            ...evento.checks,
+            type,
+            status,
+          },
+        };
+      }
+      return evento;
+    });
+
+    setEventosList(changedList);
+    tableRef.current?.clearSelection();
+
     return res;
   };
+
+  const onSubmitSearch: SubmitHandler<TSearchInputs> = async (data) => {
+    const res = await searchEventosParams({
+      ...data,
+      idEmployee: Number(data.idEmployee),
+      idUser: Number(data.idUser),
+    });
+
+    if (res.length <= 0) {
+      setEventosList([]);
+      modalError("No se encontraron datos");
+      return;
+    }
+
+    setEventosList(res);
+  };
+
+  const handleUpdateList = () => {
+    reset({ date: null, idEmployee: null, idUser: null });
+    setEventosList(eventos);
+  };
+
+  useEffect(() => {
+    setEventosList(eventos);
+  }, [eventos]);
 
   return (
     <>
       <ListView>
         <ListView.Header
-          title={`Eventos de checador (${eventos.length || 0})`}
+          title={`Eventos de checador (${eventosList.length || 0})`}
           actions={[
             {
               action: handleModify,
@@ -230,11 +325,55 @@ function EventosListView({ eventos }: { eventos: ICheckInFeedback[] }) {
               ),
             },
           ]}
-        ></ListView.Header>
+        >
+          <Form onSubmit={handleSubmit(onSubmitSearch)}>
+            <fieldset className="d-flex flex-row gap-2" disabled={isSubmitting}>
+              <Form.Control
+                {...register("date")}
+                type="date"
+                placeholder="Fecha"
+                autoComplete="off"
+              />
+              <Many2one
+                className="text-uppercase"
+                control={control}
+                {...register("idEmployee")}
+                callBackMode="id"
+                options={employees.map((e) => ({
+                  id: e.id || 0,
+                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                  name: e.name,
+                }))}
+                label="Empleado"
+              />
+              <Many2one
+                className="text-uppercase"
+                control={control}
+                {...register("idUser")}
+                callBackMode="id"
+                options={users
+                  .filter((u) => u.role === "CHECADOR")
+                  .map((u) => ({
+                    id: u.id,
+                    displayName: `${u.name.toUpperCase()} ${u.lastName.toUpperCase()}`,
+                    name: `${u.name} ${u.lastName}`,
+                  }))}
+                label="Checador"
+              />
+              <Button type="submit" disabled={!isDirty}>
+                <i className="bi bi-search"></i>
+              </Button>
+              <Button type="button" variant="info" onClick={handleUpdateList}>
+                <i className="bi bi-arrow-clockwise"></i>
+              </Button>
+            </fieldset>
+          </Form>
+        </ListView.Header>
         <ListView.Body>
           <TableTemplate
+            ref={tableRef}
             getRowId={(row) => row.checks.id}
-            data={eventos}
+            data={eventosList}
             columns={columns}
             viewForm="/app/eventos?view_type=list"
             onSelectionChange={setSelectedIds}

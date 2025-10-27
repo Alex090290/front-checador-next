@@ -148,7 +148,7 @@ export function Many2one<T extends Many2OneOption>({
   };
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="w-100">
       <Form.Control
         ref={inputRef}
         type="text"
@@ -164,13 +164,13 @@ export function Many2one<T extends Many2OneOption>({
         }}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        placeholder={label || "Buscar..."}
+        placeholder={label || ""}
         autoComplete="off"
         isInvalid={isInvalid}
         disabled={disabled}
         size={size}
         required={required}
-        className={className}
+        className={`${className} shadow-none border-0`}
       />
       <Form.Control.Feedback type="invalid">
         {error?.message}

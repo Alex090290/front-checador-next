@@ -3,7 +3,6 @@
 import { ActionResponse, ICheckInFeedback } from "@/lib/definitions";
 import { storeAction } from "./storeActions";
 import axios from "axios";
-import { revalidatePath } from "next/cache";
 
 export async function fetchEventos(): Promise<ICheckInFeedback[]> {
   try {
@@ -125,7 +124,7 @@ export async function updateRegristrosChecador({
         );
       });
 
-    revalidatePath("/app/eventos");
+    // revalidatePath("/app/eventos");
 
     return {
       success: true,
@@ -139,5 +138,51 @@ export async function updateRegristrosChecador({
       success: false,
       message: error.message,
     };
+  }
+}
+
+export async function searchEventosParams({
+  date,
+  idEmployee,
+  idUser,
+}: {
+  date: string | null;
+  idEmployee: number | null;
+  idUser: number | null;
+}): Promise<ICheckInFeedback[]> {
+  try {
+    const { API_URL, apiToken } = await storeAction();
+
+    const params = {
+      ...(date ? { date } : {}),
+      ...(idEmployee ? { idEmployee } : {}),
+      ...(idUser ? { idUser } : {}),
+    };
+
+    console.log(params);
+
+    console.log(params);
+    const response = await axios
+      .get(`${API_URL}/checador/view`, {
+        params,
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+    return response.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return [];
   }
 }

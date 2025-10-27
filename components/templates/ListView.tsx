@@ -23,23 +23,35 @@ type HeaderProps = {
   children?: React.ReactNode;
   formView?: string;
   title: string;
+  formSearch?: FormSearchProps;
   actions?: HeaderActionProps[];
+};
+
+type FormSearchProps = {
+  action: (value: string) => void;
+  inputType: React.HTMLInputTypeAttribute;
 };
 
 type BodyProps = { children: React.ReactNode };
 type FooterProps = { children: React.ReactNode };
 
 // Subcomponentes
-function Header({ children, formView, title, actions }: HeaderProps) {
+function Header({
+  children,
+  formView,
+  title,
+  formSearch,
+  actions,
+}: HeaderProps) {
   return (
-    <Card.Header className="border-bottom-0">
+    <Card.Header>
       <Container fluid>
-        <Row className="g-1">
-          <Col xs="12" sm="11" md="3" lg="4" xl="3">
-            <div className="d-flex gap-2 align-items-center p-0">
+        <Row className="gy-1">
+          <Col xs="12" sm="11" md="3" lg="3" xl="3">
+            <div className="d-flex gap-2 align-items-center">
               {formView && (
                 <OverLay string="Crear registro">
-                  <Link className="btn btn-primary btn-sm" href={formView}>
+                  <Link className="btn btn-primary fw-semibold" href={formView}>
                     Nuevo
                   </Link>
                 </OverLay>
@@ -65,7 +77,7 @@ function Header({ children, formView, title, actions }: HeaderProps) {
               )}
             </div>
           </Col>
-          <Col xs="12" sm="11" md="3" lg="8" xl="9">
+          <Col xs="12" sm="11" md="7" lg="7" xl="7">
             <div className="d-flex justify-content-end align-items-end gap-2">
               {children}
             </div>

@@ -1,24 +1,25 @@
 import NotFound from "@/app/not-found";
 import EventosListView from "./EventosListView";
-import { ICheckInFeedback } from "@/lib/definitions";
+import { Employee, ICheckInFeedback, User } from "@/lib/definitions";
 import { fetchEventos } from "@/app/actions/eventos-actions";
+import { fetchEmployees } from "@/app/actions/employee-actions";
+import { fetchUsers } from "@/app/actions/user-actions";
 
-async function EventosMainView({
-  viewType,
-  id,
-}: {
-  viewType: string;
-  id: string;
-}) {
+async function EventosMainView({ viewType }: { viewType: string; id: string }) {
   let eventos: ICheckInFeedback[] = [];
+  let employees: Employee[] = [];
+  let users: User[] = [];
 
-  if (id && id !== "null") {
-  }
-
-  eventos = await fetchEventos();
+  [eventos, employees, users] = await Promise.all([
+    fetchEventos(),
+    fetchEmployees(),
+    fetchUsers(),
+  ]);
 
   if (viewType === "list") {
-    return <EventosListView eventos={eventos} />;
+    return (
+      <EventosListView eventos={eventos} users={users} employees={employees} />
+    );
   } else {
     return <NotFound />;
   }
