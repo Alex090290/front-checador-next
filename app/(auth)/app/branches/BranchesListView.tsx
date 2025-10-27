@@ -14,7 +14,7 @@ function BranchesListView({ branches }: { branches: Branch[] }) {
       accessor: (u) => u.name,
       filterable: true,
       type: "string",
-      render: (u) => <div className="text-capitalize">{u.name}</div>,
+      render: (u) => <div className="text-uppercase">{u.name}</div>,
     },
     {
       key: "address.street",
@@ -23,7 +23,7 @@ function BranchesListView({ branches }: { branches: Branch[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">
+        <div className="text-uppercase">
           {u.address?.street} {u.address?.numberOut}
         </div>
       ),
@@ -35,7 +35,7 @@ function BranchesListView({ branches }: { branches: Branch[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">{u.address?.neighborhood}</div>
+        <div className="text-uppercase">{u.address?.neighborhood}</div>
       ),
     },
     {
@@ -44,9 +44,7 @@ function BranchesListView({ branches }: { branches: Branch[] }) {
       accessor: (u) => u.address?.zipCode,
       filterable: true,
       type: "number",
-      render: (u) => (
-        <div className="text-capitalize">{u.address?.zipCode}</div>
-      ),
+      render: (u) => <div className="text-uppercase">{u.address?.zipCode}</div>,
     },
     {
       key: "address.municipality",
@@ -55,7 +53,7 @@ function BranchesListView({ branches }: { branches: Branch[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">{u.address?.municipality}</div>
+        <div className="text-uppercase">{u.address?.municipality}</div>
       ),
     },
     {
@@ -64,7 +62,7 @@ function BranchesListView({ branches }: { branches: Branch[] }) {
       accessor: (u) => u.address?.state,
       filterable: true,
       type: "string",
-      render: (u) => <div className="text-capitalize">{u.address?.state}</div>,
+      render: (u) => <div className="text-uppercase">{u.address?.state}</div>,
     },
   ];
   return (

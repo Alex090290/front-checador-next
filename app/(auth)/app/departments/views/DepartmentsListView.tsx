@@ -21,7 +21,7 @@ function DepartmentsListView({ deparments }: { deparments: Department[] }) {
       accessor: (u) => u.nameDepartment,
       filterable: true,
       type: "string",
-      render: (u) => <div className="text-capitalize">{u.nameDepartment}</div>,
+      render: (u) => <div className="text-uppercase">{u.nameDepartment}</div>,
     },
     {
       key: "leader",
@@ -30,7 +30,7 @@ function DepartmentsListView({ deparments }: { deparments: Department[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">{`${u.leader?.name ?? " "} ${
+        <div className="text-uppercase">{`${u.leader?.name ?? " "} ${
           u.leader?.lastName ?? " "
         }`}</div>
       ),

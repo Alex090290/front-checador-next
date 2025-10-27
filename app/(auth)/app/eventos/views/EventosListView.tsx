@@ -126,7 +126,7 @@ function EventosListView({
       accessor: (row) => row.checks.type.replace(/_/g, " ").toUpperCase(),
       render: (row) => (
         <div
-          className={`rounded text-center fw-semibold ${
+          className={`rounded text-center fw-semibold px-2 ${
             row.checks.type === "no_clasificado" ? "bg-warning" : "bg-success"
           }`}
         >

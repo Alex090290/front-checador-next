@@ -21,7 +21,7 @@ function UsersListView({ users }: { users: User[] }) {
       accessor: (u) => u.name,
       filterable: true,
       type: "string",
-      render: (u) => <div className="text-capitalize">{u.name}</div>,
+      render: (u) => <div className="text-uppercase">{u.name}</div>,
     },
     {
       key: "lastName",
@@ -29,7 +29,7 @@ function UsersListView({ users }: { users: User[] }) {
       accessor: (u) => u.lastName,
       filterable: true,
       type: "string",
-      render: (u) => <div className="text-capitalize">{u.lastName}</div>,
+      render: (u) => <div className="text-uppercase">{u.lastName}</div>,
     },
     {
       key: "status",

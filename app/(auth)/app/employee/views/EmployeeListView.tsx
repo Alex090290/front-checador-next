@@ -20,7 +20,7 @@ function EmployeeListView({ employees }: { employees: Employee[] }) {
       accessor: (u) => u.name,
       filterable: true,
       type: "string",
-      render: (u) => <div className="text-capitalize">{u.name}</div>,
+      render: (u) => <div className="text-uppercase">{u.name}</div>,
     },
     {
       key: "lastName",
@@ -28,7 +28,7 @@ function EmployeeListView({ employees }: { employees: Employee[] }) {
       accessor: (u) => u.lastName,
       filterable: true,
       type: "string",
-      render: (u) => <div className="text-capitalize">{u.lastName}</div>,
+      render: (u) => <div className="text-uppercase">{u.lastName}</div>,
     },
     {
       key: "status",
@@ -67,7 +67,7 @@ function EmployeeListView({ employees }: { employees: Employee[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">{`${u.department?.nameDepartment}`}</div>
+        <div className="text-uppercase">{`${u.department?.nameDepartment}`}</div>
       ),
     },
     {
@@ -77,7 +77,7 @@ function EmployeeListView({ employees }: { employees: Employee[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">{`${u.position?.namePosition}`}</div>
+        <div className="text-uppercase">{`${u.position?.namePosition}`}</div>
       ),
     },
     {
@@ -87,7 +87,7 @@ function EmployeeListView({ employees }: { employees: Employee[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">{`${u.leader?.name ?? " "} ${
+        <div className="text-uppercase">{`${u.leader?.name ?? " "} ${
           u.leader?.lastName ?? " "
         }`}</div>
       ),
@@ -99,7 +99,7 @@ function EmployeeListView({ employees }: { employees: Employee[] }) {
       filterable: true,
       type: "string",
       render: (u) => (
-        <div className="text-capitalize">{`${u.branch?.name}`}</div>
+        <div className="text-uppercase">{`${u.branch?.name}`}</div>
       ),
     },
   ];
