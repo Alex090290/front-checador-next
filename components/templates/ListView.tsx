@@ -36,13 +36,7 @@ type BodyProps = { children: React.ReactNode };
 type FooterProps = { children: React.ReactNode };
 
 // Subcomponentes
-function Header({
-  children,
-  formView,
-  title,
-  formSearch,
-  actions,
-}: HeaderProps) {
+function Header({ children, formView, title, actions }: HeaderProps) {
   return (
     <Card.Header>
       <Container fluid>

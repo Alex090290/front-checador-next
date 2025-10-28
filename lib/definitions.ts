@@ -209,3 +209,10 @@ export interface ICheckInFeedback {
   positionEmployee: Position;
   branchEmployee: Branch;
 }
+
+export interface IDocumentTypes {
+  id: number;
+  text: string;
+  id_text: string;
+  exist: boolean;
+}

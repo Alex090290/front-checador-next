@@ -22,6 +22,7 @@ import {
 import { Button, Form } from "react-bootstrap";
 import { Many2one } from "@/components/fields/Many2one";
 import { useForm, SubmitHandler } from "react-hook-form";
+import Link from "next/link";
 
 type TSearchInputs = {
   date: string | null;
@@ -80,13 +81,13 @@ function EventosListView({
         }`;
         break;
       case "sale_a_comer":
-        string = `${schedules.scheduleLunch?.entry || " "} - ${
-          schedules.scheduleLunch?.exit || " "
+        string = `${schedules.scheduleLunch?.exit || " "} - ${
+          schedules.scheduleLunch?.entry || " "
         }`;
         break;
       case "regresa_de_comer":
-        string = `${schedules.scheduleLunch?.entry || " "} - ${
-          schedules.scheduleLunch?.exit || " "
+        string = `${schedules.scheduleLunch?.exit || " "} - ${
+          schedules.scheduleLunch?.entry || " "
         }`;
         break;
       case "entrada_sabado":
@@ -114,8 +115,14 @@ function EventosListView({
         `${row.employee.lastName?.toUpperCase()} ${row.employee.name?.toUpperCase()}`,
       filterable: true,
       render: (row) => (
-        <div className="text-uppercase">
-          {row.employee.lastName} {row.employee.name}
+        <div className="text-uppercase" onClick={(e) => e.stopPropagation()}>
+          <Link
+            href={`/app/employee?view_type=form&id=${row.employee.id}`}
+            className="text-decoration-none"
+          >
+            {row.employee.lastName} {row.employee.name}
+            <i className="bi bi-box-arrow-up-right ms-2"></i>
+          </Link>
         </div>
       ),
     },

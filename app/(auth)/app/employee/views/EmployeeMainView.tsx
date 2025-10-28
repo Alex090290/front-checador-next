@@ -1,13 +1,19 @@
 import NotFound from "@/app/not-found";
 import CatalogListView from "./EmployeeListView";
 import EmployeeFormView from "./EmployeeFormView";
-import { Branch, Department, Employee } from "@/lib/definitions";
+import {
+  Branch,
+  Department,
+  Employee,
+  IDocumentTypes,
+} from "@/lib/definitions";
 import {
   fetchEmployees,
   findEmployeeById,
 } from "@/app/actions/employee-actions";
 import { fetchDepartments } from "@/app/actions/departments-actions";
 import { fetchBranches } from "@/app/actions/branches-actionst";
+import { fetchDocumentTypes } from "@/app/actions/documents-actions";
 
 async function EmployeeMainView({
   viewType,
@@ -20,9 +26,13 @@ async function EmployeeMainView({
   let employees: Employee[] = [];
   let departments: Department[] = [];
   let branches: Branch[] = [];
+  let documents: IDocumentTypes[] = [];
 
   if (id && !isNaN(id)) {
-    employee = await findEmployeeById({ id });
+    [employee, documents] = await Promise.all([
+      findEmployeeById({ id }),
+      fetchDocumentTypes({ id }),
+    ]);
   }
 
   [employees, departments, branches] = await Promise.all([
@@ -41,6 +51,7 @@ async function EmployeeMainView({
         departments={departments || []}
         branches={branches || []}
         employees={employees || []}
+        documents={documents || []}
       />
     );
   } else {

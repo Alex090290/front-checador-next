@@ -10,16 +10,31 @@ import FormView, {
   PageSheet,
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
-import { Branch, Department, Employee, Position } from "@/lib/definitions";
+import {
+  Branch,
+  Department,
+  Employee,
+  IDocumentTypes,
+  Position,
+} from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
 import { TInputsEmployee } from "../definition";
 import { formatDate } from "date-fns";
-import { Button, Col, Container, Form, Row, Table } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  Row,
+  Table,
+} from "react-bootstrap";
 import ModalUnsubscribe from "./ModalUnsubscribe";
 import { reEntryUser } from "@/app/actions/user-actions";
+import DocumentsGrid from "./DocuementsGrid";
 
 const employeeStatus = {
   1: "activo",
@@ -32,12 +47,14 @@ function EmployeeFormView({
   departments,
   branches,
   employees,
+  documents,
 }: {
   employee: Employee | null;
   id: number;
   departments: Department[];
   branches: Branch[];
   employees: Employee[];
+  documents: IDocumentTypes[];
 }) {
   const {
     watch,
@@ -782,6 +799,19 @@ function EmployeeFormView({
                     </tbody>
                   </Table>
                 </Col>
+              </Row>
+            </Container>
+          </FormPage>
+          <FormPage title="Documentos" eventKey="documents">
+            <Container>
+              <Row className="g-2 mt-1">
+                {documents.map((doc) => (
+                  <DocumentsGrid
+                    key={doc.id_text}
+                    doc={doc}
+                    idEmployee={Number(id)}
+                  />
+                ))}
               </Row>
             </Container>
           </FormPage>
