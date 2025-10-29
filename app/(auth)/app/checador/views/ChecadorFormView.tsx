@@ -192,19 +192,37 @@ function ChecadorFormView() {
                       </tr>
                     </thead>
                     <tbody>
-                      {feedbackDisplay.map((feed) => (
-                        <tr key={feed.id} className="border-bottom">
-                          <td className="text-nowrap">{feed.name}</td>
-                          <td className="text-nowrap text-center fw-semibold">
-                            {feed.timestamp}
-                          </td>
-                          <td>
-                            {feed.type.replace("_", " ").replace("_", " ")}
-                          </td>
-                          <td className="text-nowrap">{feed.department}</td>
-                          <td className="text-nowrap">{feed.position}</td>
-                        </tr>
-                      ))}
+                      {feedbackDisplay.map((feed) => {
+                        const typeLabel = feed.type.replace(/_/g, " ");
+                        const isSalida = typeLabel
+                          .toLowerCase()
+                          .includes("sal");
+
+                        return (
+                          <tr
+                            key={feed.id}
+                            className="border-bottom align-middle"
+                          >
+                            <td className="text-nowrap">{feed.name}</td>
+                            <td className="text-nowrap text-center fw-semibold">
+                              {feed.timestamp}
+                            </td>
+                            <td className="text-nowrap">
+                              <i
+                                className={`bi ${
+                                  isSalida
+                                    ? "bi-box-arrow-right text-danger"
+                                    : "bi-box-arrow-in-left text-success"
+                                } me-1`}
+                                title={isSalida ? "Salida" : "Entrada"}
+                              ></i>
+                              {typeLabel}
+                            </td>
+                            <td className="text-nowrap">{feed.department}</td>
+                            <td className="text-nowrap">{feed.position}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </Table>
                 </Col>
