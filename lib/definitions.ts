@@ -165,13 +165,15 @@ export interface Employee {
   admissionDate: string;
   anniversaryLetter: string;
   visibleRecords: boolean;
-  dischargeDate: string;
+  dischargeDate: string | null;
   dischargeReason: string;
+  typeOfDischarge: string;
   reEntry?: {
     _id: string;
     reEntryDate: string;
     dischargeDate: string;
     dischargeReason: string;
+    typeOfDischarge: string;
   }[];
 }
 

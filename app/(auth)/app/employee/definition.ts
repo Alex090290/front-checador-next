@@ -68,7 +68,8 @@ export type TInputsEmployee = {
   admissionDate: string;
   anniversaryLetter: string;
   visibleRecords: boolean;
-  dischargeDate: string;
+  dischargeDate: string | null;
   dischargeReason: string;
+  typeOfDischarge: string;
   role: UserRole[];
 };

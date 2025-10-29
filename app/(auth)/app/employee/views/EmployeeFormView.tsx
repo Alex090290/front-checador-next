@@ -23,15 +23,7 @@ import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
 import { TInputsEmployee } from "../definition";
 import { formatDate } from "date-fns";
-import {
-  Button,
-  Card,
-  Col,
-  Container,
-  Form,
-  Row,
-  Table,
-} from "react-bootstrap";
+import { Button, Col, Container, Form, Row, Table } from "react-bootstrap";
 import ModalUnsubscribe from "./ModalUnsubscribe";
 import { reEntryUser } from "@/app/actions/user-actions";
 import DocumentsGrid from "./DocuementsGrid";
@@ -178,8 +170,9 @@ function EmployeeFormView({
         admissionDate: "",
         anniversaryLetter: "",
         visibleRecords: false,
-        dischargeDate: "",
+        dischargeDate: null,
         dischargeReason: "",
+        typeOfDischarge: "",
         role: [],
       };
       setPuestos([]);
@@ -242,8 +235,11 @@ function EmployeeFormView({
         admissionDate: formatDate(employee.admissionDate, "yyy-MM-dd"),
         anniversaryLetter: employee.anniversaryLetter,
         visibleRecords: employee.visibleRecords,
-        dischargeDate: formatDate(employee.dischargeDate, "yyy-MM-dd"),
+        dischargeDate: employee.dischargeDate
+          ? formatDate(employee.dischargeDate, "yyy-MM-dd")
+          : null,
         dischargeReason: employee.dischargeReason,
+        typeOfDischarge: employee.typeOfDischarge,
         role: employee.role || [],
       };
       reset(values);
@@ -462,7 +458,7 @@ function EmployeeFormView({
                   {/* <Entry register={register("comments")} label="Comentarios:" /> */}
                   <Form.Group>
                     <Form.Label className="fw-semibold">
-                      Obersevaciones generales:
+                      Observaciones generales:
                     </Form.Label>
                     <Form.Control
                       as="textarea"
@@ -764,7 +760,7 @@ function EmployeeFormView({
               </Row>
               <Row className="py-1">
                 <Col md="12">
-                  <Table borderless hover>
+                  <Table borderless hover className="text-uppercase">
                     <thead>
                       <tr>
                         <th className="border-end border-bottom table-active">
@@ -775,6 +771,9 @@ function EmployeeFormView({
                         </th>
                         <th className="border-end border-bottom table-active">
                           Razón
+                        </th>
+                        <th className="border-end border-bottom table-active">
+                          Tipo
                         </th>
                       </tr>
                     </thead>
@@ -791,8 +790,11 @@ function EmployeeFormView({
                               ? formatDate(re.dischargeDate, "MM/dd/yyyy")
                               : null}
                           </td>
-                          <td className="border-bottom">
+                          <td className="border-bottom text-nowrap">
                             {re.dischargeReason}
+                          </td>
+                          <td className="border-bottom text-nowrap">
+                            {re.typeOfDischarge}
                           </td>
                         </tr>
                       ))}

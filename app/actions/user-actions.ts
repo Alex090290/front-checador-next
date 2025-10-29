@@ -357,9 +357,11 @@ export async function updatePasswordUser({
 
 export async function unsubscribeUser({
   dischargeReason,
+  typeOfDischarge,
   id,
 }: {
   dischargeReason: string;
+  typeOfDischarge: string;
   id: number | null;
 }): Promise<ActionResponse<boolean>> {
   try {
@@ -370,6 +372,7 @@ export async function unsubscribeUser({
         `${API_URL}/employee/unsubscribe/${id}`,
         {
           dischargeReason,
+          typeOfDischarge,
         },
         {
           headers: {
