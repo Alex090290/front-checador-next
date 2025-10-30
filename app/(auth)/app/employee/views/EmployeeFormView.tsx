@@ -14,7 +14,7 @@ import {
   Branch,
   Department,
   Employee,
-  IDocumentTypes,
+  IPeriod,
   Position,
 } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,15 @@ import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
 import { TInputsEmployee } from "../definition";
 import { formatDate } from "date-fns";
-import { Button, Col, Container, Form, Row, Table } from "react-bootstrap";
+import {
+  Accordion,
+  Button,
+  Col,
+  Container,
+  Form,
+  Row,
+  Table,
+} from "react-bootstrap";
 import ModalUnsubscribe from "./ModalUnsubscribe";
 import { reEntryUser } from "@/app/actions/user-actions";
 import DocumentsGrid from "./DocuementsGrid";
@@ -46,7 +54,7 @@ function EmployeeFormView({
   departments: Department[];
   branches: Branch[];
   employees: Employee[];
-  documents: IDocumentTypes[];
+  documents: IPeriod[];
 }) {
   const {
     watch,
@@ -806,7 +814,7 @@ function EmployeeFormView({
           </FormPage>
           <FormPage title="Documentos" eventKey="documents">
             <Container>
-              <Row className="g-2 mt-1">
+              {/* <Row className="g-2 mt-1">
                 {documents.map((doc) => (
                   <DocumentsGrid
                     key={doc.id_text}
@@ -814,7 +822,28 @@ function EmployeeFormView({
                     idEmployee={Number(id)}
                   />
                 ))}
-              </Row>
+              </Row> */}
+              <Accordion>
+                {documents.map((period, index) => (
+                  <Accordion.Item
+                    eventKey={String(period.idPeriod)}
+                    key={`${period.idPeriod}-docs`}
+                  >
+                    <Accordion.Header>Periodo {index + 1}</Accordion.Header>
+                    <Accordion.Body>
+                      <Row className="g-2">
+                        {period.documents.map((doc) => (
+                          <DocumentsGrid
+                            key={doc.title}
+                            doc={doc}
+                            idEmployee={Number(id)}
+                          />
+                        ))}
+                      </Row>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                ))}
+              </Accordion>
             </Container>
           </FormPage>
         </FormBook>

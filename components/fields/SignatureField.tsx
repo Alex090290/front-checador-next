@@ -19,12 +19,12 @@ type SignatureInputProps = {
   rules?: RegisterOptions;
 };
 
-const canvasStyles: React.CSSProperties = {
-  border: "1px solid #ccc",
-  borderRadius: 4,
-  width: "100%",
-  height: 200,
-};
+// const canvasStyles: React.CSSProperties = {
+//   border: "1px solid #ccc",
+//   borderRadius: 4,
+//   width: "100%",
+//   height: 200,
+// };
 
 export const SignatureInput: React.FC<SignatureInputProps> = ({
   name,

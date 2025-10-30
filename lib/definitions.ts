@@ -212,9 +212,17 @@ export interface ICheckInFeedback {
   branchEmployee: Branch;
 }
 
-export interface IDocumentTypes {
+export interface IPeriod {
+  idPeriod: number;
+  documents: IPeriodDocument[];
+}
+
+export interface IPeriodDocument {
   id: number;
-  text: string;
-  id_text: string;
+  url: string;
+  idPeriod: number;
   exist: boolean;
+  title: string;
+  titleView: string;
+  createdAt: string;
 }

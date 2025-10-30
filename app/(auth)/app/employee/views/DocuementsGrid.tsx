@@ -1,4 +1,3 @@
-import { IDocumentTypes } from "@/lib/definitions";
 import { Button, Card, Col, Spinner } from "react-bootstrap";
 import { useRef, useState } from "react";
 import {
@@ -8,12 +7,13 @@ import {
 import toast from "react-hot-toast";
 import { useModals } from "@/context/ModalContext";
 import PDFViewerModal from "./PDFViewer";
+import { IPeriodDocument } from "@/lib/definitions";
 
 function DocumentsGrid({
   doc,
   idEmployee,
 }: {
-  doc: IDocumentTypes;
+  doc: IPeriodDocument;
   idEmployee: number;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,8 +54,9 @@ function DocumentsGrid({
 
       const res = await createDocument({
         formData,
-        idDocument: doc.id,
         idEmployee,
+        idDocument: doc.id,
+        idPeriod: doc.idPeriod,
       });
 
       if (!res.success) return modalError(res.message);
@@ -72,7 +73,11 @@ function DocumentsGrid({
   };
 
   const handleGetDocument = async () => {
-    const res = await getViewDocument({ idDocument: doc.id, idEmployee });
+    const res = await getViewDocument({
+      idDocument: doc.id,
+      idEmployee,
+      idPeriod: doc.idPeriod,
+    });
     if (!res.success) return modalError(res.message);
     setPdfUrl(res.data || "");
     setShowPdfModal(true);
@@ -97,7 +102,7 @@ function DocumentsGrid({
               className="text-center text-uppercase mb-0"
               style={{ fontSize: "0.9rem" }}
             >
-              {doc.text}
+              {doc.titleView}
             </Card.Title>
           </Card.Header>
           {loading ? (
