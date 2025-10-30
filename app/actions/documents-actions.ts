@@ -1,6 +1,6 @@
 "use server";
 
-import { ActionResponse, IDocumentTypes } from "@/lib/definitions";
+import { ActionResponse, IPeriod } from "@/lib/definitions";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { storeToken } from "@/lib/useToken";
@@ -10,7 +10,7 @@ export async function fetchDocumentTypes({
   id,
 }: {
   id: number;
-}): Promise<IDocumentTypes[]> {
+}): Promise<IPeriod[]> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
@@ -31,46 +31,7 @@ export async function fetchDocumentTypes({
         );
       });
 
-    return response.data;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
-    return [];
-  }
-}
-
-export async function findDocumentTypes({
-  idEmployee,
-  idDocument,
-}: {
-  idEmployee: number;
-  idDocument: number;
-}): Promise<IDocumentTypes[]> {
-  try {
-    const { apiToken, API_URL } = await storeAction();
-
-    const response = await axios
-      .get(
-        `${API_URL}/employee/listTypesDocuments/${Number(idEmployee)}/${Number(
-          idDocument
-        )}`,
-        {
-          headers: {
-            Authorization: `Bearer ${apiToken}`,
-          },
-        }
-      )
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+    console.log(response.data);
 
     return response.data;
 
@@ -80,14 +41,57 @@ export async function findDocumentTypes({
     return [];
   }
 }
+
+// export async function findDocumentTypes({
+//   idEmployee,
+//   idDocument,
+// }: {
+//   idEmployee: number;
+//   idDocument: number;
+// }): Promise<IPeriod[]> {
+//   try {
+//     const { apiToken, API_URL } = await storeAction();
+
+//     const response = await axios
+//       .get(
+//         `${API_URL}/employee/listTypesDocuments/${Number(idEmployee)}/${Number(
+//           idDocument
+//         )}`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${apiToken}`,
+//           },
+//         }
+//       )
+//       .then((res) => {
+//         return res.data;
+//       })
+//       .catch((err) => {
+//         throw new Error(
+//           err.response.data.message
+//             ? err.response.data.message
+//             : "Error en la respuesta"
+//         );
+//       });
+
+//     return response.data;
+
+//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   } catch (error: any) {
+//     console.log(error);
+//     return [];
+//   }
+// }
 
 export async function createDocument({
-  idDocument,
   idEmployee,
+  idDocument,
+  idPeriod,
   formData,
 }: {
   idEmployee: number;
   idDocument: number;
+  idPeriod: number;
   formData: FormData;
 }): Promise<ActionResponse<boolean>> {
   try {
@@ -101,7 +105,9 @@ export async function createDocument({
 
     const response = await axios
       .post(
-        `${apiUrl}/employee/documents/${Number(idEmployee)}/${idDocument}`,
+        `${apiUrl}/employee/documents/${Number(
+          idEmployee
+        )}/${idDocument}/${idPeriod}`,
         data,
         {
           headers: {
@@ -123,7 +129,7 @@ export async function createDocument({
 
     revalidatePath("/app/employee");
 
-    await getViewDocument({ idDocument, idEmployee });
+    // await getViewDocument({ idDocument, idEmployee });
 
     return {
       success: true,
@@ -142,23 +148,28 @@ export async function createDocument({
 }
 
 export async function getViewDocument({
-  idDocument,
   idEmployee,
+  idDocument,
+  idPeriod,
 }: {
   idEmployee: number;
   idDocument: number;
+  idPeriod: number;
 }): Promise<ActionResponse<string>> {
   try {
     const { apiToken, apiUrl } = await storeToken();
 
     // Obtener imagen en binario
     const resImg = await axios
-      .get(`${apiUrl}/employee/documents/${idEmployee}/${idDocument}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-        responseType: "arraybuffer",
-      })
+      .get(
+        `${apiUrl}/employee/documents/${idEmployee}/${idDocument}/${idPeriod}`,
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+          responseType: "arraybuffer",
+        }
+      )
       .then((res) => {
         return res.data;
       })

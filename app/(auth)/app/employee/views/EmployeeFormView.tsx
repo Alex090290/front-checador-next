@@ -14,7 +14,7 @@ import {
   Branch,
   Department,
   Employee,
-  IDocumentTypes,
+  IPeriod,
   Position,
 } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
@@ -24,8 +24,8 @@ import toast from "react-hot-toast";
 import { TInputsEmployee } from "../definition";
 import { formatDate } from "date-fns";
 import {
+  Accordion,
   Button,
-  Card,
   Col,
   Container,
   Form,
@@ -54,7 +54,7 @@ function EmployeeFormView({
   departments: Department[];
   branches: Branch[];
   employees: Employee[];
-  documents: IDocumentTypes[];
+  documents: IPeriod[];
 }) {
   const {
     watch,
@@ -178,8 +178,9 @@ function EmployeeFormView({
         admissionDate: "",
         anniversaryLetter: "",
         visibleRecords: false,
-        dischargeDate: "",
+        dischargeDate: null,
         dischargeReason: "",
+        typeOfDischarge: "",
         role: [],
       };
       setPuestos([]);
@@ -242,8 +243,11 @@ function EmployeeFormView({
         admissionDate: formatDate(employee.admissionDate, "yyy-MM-dd"),
         anniversaryLetter: employee.anniversaryLetter,
         visibleRecords: employee.visibleRecords,
-        dischargeDate: formatDate(employee.dischargeDate, "yyy-MM-dd"),
+        dischargeDate: employee.dischargeDate
+          ? formatDate(employee.dischargeDate, "yyy-MM-dd")
+          : null,
         dischargeReason: employee.dischargeReason,
+        typeOfDischarge: employee.typeOfDischarge,
         role: employee.role || [],
       };
       reset(values);
@@ -462,7 +466,7 @@ function EmployeeFormView({
                   {/* <Entry register={register("comments")} label="Comentarios:" /> */}
                   <Form.Group>
                     <Form.Label className="fw-semibold">
-                      Obersevaciones generales:
+                      Observaciones generales:
                     </Form.Label>
                     <Form.Control
                       as="textarea"
@@ -764,7 +768,7 @@ function EmployeeFormView({
               </Row>
               <Row className="py-1">
                 <Col md="12">
-                  <Table borderless hover>
+                  <Table borderless hover className="text-uppercase">
                     <thead>
                       <tr>
                         <th className="border-end border-bottom table-active">
@@ -775,6 +779,9 @@ function EmployeeFormView({
                         </th>
                         <th className="border-end border-bottom table-active">
                           Razón
+                        </th>
+                        <th className="border-end border-bottom table-active">
+                          Tipo
                         </th>
                       </tr>
                     </thead>
@@ -791,8 +798,11 @@ function EmployeeFormView({
                               ? formatDate(re.dischargeDate, "MM/dd/yyyy")
                               : null}
                           </td>
-                          <td className="border-bottom">
+                          <td className="border-bottom text-nowrap">
                             {re.dischargeReason}
+                          </td>
+                          <td className="border-bottom text-nowrap">
+                            {re.typeOfDischarge}
                           </td>
                         </tr>
                       ))}
@@ -804,7 +814,7 @@ function EmployeeFormView({
           </FormPage>
           <FormPage title="Documentos" eventKey="documents">
             <Container>
-              <Row className="g-2 mt-1">
+              {/* <Row className="g-2 mt-1">
                 {documents.map((doc) => (
                   <DocumentsGrid
                     key={doc.id_text}
@@ -812,7 +822,28 @@ function EmployeeFormView({
                     idEmployee={Number(id)}
                   />
                 ))}
-              </Row>
+              </Row> */}
+              <Accordion>
+                {documents.map((period, index) => (
+                  <Accordion.Item
+                    eventKey={String(period.idPeriod)}
+                    key={`${period.idPeriod}-docs`}
+                  >
+                    <Accordion.Header>Periodo {index + 1}</Accordion.Header>
+                    <Accordion.Body>
+                      <Row className="g-2">
+                        {period.documents.map((doc) => (
+                          <DocumentsGrid
+                            key={doc.title}
+                            doc={doc}
+                            idEmployee={Number(id)}
+                          />
+                        ))}
+                      </Row>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                ))}
+              </Accordion>
             </Container>
           </FormPage>
         </FormBook>

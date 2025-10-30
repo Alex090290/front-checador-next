@@ -198,8 +198,8 @@ function ChecadorFormView() {
                           <td className="text-nowrap text-center fw-semibold">
                             {feed.timestamp}
                           </td>
-                          <td>
-                            {feed.type.replace("_", " ").replace("_", " ")}
+                          <td className="text-nowrap">
+                            {feed.type.replace(/_/g, " ").toUpperCase()}
                           </td>
                           <td className="text-nowrap">{feed.department}</td>
                           <td className="text-nowrap">{feed.position}</td>

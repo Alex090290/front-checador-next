@@ -13,42 +13,42 @@ export interface PhoneNumberFormat {
   dialCode: string;
 }
 
-type MexicanAreaCode =
-  | "33"
-  | "55"
-  | "56"
-  | "81"
-  | "22"
-  | "44"
-  | "66"
-  | "87"
-  | "61"
-  | "89"
-  | "99"
-  | "83"
-  | "77"
-  | "74"
-  | "73"
-  | "47";
+// type MexicanAreaCode =
+//   | "33"
+//   | "55"
+//   | "56"
+//   | "81"
+//   | "22"
+//   | "44"
+//   | "66"
+//   | "87"
+//   | "61"
+//   | "89"
+//   | "99"
+//   | "83"
+//   | "77"
+//   | "74"
+//   | "73"
+//   | "47";
 
-const VALID_MEXICAN_AREA_CODES: MexicanAreaCode[] = [
-  "33",
-  "55",
-  "56",
-  "81",
-  "22",
-  "44",
-  "66",
-  "87",
-  "61",
-  "89",
-  "99",
-  "83",
-  "77",
-  "74",
-  "73",
-  "47",
-];
+// const VALID_MEXICAN_AREA_CODES: MexicanAreaCode[] = [
+//   "33",
+//   "55",
+//   "56",
+//   "81",
+//   "22",
+//   "44",
+//   "66",
+//   "87",
+//   "61",
+//   "89",
+//   "99",
+//   "83",
+//   "77",
+//   "74",
+//   "73",
+//   "47",
+// ];
 
 export function sanitizePhoneNumber(phoneNumber: string): PhoneNumberFormat {
   if (!phoneNumber || phoneNumber === "null") {

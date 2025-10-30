@@ -311,6 +311,7 @@ export async function updateEmploye({
           dischargeDate: data.dischargeDate,
           anniversaryLetter: data.anniversaryLetter,
           dischargeReason: data.dischargeReason,
+          typeOfDischarge: data.typeOfDischarge,
           role: data.role,
           visibleRecords: true,
         },

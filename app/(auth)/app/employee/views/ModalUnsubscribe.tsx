@@ -1,7 +1,7 @@
 "use client";
 
 import { unsubscribeUser } from "@/app/actions/user-actions";
-import { Entry } from "@/components/fields";
+import { Entry, FieldSelect } from "@/components/fields";
 import { FieldGroupFluid } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps } from "@/lib/definitions";
@@ -20,17 +20,22 @@ function ModalUnsubscribe({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<{ dischargeReason: string | null }>({
-    defaultValues: { dischargeReason: "" },
+  } = useForm<{
+    dischargeReason: string | null;
+    typeOfDischarge: string | null;
+  }>({
+    defaultValues: { dischargeReason: "", typeOfDischarge: "" },
   });
 
   const { modalError, modalConfirm } = useModals();
 
   const onSubmit: SubmitHandler<{
     dischargeReason: string | null;
+    typeOfDischarge: string | null;
   }> = async (data) => {
     const res = await unsubscribeUser({
       dischargeReason: data.dischargeReason || "",
+      typeOfDischarge: data.typeOfDischarge || "",
       id,
     });
 
@@ -79,6 +84,20 @@ function ModalUnsubscribe({
                 label="Motivo de la baja:"
                 invalid={!!errors.dischargeReason}
                 feedBack={errors.dischargeReason?.message}
+              />
+              {/* <Entry
+                register={register("typeOfDischarge")}
+                label="Tipo de baja:"
+              /> */}
+              <FieldSelect
+                label="Tipo:"
+                register={register("typeOfDischarge", { required: true })}
+                options={[
+                  { label: "Despido", value: "despido" },
+                  { label: "Renuncia", value: "renuncia" },
+                  { label: "Abandono", value: "abandono" },
+                ]}
+                invalid={!!errors.typeOfDischarge}
               />
             </FieldGroupFluid>
           </fieldset>

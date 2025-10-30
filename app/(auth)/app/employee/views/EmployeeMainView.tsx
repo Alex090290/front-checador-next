@@ -1,12 +1,7 @@
 import NotFound from "@/app/not-found";
 import CatalogListView from "./EmployeeListView";
 import EmployeeFormView from "./EmployeeFormView";
-import {
-  Branch,
-  Department,
-  Employee,
-  IDocumentTypes,
-} from "@/lib/definitions";
+import { Branch, Department, Employee, IPeriod } from "@/lib/definitions";
 import {
   fetchEmployees,
   findEmployeeById,
@@ -26,7 +21,7 @@ async function EmployeeMainView({
   let employees: Employee[] = [];
   let departments: Department[] = [];
   let branches: Branch[] = [];
-  let documents: IDocumentTypes[] = [];
+  let documents: IPeriod[] = [];
 
   if (id && !isNaN(id)) {
     [employee, documents] = await Promise.all([

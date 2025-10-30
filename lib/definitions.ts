@@ -165,13 +165,15 @@ export interface Employee {
   admissionDate: string;
   anniversaryLetter: string;
   visibleRecords: boolean;
-  dischargeDate: string;
+  dischargeDate: string | null;
   dischargeReason: string;
+  typeOfDischarge: string;
   reEntry?: {
     _id: string;
     reEntryDate: string;
     dischargeDate: string;
     dischargeReason: string;
+    typeOfDischarge: string;
   }[];
 }
 
@@ -210,9 +212,17 @@ export interface ICheckInFeedback {
   branchEmployee: Branch;
 }
 
-export interface IDocumentTypes {
+export interface IPeriod {
+  idPeriod: number;
+  documents: IPeriodDocument[];
+}
+
+export interface IPeriodDocument {
   id: number;
-  text: string;
-  id_text: string;
+  url: string;
+  idPeriod: number;
   exist: boolean;
+  title: string;
+  titleView: string;
+  createdAt: string;
 }
