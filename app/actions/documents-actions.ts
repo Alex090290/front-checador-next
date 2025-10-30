@@ -31,8 +31,6 @@ export async function fetchDocumentTypes({
         );
       });
 
-    console.log(response.data);
-
     return response.data;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,8 +126,6 @@ export async function createDocument({
       });
 
     revalidatePath("/app/employee");
-
-    // await getViewDocument({ idDocument, idEmployee });
 
     return {
       success: true,

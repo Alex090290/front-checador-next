@@ -1,4 +1,4 @@
-import { Button, Card, Col, Spinner } from "react-bootstrap";
+import { Button, Card, Col, ProgressBar } from "react-bootstrap";
 import { useRef, useState } from "react";
 import {
   createDocument,
@@ -40,17 +40,15 @@ function DocumentsGrid({
   };
 
   const handleUpload = async () => {
-    setLoading(true);
-    const toastId = toast.loading("Subiendo archivo...");
     if (selectedFiles.length > 0) {
+      setLoading(true);
+      const toastId = toast.loading("Subiendo archivo...");
       const formData = new FormData();
 
       // Agregar cada archivo al FormData
       selectedFiles.forEach((file) => {
         formData.append("files", file);
       });
-
-      //   onFilesChange(formData);
 
       const res = await createDocument({
         formData,
@@ -68,11 +66,12 @@ function DocumentsGrid({
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleGetDocument = async () => {
+    setLoading(true);
     const res = await getViewDocument({
       idDocument: doc.id,
       idEmployee,
@@ -81,6 +80,7 @@ function DocumentsGrid({
     if (!res.success) return modalError(res.message);
     setPdfUrl(res.data || "");
     setShowPdfModal(true);
+    setLoading(false);
   };
 
   const handleCancel = () => {
@@ -107,10 +107,10 @@ function DocumentsGrid({
           </Card.Header>
           {loading ? (
             <div
-              className="d-flex justify-content-center align-items-center"
+              className="text-center h-100 align-content-center"
               style={{ height: "200px" }}
             >
-              <Spinner animation="border" />
+              <ProgressBar variant="info" striped now={100} animated />
             </div>
           ) : (
             <Card.Body className="p-2 d-flex flex-column justify-content-between">
