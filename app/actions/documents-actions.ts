@@ -40,47 +40,6 @@ export async function fetchDocumentTypes({
   }
 }
 
-// export async function findDocumentTypes({
-//   idEmployee,
-//   idDocument,
-// }: {
-//   idEmployee: number;
-//   idDocument: number;
-// }): Promise<IPeriod[]> {
-//   try {
-//     const { apiToken, API_URL } = await storeAction();
-
-//     const response = await axios
-//       .get(
-//         `${API_URL}/employee/listTypesDocuments/${Number(idEmployee)}/${Number(
-//           idDocument
-//         )}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${apiToken}`,
-//           },
-//         }
-//       )
-//       .then((res) => {
-//         return res.data;
-//       })
-//       .catch((err) => {
-//         throw new Error(
-//           err.response.data.message
-//             ? err.response.data.message
-//             : "Error en la respuesta"
-//         );
-//       });
-
-//     return response.data;
-
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   } catch (error: any) {
-//     console.log(error);
-//     return [];
-//   }
-// }
-
 export async function createDocument({
   idEmployee,
   idDocument,
@@ -185,6 +144,61 @@ export async function getViewDocument({
       success: true,
       message: "Imagen subida correctamente",
       data: pdfBase64Url,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
+export async function updateExpirationDocument({
+  idEmpleado,
+  idDocument,
+  idPeriod,
+  date,
+}: {
+  idEmpleado: number;
+  idDocument: number;
+  idPeriod: number;
+  date: string;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const { apiToken, apiUrl } = await storeToken();
+
+    await axios
+      .put(
+        `${apiUrl}/employee/documents/dateExpiration/${idEmpleado}/${idDocument}/${idPeriod}`,
+        {
+          date,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: "Empleado actualizado",
+      data: true,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -813,16 +813,7 @@ function EmployeeFormView({
             </Container>
           </FormPage>
           <FormPage title="Documentos" eventKey="documents">
-            <Container>
-              {/* <Row className="g-2 mt-1">
-                {documents.map((doc) => (
-                  <DocumentsGrid
-                    key={doc.id_text}
-                    doc={doc}
-                    idEmployee={Number(id)}
-                  />
-                ))}
-              </Row> */}
+            <Container className="mt-1">
               <Accordion>
                 {documents.map((period, index) => (
                   <Accordion.Item

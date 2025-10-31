@@ -225,4 +225,5 @@ export interface IPeriodDocument {
   title: string;
   titleView: string;
   createdAt: string;
+  dateExpiration?: string;
 }

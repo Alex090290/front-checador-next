@@ -1,4 +1,11 @@
-import { Button, Card, Col, ProgressBar } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  DropdownButton,
+  ProgressBar,
+} from "react-bootstrap";
 import { useRef, useState } from "react";
 import {
   createDocument,
@@ -8,6 +15,8 @@ import toast from "react-hot-toast";
 import { useModals } from "@/context/ModalContext";
 import PDFViewerModal from "./PDFViewer";
 import { IPeriodDocument } from "@/lib/definitions";
+import ModalExpirationDate from "./ModalExpirationDate";
+import { formatDate } from "date-fns";
 
 function DocumentsGrid({
   doc,
@@ -20,6 +29,8 @@ function DocumentsGrid({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const [showPdfModal, setShowPdfModal] = useState(false);
+  const [modalExpirationDate, setModalExpirationDate] = useState(false);
+
   const [pdfUrl, setPdfUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -97,23 +108,41 @@ function DocumentsGrid({
           className="rounded shadow-sm bg-body-tertiary"
           style={{ height: "200px" }}
         >
-          <Card.Header className="py-2">
+          <Card.Header
+            className="d-flex justify-content-between align-items-center"
+            style={{ height: "50px" }}
+          >
             <Card.Title
               className="text-center text-uppercase mb-0"
               style={{ fontSize: "0.9rem" }}
             >
               {doc.titleView}
             </Card.Title>
+            {doc.exist && (
+              <DropdownButton
+                size="sm"
+                variant="info"
+                title={<i className="bi bi-gear-fill"></i>}
+              >
+                <Dropdown.Item
+                  as={Button}
+                  onClick={() => setModalExpirationDate(!modalExpirationDate)}
+                >
+                  <i className="bi bi-calendar-minus me-1"></i>
+                  Fecha de expiración
+                </Dropdown.Item>
+              </DropdownButton>
+            )}
           </Card.Header>
           {loading ? (
             <div
               className="text-center h-100 align-content-center"
               style={{ height: "200px" }}
             >
-              <ProgressBar variant="info" striped now={100} animated />
+              <ProgressBar variant="primary" striped now={100} animated />
             </div>
           ) : (
-            <Card.Body className="p-2 d-flex flex-column justify-content-between">
+            <Card.Body>
               {/* Input file oculto */}
               <input
                 type="file"
@@ -144,16 +173,27 @@ function DocumentsGrid({
               )}
 
               {/* Botones condicionales */}
-              <div className="d-flex flex-column gap-1">
+              <div className="d-flex flex-column justify-content-center gap-1">
                 {selectedFiles.length === 0 ? (
                   <>
                     <Button onClick={handleButtonClick}>
                       {doc.exist ? "Reemplazar" : "Cargar"}
                     </Button>
                     {doc.exist && (
-                      <Button variant="warning" onClick={handleGetDocument}>
-                        Visualizar
-                      </Button>
+                      <>
+                        <Button variant="warning" onClick={handleGetDocument}>
+                          Visualizar
+                        </Button>
+                        {doc.dateExpiration && (
+                          <div
+                            className="fw-semibold text-center"
+                            style={{ fontSize: "0.9rem" }}
+                          >
+                            Expira:{" "}
+                            {formatDate(doc.dateExpiration, "dd/MM/yyyy")}
+                          </div>
+                        )}
+                      </>
                     )}
                   </>
                 ) : (
@@ -179,6 +219,14 @@ function DocumentsGrid({
         show={showPdfModal}
         onHide={() => setShowPdfModal(false)}
         pdfBase64Url={pdfUrl}
+      />
+      <ModalExpirationDate
+        show={modalExpirationDate}
+        onHide={() => setModalExpirationDate(!modalExpirationDate)}
+        idPeriod={doc.idPeriod}
+        idDocument={doc.id}
+        idEmpleado={idEmployee}
+        title={doc.titleView}
       />
     </>
   );
