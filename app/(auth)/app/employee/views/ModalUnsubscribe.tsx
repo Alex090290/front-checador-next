@@ -96,6 +96,7 @@ function ModalUnsubscribe({
                   { label: "Despido", value: "despido" },
                   { label: "Renuncia", value: "renuncia" },
                   { label: "Abandono", value: "abandono" },
+                  { label: "Jubilación", value: "jubilación" },
                 ]}
                 invalid={!!errors.typeOfDischarge}
               />
