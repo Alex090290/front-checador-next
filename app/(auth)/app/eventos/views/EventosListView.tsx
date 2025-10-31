@@ -81,13 +81,13 @@ function EventosListView({
         }`;
         break;
       case "sale_a_comer":
-        string = `${schedules.scheduleLunch?.entry || " "} - ${
-          schedules.scheduleLunch?.exit || " "
+        string = `${schedules.scheduleLunch?.exit || " "} - ${
+          schedules.scheduleLunch?.entry || " "
         }`;
         break;
       case "regresa_de_comer":
-        string = `${schedules.scheduleLunch?.entry || " "} - ${
-          schedules.scheduleLunch?.exit || " "
+        string = `${schedules.scheduleLunch?.exit || " "} - ${
+          schedules.scheduleLunch?.entry || " "
         }`;
         break;
       case "entrada_sabado":
