@@ -575,12 +575,12 @@ function EmployeeFormView({
                 </FieldGroup.Stack>
                 <FieldGroup.Stack>
                   <Entry
-                    register={register("exitLunch", { required: true })}
+                    register={register("entryLunch", { required: true })}
                     label="Salida comedor:"
                     invalid={!!errors.exitLunch}
                   />
                   <Entry
-                    register={register("entryLunch", { required: true })}
+                    register={register("exitLunch", { required: true })}
                     label="Entrada comedor:"
                     invalid={!!errors.entryLunch}
                   />
