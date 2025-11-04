@@ -1,11 +1,12 @@
 import NotFound from "@/app/not-found";
 import UsersListView from "./UsersListView";
-import { Permission, User } from "@/lib/definitions";
+import { Employee, Permission, User } from "@/lib/definitions";
 import { fetchUsers, findUserById } from "@/app/actions/user-actions";
 import UsersFormView from "./UsersFormView";
 import { fetchPermissions } from "@/app/actions/permission-actions";
 import { Suspense } from "react";
 import { Spinner } from "react-bootstrap";
+import { fetchEmployees } from "@/app/actions/employee-actions";
 
 async function UsersMainView({
   viewType,
@@ -19,6 +20,7 @@ async function UsersMainView({
   let users: User[] = [];
   let user: User | null = null;
   let permissions: Permission[] = [];
+  let employees: Employee[] = [];
 
   let getUsers: User[] = [];
 
@@ -26,7 +28,11 @@ async function UsersMainView({
     user = await findUserById({ id: Number(id) });
   }
 
-  [users, permissions] = await Promise.all([fetchUsers(), fetchPermissions()]);
+  [users, permissions, employees] = await Promise.all([
+    fetchUsers(),
+    fetchPermissions(),
+    fetchEmployees(),
+  ]);
 
   getUsers = users.filter((u) => u.role !== "EMPLOYEE");
 
@@ -40,6 +46,7 @@ async function UsersMainView({
           id={Number(id)}
           perms={permissions || []}
           profile={profile}
+          employees={employees}
         />
       </Suspense>
     );

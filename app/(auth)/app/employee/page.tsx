@@ -12,7 +12,7 @@ async function PageEmployee({
 
   return (
     <Suspense fallback={<LoadingPage />}>
-      <EmployeeMainView viewType={viewType} id={Number(id)} />
+      <EmployeeMainView viewType={viewType} id={id} />
     </Suspense>
   );
 }

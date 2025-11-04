@@ -8,10 +8,12 @@ function TopNavItems() {
   const { data: session } = useSession();
   return (
     <Nav className="flex-column" defaultActiveKey="/app/users" variant="pills">
-      <Nav.Link as={Link} href="/app">
-        <i className="bi bi-speedometer me-1"></i>
-        <span>Dashboard</span>
-      </Nav.Link>
+      <Nav.Item>
+        <Nav.Link as={Link} href="/app">
+          <i className="bi bi-speedometer me-1"></i>
+          <span>Dashboard</span>
+        </Nav.Link>
+      </Nav.Item>
       {session?.user?.role === "SUPER_ADMIN" && (
         <Nav.Link as={Link} href="/app/users?view_type=list&id=null">
           <i className="bi bi-people-fill me-1"></i>

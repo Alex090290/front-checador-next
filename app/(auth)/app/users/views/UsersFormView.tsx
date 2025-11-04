@@ -1,14 +1,14 @@
 "use client";
 
 import { createUser, loadAvatar, updateUser } from "@/app/actions/user-actions";
-import { Entry, FieldSelect } from "@/components/fields";
+import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import FormView, {
   FieldGroup,
   FormBook,
   FormPage,
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
-import { Permission, User, UserRole } from "@/lib/definitions";
+import { Employee, Permission, User, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -29,6 +29,7 @@ type TInputs = {
   phone: PhoneNumberFormat | string | null;
   status: 1 | 2 | 3;
   imageUrl?: string | null;
+  idEmployee: number | null;
 };
 
 function UsersFormView({
@@ -36,11 +37,13 @@ function UsersFormView({
   id,
   perms,
   profile,
+  employees,
 }: {
   user: User | null;
   id: number;
   perms: Permission[];
   profile: string;
+  employees: Employee[];
 }) {
   const {
     register,
@@ -102,6 +105,7 @@ function UsersFormView({
         status: 3,
         password: "",
         imageUrl: null,
+        idEmployee: null,
       };
       reset(values);
       originalValuesRef.current = values;
@@ -117,6 +121,7 @@ function UsersFormView({
         status: user.status,
         password: "",
         imageUrl: null,
+        idEmployee: user.idEmployee || null,
       };
       reset(values);
       originalValuesRef.current = values;
@@ -272,6 +277,17 @@ function UsersFormView({
             invalid={!!errors.role}
             feedBack={errors.role?.message}
             invisble={isNaN(id)}
+          />
+          <RelationField
+            options={employees.map((e) => ({
+              id: e.id || 0,
+              displayName: e.name?.toUpperCase() || "",
+              name: e.name?.toUpperCase(),
+            }))}
+            register={register("idEmployee")}
+            control={control}
+            callBackMode="id"
+            label="Empleado relacionado:"
           />
         </FieldGroup>
 

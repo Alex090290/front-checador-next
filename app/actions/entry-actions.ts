@@ -105,9 +105,16 @@ export async function fetchCheckInFeedback(): Promise<
 > {
   try {
     const { apiToken, apiUrl } = await storeToken();
+    const url = `${apiUrl}/checador/view`;
+
+    // if (user?.role === "CHECADOR") {
+    //   url += `?idUser=${user.id}`;
+    // }
+
+    console.log(url);
 
     const response = await axios
-      .get(`${apiUrl}/checador/view`, {
+      .get(url, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },

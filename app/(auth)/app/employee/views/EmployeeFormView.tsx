@@ -29,12 +29,14 @@ import {
   Col,
   Container,
   Form,
+  Nav,
   Row,
   Table,
 } from "react-bootstrap";
 import ModalUnsubscribe from "./ModalUnsubscribe";
 import { reEntryUser } from "@/app/actions/user-actions";
 import DocumentsGrid from "./DocuementsGrid";
+import { useSession } from "next-auth/react";
 
 const employeeStatus = {
   1: "activo",
@@ -50,7 +52,7 @@ function EmployeeFormView({
   documents,
 }: {
   employee: Employee | null;
-  id: number;
+  id: string;
   departments: Department[];
   branches: Branch[];
   employees: Employee[];
@@ -64,6 +66,8 @@ function EmployeeFormView({
     handleSubmit,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<TInputsEmployee>();
+
+  const { data: session } = useSession();
 
   const {
     append: appContacts,
@@ -85,7 +89,9 @@ function EmployeeFormView({
   const [modalUnsubscribe, setModalUnsubscribe] = useState(false);
 
   const onSubmit: SubmitHandler<TInputsEmployee> = async (data) => {
-    if (isNaN(id)) {
+    console.log("submit");
+
+    if (id && id === "null") {
       const res = await createEmployee({ data });
       if (!res.success) {
         modalError(res.message);
@@ -95,7 +101,7 @@ function EmployeeFormView({
       toast.success(res.message);
       router.back();
     } else {
-      const res = await updateEmploye({ data, id });
+      const res = await updateEmploye({ data, id: Number(id) });
       if (!res.success) {
         modalError(res.message);
         return;
@@ -107,7 +113,7 @@ function EmployeeFormView({
 
   const handleReEntry = async () => {
     modalConfirm("Confirma el reingreso del Empleado", async () => {
-      const res = await reEntryUser({ id });
+      const res = await reEntryUser({ id: Number(id) });
       if (!res.success) return modalError(res.message);
 
       toast.success(res.message);
@@ -144,7 +150,7 @@ function EmployeeFormView({
         phoneExtCompany: 0,
         address: {
           street: "",
-          country: "",
+          country: "México",
           municipality: "",
           neighborhood: "",
           numberIn: "",
@@ -257,6 +263,17 @@ function EmployeeFormView({
     }
   }, [employee, reset]);
 
+  // useEffect(() => {
+  //   console.log(
+  //     "isDirty:",
+  //     isDirty,
+  //     "isSubmitting:",
+  //     isSubmitting,
+  //     "errors:",
+  //     errors
+  //   );
+  // }, [errors, isDirty, isSubmitting]);
+
   useEffect(() => {
     if (deps) {
       const positions: Position[] =
@@ -275,7 +292,7 @@ function EmployeeFormView({
         onSubmit={handleSubmit(onSubmit)}
         name={`${employee?.name || ""} ${employee?.lastName || ""}` || null}
         isDirty={isDirty}
-        id={id}
+        id={Number(id)}
         disabled={isSubmitting}
         cleanUrl="/app/employee?view_type=form&id=null"
         state={employeeStatus[employee?.status as keyof typeof employeeStatus]}
@@ -372,10 +389,16 @@ function EmployeeFormView({
                   </FieldGroup.Stack>
                   <FieldGroup.Stack>
                     <Entry
+                      register={register("address.municipality")}
+                      label="Municipio:"
+                    />
+                    <Entry
                       register={register("address.state", { required: true })}
                       label="Estado:"
                       invalid={!!errors.address?.state}
                     />
+                  </FieldGroup.Stack>
+                  <FieldGroup.Stack>
                     <Entry
                       register={register("address.country", { required: true })}
                       label="País:"
@@ -417,7 +440,7 @@ function EmployeeFormView({
                       register={register("curp", { required: true })}
                       label="CURP:"
                       className="text-uppercase"
-                      invisible={!!errors.curp}
+                      invalid={!!errors.curp}
                     />
                   </FieldGroup.Stack>
                 </FieldGroup>
@@ -577,12 +600,12 @@ function EmployeeFormView({
                   <Entry
                     register={register("entryLunch", { required: true })}
                     label="Salida comedor:"
-                    invalid={!!errors.exitLunch}
+                    invalid={!!errors.entryLunch}
                   />
                   <Entry
                     register={register("exitLunch", { required: true })}
                     label="Entrada comedor:"
-                    invalid={!!errors.entryLunch}
+                    invalid={!!errors.exitLunch}
                   />
                 </FieldGroup.Stack>
                 <FieldGroup.Stack>
@@ -744,20 +767,25 @@ function EmployeeFormView({
                     <Entry
                       register={register("admissionDate")}
                       label="Inicio de relación:"
-                      invisible={isNaN(id)}
+                      invisible={id === "null"}
                       className="text-center"
                       readonly
                     />
                     <Entry
                       register={register("dischargeDate")}
                       label="Fin de relación:"
-                      invisible={isNaN(id)}
+                      invisible={id === "null"}
                       className="text-center"
                       readonly
                     />
                   </FieldGroup.Stack>
                 </FieldGroup>
                 <FieldGroup>
+                  <Entry
+                    register={register("typeOfDischarge")}
+                    label="Tipo de baja:"
+                    readonly
+                  />
                   <Entry
                     label=""
                     register={register("dischargeReason")}
@@ -814,6 +842,19 @@ function EmployeeFormView({
           </FormPage>
           <FormPage title="Documentos" eventKey="documents">
             <Container className="mt-1">
+              <Row>
+                <Col md="12">
+                  <Nav>
+                    {session?.user?.permissions.some(
+                      (p) => p.text === "crear_plantilla_de_documento"
+                    ) && (
+                      <Nav.Item>
+                        <Nav.Link>Nueva plantilla</Nav.Link>
+                      </Nav.Item>
+                    )}
+                  </Nav>
+                </Col>
+              </Row>
               <Accordion>
                 {documents.map((period, index) => (
                   <Accordion.Item
@@ -842,7 +883,7 @@ function EmployeeFormView({
       <ModalUnsubscribe
         show={modalUnsubscribe}
         onHide={() => setModalUnsubscribe(!modalUnsubscribe)}
-        id={id}
+        id={Number(id)}
       />
     </>
   );

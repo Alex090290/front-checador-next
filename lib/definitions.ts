@@ -24,6 +24,7 @@ export interface User {
   permissions: Permission[];
   phone: PhoneNumberFormat;
   createdAt: string;
+  idEmployee: number | null;
 }
 
 export type DisplayType = {

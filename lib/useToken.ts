@@ -1,8 +1,10 @@
+import { Session } from "next-auth";
 import { auth } from "./auth";
 
 interface IStoreToken {
   apiUrl: string | undefined;
   apiToken: string | null;
+  user: Session["user"];
 }
 
 export async function storeToken(): Promise<IStoreToken> {
@@ -13,5 +15,6 @@ export async function storeToken(): Promise<IStoreToken> {
   return {
     apiUrl: API_URL,
     apiToken,
+    user: session?.user,
   };
 }

@@ -15,7 +15,7 @@ async function EmployeeMainView({
   id,
 }: {
   viewType: string;
-  id: number;
+  id: string;
 }) {
   let employee: Employee | null = null;
   let employees: Employee[] = [];
@@ -23,10 +23,10 @@ async function EmployeeMainView({
   let branches: Branch[] = [];
   let documents: IPeriod[] = [];
 
-  if (id && !isNaN(id)) {
+  if (id && id !== "null") {
     [employee, documents] = await Promise.all([
-      findEmployeeById({ id }),
-      fetchDocumentTypes({ id }),
+      findEmployeeById({ id: Number(id) }),
+      fetchDocumentTypes({ id: Number(id) }),
     ]);
   }
 

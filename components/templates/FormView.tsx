@@ -75,7 +75,7 @@ function FormView({
 
   return (
     <Row className="h-100 overflow-auto">
-      <Col xs="12" md="8" className="h-100">
+      <Col xs="12" md="12" className="h-100">
         <Form className="card d-flex flex-column h-100 border-0">
           <fieldset
             className="card-header d-flex justify-content-between gap-2 border-bottom-0"
@@ -234,7 +234,6 @@ function FormView({
           </fieldset>
         </Form>
       </Col>
-      <Col xs="12" md="4" className="h-100"></Col>
     </Row>
   );
 }

@@ -208,6 +208,7 @@ export async function createUser({
   status,
   phone,
   password,
+  idEmployee,
 }: {
   name: string;
   lastName: string;
@@ -218,6 +219,7 @@ export async function createUser({
   status: number;
   phone: PhoneNumberFormat | string | null;
   password: string;
+  idEmployee: number | null;
 }) {
   const { apiToken, API_URL } = await storeAction();
 
@@ -236,6 +238,7 @@ export async function createUser({
         status,
         phone: sanitizedPhone,
         password,
+        idEmployee,
       },
       {
         headers: {
@@ -267,6 +270,7 @@ export async function updateUser({
   status,
   phone,
   id,
+  idEmployee,
 }: {
   name: string;
   lastName: string;
@@ -277,6 +281,7 @@ export async function updateUser({
   status: number;
   phone: PhoneNumberFormat | string | null;
   id: number;
+  idEmployee: number | null;
 }): Promise<string | boolean> {
   const { apiToken, API_URL } = await storeAction();
 
@@ -294,6 +299,7 @@ export async function updateUser({
         permissions,
         status: Number(status),
         phone: sanitizedPhone,
+        idEmployee,
       },
       {
         headers: {
