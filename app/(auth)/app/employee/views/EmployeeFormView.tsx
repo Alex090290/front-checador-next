@@ -456,9 +456,10 @@ function EmployeeFormView({
                       invalid={!!errors.gender}
                     />
                     <Entry
-                      register={register("bloodType")}
+                      register={register("bloodType", { required: true })}
                       label="Grupo sanguíneo:"
                       className="text-center"
+                      invalid={!!errors.bloodType}
                     />
                   </FieldGroup.Stack>
                   <FieldGroup.Stack>
