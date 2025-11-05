@@ -6,9 +6,14 @@ import axios from "axios";
 
 export async function fetchEventos(): Promise<ICheckInFeedback[]> {
   try {
-    const { API_URL, apiToken } = await storeAction();
+    const { API_URL, apiToken,session } = await storeAction();
+
+    let url = `${API_URL}/checador/view`;
+
+    if (session?.role === "CHECADOR") url += `?idUser=${session?.id}`;
+
     const response = await axios
-      .get(`${API_URL}/checador/view`, {
+      .get(url, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },

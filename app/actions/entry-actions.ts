@@ -104,12 +104,12 @@ export async function fetchCheckInFeedback(): Promise<
   ActionResponse<ICheckInFeedback[]>
 > {
   try {
-    const { apiToken, apiUrl } = await storeToken();
-    const url = `${apiUrl}/checador/view`;
+    const { apiToken, apiUrl, user } = await storeToken();
 
-    // if (user?.role === "CHECADOR") {
-    //   url += `?idUser=${user.id}`;
-    // }
+    let url = `${apiUrl}/checador/view`;
+
+    if (user?.role === "CHECADOR") url += `?idUser=${user.id}`;
+      
 
     console.log(url);
 
