@@ -179,15 +179,9 @@ function FormView({
                 })}
               </DropdownButton>
             </div>
-            <OverLay string="Regresar">
-              <Button
-                size="sm"
-                onClick={() => router.back()}
-                disabled={isDirty}
-              >
-                <i className="bi bi-arrow-left"></i>
-              </Button>
-            </OverLay>
+            <Button size="sm" onClick={() => router.back()} disabled={isDirty}>
+              <i className="bi bi-arrow-left"></i>
+            </Button>
           </fieldset>
           <fieldset
             className="card-body  flex-fill overflow-auto"
