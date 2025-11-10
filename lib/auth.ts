@@ -33,6 +33,8 @@ export const authOptions = {
 
         const userData = meData.data as unknown as User;
 
+        console.log(meData);
+
         return {
           apiToken: user.data.data,
           id: String(userData.id),
@@ -41,6 +43,7 @@ export const authOptions = {
           role: userData.role,
           permissions: userData.permissions,
           status: userData.status,
+          idEmployee: userData.idEmployee,
         };
       },
     }),
@@ -65,6 +68,7 @@ export const authOptions = {
         token.role = user.role;
         token.permissions = user.permissions;
         token.status = user.status;
+        token.idEmployee = user.idEmployee;
       }
       return token;
     },
@@ -77,6 +81,7 @@ export const authOptions = {
         session.user.role = token.role as UserRole;
         session.user.permissions = token.permissions as Permission[];
         session.user.status = token.status as 1 | 2 | 3;
+        session.user.idEmployee = token.idEmployee as number;
       }
       return session;
     },

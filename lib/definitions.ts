@@ -228,3 +228,46 @@ export interface IPeriodDocument {
   createdAt: string;
   dateExpiration?: string;
 }
+
+export interface IPermissionRequest {
+  _id: string;
+  id: number;
+  leaderApproval: "APPROVED" | "REFUSED" | "PENDING";
+  motive: string;
+  incidence: string;
+  type: string;
+  forHours: boolean;
+  forDays: boolean;
+  signatures: TSignatures[];
+  informationDate: TInformationDate;
+  createdAt?: string;
+  updatedAt?: string;
+  createForPerson: Pick<Employee, "_id" | "id" | "name" | "lastName">;
+  employee: Pick<Employee, "_id" | "id" | "name" | "lastName">;
+  dateEnd: string;
+  dateInit: string;
+  hourInt: string;
+  hourEnd: string;
+  leader: Pick<Employee, "_id" | "id" | "name" | "lastName">;
+  personDoh: Pick<Employee, "_id" | "id" | "name" | "lastName">;
+}
+
+export type TSignatures = {
+  _id: string;
+  id: number;
+  idSignatory: number;
+  url: string;
+  name: string;
+  sendNotify: boolean;
+};
+
+export type TInformationDate = {
+  _id: string;
+  id: number;
+  totalHours: number;
+  totalDay: number;
+  dateInit: string;
+  dateEnd: string;
+  hourInit: string;
+  hourEnd: string;
+};

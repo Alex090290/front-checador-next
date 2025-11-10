@@ -15,6 +15,8 @@ type FieldEntryProps = {
   className?: string;
   autoFocus?: boolean;
   as?: React.ElementType;
+  min?: string;
+  max?: string;
 };
 
 export const Entry = ({
@@ -29,6 +31,8 @@ export const Entry = ({
   autoFocus,
   invisible,
   as,
+  min,
+  max,
 }: FieldEntryProps) => {
   if (invisible) return null;
   return (
@@ -45,6 +49,8 @@ export const Entry = ({
         isInvalid={invalid}
         autoFocus={autoFocus}
         as={as}
+        min={min}
+        max={max}
       />
       {feedBack && (
         <Form.Control.Feedback type="invalid">{feedBack}</Form.Control.Feedback>

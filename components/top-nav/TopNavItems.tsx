@@ -52,6 +52,10 @@ function TopNavItems() {
         <i className="bi bi-list-columns-reverse me-1"></i>
         <span>Checador</span>
       </Nav.Link>
+      <Nav.Link as={Link} href="/app/permissions?view_type=list&id=null">
+        <i className="bi bi-file-earmark-ruled me-1"></i>
+        <span>Permisos</span>
+      </Nav.Link>
     </Nav>
   );
 }

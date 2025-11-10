@@ -7,5 +7,6 @@ declare module "next-auth" {
     role: UserRole;
     permissions: Permission[];
     status: 1 | 2 | 3;
+    idEmployee: number | null;
   }
 }

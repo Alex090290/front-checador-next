@@ -109,9 +109,6 @@ export async function fetchCheckInFeedback(): Promise<
     let url = `${apiUrl}/checador/view`;
 
     if (user?.role === "CHECADOR") url += `?idUser=${user.id}`;
-      
-
-    console.log(url);
 
     const response = await axios
       .get(url, {
