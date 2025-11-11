@@ -33,8 +33,6 @@ export const authOptions = {
 
         const userData = meData.data as unknown as User;
 
-        console.log(meData);
-
         return {
           apiToken: user.data.data,
           id: String(userData.id),
