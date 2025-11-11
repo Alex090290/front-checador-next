@@ -24,13 +24,12 @@ async function PermissionsMainView({
   let permissions: IPermissionRequest[] = [];
   let permission: IPermissionRequest | null = null;
   let employees: Employee[] = [];
-  let employee: Employee | null = null;
 
   if (id && id !== "null") {
     permission = await fetchPermissionsById({ id });
   }
 
-  [permissions, employees, employee] = await Promise.all([
+  [permissions, employees] = await Promise.all([
     fetchPermissionsByEmployee(),
     fetchEmployees(),
     findEmployeeById({ id: Number(session?.user?.id) }),

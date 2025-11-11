@@ -69,7 +69,6 @@ function FormView({
   superActions,
   onSubmit,
   reverse,
-  modelThread,
 }: FormViewProps) {
   const router = useRouter();
 

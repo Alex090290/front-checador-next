@@ -62,11 +62,7 @@ function PermissionsFormView({
 
   const { data: session } = useSession();
 
-  const [watchType, modeSelect, dateInit] = watch([
-    "type",
-    "modeSelect",
-    "dateInit",
-  ]);
+  const [modeSelect, dateInit] = watch(["modeSelect", "dateInit"]);
 
   const { modalError } = useModals();
 
@@ -149,7 +145,7 @@ function PermissionsFormView({
       originalValuesRef.current = values;
       console.log(permission.signatures);
     }
-  }, [reset, permission]);
+  }, [reset, permission, employees, session?.user]);
 
   return (
     <>
