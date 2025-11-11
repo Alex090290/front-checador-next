@@ -5,10 +5,7 @@ import PageChecador from "./(auth)/app/checador/page";
 async function Home() {
   const session = await auth();
 
-  if (
-    (session?.user && session.user.role === "CHECADOR") ||
-    session?.user?.role === "EMPLOYEE"
-  ) {
+  if (session?.user && session.user.role === "CHECADOR") {
     return <PageChecador />;
   } else {
     return redirect("/app");
