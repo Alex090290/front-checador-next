@@ -13,14 +13,18 @@ export async function fetchPermissionsByEmployee(): Promise<
   try {
     const { API_URL: apiUrl, apiToken, session } = await storeAction();
 
-    const params = {
-      ...(session?.role === "EMPLOYEE" ? { employee: session?.id } : {}),
-      ...(session?.role !== "EMPLOYEE" ? { leader: session?.idEmployee } : {}),
-    };
+    let query = "";
+
+    if (session?.role === "EMPLOYEE" && session.isDoh === false)
+      query += `?employee=${session.idEmployee}`;
+
+    if (session?.role !== "EMPLOYEE" && session?.isDoh === false)
+      query += `?leader=${session?.idEmployee}`;
+
+    if (session?.isDoh === true) query += "";
 
     const response = await axios
-      .get(`${apiUrl}/permissionRequest/list`, {
-        params,
+      .get(`${apiUrl}/permissionRequest/list${query}`, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },
@@ -198,8 +202,6 @@ export async function approvedPermission({
 
     const { apiToken, apiUrl } = await storeToken();
 
-    console.log(data);
-
     await axios
       .put(
         `${apiUrl}/permissionRequest/approve/${data.id}`,
@@ -265,6 +267,61 @@ export async function approvedPermission({
   }
 }
 
+export async function signatureDohPermission({
+  data,
+}: {
+  data: {
+    id: string | null;
+    signature: string;
+  };
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!data.id) throw new Error("ID NOT DEFINED");
+
+    const { apiToken, apiUrl } = await storeToken();
+
+    const datax = new FormData();
+
+    // 🔸 Convertir base64 a Blob
+    const blob = base64ToBlob(data.signature, "image/png");
+
+    // 🔸 Agregarlo a FormData como archivo
+    datax.append("img", blob, "signature.png");
+    await axios
+      .post(`${apiUrl}/permissionRequest/signature/${data.id}`, datax, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/permissions");
+
+    return {
+      success: true,
+      message: "Proceso completado",
+      data: true,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 export async function fetchSignature({
   idEmployee,
   idPermission,
@@ -276,18 +333,29 @@ export async function fetchSignature({
     const { apiToken, apiUrl } = await storeToken();
 
     // Obtener imagen en binario
-    const resImg = await axios.get(
-      `${apiUrl}/permissionRequest/signature/${idPermission}/${idEmployee}`,
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-        responseType: "arraybuffer",
-      }
-    );
+    const resImg = await axios
+      .get(
+        `${apiUrl}/permissionRequest/signature/${idPermission}/${idEmployee}`,
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+          responseType: "arraybuffer",
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
 
     // Convertir a base64
-    const base64 = Buffer.from(resImg.data, "binary").toString("base64");
+    const base64 = Buffer.from(resImg, "binary").toString("base64");
     const imageBase64Url = `data:image/jpeg;base64,${base64}`;
 
     return {

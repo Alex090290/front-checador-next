@@ -25,6 +25,7 @@ export interface User {
   phone: PhoneNumberFormat;
   createdAt: string;
   idEmployee: number | null;
+  isDoh: boolean;
 }
 
 export type DisplayType = {

@@ -33,8 +33,6 @@ export const authOptions = {
 
         const userData = meData.data as unknown as User;
 
-        console.log(meData);
-
         return {
           apiToken: user.data.data,
           id: String(userData.id),
@@ -44,6 +42,7 @@ export const authOptions = {
           permissions: userData.permissions,
           status: userData.status,
           idEmployee: userData.idEmployee,
+          isDoh: userData.isDoh,
         };
       },
     }),
@@ -69,6 +68,7 @@ export const authOptions = {
         token.permissions = user.permissions;
         token.status = user.status;
         token.idEmployee = user.idEmployee;
+        token.isDoh = user.isDoh;
       }
       return token;
     },
@@ -82,6 +82,7 @@ export const authOptions = {
         session.user.permissions = token.permissions as Permission[];
         session.user.status = token.status as 1 | 2 | 3;
         session.user.idEmployee = token.idEmployee as number;
+        session.user.isDoh = token.isDoh as boolean;
       }
       return session;
     },

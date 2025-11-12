@@ -5,8 +5,6 @@ import Link from "next/link";
 import { Nav } from "react-bootstrap";
 
 function TopNavItemsEmployee() {
-  const { data: session } = useSession();
-
   return (
     <Nav
       className="flex-column"

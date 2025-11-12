@@ -6,10 +6,7 @@ import {
   fetchPermissionsByEmployee,
   fetchPermissionsById,
 } from "@/app/actions/permissions-actions";
-import {
-  fetchEmployees,
-  findEmployeeById,
-} from "@/app/actions/employee-actions";
+import { fetchEmployees } from "@/app/actions/employee-actions";
 import { auth } from "@/lib/auth";
 
 async function PermissionsMainView({
@@ -19,8 +16,6 @@ async function PermissionsMainView({
   id: string;
   viewType: string;
 }) {
-  const session = await auth();
-
   let permissions: IPermissionRequest[] = [];
   let permission: IPermissionRequest | null = null;
   let employees: Employee[] = [];
@@ -32,11 +27,10 @@ async function PermissionsMainView({
   [permissions, employees] = await Promise.all([
     fetchPermissionsByEmployee(),
     fetchEmployees(),
-    findEmployeeById({ id: Number(session?.user?.id) }),
   ]);
 
   if (viewType === "list") {
-    return <PermissionsListView permissions={permissions} />;
+    return <PermissionsListView permissions={permissions.reverse()} />;
   } else if (viewType === "form") {
     return (
       <PermissionsFormView

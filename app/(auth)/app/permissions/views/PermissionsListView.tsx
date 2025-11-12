@@ -20,6 +20,18 @@ function PermissionsListView({
 }) {
   const columns: TableTemplateColumn<IPermissionRequest>[] = [
     {
+      key: "employeeName",
+      label: "Nombre",
+      accessor: (row) => `${row.employee.lastName} ${row.employee.name}`,
+      filterable: true,
+      type: "string",
+      render: (row) => (
+        <div className="text-uppercase">
+          {row.employee.lastName} {row.employee.name}
+        </div>
+      ),
+    },
+    {
       key: "motive",
       label: "Motivo",
       accessor: (row) => row.motive,
@@ -38,16 +50,12 @@ function PermissionsListView({
       label: "Tipo",
       accessor: (row) => row.type,
     },
-    // {
-    //   key: "signatures",
-    //   label: "Firmas",
-    //   accessor: (row) => row.signatures && row.signatures.length,
-    //   render: (row) => (
-    //     <div className="text-center">
-    //       {row.signatures && row.signatures.length}
-    //     </div>
-    //   ),
-    // },
+    {
+      key: "leader",
+      label: "Gerente",
+      accessor: (row) =>
+        `${row.leader.lastName} ${row.leader.name}`.toUpperCase(),
+    },
     {
       key: "leaderApproval",
       label: "Estado",

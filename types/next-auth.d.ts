@@ -8,5 +8,7 @@ declare module "next-auth" {
     permissions: Permission[];
     status: 1 | 2 | 3;
     idEmployee: number | null;
+    isDoh: boolean;
+    isLeader?: boolean;
   }
 }
