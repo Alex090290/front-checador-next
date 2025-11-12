@@ -23,6 +23,8 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import SignaturesView from "./SignaturesView";
 import ApproveLeaderModal from "./ApproveLeaderModal";
+import SignatureDohModal from "./SignatureDohModal";
+import EmployeeSignatureModal from "./EmployeeSignatureModal";
 
 type TInputs = {
   motive: string;
@@ -71,6 +73,8 @@ function PermissionsFormView({
   const originalValuesRef = useRef<TInputs | null>(null);
 
   const [approveModal, setApproveModal] = useState(false);
+  const [signatureModal, setSignatureModal] = useState(false);
+  const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     if (id && id === "null") {
@@ -100,6 +104,14 @@ function PermissionsFormView({
 
   const handleApprove = () => {
     setApproveModal(!approveModal);
+  };
+
+  const handleSignatureDoh = () => {
+    setSignatureModal(!signatureModal);
+  };
+
+  const handleEmployeeSignature = () => {
+    setEmployeeSignatureModal(!employeeSignatureModal);
   };
 
   useEffect(() => {
@@ -143,9 +155,23 @@ function PermissionsFormView({
       };
       reset(values);
       originalValuesRef.current = values;
-      console.log(permission.signatures);
     }
   }, [reset, permission, employees, session?.user]);
+
+  const getSignatureEmployee = () => {
+    let result = false;
+    const sign = permission?.signatures.filter(
+      (f) => f.idSignatory === Number(session?.user?.idEmployee)
+    )[0];
+
+    if (sign?.url === "") {
+      result = false;
+    } else {
+      result = true;
+    }
+
+    return result;
+  };
 
   return (
     <>
@@ -166,6 +192,20 @@ function PermissionsFormView({
               permission?.leader.id !== Number(session?.user?.idEmployee) ||
               permission.leaderApproval === "APPROVED",
           },
+          {
+            action: handleSignatureDoh,
+            string: "Aprobar",
+            variant: "success",
+            invisible: session?.user?.idEmployee !== permission?.personDoh.id,
+          },
+          {
+            action: handleEmployeeSignature,
+            string: "Firmar",
+            variant: "primary",
+            invisible:
+              session?.user?.idEmployee !== permission?.employee.id ||
+              getSignatureEmployee(),
+          },
         ]}
       >
         <fieldset disabled={id !== "null"}>
@@ -180,7 +220,10 @@ function PermissionsFormView({
               label="Empleado:"
               callBackMode="id"
               control={control}
-              readonly={session?.user?.role === "EMPLOYEE"}
+              readonly={
+                session?.user?.role === "EMPLOYEE" &&
+                session.user.isDoh === false
+              }
             />
             <FieldGroup.Stack>
               <RelationField
@@ -193,7 +236,10 @@ function PermissionsFormView({
                 label="Líder:"
                 callBackMode="id"
                 control={control}
-                readonly={session?.user?.role === "EMPLOYEE"}
+                readonly={
+                  session?.user?.role === "EMPLOYEE" &&
+                  session.user.isDoh === false
+                }
               />
               <RelationField
                 register={register("idPersonDoh")}
@@ -275,20 +321,22 @@ function PermissionsFormView({
                 min={dateInit}
               />
             </FieldGroup.Stack>
-            <FieldGroup.Stack>
-              <Entry
-                register={register("hourInit")}
-                label="Hora inicial:"
-                className="text-center"
-                type="time"
-              />
-              <Entry
-                label="Hora final:"
-                register={register("hourEnd")}
-                className="text-center"
-                type="time"
-              />
-            </FieldGroup.Stack>
+            {modeSelect === "forHours" && (
+              <FieldGroup.Stack>
+                <Entry
+                  register={register("hourInit")}
+                  label="Hora inicial:"
+                  className="text-center"
+                  type="time"
+                />
+                <Entry
+                  label="Hora final:"
+                  register={register("hourEnd")}
+                  className="text-center"
+                  type="time"
+                />
+              </FieldGroup.Stack>
+            )}
             {id === "null" && (
               <SignatureInput
                 name="signature"
@@ -321,6 +369,16 @@ function PermissionsFormView({
       <ApproveLeaderModal
         show={approveModal}
         onHide={() => setApproveModal(!approveModal)}
+        id={id}
+      />
+      <SignatureDohModal
+        show={signatureModal}
+        onHide={() => setSignatureModal(!signatureModal)}
+        id={id}
+      />
+      <EmployeeSignatureModal
+        show={employeeSignatureModal}
+        onHide={() => setEmployeeSignatureModal(!employeeSignatureModal)}
         id={id}
       />
     </>

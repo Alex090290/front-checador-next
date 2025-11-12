@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import {
   Controller,
@@ -9,6 +9,7 @@ import {
   UseFormRegister,
 } from "react-hook-form";
 import Image from "next/image";
+import { Button } from "react-bootstrap";
 
 type SignatureInputProps = {
   name: string;
@@ -17,7 +18,7 @@ type SignatureInputProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: UseFormRegister<any>;
   rules?: RegisterOptions;
-  disabled?: boolean; // ✅ nueva prop
+  disabled?: boolean;
 };
 
 export const SignatureInput: React.FC<SignatureInputProps> = ({
@@ -28,6 +29,24 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
   disabled = false,
 }) => {
   const sigCanvasRef = useRef<SignatureCanvas | null>(null);
+
+  useEffect(() => {
+    // Si hay una firma en base64, cargarla solo una vez al inicio
+    if (sigCanvasRef.current && !sigCanvasRef.current.isEmpty()) return;
+
+    const loadSignature = (value: string) => {
+      if (value && sigCanvasRef.current) {
+        sigCanvasRef.current.fromDataURL(value);
+      }
+    };
+
+    // Usamos un pequeño delay para asegurar que el canvas esté montado correctamente
+    setTimeout(() => {
+      if (sigCanvasRef.current && control?._defaultValues?.[name]) {
+        loadSignature(control._defaultValues[name]);
+      }
+    }, 100);
+  }, [control, name]);
 
   return (
     <div>
@@ -44,12 +63,10 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
                   alt="Firma"
                   width={500}
                   height={200}
-                  className="border border-gray-300 rounded"
+                  className="border rounded"
                 />
               ) : (
-                <div className="border p-4 text-center text-gray-400 rounded">
-                  Sin firma
-                </div>
+                <div className="border p-4 text-center rounded">Sin firma</div>
               )
             ) : (
               <>
@@ -58,14 +75,9 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
                   canvasProps={{
                     width: 450,
                     height: 125,
-                    className: "signature-canvas",
+                    className: "signature-canvas border rounded",
                   }}
-                  ref={(ref) => {
-                    sigCanvasRef.current = ref;
-                    if (ref && value) {
-                      ref.fromDataURL(value);
-                    }
-                  }}
+                  ref={sigCanvasRef}
                   onEnd={() => {
                     const base64 = sigCanvasRef.current
                       ?.getTrimmedCanvas()
@@ -75,34 +87,23 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
                   backgroundColor="#fff"
                 />
 
-                <div className="mt-2 flex items-center gap-2">
-                  <button
+                <div className="flex items-center gap-1">
+                  <Button
                     type="button"
+                    size="sm"
+                    variant="warning"
                     onClick={() => {
                       sigCanvasRef.current?.clear();
                       onChange("");
                     }}
-                    className="px-3 py-1 text-sm border rounded bg-gray-100 hover:bg-gray-200"
                   >
                     Borrar Firma
-                  </button>
-
-                  {/* {value && (
-                    <Image
-                      src={value}
-                      alt="Firma"
-                      width={100}
-                      height={50}
-                      className="border border-gray-300"
-                    />
-                  )} */}
+                  </Button>
                 </div>
               </>
             )}
 
-            {error && (
-              <p className="text-red-500 text-sm mt-1">{error.message}</p>
-            )}
+            {error && <p className="mt-1">{error.message}</p>}
           </>
         )}
       />

@@ -1,6 +1,6 @@
 "use client";
 
-import { approvedPermission } from "@/app/actions/permissions-actions";
+import { signatureDohPermission } from "@/app/actions/permissions-actions";
 import { SignatureInput } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps } from "@/lib/definitions";
@@ -10,11 +10,10 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 
 type TInputs = {
-  status: string;
   signature: string;
 };
 
-function ApproveLeaderModal({
+function EmployeeSignatureModal({
   show,
   onHide,
   id,
@@ -24,15 +23,15 @@ function ApproveLeaderModal({
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<TInputs>();
 
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
-    const res = await approvedPermission({
-      data: { id, signature: data.signature, status: data.status },
+    const res = await signatureDohPermission({
+      data: { id, signature: data.signature },
     });
 
     if (!res.success) return modalError(res.message);
@@ -43,7 +42,7 @@ function ApproveLeaderModal({
   };
 
   const handleOnExited = () => {
-    reset({ status: "", signature: "" });
+    reset({ signature: "" });
   };
 
   const handleConfirm = () => modalConfirm("Confirmar", handleSubmit(onSubmit));
@@ -57,28 +56,11 @@ function ApproveLeaderModal({
       centered
     >
       <Modal.Header closeButton>
-        <Modal.Title>Aprobación de permiso</Modal.Title>
+        <Modal.Title>Firma del Empleado</Modal.Title>
       </Modal.Header>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Modal.Body>
-          <Form.Group className="mb-2 d-flex gap-3">
-            <Form.Check
-              {...register("status", { required: true })}
-              value="APPROVED"
-              type="radio"
-              label="Aprobar"
-              id="APPROVED"
-              isInvalid={!!errors.status}
-            />
-            <Form.Check
-              {...register("status", { required: true })}
-              value="REFUSED"
-              type="radio"
-              label="Rechazar"
-              id="REFUSED"
-            />
-          </Form.Group>
-          <Form.Group className="mb-2">
+          <Form.Group className="mb-2 border border-2">
             <SignatureInput
               control={control}
               name="signature"
@@ -103,4 +85,4 @@ function ApproveLeaderModal({
   );
 }
 
-export default ApproveLeaderModal;
+export default EmployeeSignatureModal;
