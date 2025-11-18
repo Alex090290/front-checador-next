@@ -3,16 +3,25 @@
 import { fetchSignature } from "@/app/actions/permissions-actions";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Card, Col, Spinner } from "react-bootstrap";
+import { Badge, Card, Col, Spinner } from "react-bootstrap";
+import { leaderApproval } from "./PermissionsListView";
+import { PermissionRequestStatus } from "@/lib/definitions";
+import { formatDate } from "date-fns";
 
 function SignaturesView({
   idPermission,
   idEmployee,
   name,
+  dateApproved,
+  status,
 }: {
   idPermission: string | null;
   idEmployee: string | null;
   name: string;
+  dateApproved?: string;
+  dateApprove?: string;
+  dateApproveDoh?: string;
+  status: PermissionRequestStatus;
 }) {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,11 +37,28 @@ function SignaturesView({
 
   useEffect(() => {
     handleFetchSignature();
+    console.log(status);
   }, []);
 
   return (
     <Col md="4">
       <Card>
+        <Card.Header>
+          <div className="d-flex justify-content-between align-items-center">
+            <Badge
+              bg={
+                status === "APPROVED"
+                  ? "success"
+                  : status === "PENDING"
+                  ? "warning"
+                  : "secondary"
+              }
+            >
+              {leaderApproval[status ?? "EMPLOYEE"]}
+            </Badge>
+            {dateApproved ? formatDate(dateApproved, "dd-MM-yyyy HH:mm") : null}
+          </div>
+        </Card.Header>
         <Card.Body className="p-1 text-center">
           {loading ? (
             <Spinner size="sm" animation="border" />

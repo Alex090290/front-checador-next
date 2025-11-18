@@ -183,7 +183,7 @@ export async function updateExpirationDocument({
         }
       )
       .then((res) => {
-        res.data;
+        return res.data;
       })
       .catch((err) => {
         throw new Error(
