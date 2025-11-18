@@ -82,6 +82,8 @@ function PermissionsFormView({
         ...data,
         forDays: data.modeSelect === "forDays" ? true : false,
         forHours: data.modeSelect === "forHours" ? true : false,
+        hourInit: data.modeSelect === "forDays" ? "" : data.hourInit,
+        hourEnd: data.modeSelect === "forDays" ? "" : data.hourEnd,
       };
       const res = await createPermission({ data: newData });
       if (!res.success) return modalError(res.message);
@@ -351,14 +353,20 @@ function PermissionsFormView({
                 <Container>
                   <Row className="g-2 py-2">
                     {permission?.signatures &&
-                      permission?.signatures.map((sign) => (
-                        <SignaturesView
-                          key={sign._id}
-                          idPermission={String(permission.id)}
-                          idEmployee={String(sign.idSignatory)}
-                          name={sign.name}
-                        />
-                      ))}
+                      permission?.signatures.map((sign) => {
+                        return (
+                          <SignaturesView
+                            key={sign._id}
+                            idPermission={String(permission.id)}
+                            idEmployee={String(sign.idSignatory)}
+                            name={sign.name}
+                            dateApproved={sign.dateApproved}
+                            status={sign.status}
+                            dateApprove={permission.dateApprove}
+                            dateApproveDoh={permission.dateApproveDoh}
+                          />
+                        );
+                      })}
                   </Row>
                 </Container>
               </FormPage>

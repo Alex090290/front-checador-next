@@ -708,8 +708,8 @@ function TableTemplateInner<T>(
                     <tr
                       key={id}
                       onClick={(e) => {
-                        e.stopPropagation(),
-                          router.push(`${viewForm}&id=${id}`);
+                        e.stopPropagation();
+                        router.push(`${viewForm}&id=${id}`);
                       }}
                       style={{ cursor: "pointer" }}
                     >

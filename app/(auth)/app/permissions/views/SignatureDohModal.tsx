@@ -1,6 +1,6 @@
 "use client";
 
-import { signatureDohPermission } from "@/app/actions/permissions-actions";
+import { approvedPermissionDoh } from "@/app/actions/permissions-actions";
 import { SignatureInput } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps } from "@/lib/definitions";
@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 
 type TInputs = {
   signature: string;
+  status: string;
 };
 
 function SignatureDohModal({
@@ -23,15 +24,15 @@ function SignatureDohModal({
     register,
     handleSubmit,
     control,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<TInputs>();
 
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
-    const res = await signatureDohPermission({
-      data: { id, signature: data.signature },
+    const res = await approvedPermissionDoh({
+      data: { id, signature: data.signature, status: data.status },
     });
 
     if (!res.success) return modalError(res.message);
@@ -60,6 +61,21 @@ function SignatureDohModal({
       </Modal.Header>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Modal.Body>
+          <Form.Check
+            {...register("status", { required: true })}
+            value="APPROVED"
+            type="radio"
+            label="Aprobar"
+            id="APPROVED"
+            isInvalid={!!errors.status}
+          />
+          <Form.Check
+            {...register("status", { required: true })}
+            value="REFUSED"
+            type="radio"
+            label="Rechazar"
+            id="REFUSED"
+          />
           <SignatureInput
             control={control}
             name="signature"

@@ -7,7 +7,6 @@ import {
   fetchPermissionsById,
 } from "@/app/actions/permissions-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
-import { auth } from "@/lib/auth";
 
 async function PermissionsMainView({
   id,

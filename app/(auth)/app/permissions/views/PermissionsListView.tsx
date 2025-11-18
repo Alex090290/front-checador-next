@@ -5,12 +5,14 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { IPermissionRequest } from "@/lib/definitions";
+import { formatDate } from "date-fns";
 import { Badge } from "react-bootstrap";
 
-const leaderApproval = {
+export const leaderApproval = {
   APPROVED: "APROBADO",
   REFUSED: "RECHAZADO",
   PENDING: "PENDIENTE",
+  EMPLOYEE: "EMPLEADO",
 };
 
 function PermissionsListView({
@@ -32,23 +34,30 @@ function PermissionsListView({
       ),
     },
     {
+      key: "type",
+      label: "Tipo",
+      accessor: (row) => row.type,
+    },
+    {
       key: "motive",
       label: "Motivo",
       accessor: (row) => row.motive,
       filterable: true,
       type: "string",
+      render: (row) => <div className="text-uppercase">{row.motive}</div>,
     },
     {
-      key: "incidence",
-      label: "Incidencia",
-      accessor: (row) => row.incidence,
+      key: "createforPerson",
+      label: "Creado por",
+      accessor: (row) =>
+        `${row.createForPerson.lastName} ${row.createForPerson.lastName}`,
       type: "string",
       filterable: true,
-    },
-    {
-      key: "type",
-      label: "Tipo",
-      accessor: (row) => row.type,
+      render: (row) => (
+        <div className="text-uppercase">
+          {`${row.createForPerson.lastName} ${row.createForPerson.lastName}`}
+        </div>
+      ),
     },
     {
       key: "leader",
@@ -57,11 +66,25 @@ function PermissionsListView({
         `${row.leader.lastName} ${row.leader.name}`.toUpperCase(),
     },
     {
+      key: "createdAt",
+      label: "Fecha de creación",
+      accessor: (row) => row.createdAt,
+      render: (row) => (
+        <div className="text-center">
+          {row.createdAt
+            ? formatDate(row.createdAt, "dd-MM-yyyy")
+            : "No Definido"}
+        </div>
+      ),
+      groupFormat: "MM-dd",
+      type: "date",
+    },
+    {
       key: "leaderApproval",
       label: "Estado",
-      accessor: (row) => leaderApproval[row.leaderApproval],
+      accessor: (row) => leaderApproval[row.status],
       render: (row) => {
-        const status = leaderApproval[row.leaderApproval];
+        const status = leaderApproval[row.status];
         return (
           <div className="text-center">
             <Badge
@@ -73,7 +96,7 @@ function PermissionsListView({
                   : "danger"
               }
             >
-              {leaderApproval[row.leaderApproval]}
+              {leaderApproval[row.status]}
             </Badge>
           </div>
         );

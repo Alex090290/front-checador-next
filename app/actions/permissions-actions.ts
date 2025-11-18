@@ -267,6 +267,85 @@ export async function approvedPermission({
   }
 }
 
+export async function approvedPermissionDoh({
+  data,
+}: {
+  data: {
+    id: string | null;
+    signature: string;
+    status: string;
+  };
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!data.id) throw new Error("ID NOT DEFINED");
+
+    const { apiToken, apiUrl } = await storeToken();
+
+    await axios
+      .put(
+        `${apiUrl}/permissionRequest/approveDoh/${data.id}`,
+        {
+          status: data.status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    const datax = new FormData();
+
+    // 🔸 Convertir base64 a Blob
+    const blob = base64ToBlob(data.signature, "image/png");
+
+    // 🔸 Agregarlo a FormData como archivo
+    datax.append("img", blob, "signature.png");
+    await axios
+      .post(`${apiUrl}/permissionRequest/signature/${data.id}`, datax, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/permissions");
+
+    return {
+      success: true,
+      message: "Proceso completado",
+      data: true,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 export async function signatureDohPermission({
   data,
 }: {

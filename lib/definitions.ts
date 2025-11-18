@@ -233,7 +233,8 @@ export interface IPeriodDocument {
 export interface IPermissionRequest {
   _id: string;
   id: number;
-  leaderApproval: "APPROVED" | "REFUSED" | "PENDING";
+  leaderApproval: PermissionRequestStatus;
+  dohApproval: PermissionRequestStatus;
   motive: string;
   incidence: string;
   type: string;
@@ -251,6 +252,9 @@ export interface IPermissionRequest {
   hourEnd: string;
   leader: Pick<Employee, "_id" | "id" | "name" | "lastName">;
   personDoh: Pick<Employee, "_id" | "id" | "name" | "lastName">;
+  status: PermissionRequestStatus;
+  dateApprove?: string;
+  dateApproveDoh?: string;
 }
 
 export type TSignatures = {
@@ -260,7 +264,15 @@ export type TSignatures = {
   url: string;
   name: string;
   sendNotify: boolean;
+  dateApproved?: string;
+  status: PermissionRequestStatus;
 };
+
+export type PermissionRequestStatus =
+  | "APPROVED"
+  | "REFUSED"
+  | "PENDING"
+  | "EMPLOYEE";
 
 export type TInformationDate = {
   _id: string;
