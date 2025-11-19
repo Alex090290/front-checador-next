@@ -72,7 +72,7 @@ function PermissionsListView({
       render: (row) => (
         <div className="text-center">
           {row.createdAt
-            ? formatDate(row.createdAt, "dd-MM-yyyy")
+            ? formatDate(row.createdAt, "dd-MM-yyyy HH:mm")
             : "No Definido"}
         </div>
       ),

@@ -6,10 +6,10 @@ export type TInputsEmployee = {
   lastName: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   phonePersonal: string;
-  emailPersonal: string | null;
+  emailPersonal: string;
   idCheck: number;
-  passwordCheck: string | null;
-  entryOffice: string | null;
+  passwordCheck: number;
+  entryOffice: string;
   entrySaturdayOffice: string;
   exitOffice: string;
   exitSaturdayOffice: string;
@@ -72,4 +72,5 @@ export type TInputsEmployee = {
   dischargeReason: string;
   typeOfDischarge: string;
   role: UserRole[];
+  vacations: number;
 };
