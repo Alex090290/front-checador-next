@@ -172,6 +172,7 @@ export async function createEmployee({
           dischargeDate: data.dischargeDate,
           anniversaryLetter: data.anniversaryLetter,
           nationality: data.nationality,
+          vacations: Number(data.vacations),
         },
         {
           headers: {
@@ -315,6 +316,7 @@ export async function updateEmploye({
           typeOfDischarge: data.typeOfDischarge,
           role: data.role,
           visibleRecords: true,
+          vacations: Number(data.vacations),
         },
         {
           headers: {

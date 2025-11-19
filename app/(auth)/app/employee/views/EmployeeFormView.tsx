@@ -131,11 +131,11 @@ function EmployeeFormView({
       const values: TInputsEmployee = {
         name: "",
         lastName: "",
-        emailPersonal: null,
+        emailPersonal: "",
         phonePersonal: "",
         idCheck: 0,
-        passwordCheck: null,
-        entryOffice: null,
+        passwordCheck: 0,
+        entryOffice: "",
         entrySaturdayOffice: "08:30",
         exitSaturdayOffice: "14:00",
         exitLunch: "",
@@ -188,18 +188,19 @@ function EmployeeFormView({
         dischargeReason: "",
         typeOfDischarge: "",
         role: [],
+        vacations: 0,
       };
       setPuestos([]);
       reset(values);
       originalValuesRef.current = values;
     } else {
       const values: TInputsEmployee = {
-        name: employee.name || "",
-        lastName: employee.lastName || "",
+        name: employee.name,
+        lastName: employee.lastName,
         emailPersonal: employee.emailPersonal,
         phonePersonal: employee.phonePersonal?.internationalNumber || "",
-        idCheck: employee.idCheck || 0,
-        passwordCheck: employee.passwordCheck,
+        idCheck: Number(employee.idCheck) || 0,
+        passwordCheck: Number(employee.passwordCheck) || 0,
         entryOffice: employee.scheduleOffice?.entry || "",
         entrySaturdayOffice: employee.scheduleSaturday?.entry || "",
         exitOffice: employee.scheduleOffice?.exit || "",
@@ -255,24 +256,26 @@ function EmployeeFormView({
         dischargeReason: employee.dischargeReason,
         typeOfDischarge: employee.typeOfDischarge,
         role: employee.role || [],
+        vacations: employee.vacations,
       };
       reset(values);
       originalValuesRef.current = values;
       const department = employee.idDepartment as unknown as Department;
       setPuestos(department?.positions || []);
+      console.log(values);
     }
   }, [employee, reset]);
 
-  // useEffect(() => {
-  //   console.log(
-  //     "isDirty:",
-  //     isDirty,
-  //     "isSubmitting:",
-  //     isSubmitting,
-  //     "errors:",
-  //     errors
-  //   );
-  // }, [errors, isDirty, isSubmitting]);
+  useEffect(() => {
+    console.log(
+      "isDirty:",
+      isDirty,
+      "isSubmitting:",
+      isSubmitting,
+      "errors:",
+      errors
+    );
+  }, [errors, isDirty, isSubmitting]);
 
   useEffect(() => {
     if (deps) {
@@ -629,7 +632,14 @@ function EmployeeFormView({
                   register={register("scheduleDescription")}
                   label="Descripción del horario:"
                 />
-                {/* <Entry register={register("group")} label="Grupo:" /> */}
+                <FieldGroup.Stack>
+                  <Entry
+                    className="text-center"
+                    register={register("vacations", { required: true })}
+                    label="Vacaciones:"
+                    invalid={!!errors.vacations}
+                  />
+                </FieldGroup.Stack>
               </FieldGroup>
               <FieldGroup>
                 <FieldGroup.Stack>

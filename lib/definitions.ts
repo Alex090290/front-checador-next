@@ -104,14 +104,14 @@ type BranchAddress = {
 export interface Employee {
   _id?: string;
   id?: number;
-  name: string | null;
-  lastName: string | null;
+  name: string;
+  lastName: string;
   phonePersonal: PhoneNumberFormat | null;
-  emailPersonal: string | null;
+  emailPersonal: string;
   idCheck: number | null;
-  passwordCheck: string | null;
+  passwordCheck: number | null;
   passwordSystem: string;
-  entryOffice: string | null;
+  entryOffice: string;
   entrySaturdayOffice: string | null;
   exitOffice: string | null;
   exitSaturdayOffice: string | null;
@@ -177,6 +177,7 @@ export interface Employee {
     dischargeReason: string;
     typeOfDischarge: string;
   }[];
+  vacations: number;
 }
 
 type EmergencyContact = {
