@@ -56,6 +56,10 @@ function TopNavItems() {
         <i className="bi bi-file-earmark-ruled me-1"></i>
         <span>Permisos</span>
       </Nav.Link>
+      <Nav.Link as={Link} href="/app/newsletter?view_type=list&id=null">
+        <i className="bi bi-postcard me-1"></i>
+        <span>Anuncios</span>
+      </Nav.Link>
     </Nav>
   );
 }

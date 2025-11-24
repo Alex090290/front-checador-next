@@ -1,3 +1,5 @@
+"use client";
+
 import { Modal } from "react-bootstrap";
 
 interface PdfViewerModalProps {
@@ -18,18 +20,6 @@ function PDFViewerModal({ show, onHide, pdfBase64Url }: PdfViewerModalProps) {
           title="PDF Viewer"
         />
       </Modal.Body>
-      {/* <Modal.Footer>
-        <button className="btn btn-secondary" onClick={onHide}>
-          Cerrar
-        </button>
-        <a
-          href={pdfBase64Url}
-          download="documento.pdf"
-          className="btn btn-primary"
-        >
-          Descargar PDF
-        </a>
-      </Modal.Footer> */}
     </Modal>
   );
 }

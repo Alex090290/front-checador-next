@@ -17,6 +17,8 @@ type FieldEntryProps = {
   as?: React.ElementType;
   min?: string;
   max?: string;
+  cols?: number;
+  rows?: number;
 };
 
 export const Entry = ({
@@ -33,6 +35,8 @@ export const Entry = ({
   as,
   min,
   max,
+  cols,
+  rows,
 }: FieldEntryProps) => {
   if (invisible) return null;
   return (
@@ -49,6 +53,8 @@ export const Entry = ({
         isInvalid={invalid}
         autoFocus={autoFocus}
         as={as}
+        cols={cols}
+        rows={rows}
         min={min}
         max={max}
       />

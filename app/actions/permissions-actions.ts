@@ -452,3 +452,52 @@ export async function fetchSignature({
     };
   }
 }
+
+export async function fetchPermissionPDF({
+  id,
+}: {
+  id: string | null;
+}): Promise<ActionResponse<string>> {
+  try {
+    if (!id) throw new Error("ID NOT DEFINED");
+
+    const { apiToken, API_URL: apiUrl } = await storeAction();
+
+    const resImg = await axios
+      .get(`${apiUrl}/permissionRequest/generar-pdf/${Number(id)}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+        responseType: "arraybuffer",
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err.response);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error al descargar el PDF"
+        );
+      });
+
+    // Convertir a base64
+    const base64 = Buffer.from(resImg, "binary").toString("base64");
+    const pdfBase64Url = `data:application/pdf;base64,${base64}`;
+
+    return {
+      success: true,
+      message: "Archivo descargado",
+      data: pdfBase64Url,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}

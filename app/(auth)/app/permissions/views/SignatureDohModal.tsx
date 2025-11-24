@@ -65,17 +65,17 @@ function SignatureDohModal({
             {...register("status", { required: true })}
             value="APPROVED"
             type="radio"
-            label="Aprobar"
+            label="Enterado"
             id="APPROVED"
             isInvalid={!!errors.status}
           />
-          <Form.Check
+          {/* <Form.Check
             {...register("status", { required: true })}
             value="REFUSED"
             type="radio"
-            label="Rechazar"
+            label="No Enterado"
             id="REFUSED"
-          />
+          /> */}
           <SignatureInput
             control={control}
             name="signature"

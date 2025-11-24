@@ -10,6 +10,10 @@ import { Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { formatDatelocal } from "@/lib/helpers";
 import toast from "react-hot-toast";
 import { ActionResponse } from "@/lib/definitions";
+import useSWR from "swr";
+import Image from "next/image";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export type TCheckData = {
   idCheck: string;
@@ -26,6 +30,8 @@ interface IFeedbackDisplay {
 }
 
 function ChecadorFormView() {
+  const { data: activeNotice } = useSWR("/api/notice", fetcher);
+
   let toastId: string = "";
 
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
@@ -134,6 +140,8 @@ function ChecadorFormView() {
     }
   }, [feedbackDisplay]);
 
+  console.log(activeNotice);
+
   return (
     <Row className="h-100 overflow-auto">
       <Col md="12" className="h-100">
@@ -208,8 +216,29 @@ function ChecadorFormView() {
                     </tbody>
                   </Table>
                 </Col>
-                <Col md="6" className="h-100">
-                  Anuncios
+                <Col md="6" className="h-100 px-1">
+                  <Card className="h-100">
+                    <Card.Body className="d-flex flex-column p-3 gap-3">
+                      {activeNotice?.text && (
+                        <Card.Title className="text-uppercase text-center fs-5 mb-0">
+                          {activeNotice.text}
+                        </Card.Title>
+                      )}
+
+                      {activeNotice?.img && (
+                        <div className="flex-fill d-flex justify-content-center align-items-center">
+                          <Image
+                            src={activeNotice.img}
+                            height={800}
+                            width={850}
+                            alt="NOTICE_img"
+                            className="img-fluid h-100 w-auto object-fit-contain"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
                 </Col>
               </Row>
             </Container>
