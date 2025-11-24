@@ -218,7 +218,6 @@ function UsersFormView({
               {...register("imageUrl")}
               width={150}
               height={150}
-              folder="users"
               control={control}
               editable={true}
             />

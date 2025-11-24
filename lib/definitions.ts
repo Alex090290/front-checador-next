@@ -285,3 +285,18 @@ export type TInformationDate = {
   hourInit: string;
   hourEnd: string;
 };
+
+export type Newsletter = {
+  _id: string;
+  id: number;
+  title: string;
+  text: string;
+  img: string;
+  programing: boolean;
+  dateInitiPublish: string;
+  dateEndPublish: string;
+  hourEndPublish: string;
+  hourInitiPublish: string;
+  createAt?: string;
+  updateAt?: string;
+};

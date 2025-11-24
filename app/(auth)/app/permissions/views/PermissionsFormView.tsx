@@ -25,6 +25,7 @@ import SignaturesView from "./SignaturesView";
 import ApproveLeaderModal from "./ApproveLeaderModal";
 import SignatureDohModal from "./SignatureDohModal";
 import EmployeeSignatureModal from "./EmployeeSignatureModal";
+import PermissionPDFownload from "./PermissionPDFownload";
 
 type TInputs = {
   motive: string;
@@ -75,6 +76,7 @@ function PermissionsFormView({
   const [approveModal, setApproveModal] = useState(false);
   const [signatureModal, setSignatureModal] = useState(false);
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
+  const [permissionPDFModal, setPermissionPDFModal] = useState(false);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     if (id && id === "null") {
@@ -114,6 +116,10 @@ function PermissionsFormView({
 
   const handleEmployeeSignature = () => {
     setEmployeeSignatureModal(!employeeSignatureModal);
+  };
+
+  const handleDownloadPDF = () => {
+    setPermissionPDFModal(!permissionPDFModal);
   };
 
   useEffect(() => {
@@ -208,6 +214,16 @@ function PermissionsFormView({
               session?.user?.idEmployee !== permission?.employee.id ||
               getSignatureEmployee(),
           },
+          {
+            action: handleDownloadPDF,
+            variant: "primary",
+            string: (
+              <>
+                <i className="bi bi-filetype-pdf me-2"></i>
+                <span>Descargar</span>
+              </>
+            ),
+          },
         ]}
       >
         <fieldset disabled={id !== "null"}>
@@ -255,11 +271,6 @@ function PermissionsFormView({
                 control={control}
               />
             </FieldGroup.Stack>
-            <Entry
-              label="Motivo:"
-              register={register("motive", { required: true })}
-              invalid={!!errors.motive}
-            />
             <FieldSelect
               options={[
                 {
@@ -290,6 +301,11 @@ function PermissionsFormView({
               register={register("type", { required: true })}
               label="Tipo:"
               invalid={!!errors.type}
+            />
+            <Entry
+              label="Descripción del motivo:"
+              register={register("motive", { required: true })}
+              invalid={!!errors.motive}
             />
             <FieldGroup.Stack>
               <Form.Check
@@ -388,6 +404,11 @@ function PermissionsFormView({
         show={employeeSignatureModal}
         onHide={() => setEmployeeSignatureModal(!employeeSignatureModal)}
         id={id}
+      />
+      <PermissionPDFownload
+        id={id}
+        show={permissionPDFModal}
+        onHide={() => setPermissionPDFModal(!permissionPDFModal)}
       />
     </>
   );
