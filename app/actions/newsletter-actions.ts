@@ -221,3 +221,30 @@ export async function createNewsletter({
     };
   }
 }
+
+export async function deleteNotice({
+  id,
+}: {
+  id: string | null;
+}): Promise<boolean> {
+  try {
+    if (!id) throw new Error("ID NOT DEFINED");
+
+    const { apiToken, apiUrl } = await storeToken();
+
+    await axios.delete(`${apiUrl}/notice/${id}`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    revalidatePath("/app/newsletter");
+
+    return true;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return false;
+  }
+}
