@@ -67,7 +67,7 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
     modalConfirm(
       `Se eliminarán ${
         selectedIds.length ?? 0
-      }\nConfirma la acción para continuar`,
+      } registros. Confirma la acción para continuar`,
       async () => {
         const toastId = toast.loading("Eliminando registros");
         for (const record of selectedIds) {
