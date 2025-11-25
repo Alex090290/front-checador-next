@@ -30,7 +30,9 @@ interface IFeedbackDisplay {
 }
 
 function ChecadorFormView() {
-  const { data: activeNotice } = useSWR("/api/notice", fetcher);
+  const { data: activeNotice } = useSWR("/api/notice", fetcher,{
+  refreshInterval: 60000, 
+});
 
   let toastId: string = "";
 
