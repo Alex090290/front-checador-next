@@ -62,7 +62,6 @@ function Header({ children, formView, title, actions }: HeaderProps) {
                       key={`action-list-${index}`}
                       onClick={() => action.action()}
                       eventKey={index}
-                      as={Button}
                     >
                       {action.string}
                     </Dropdown.Item>

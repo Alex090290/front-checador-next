@@ -12,6 +12,7 @@ import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { storeAction } from "./storeActions";
+import { createUserImage } from "./image-field-actions";
 
 export async function userLogin({
   email,
@@ -271,6 +272,7 @@ export async function updateUser({
   phone,
   id,
   idEmployee,
+  imageUrl,
 }: {
   name: string;
   lastName: string;
@@ -282,6 +284,7 @@ export async function updateUser({
   phone: PhoneNumberFormat | string | null;
   id: number;
   idEmployee: number | null;
+  imageUrl?: string | null;
 }): Promise<string | boolean> {
   const { apiToken, API_URL } = await storeAction();
 
@@ -307,7 +310,7 @@ export async function updateUser({
         },
       }
     )
-    .then((res) => {
+    .then(async (res) => {
       return res.data;
     })
     .catch((err) => {
@@ -317,6 +320,8 @@ export async function updateUser({
           : "Error en la respuesta"
       );
     });
+
+  await createUserImage({ imageUrl: imageUrl || "" });
 
   revalidatePath("/app/users");
   return true;

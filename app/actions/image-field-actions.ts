@@ -4,23 +4,21 @@ import { ActionResponse } from "@/lib/definitions";
 import { storeToken } from "@/lib/useToken";
 import axios from "axios";
 
-export async function createImage({
-  formData,
-  folder,
+export async function createUserImage({
+  imageUrl,
 }: {
-  formData: FormData;
-  folder: string | null;
+  imageUrl: string;
 }): Promise<ActionResponse<string>> {
   const { apiToken, apiUrl } = await storeToken();
 
-  const image = formData.get("image") as File;
-  if (!image) throw new Error("La imagen no fue cargada");
-  if (!folder) throw new Error("No se ha definido el nombre de la carpeta");
+  // const formData = new FormData();
+  // const image = formData.get("image") as File;
+  if (!imageUrl) throw new Error("La imagen no fue cargada");
 
   try {
     // Subir imagen al backend
     const data = new FormData();
-    data.append("img", image);
+    data.append("img", imageUrl);
 
     await axios.post(`${apiUrl}/users/imgProfile`, data, {
       headers: {
