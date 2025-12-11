@@ -348,7 +348,11 @@ export interface Vacations {
     idPersonDoh: number | null;
     createFor: number;
     leaderApproval: string;
+    dohApproval: string;
     daysRequest: number;
+    dateInit: string;
+    dateEnd: string;
+    holidayName: string;
   }[];
   usedDays: number;
   availableDays: number;

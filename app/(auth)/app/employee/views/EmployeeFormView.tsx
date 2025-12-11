@@ -16,6 +16,7 @@ import {
   Employee,
   IPeriod,
   Position,
+  Vacations,
 } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -29,6 +30,7 @@ import {
   Col,
   Container,
   Form,
+  ListGroup,
   Nav,
   Row,
   Table,
@@ -50,6 +52,7 @@ function EmployeeFormView({
   branches,
   employees,
   documents,
+  vacations,
 }: {
   employee: Employee | null;
   id: string;
@@ -57,6 +60,7 @@ function EmployeeFormView({
   branches: Branch[];
   employees: Employee[];
   documents: IPeriod[];
+  vacations: Vacations[];
 }) {
   const {
     watch,
@@ -887,6 +891,85 @@ function EmployeeFormView({
                   </Accordion.Item>
                 ))}
               </Accordion>
+            </Container>
+          </FormPage>
+          <FormPage title="Vacaciones" eventKey="vacations">
+            <Container className="mt-1">
+              <Row>
+                <Col md="12">
+                  <Accordion>
+                    {vacations.map((v) => (
+                      <Accordion.Item
+                        key={v.id}
+                        eventKey={v.periodDescription}
+                        className="bg-secondary"
+                      >
+                        <Accordion.Header>
+                          {v.periodDescription}
+                        </Accordion.Header>
+                        <Accordion.Body>
+                          <ListGroup horizontal className="mb-3">
+                            <ListGroup.Item>
+                              <strong>Días totales: </strong>
+                              {v.totalDaysPeriod}
+                            </ListGroup.Item>
+                            <ListGroup.Item>
+                              <strong>Fecha inicio: </strong>
+                              {formatDate(v.dateInitPeriod, "dd/MM/yyyy")}
+                            </ListGroup.Item>
+                            <ListGroup.Item>
+                              <strong>Fecha final: </strong>
+                              {formatDate(v.dateEndPeriod, "dd/MM/yyyy")}
+                            </ListGroup.Item>
+                          </ListGroup>
+                          <Accordion>
+                            {v.vacationsRequestsData.map((vr) => (
+                              <Accordion.Item
+                                key={vr._id}
+                                eventKey={String(vr.id)}
+                              >
+                                <Accordion.Header>
+                                  <h6>{vr.holidayName}</h6>
+                                </Accordion.Header>
+                                <Accordion.Body>
+                                  <div>
+                                    <div className="d-flex justify-content-around align-items-center mb-3">
+                                      <div>
+                                        <strong>Fecha inicio: </strong>
+                                        {formatDate(vr.dateInit, "dd/MM/yyyy")}
+                                      </div>
+                                      <div>
+                                        <strong>Fecha final: </strong>
+                                        {formatDate(vr.dateEnd, "dd/MM/yyyy")}
+                                      </div>
+                                    </div>
+                                    <div className="d-flex justify-content-around align-items-center">
+                                      <div>
+                                        <strong>Status líder: </strong>
+                                        {vr.leaderApproval === "APPROVED"
+                                          ? "APROBADO"
+                                          : vr.leaderApproval === "REJECTED"
+                                          ? "RECHAZADO"
+                                          : "PENDIENTE"}
+                                      </div>
+                                      <div>
+                                        <strong>Status D.O.H. </strong>
+                                        {vr.dohApproval === "APPROVED"
+                                          ? "ENTERADO"
+                                          : "NO ENTERADO"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </Accordion.Body>
+                              </Accordion.Item>
+                            ))}
+                          </Accordion>
+                        </Accordion.Body>
+                      </Accordion.Item>
+                    ))}
+                  </Accordion>
+                </Col>
+              </Row>
             </Container>
           </FormPage>
         </FormBook>

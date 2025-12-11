@@ -24,6 +24,7 @@ import SignaturesVacationView from "./SignaturesVacationView";
 import { Container, Row } from "react-bootstrap";
 import ApproveVacationLeaderModal from "./ApproveVacationLeaderModal";
 import SignatureVacationDohModal from "./SignatureDohModal";
+import VacationPDFownload from "./VacationPDFownload";
 
 type TInputs = Pick<
   Vacations,
@@ -70,6 +71,7 @@ function VacationsFormView({
 
   const [approveModal, setApproveModal] = useState(false);
   const [signatureDohModal, setSignatureDohModal] = useState(false);
+  const [vacationPDFModal, setVacationPDFModal] = useState(false);
 
   const originalValuesRef = useRef<TInputs | null>(null);
 
@@ -114,7 +116,9 @@ function VacationsFormView({
     return result;
   };
 
-  const handleDownloadPDF = () => {};
+  const handleDownloadPDF = () => {
+    setVacationPDFModal(!vacationPDFModal);
+  };
 
   useEffect(() => {
     if (!vacation) {
@@ -291,6 +295,11 @@ function VacationsFormView({
         onHide={() => setSignatureDohModal(!setSignatureDohModal)}
         id={id}
         idPeriod={Number(vacation?.idPeriod)}
+      />
+      <VacationPDFownload
+        show={vacationPDFModal}
+        onHide={() => setVacationPDFModal(!vacationPDFModal)}
+        id={id}
       />
     </>
   );
