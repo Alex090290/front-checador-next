@@ -180,9 +180,8 @@ export async function createNewsletter({
         }
       )
       .then(async (res) => {
-        console.log("RESPUESTA:", res.data.data);
+        console.log("IMAGEN DE NOTICIA" + data.img);
         const file = data.img || "";
-        console.log("FILE", file);
         const formData = new FormData();
         formData.append("img", file);
 

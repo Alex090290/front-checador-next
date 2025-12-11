@@ -3,7 +3,6 @@
 import Link from "next/link";
 import React, { ReactElement } from "react";
 import {
-  Button,
   ButtonGroup,
   Card,
   Col,
@@ -62,7 +61,6 @@ function Header({ children, formView, title, actions }: HeaderProps) {
                       key={`action-list-${index}`}
                       onClick={() => action.action()}
                       eventKey={index}
-                      as={Button}
                     >
                       {action.string}
                     </Dropdown.Item>

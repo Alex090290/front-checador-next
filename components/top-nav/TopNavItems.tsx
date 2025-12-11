@@ -60,6 +60,10 @@ function TopNavItems() {
         <i className="bi bi-postcard me-1"></i>
         <span>Anuncios</span>
       </Nav.Link>
+      <Nav.Link as={Link} href="/app/vacations?view_type=list&id=null">
+        <i className="bi bi-calendar4-week me-1"></i>
+        <span>Vacaciones</span>
+      </Nav.Link>
     </Nav>
   );
 }

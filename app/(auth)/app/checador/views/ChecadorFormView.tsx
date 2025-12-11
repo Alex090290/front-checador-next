@@ -30,9 +30,9 @@ interface IFeedbackDisplay {
 }
 
 function ChecadorFormView() {
-  const { data: activeNotice } = useSWR("/api/notice", fetcher,{
-  refreshInterval: 60000, 
-});
+  const { data: activeNotice } = useSWR("/api/notice", fetcher, {
+    refreshInterval: 60000,
+  });
 
   let toastId: string = "";
 
@@ -142,21 +142,19 @@ function ChecadorFormView() {
     }
   }, [feedbackDisplay]);
 
-  console.log(activeNotice);
-
   return (
     <Row className="h-100 overflow-auto">
       <Col md="12" className="h-100">
         <Card className="d-flex flex-column shadow h-100 border-0">
           <Card.Header className="border-0">
-            <h3 className="d-flex justify-content-between fw-bolder">
+            <div className="d-flex justify-content-between fw-bolder">
               <Button onClick={() => signOut()} variant="link">
                 Salir
               </Button>
-              <span className="shadow-sm px-2 rounded">
+              <span className="shadow-sm px-2 rounded fs-3">
                 {formatDatelocal(new Date())}
               </span>
-            </h3>
+            </div>
             <Row>
               <Col md="6">
                 <div className="row align-items-stretch">

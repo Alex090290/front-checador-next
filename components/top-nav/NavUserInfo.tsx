@@ -74,7 +74,7 @@ function NavUserInfo() {
             <i className="bi bi-person-circle me-2"></i>
             <span>Perfil</span>
           </Dropdown.Item>
-          <Dropdown.Item as={Button} onClick={() => signOut()}>
+          <Dropdown.Item onClick={() => signOut()}>
             <i className="bi bi-box-arrow-right me-2"></i>
             <span>Cerrar sesión</span>
           </Dropdown.Item>
