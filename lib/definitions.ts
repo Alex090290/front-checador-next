@@ -355,6 +355,17 @@ export interface Vacations {
   pendingDays: number;
 }
 
+export interface PeriodVacation {
+  _id: string;
+  id: number;
+  idEmployee: number;
+  periodDescription: string;
+  totalDaysPeriod: number;
+  dateInitPeriod: string;
+  dateEndPeriod: string;
+  idsVacationsRequest: number[];
+}
+
 export type VacationRequestStatus =
   | "APPROVED"
   | "REFUSED"

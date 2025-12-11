@@ -142,8 +142,6 @@ function ChecadorFormView() {
     }
   }, [feedbackDisplay]);
 
-  console.log(activeNotice);
-
   return (
     <Row className="h-100 overflow-auto">
       <Col md="12" className="h-100">

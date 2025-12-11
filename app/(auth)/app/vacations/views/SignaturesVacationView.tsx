@@ -1,35 +1,34 @@
 "use client";
 
-import { fetchSignature } from "@/app/actions/permissions-actions";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Badge, Card, Col, Spinner } from "react-bootstrap";
-import { leaderApproval } from "./PermissionsListView";
-import { PermissionRequestStatus } from "@/lib/definitions";
-import { formatDate } from "date-fns";
+import { VacationRequestStatus } from "@/lib/definitions";
+import { vacationStatus } from "./VacationsListView";
+import { fetchVacationSignature } from "@/app/actions/vacations-actions";
 
-function SignaturesView({
-  idPermission,
+function SignaturesVacationView({
+  idSolicitud,
+  idPeriod,
   idEmployee,
   name,
-  dateApproved,
   status,
 }: {
-  idPermission: string | null;
-  idEmployee: string | null;
+  idSolicitud: number | null;
+  idPeriod: number | null;
+  idEmployee: number | null;
   name: string;
-  dateApproved?: string;
-  dateApprove?: string;
-  dateApproveDoh?: string;
-  status: PermissionRequestStatus;
+  status: VacationRequestStatus;
 }) {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   // const handleFetchSignature = async () => {
-  //   if (!idPermission || !idEmployee) return;
+  //   if (!idSolicitud || !idEmployee) return;
   //   setLoading(true);
-  //   const res = await fetchSignature({ idEmployee, idPermission });
+  //   const res = await fetchVacationSignature({
+  //     data: { idSolicitud, idPeriod, idEmployee },
+  //   });
   //   if (!res.success) return setLoading(false);
   //   setImgUrl(res.data || null);
   //   setLoading(false);
@@ -37,15 +36,17 @@ function SignaturesView({
 
   useEffect(() => {
     const handleFetchSignature = async () => {
-      if (!idPermission || !idEmployee) return;
+      if (!idSolicitud || !idEmployee) return;
       setLoading(true);
-      const res = await fetchSignature({ idEmployee, idPermission });
+      const res = await fetchVacationSignature({
+        data: { idSolicitud, idPeriod, idEmployee },
+      });
       if (!res.success) return setLoading(false);
       setImgUrl(res.data || null);
       setLoading(false);
     };
     handleFetchSignature();
-  }, [idPermission, idEmployee]);
+  }, [idSolicitud, idEmployee, idPeriod]);
 
   return (
     <Col md="4">
@@ -61,9 +62,9 @@ function SignaturesView({
                   : "secondary"
               }
             >
-              {leaderApproval[status ?? "EMPLOYEE"]}
+              {vacationStatus[status ?? "EMPLOYEE"]}
             </Badge>
-            {dateApproved ? formatDate(dateApproved, "dd-MM-yyyy HH:mm") : null}
+            {/* {dateApproved ? formatDate(dateApproved, "dd-MM-yyyy HH:mm") : null} */}
           </div>
         </Card.Header>
         <Card.Body className="p-1 text-center">
@@ -87,4 +88,4 @@ function SignaturesView({
   );
 }
 
-export default SignaturesView;
+export default SignaturesVacationView;

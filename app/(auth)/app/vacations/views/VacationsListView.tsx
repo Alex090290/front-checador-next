@@ -7,7 +7,7 @@ import TableTemplate, {
 import { VacationRequestStatus, Vacations } from "@/lib/definitions";
 import { Badge } from "react-bootstrap";
 
-const vacationStatus: Record<VacationRequestStatus, string> = {
+export const vacationStatus: Record<VacationRequestStatus, string> = {
   APPROVED: "Aprobado",
   PENDING: "Pendiente",
   REFUSED: "Rechazado",
@@ -26,7 +26,7 @@ function VacationsListView({ vacations }: { vacations: Vacations[] }) {
     },
     {
       key: "holidayName",
-      label: "Concepto",
+      label: "Día festivo",
       accessor: (row) => row.holidayName,
       filterable: true,
       type: "string",
