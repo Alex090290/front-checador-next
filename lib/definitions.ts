@@ -177,7 +177,7 @@ export interface Employee {
     dischargeReason: string;
     typeOfDischarge: string;
   }[];
-  vacations: number;
+  dailyWage: number;
 }
 
 type EmergencyContact = {

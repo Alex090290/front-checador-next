@@ -172,7 +172,7 @@ export async function createEmployee({
           dischargeDate: data.dischargeDate,
           anniversaryLetter: data.anniversaryLetter,
           nationality: data.nationality,
-          vacations: Number(data.vacations),
+          dailyWage: Number(data.dailyWage),
         },
         {
           headers: {
@@ -229,7 +229,7 @@ export async function updateEmploye({
     if (!id) {
       throw new Error("No se ha definido ID");
     }
-
+    
     const sanitizedPhonePersonal = sanitizePhoneNumber(
       data.phonePersonal as unknown as string
     );
@@ -316,7 +316,7 @@ export async function updateEmploye({
           typeOfDischarge: data.typeOfDischarge,
           role: data.role,
           visibleRecords: true,
-          vacations: Number(data.vacations),
+          dailyWage: Number(data.dailyWage),
         },
         {
           headers: {

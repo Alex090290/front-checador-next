@@ -93,8 +93,6 @@ function EmployeeFormView({
   const [modalUnsubscribe, setModalUnsubscribe] = useState(false);
 
   const onSubmit: SubmitHandler<TInputsEmployee> = async (data) => {
-    console.log("submit");
-
     if (id && id === "null") {
       const res = await createEmployee({ data });
       if (!res.success) {
@@ -105,6 +103,7 @@ function EmployeeFormView({
       toast.success(res.message);
       router.back();
     } else {
+      
       const res = await updateEmploye({ data, id: Number(id) });
       if (!res.success) {
         modalError(res.message);
@@ -192,7 +191,7 @@ function EmployeeFormView({
         dischargeReason: "",
         typeOfDischarge: "",
         role: [],
-        vacations: 0,
+        dailyWage: 0,
       };
       setPuestos([]);
       reset(values);
@@ -251,22 +250,22 @@ function EmployeeFormView({
         emergencyContacts: employee.emergencyContacts,
         keyAspelNOI: employee.keyAspelNOI,
         keyCONTPAQi: employee.keyCONTPAQi,
-        admissionDate: formatDate(employee.admissionDate, "yyy-MM-dd"),
+        admissionDate: formatDate(employee.admissionDate, "yyyy-MM-dd"),
         anniversaryLetter: employee.anniversaryLetter,
         visibleRecords: employee.visibleRecords,
         dischargeDate: employee.dischargeDate
-          ? formatDate(employee.dischargeDate, "yyy-MM-dd")
+          ? formatDate(employee.dischargeDate, "yyyy-MM-dd")
           : null,
         dischargeReason: employee.dischargeReason,
         typeOfDischarge: employee.typeOfDischarge,
         role: employee.role || [],
-        vacations: employee.vacations,
+        dailyWage: employee.dailyWage,
       };
       reset(values);
       originalValuesRef.current = values;
       const department = employee.idDepartment as unknown as Department;
       setPuestos(department?.positions || []);
-      console.log(values);
+      console.log("values: ",values);
     }
   }, [employee, reset]);
 
@@ -639,9 +638,9 @@ function EmployeeFormView({
                 <FieldGroup.Stack>
                   <Entry
                     className="text-center"
-                    register={register("vacations", { required: true })}
-                    label="Vacaciones:"
-                    invalid={!!errors.vacations}
+                    register={register("dailyWage", { required: true })}
+                    label="Salario diario:"
+                    invalid={!!errors.dailyWage}
                   />
                 </FieldGroup.Stack>
               </FieldGroup>
@@ -782,9 +781,8 @@ function EmployeeFormView({
                     <Entry
                       register={register("admissionDate")}
                       label="Inicio de relación:"
-                      invisible={id === "null"}
+                      // invisible={id === "null"}
                       className="text-center"
-                      readonly
                     />
                     <Entry
                       register={register("dischargeDate")}

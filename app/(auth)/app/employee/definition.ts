@@ -72,5 +72,5 @@ export type TInputsEmployee = {
   dischargeReason: string;
   typeOfDischarge: string;
   role: UserRole[];
-  vacations: number;
+  dailyWage: number;
 };
