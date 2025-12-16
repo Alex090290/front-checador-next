@@ -641,7 +641,7 @@ function EmployeeFormView({
                     register={register("dailyWage", { required: true })}
                     label="Salario diario:"
                     invalid={!!errors.dailyWage}
-                    invisible={employee?.dailyWage !== 0}
+                    invisible={employee?.dailyWage === 0}
                   />
                 </FieldGroup.Stack>
               </FieldGroup>
