@@ -635,15 +635,20 @@ function EmployeeFormView({
                   register={register("scheduleDescription")}
                   label="Descripción del horario:"
                 />
-                <FieldGroup.Stack>
+                {
+                  session?.user?.permissions.some((p) => p.text === "visualizar_salario") 
+                  && (
+                  <FieldGroup.Stack>
                   <Entry
                     className="text-center"
                     register={register("dailyWage", { required: true })}
                     label="Salario diario:"
                     invalid={!!errors.dailyWage}
-                    invisible={employee?.dailyWage === 0}
                   />
                 </FieldGroup.Stack>
+                  ) 
+                }
+
               </FieldGroup>
               <FieldGroup>
                 <FieldGroup.Stack>
