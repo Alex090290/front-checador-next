@@ -38,7 +38,6 @@ export const FieldSelect = ({
         isInvalid={invalid}
         className={className}
       >
-        <option></option>
         {options.map((opt, i) => (
           <option key={`${opt.value}-${i}`} value={opt.value}>
             {opt.label}

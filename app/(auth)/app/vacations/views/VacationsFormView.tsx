@@ -70,7 +70,7 @@ function VacationsFormView({
   const router = useRouter();
 
   const [approveModal, setApproveModal] = useState(false);
-  const [periods, setPeriods] = useState<any[]>([]);
+  const [periods, setPeriods] = useState<PeriodVacation[]>([]);
   const [signatureDohModal, setSignatureDohModal] = useState(false);
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
 
@@ -141,39 +141,42 @@ function VacationsFormView({
         idEmployee: vacation.idEmployee,
         idLeader: vacation.idLeader,
         idPersonDoh: vacation.idPersonDoh,
-        idPeriod: vacation?.idPeriod ?? null,
+        idPeriod: vacation?.period.id ?? null,
         dateEnd: formatDate(vacation.dateEnd, "yyyy-MM-dd") ?? "",
         dateInit: formatDate(vacation.dateInit, "yyyy-MM-dd") ?? "",
         incidence: vacation.holidayName,
         periodDescription: vacation.period.periodDescription,
         signature: "",
       };
-      
+
       reset(values);
       originalValuesRef.current = values;
     }
   }, [reset, vacation, session?.user]);
 
+  const getPeriods = async () => {
+    try {
+      if (!idEmployeeSelected) {
+        setPeriods([]); // si no hay empleado, limpia
+        return;
+      }
+
+      const res = await fetchPeriods({
+        idEmployee: Number(idEmployeeSelected),
+      });
+
+      setPeriods(res ?? []);
+      console.log(res.find((p) => p.id === getValues().idPeriod));
+    } catch (error) {
+      console.error(error);
+      setPeriods([]);
+    }
+  };
 
   useEffect(() => {
-    if (!idEmployeeSelected) {
-      setPeriods([]); // si no hay empleado, limpia
-      return;
-    }
+    getPeriods();
+  }, [idEmployeeSelected, vacation]);
 
-    (async () => {
-      try {
-        const res = await fetchPeriods({ idEmployee: Number(idEmployeeSelected) });
-
-        setPeriods(res ?? []);
-
-      } catch (error) {
-        console.error(error);
-        setPeriods([]);
-      }
-    })();
-  }, [idEmployeeSelected]);
-  
   return (
     <>
       <FormView
@@ -243,17 +246,16 @@ function VacationsFormView({
               callBackMode="id"
               control={control}
             />
-          <FieldSelect
-            label="Periodo"
-            options={periods.map((p) => ({
-              label: p.periodDescription,
-              value: String(p.id), // el DOM usa string
-            }))}
-            register={register("idPeriod", {
-              required: true,
-              setValueAs: (v) => (v === "" ? null : Number(v)), // ✅ convierte a number
-            })}
-          />
+            <FieldSelect
+              label="Periodo"
+              options={periods.map((p) => ({
+                label: p.periodDescription,
+                value: Number(p.id), // el DOM usa string
+              }))}
+              register={register("idPeriod", {
+                required: true,
+              })}
+            />
             <RelationField
               register={register("idPersonDoh")}
               options={employees.map((e) => ({
