@@ -3,12 +3,10 @@ import VacationsFormView from "./VacationsFormView";
 import VacationsListView from "./VacationsListView";
 import { Employee, PeriodVacation, Vacations } from "@/lib/definitions";
 import {
-  fetchPeriods,
   fetchVacations,
   findVacationById,
 } from "@/app/actions/vacations-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
-import { auth } from "@/lib/auth";
 
 async function VacationsMainView({
   viewType,
@@ -17,21 +15,18 @@ async function VacationsMainView({
   viewType: string;
   id: string;
 }) {
-  const session = await auth();
 
   let vacations: Vacations[] = [];
   let vacation: Vacations | null = null;
   let employees: Employee[] = [];
-  let periods: PeriodVacation[] = [];
 
   if (id && id !== "null") {
     vacation = await findVacationById({ id });
   }
 
-  [vacations, employees, periods] = await Promise.all([
+  [vacations, employees] = await Promise.all([
     fetchVacations(),
     fetchEmployees(),
-    fetchPeriods({ idEmployee: Number(session?.user?.idEmployee) }),
   ]);
 
   if (viewType === "list") {
@@ -42,7 +37,6 @@ async function VacationsMainView({
         vacation={vacation}
         id={id}
         employees={employees}
-        periods={periods}
       />
     );
   } else {

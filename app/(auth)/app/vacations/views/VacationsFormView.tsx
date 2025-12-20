@@ -25,6 +25,7 @@ import { Container, Row } from "react-bootstrap";
 import ApproveVacationLeaderModal from "./ApproveVacationLeaderModal";
 import SignatureVacationDohModal from "./SignatureDohModal";
 import VacationPDFownload from "./VacationPDFownload";
+import { fetchPeriods } from "@/app/actions/vacations-actions";
 
 type TInputs = Pick<
   Vacations,
@@ -44,12 +45,10 @@ function VacationsFormView({
   vacation,
   id,
   employees,
-  periods,
 }: {
   vacation: Vacations | null;
   id: string;
   employees: Employee[];
-  periods: PeriodVacation[];
 }) {
   const {
     register,
@@ -62,6 +61,7 @@ function VacationsFormView({
   } = useForm<TInputs>();
 
   const dateInit = watch("dateInit");
+  const idEmployeeSelected = watch("idEmployee");
 
   const { data: session } = useSession();
 
@@ -70,6 +70,7 @@ function VacationsFormView({
   const router = useRouter();
 
   const [approveModal, setApproveModal] = useState(false);
+  const [periods, setPeriods] = useState<any[]>([]);
   const [signatureDohModal, setSignatureDohModal] = useState(false);
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
 
@@ -140,19 +141,39 @@ function VacationsFormView({
         idEmployee: vacation.idEmployee,
         idLeader: vacation.idLeader,
         idPersonDoh: vacation.idPersonDoh,
-        idPeriod: vacation.idPeriod,
+        idPeriod: vacation?.idPeriod ?? null,
         dateEnd: formatDate(vacation.dateEnd, "yyyy-MM-dd") ?? "",
         dateInit: formatDate(vacation.dateInit, "yyyy-MM-dd") ?? "",
         incidence: vacation.holidayName,
         periodDescription: vacation.period.periodDescription,
         signature: "",
       };
-      console.log(values);
+      
       reset(values);
       originalValuesRef.current = values;
     }
   }, [reset, vacation, session?.user]);
 
+
+  useEffect(() => {
+    if (!idEmployeeSelected) {
+      setPeriods([]); // si no hay empleado, limpia
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await fetchPeriods({ idEmployee: Number(idEmployeeSelected) });
+
+        setPeriods(res ?? []);
+
+      } catch (error) {
+        console.error(error);
+        setPeriods([]);
+      }
+    })();
+  }, [idEmployeeSelected]);
+  
   return (
     <>
       <FormView
@@ -222,14 +243,17 @@ function VacationsFormView({
               callBackMode="id"
               control={control}
             />
-            <FieldSelect
-              label="Perodio"
-              options={periods.map((p) => ({
-                label: p.periodDescription,
-                value: p.id,
-              }))}
-              register={register("idPeriod", { required: true })}
-            />
+          <FieldSelect
+            label="Periodo"
+            options={periods.map((p) => ({
+              label: p.periodDescription,
+              value: String(p.id), // el DOM usa string
+            }))}
+            register={register("idPeriod", {
+              required: true,
+              setValueAs: (v) => (v === "" ? null : Number(v)), // ✅ convierte a number
+            })}
+          />
             <RelationField
               register={register("idPersonDoh")}
               options={employees.map((e) => ({
