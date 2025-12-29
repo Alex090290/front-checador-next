@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Offcanvas, Button, Card } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import TopNavItems from "../top-nav/TopNavItems";
-import TopNavItemsEmployee from "./TopNavItemsEmployee";
 
 export default function Sidebar() {
   const { data: session } = useSession();
@@ -16,7 +15,6 @@ export default function Sidebar() {
 
   const renderMenu = () => {
     if (userRole === "CHECADOR") return null;
-    if (userRole === "EMPLOYEE") return <TopNavItemsEmployee />;
     return <TopNavItems />;
   };
 
