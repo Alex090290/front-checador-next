@@ -375,3 +375,14 @@ export type VacationRequestStatus =
   | "REFUSED"
   | "PENDING"
   | "EMPLOYEE";
+
+  export interface ConfigSystemUpdate {
+		permissions: {
+				idPersonApproveDoh: number,
+				idPersonApproveLeaders: number
+		},
+		vacations:{
+				idPersonApproveDoh: number,
+				idPersonApproveLeaders: number
+		}
+}
