@@ -17,7 +17,7 @@ import { Employee, PeriodVacation, Vacations } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import SignaturesVacationView from "./SignaturesVacationView";
@@ -26,6 +26,9 @@ import ApproveVacationLeaderModal from "./ApproveVacationLeaderModal";
 import SignatureVacationDohModal from "./SignatureDohModal";
 import VacationPDFownload from "./VacationPDFownload";
 import { fetchPeriods } from "@/app/actions/vacations-actions";
+import { findEmployeeById } from "@/app/actions/employee-actions";
+import useSWR from "swr";
+import { IConfigSystem } from "@/app/actions/configSystem-actions";
 
 type TInputs = Pick<
   Vacations,
@@ -40,6 +43,8 @@ type TInputs = Pick<
   incidence: string;
   signature: string;
 };
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 
 function VacationsFormView({
   vacation,
@@ -56,6 +61,7 @@ function VacationsFormView({
     reset,
     watch,
     control,
+    setValue,
     getValues,
     formState: { isDirty, isSubmitting },
   } = useForm<TInputs>();
@@ -64,7 +70,12 @@ function VacationsFormView({
   const idEmployeeSelected = watch("idEmployee");
 
   const { data: session } = useSession();
+  const { data, mutate, error, isLoading } = useSWR("/api/configsystem", fetcher);
 
+  const config: IConfigSystem | null = useMemo(() => {
+    const maybe = data?.data?.[0];
+    return maybe ?? null;
+  }, [data]);
   const { modalError } = useModals();
 
   const router = useRouter();
@@ -153,6 +164,57 @@ function VacationsFormView({
       originalValuesRef.current = values;
     }
   }, [reset, vacation, session?.user]);
+  useEffect(() => {
+    if (id !== "null") return; // solo creando
+    if (!idEmployeeSelected) return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        const res = await findEmployeeById({ id: Number(idEmployeeSelected) });
+        
+        if (cancelled) return;
+
+        // 👇 tu API regresa { message, status, data: {...} }
+        const emp = res;
+        if (!emp) return;
+
+        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+
+        // ✅ si ES líder → setea el líder desde config
+        if (emp.isLeader) {
+          if (!leaderFromConfig) return;
+          setValue("idLeader", Number(leaderFromConfig), { shouldDirty: true });
+          return;
+        }
+
+        // ✅ si NO es líder → setea el líder real del empleado (viene en emp.leader)
+        const leaderId = emp?.leader?.id ?? null;
+        setValue("idLeader", leaderId ? Number(leaderId) : null, { shouldDirty: true });
+      } catch (e) {
+        // opcional: console.log(e)
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, idEmployeeSelected, config, setValue]);
+
+  useEffect(() => {
+    if (id !== "null") return;
+
+    const dohFromConfig = config?.permissions?.approvalDoh?.idPerson;
+    if (!dohFromConfig) return;
+
+    const currentDoh = watch("idPersonDoh");
+    if (currentDoh) return;
+
+    setValue("idPersonDoh", Number(dohFromConfig), { shouldDirty: false });
+  }, [id, config, setValue, watch]);
 
   const getPeriods = async () => {
     try {
@@ -166,7 +228,6 @@ function VacationsFormView({
       });
 
       setPeriods(res ?? []);
-      console.log(res.find((p) => p.id === getValues().idPeriod));
     } catch (error) {
       console.error(error);
       setPeriods([]);

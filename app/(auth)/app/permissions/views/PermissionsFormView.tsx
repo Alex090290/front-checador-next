@@ -17,7 +17,7 @@ import { Employee, IPermissionRequest } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Container, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -26,6 +26,9 @@ import ApproveLeaderModal from "./ApproveLeaderModal";
 import SignatureDohModal from "./SignatureDohModal";
 import EmployeeSignatureModal from "./EmployeeSignatureModal";
 import PermissionPDFownload from "./PermissionPDFownload";
+import useSWR from "swr";
+import { IConfigSystem } from "@/app/actions/configSystem-actions";
+import { findEmployeeById } from "@/app/actions/employee-actions";
 
 type TInputs = {
   motive: string;
@@ -43,6 +46,7 @@ type TInputs = {
   modeSelect: string;
   signature: string;
 };
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function PermissionsFormView({
   id,
@@ -64,8 +68,15 @@ function PermissionsFormView({
   } = useForm<TInputs>();
 
   const { data: session } = useSession();
+  const { data, mutate, error, isLoading } = useSWR("/api/configsystem", fetcher);
+
+  const config: IConfigSystem | null = useMemo(() => {
+    const maybe = data?.data?.[0];
+    return maybe ?? null;
+  }, [data]);
 
   const [modeSelect, dateInit] = watch(["modeSelect", "dateInit"]);
+  const idEmployeeSelected = watch("idEmployee");
 
   const { modalError } = useModals();
 
@@ -165,6 +176,58 @@ function PermissionsFormView({
       originalValuesRef.current = values;
     }
   }, [reset, permission, employees, session?.user]);
+
+  useEffect(() => {
+    if (id !== "null") return; // solo creando
+    if (!idEmployeeSelected) return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        const res = await findEmployeeById({ id: Number(idEmployeeSelected) });
+        
+        if (cancelled) return;
+
+        // 👇 tu API regresa { message, status, data: {...} }
+        const emp = res;
+        if (!emp) return;
+
+        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+
+        // ✅ si ES líder → setea el líder desde config
+        if (emp.isLeader) {
+          if (!leaderFromConfig) return;
+          setValue("idLeader", Number(leaderFromConfig), { shouldDirty: true });
+          return;
+        }
+
+        // ✅ si NO es líder → setea el líder real del empleado (viene en emp.leader)
+        const leaderId = emp?.leader?.id ?? null;
+        setValue("idLeader", leaderId ? Number(leaderId) : null, { shouldDirty: true });
+      } catch (e) {
+        // opcional: console.log(e)
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, idEmployeeSelected, config, setValue]);
+
+  useEffect(() => {
+    if (id !== "null") return;
+
+    const dohFromConfig = config?.permissions?.approvalDoh?.idPerson;
+    if (!dohFromConfig) return;
+
+    const currentDoh = watch("idPersonDoh");
+    if (currentDoh) return;
+
+    setValue("idPersonDoh", Number(dohFromConfig), { shouldDirty: false });
+  }, [id, config, setValue, watch]);
 
   const getSignatureEmployee = () => {
     let result = false;

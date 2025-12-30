@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { IConfigSystem, updateConfigSystem } from "@/app/actions/configSystem-actions";
-import { ActionResponse } from "@/lib/definitions";
+import { ActionResponse, ConfigSystemUpdate } from "@/lib/definitions";
 import ConfigSystemView from "@/components/configSystem/formView";
-import ConfigSystemUpdate from "@/components/configSystem/formUpdate";
+import ConfigSystemUpdateComp from "@/components/configSystem/formUpdate";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -21,9 +21,11 @@ export default function ConfigSystem() {
     return maybe ?? null;
   }, [data]);
 
-  const saveConfig = async (payload: any): Promise<ActionResponse<IConfigSystem>> => {
+  const saveConfig = async (
+    payload: ConfigSystemUpdate
+  ): Promise<ActionResponse<IConfigSystem>> => {
     try {
-      const res = await updateConfigSystem(payload);
+      const res = await updateConfigSystem(payload); // ✅ así, directo
 
       if (!res?.success) {
         return {
@@ -33,7 +35,7 @@ export default function ConfigSystem() {
         };
       }
 
-      await mutate(); // refresca lo que se ve en View
+      await mutate();
       setMode("view");
 
       return {
@@ -41,10 +43,11 @@ export default function ConfigSystem() {
         message: res?.message ?? "Guardado",
         data: undefined,
       };
-    } catch (e: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error inesperado";
       return {
         success: false,
-        message: e?.message ?? "Error inesperado",
+        message,
         data: undefined,
       };
     }
@@ -63,7 +66,7 @@ export default function ConfigSystem() {
           onEdit={async () => {
             try {
               setIsEditLoading(true);
-              await mutate(); // opcional si quieres refrescar antes de editar
+              await mutate();
               setMode("edit");
             } finally {
               setIsEditLoading(false);
@@ -71,7 +74,7 @@ export default function ConfigSystem() {
           }}
         />
       ) : (
-        <ConfigSystemUpdate
+        <ConfigSystemUpdateComp
           initialData={config}
           onCancel={() => setMode("view")}
           onSave={saveConfig}

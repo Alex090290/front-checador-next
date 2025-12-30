@@ -178,6 +178,8 @@ export interface Employee {
     typeOfDischarge: string;
   }[];
   dailyWage: number;
+  isLeader: number;
+  isDoh: number;
 }
 
 type EmergencyContact = {
