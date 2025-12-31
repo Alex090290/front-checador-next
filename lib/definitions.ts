@@ -388,3 +388,70 @@ export type VacationRequestStatus =
 				idPersonApproveLeaders: number
 		}
 }
+export interface IInability {
+  _id: string;
+  id: number;
+  idEmployee: number;
+  whoCreateId: number;
+  accountingConfirmation: boolean;
+  disabilityCategory: string;
+  typeOfDisability: string;
+
+  documentsInability: {
+    id: number;
+    whoUploadId: number;
+    dateInit: string; // ISO
+    dateEnd: string; // ISO
+    daysdaysBrokenDown: {
+      id: number;
+      fortnightlyPeriod: number;
+      day: string; // ISO
+    }[];
+    inProgress: boolean;
+    urlDocument: string;
+    createdAt: string; // ISO
+    updatedAt: string; // ISO
+  }[];
+
+  sT2DischargeDocument: {
+    id: number;
+    whoUploadId: number;
+    urlDocument: string;
+    createdAt: string; // ISO
+    updatedAt: string; // ISO
+  };
+
+  sT7FillingDocumentv1: {
+    id: number;
+    whoUploadId: number;
+    urlDocument: string;
+    createdAt: string; // ISO
+    updatedAt: string; // ISO
+  };
+
+  sT7FillingDocumentv2: {
+    id: number;
+    whoUploadId: number;
+    urlDocument: string;
+    createdAt: string; // ISO
+    updatedAt: string; // ISO
+  };
+
+  status: string; // si tienes enum/union lo cambiamos
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+
+  employee: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+
+  whoCreate: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+}

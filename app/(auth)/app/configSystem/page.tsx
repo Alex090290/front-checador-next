@@ -25,7 +25,7 @@ export default function ConfigSystem() {
     payload: ConfigSystemUpdate
   ): Promise<ActionResponse<IConfigSystem>> => {
     try {
-      const res = await updateConfigSystem(payload); // ✅ así, directo
+      const res = await updateConfigSystem(payload);
 
       if (!res?.success) {
         return {
