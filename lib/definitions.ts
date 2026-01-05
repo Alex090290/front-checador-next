@@ -455,3 +455,11 @@ export interface IInability {
     lastName: string;
   };
 }
+
+export type InabilityPayload = {
+  idEmployee: number;
+  disabilityCategory: string;
+  typeOfDisability: string;
+  dateInit: string; // yyyy-MM-dd
+  dateEnd: string;  // yyyy-MM-dd
+};

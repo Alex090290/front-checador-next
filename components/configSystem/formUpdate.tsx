@@ -20,8 +20,8 @@ const toNum = (v: unknown, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
-type Employee = {
-  _id: string;
+export type EmployeeLite = {
+  _id?: string;
   id: number;
   name: string;
   lastName: string;
@@ -29,14 +29,14 @@ type Employee = {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const empName = (e: Employee) => `${e.name ?? ""} ${e.lastName ?? ""}`.trim();
+const empName = (e: EmployeeLite) => `${e.name ?? ""} ${e.lastName ?? ""}`.trim();
 
 const fullNameFromConfig = (emp?: { name: string; lastName: string }) => {
   if (!emp) return "";
   return `${emp.name ?? ""} ${emp.lastName ?? ""}`.trim();
 };
 
-function EmployeeAutocomplete({
+export function EmployeeAutocomplete({
   employees,
   value,
   onChange,
@@ -44,14 +44,20 @@ function EmployeeAutocomplete({
   placeholder,
   initialLabel,
   isEmployeesLoading,
+  inputSize,
+  inputClassName,
 }: {
-  employees: Employee[];
+  employees: EmployeeLite[];
   value: number;
   onChange: (val: number) => void;
   onTouched?: () => void;
   placeholder?: string;
   initialLabel?: string;
-  isEmployeesLoading?: boolean; // ✅ nuevo
+  isEmployeesLoading?: boolean;
+
+  // ✅ NUEVO (opcionales)
+  inputSize?: "sm" | "lg";
+  inputClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -109,13 +115,13 @@ function EmployeeAutocomplete({
     return employees
       .filter((e) => {
         const name = empName(e).toLowerCase();
-        const id = String(e.id);
-        return name.includes(term) || id.includes(term);
+        const idStr = String(e.id);
+        return name.includes(term) || idStr.includes(term);
       })
       .slice(0, 15);
   }, [employees, q]);
 
-  const commitSelection = (e: Employee) => {
+  const commitSelection = (e: EmployeeLite) => {
     const id = Number(e.id);
 
     pendingClearRef.current = false;
@@ -131,7 +137,13 @@ function EmployeeAutocomplete({
     <div ref={ref} className="position-relative">
       <Form.Control
         value={q}
-        placeholder={isEmployeesLoading ? "Cargando empleados..." : placeholder ?? "Buscar empleado..."}
+        size={inputSize}
+        className={inputClassName}
+        placeholder={
+          isEmployeesLoading
+            ? "Cargando empleados..."
+            : placeholder ?? "Buscar empleado..."
+        }
         autoComplete="off"
         disabled={!!isEmployeesLoading}
         onFocus={() => {
@@ -144,8 +156,7 @@ function EmployeeAutocomplete({
           setOpen(true);
           userTypingRef.current = true;
 
-          if (next.trim() === "") pendingClearRef.current = true;
-          else pendingClearRef.current = false;
+          pendingClearRef.current = next.trim() === "";
         }}
       />
 
@@ -159,7 +170,7 @@ function EmployeeAutocomplete({
           ) : (
             filtered.map((emp) => (
               <button
-                key={emp._id ?? emp.id}
+                key={emp._id ?? String(emp.id)}
                 type="button"
                 className="w-100 text-start btn btn-link text-decoration-none px-2 py-2"
                 onMouseDown={(ev) => {
@@ -178,6 +189,7 @@ function EmployeeAutocomplete({
   );
 }
 
+
 function EmployeeField({
   control,
   name,
@@ -194,7 +206,7 @@ function EmployeeField({
   initialLabel?: string;
 }) {
   const { data, isLoading } = useSWR("/api/employees", fetcher);
-  const employees: Employee[] = data?.data ?? [];
+  const employees: EmployeeLite[] = data?.data ?? [];
 
   return (
     <Controller
