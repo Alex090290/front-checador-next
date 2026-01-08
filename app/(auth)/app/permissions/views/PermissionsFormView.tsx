@@ -68,7 +68,7 @@ function PermissionsFormView({
   } = useForm<TInputs>();
 
   const { data: session } = useSession();
-  const { data, mutate, error, isLoading } = useSWR("/api/configsystem", fetcher);
+  const { data } = useSWR("/api/configsystem", fetcher);
 
   const config: IConfigSystem | null = useMemo(() => {
     const maybe = data?.data?.[0];
@@ -186,7 +186,7 @@ function PermissionsFormView({
     const run = async () => {
       try {
         const res = await findEmployeeById({ id: Number(idEmployeeSelected) });
-        
+
         if (cancelled) return;
 
         // 👇 tu API regresa { message, status, data: {...} }
@@ -204,9 +204,12 @@ function PermissionsFormView({
 
         // ✅ si NO es líder → setea el líder real del empleado (viene en emp.leader)
         const leaderId = emp?.leader?.id ?? null;
-        setValue("idLeader", leaderId ? Number(leaderId) : null, { shouldDirty: true });
-      } catch (e) {
-        // opcional: console.log(e)
+        setValue("idLeader", leaderId ? Number(leaderId) : null, {
+          shouldDirty: true,
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        console.log(e);
       }
     };
 

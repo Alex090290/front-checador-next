@@ -29,7 +29,8 @@ export type EmployeeLite = {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const empName = (e: EmployeeLite) => `${e.name ?? ""} ${e.lastName ?? ""}`.trim();
+const empName = (e: EmployeeLite) =>
+  `${e.name ?? ""} ${e.lastName ?? ""}`.trim();
 
 const fullNameFromConfig = (emp?: { name: string; lastName: string }) => {
   if (!emp) return "";
@@ -189,7 +190,6 @@ export function EmployeeAutocomplete({
   );
 }
 
-
 function EmployeeField({
   control,
   name,
@@ -246,19 +246,35 @@ export default function ConfigSystemUpdate({
     formState: { isSubmitting },
   } = useForm<TInputs>({
     defaultValues: {
-      permissions_approvalDoh_idPerson: toNum(initialData.permissions?.approvalDoh?.idPerson),
-      permissions_approvalLeaders_idPerson: toNum(initialData.permissions?.approvalLeaders?.idPerson),
-      vacations_approvalDoh_idPerson: toNum(initialData.vacations?.approvalDoh?.idPerson),
-      vacations_approvalLeaders_idPerson: toNum(initialData.vacations?.approvalLeaders?.idPerson),
+      permissions_approvalDoh_idPerson: toNum(
+        initialData.permissions?.approvalDoh?.idPerson
+      ),
+      permissions_approvalLeaders_idPerson: toNum(
+        initialData.permissions?.approvalLeaders?.idPerson
+      ),
+      vacations_approvalDoh_idPerson: toNum(
+        initialData.vacations?.approvalDoh?.idPerson
+      ),
+      vacations_approvalLeaders_idPerson: toNum(
+        initialData.vacations?.approvalLeaders?.idPerson
+      ),
     },
   });
 
   useEffect(() => {
     reset({
-      permissions_approvalDoh_idPerson: toNum(initialData.permissions?.approvalDoh?.idPerson),
-      permissions_approvalLeaders_idPerson: toNum(initialData.permissions?.approvalLeaders?.idPerson),
-      vacations_approvalDoh_idPerson: toNum(initialData.vacations?.approvalDoh?.idPerson),
-      vacations_approvalLeaders_idPerson: toNum(initialData.vacations?.approvalLeaders?.idPerson),
+      permissions_approvalDoh_idPerson: toNum(
+        initialData.permissions?.approvalDoh?.idPerson
+      ),
+      permissions_approvalLeaders_idPerson: toNum(
+        initialData.permissions?.approvalLeaders?.idPerson
+      ),
+      vacations_approvalDoh_idPerson: toNum(
+        initialData.vacations?.approvalDoh?.idPerson
+      ),
+      vacations_approvalLeaders_idPerson: toNum(
+        initialData.vacations?.approvalLeaders?.idPerson
+      ),
     });
   }, [initialData, reset]);
 
@@ -266,11 +282,15 @@ export default function ConfigSystemUpdate({
     const payload = {
       permissions: {
         idPersonApproveDoh: toNum(formData.permissions_approvalDoh_idPerson),
-        idPersonApproveLeaders: toNum(formData.permissions_approvalLeaders_idPerson),
+        idPersonApproveLeaders: toNum(
+          formData.permissions_approvalLeaders_idPerson
+        ),
       },
       vacations: {
         idPersonApproveDoh: toNum(formData.vacations_approvalDoh_idPerson),
-        idPersonApproveLeaders: toNum(formData.vacations_approvalLeaders_idPerson),
+        idPersonApproveLeaders: toNum(
+          formData.vacations_approvalLeaders_idPerson
+        ),
       },
     };
 
@@ -288,18 +308,29 @@ export default function ConfigSystemUpdate({
           <Card.Body>
             <div className="d-flex align-items-start justify-content-between gap-3">
               <div>
-                <Card.Title className="mb-1">Actualizar configuración</Card.Title>
+                <Card.Title className="mb-1">
+                  Actualizar configuración
+                </Card.Title>
               </div>
 
               <div className="d-flex gap-2">
-                <Button variant="outline-secondary" type="button" onClick={onCancel} disabled={isSubmitting}>
+                <Button
+                  variant="outline-secondary"
+                  type="button"
+                  onClick={onCancel}
+                  disabled={isSubmitting}
+                >
                   Cancelar
                 </Button>
 
                 <Button variant="primary" type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
                       Guardando...
                     </>
                   ) : (
@@ -318,22 +349,30 @@ export default function ConfigSystemUpdate({
                     <h6 className="mb-3">Permisos</h6>
 
                     <Form.Group className="mb-3">
-                      <Form.Label className="small text-muted">Aprovador DOH</Form.Label>
+                      <Form.Label className="small text-muted">
+                        Aprovador DOH
+                      </Form.Label>
                       <EmployeeField
                         control={control}
                         name="permissions_approvalDoh_idPerson"
                         placeholder="Buscar empleado..."
-                        initialLabel={fullNameFromConfig(initialData.permissions?.approvalDoh?.employee)}
+                        initialLabel={fullNameFromConfig(
+                          initialData.permissions?.approvalDoh?.employee
+                        )}
                       />
                     </Form.Group>
 
                     <Form.Group>
-                      <Form.Label className="small text-muted">Aprovador de lideres</Form.Label>
+                      <Form.Label className="small text-muted">
+                        Aprovador de lideres
+                      </Form.Label>
                       <EmployeeField
                         control={control}
                         name="permissions_approvalLeaders_idPerson"
                         placeholder="Buscar empleado..."
-                        initialLabel={fullNameFromConfig(initialData.permissions?.approvalLeaders?.employee)}
+                        initialLabel={fullNameFromConfig(
+                          initialData.permissions?.approvalLeaders?.employee
+                        )}
                       />
                     </Form.Group>
                   </Card.Body>
@@ -346,22 +385,30 @@ export default function ConfigSystemUpdate({
                     <h6 className="mb-3">Vacations</h6>
 
                     <Form.Group className="mb-3">
-                      <Form.Label className="small text-muted">Aprovador DOH</Form.Label>
+                      <Form.Label className="small text-muted">
+                        Aprovador DOH
+                      </Form.Label>
                       <EmployeeField
                         control={control}
                         name="vacations_approvalDoh_idPerson"
                         placeholder="Buscar empleado..."
-                        initialLabel={fullNameFromConfig(initialData.vacations?.approvalDoh?.employee)}
+                        initialLabel={fullNameFromConfig(
+                          initialData.vacations?.approvalDoh?.employee
+                        )}
                       />
                     </Form.Group>
 
                     <Form.Group>
-                      <Form.Label className="small text-muted">Aprovador de lideres</Form.Label>
+                      <Form.Label className="small text-muted">
+                        Aprovador de lideres
+                      </Form.Label>
                       <EmployeeField
                         control={control}
                         name="vacations_approvalLeaders_idPerson"
                         placeholder="Buscar empleado..."
-                        initialLabel={fullNameFromConfig(initialData.vacations?.approvalLeaders?.employee)}
+                        initialLabel={fullNameFromConfig(
+                          initialData.vacations?.approvalLeaders?.employee
+                        )}
                       />
                     </Form.Group>
                   </Card.Body>

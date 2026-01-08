@@ -11,7 +11,7 @@ import { useModals } from "@/context/ModalContext";
 import { Employee, Permission, User, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -143,16 +143,17 @@ function UsersFormView({
     }
   };
 
+  const loadImage = useCallback(async () => {
+    if (profile && profile === "true") {
+      const res = await loadAvatar();
+      if (!res.success) return modalError(res.message);
+      setValue("imageUrl", res.data, { shouldDirty: false });
+    }
+  }, [setValue, modalError, profile]);
+
   useEffect(() => {
-    const loadImage = async () => {
-      if (profile && profile === "true") {
-        const res = await loadAvatar();
-        if (!res.success) return modalError(res.message);
-        setValue("imageUrl", res.data, { shouldDirty: false });
-      }
-    };
     loadImage();
-  }, [user, setValue]);
+  }, [loadImage]);
 
   return (
     <>

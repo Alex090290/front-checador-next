@@ -17,7 +17,7 @@ import { Employee, PeriodVacation, Vacations } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import SignaturesVacationView from "./SignaturesVacationView";
@@ -45,7 +45,6 @@ type TInputs = Pick<
 };
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-
 function VacationsFormView({
   vacation,
   id,
@@ -70,7 +69,7 @@ function VacationsFormView({
   const idEmployeeSelected = watch("idEmployee");
 
   const { data: session } = useSession();
-  const { data, mutate, error, isLoading } = useSWR("/api/configsystem", fetcher);
+  const { data } = useSWR("/api/configsystem", fetcher);
 
   const config: IConfigSystem | null = useMemo(() => {
     const maybe = data?.data?.[0];
@@ -173,7 +172,7 @@ function VacationsFormView({
     const run = async () => {
       try {
         const res = await findEmployeeById({ id: Number(idEmployeeSelected) });
-        
+
         if (cancelled) return;
 
         // 👇 tu API regresa { message, status, data: {...} }
@@ -191,9 +190,12 @@ function VacationsFormView({
 
         // ✅ si NO es líder → setea el líder real del empleado (viene en emp.leader)
         const leaderId = emp?.leader?.id ?? null;
-        setValue("idLeader", leaderId ? Number(leaderId) : null, { shouldDirty: true });
-      } catch (e) {
-        // opcional: console.log(e)
+        setValue("idLeader", leaderId ? Number(leaderId) : null, {
+          shouldDirty: true,
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        console.log(e);
       }
     };
 
@@ -216,7 +218,7 @@ function VacationsFormView({
     setValue("idPersonDoh", Number(dohFromConfig), { shouldDirty: false });
   }, [id, config, setValue, watch]);
 
-  const getPeriods = async () => {
+  const getPeriods = useCallback(async () => {
     try {
       if (!idEmployeeSelected) {
         setPeriods([]); // si no hay empleado, limpia
@@ -232,11 +234,11 @@ function VacationsFormView({
       console.error(error);
       setPeriods([]);
     }
-  };
+  }, [idEmployeeSelected]);
 
   useEffect(() => {
     getPeriods();
-  }, [idEmployeeSelected, vacation]);
+  }, [getPeriods]);
 
   return (
     <>

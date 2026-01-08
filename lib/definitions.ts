@@ -378,15 +378,15 @@ export type VacationRequestStatus =
   | "PENDING"
   | "EMPLOYEE";
 
-  export interface ConfigSystemUpdate {
-		permissions: {
-				idPersonApproveDoh: number,
-				idPersonApproveLeaders: number
-		},
-		vacations:{
-				idPersonApproveDoh: number,
-				idPersonApproveLeaders: number
-		}
+export interface ConfigSystemUpdate {
+  permissions: {
+    idPersonApproveDoh: number;
+    idPersonApproveLeaders: number;
+  };
+  vacations: {
+    idPersonApproveDoh: number;
+    idPersonApproveLeaders: number;
+  };
 }
 export interface IInability {
   _id: string;
@@ -457,9 +457,9 @@ export interface IInability {
 }
 
 export type InabilityPayload = {
-  idEmployee: number;
+  idEmployee: number | null;
   disabilityCategory: string;
   typeOfDisability: string;
   dateInit: string; // yyyy-MM-dd
-  dateEnd: string;  // yyyy-MM-dd
+  dateEnd: string; // yyyy-MM-dd
 };

@@ -1,0 +1,14 @@
+<t t-if="object.payment_state in ('paid', 'in_payment')">
+    Esta factura ya está pagada.
+</t>
+<t t-else="">
+    <!-- <t t-if="object.payment_reference">
+        <br>
+        <br>
+        Al realizar su pago mencione el número de factura:
+        <span style="font-weight:bold;" t-out="object.payment_reference or ''">INV/2021/05/0005</span>.
+        <br>
+        <br>
+        Si ya relazó el pago, hacer caso omiso.
+    </t> -->
+</t>

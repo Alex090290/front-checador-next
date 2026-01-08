@@ -1,7 +1,7 @@
 import NotFound from "@/app/not-found";
 import VacationsFormView from "./VacationsFormView";
 import VacationsListView from "./VacationsListView";
-import { Employee, PeriodVacation, Vacations } from "@/lib/definitions";
+import { Employee, Vacations } from "@/lib/definitions";
 import {
   fetchVacations,
   findVacationById,
@@ -15,7 +15,6 @@ async function VacationsMainView({
   viewType: string;
   id: string;
 }) {
-
   let vacations: Vacations[] = [];
   let vacation: Vacations | null = null;
   let employees: Employee[] = [];
@@ -33,11 +32,7 @@ async function VacationsMainView({
     return <VacationsListView vacations={vacations} />;
   } else if (viewType === "form") {
     return (
-      <VacationsFormView
-        vacation={vacation}
-        id={id}
-        employees={employees}
-      />
+      <VacationsFormView vacation={vacation} id={id} employees={employees} />
     );
   } else {
     return <NotFound />;

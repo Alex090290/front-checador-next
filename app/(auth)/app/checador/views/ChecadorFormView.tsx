@@ -4,7 +4,7 @@ import { checkIn, fetchCheckInFeedback } from "@/app/actions/entry-actions";
 import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
 import Clock from "@/components/top-nav/Clock";
 import { signOut } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { formatDate } from "date-fns";
 import { Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { formatDatelocal } from "@/lib/helpers";
@@ -72,7 +72,7 @@ function ChecadorFormView() {
     return res;
   };
 
-  const handleFetchFeedback = async () => {
+  const handleFetchFeedback = useCallback(async () => {
     let toastLoading: string = "";
     if (toastId !== "") {
       toast.loading("Esperando respuesta...", { id: toastId });
@@ -105,11 +105,11 @@ function ChecadorFormView() {
     } else {
       toast.success("Se han cargado los registros...", { id: toastLoading });
     }
-  };
+  }, [toastId]);
 
   useEffect(() => {
     handleFetchFeedback();
-  }, []);
+  }, [handleFetchFeedback]);
 
   useEffect(() => {
     if (!navigator.geolocation) {

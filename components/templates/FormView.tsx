@@ -188,7 +188,7 @@ function FormView({
           >
             <div className="d-flex justify-content-between align-items-center">
               <legend className="card-title h3 fw-semibold text-uppercase">
-                {name ?? "Nuevo"}
+                {`${name ?? "Nuevo"}`}
               </legend>
               {/* STATEBAR DESKTOP VIEW */}
               <div className="d-none d-md-flex gap-1">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useContext } from "react";
-import { Accordion, AccordionContext, useAccordionButton, Nav } from "react-bootstrap";
+import { AccordionContext, useAccordionButton, Nav } from "react-bootstrap";
 
 type Props = {
   eventKey: string;
@@ -29,7 +29,9 @@ export default function NavGroup({ eventKey, iconClass, label }: Props) {
         <span>{label}</span>
       </span>
 
-      <i className={`bi bi-chevron-down ms-2 chevron ${isOpen ? "open" : ""}`} />
+      <i
+        className={`bi bi-chevron-down ms-2 chevron ${isOpen ? "open" : ""}`}
+      />
     </Nav.Link>
   );
 }
