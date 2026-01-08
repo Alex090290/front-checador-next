@@ -183,6 +183,7 @@ function UsersFormView({
             label="Nombre:"
             invalid={!!errors.name}
             feedBack={errors.name?.message}
+            className="text-uppercase"
           />
           <Entry
             register={register("lastName", {
@@ -191,6 +192,7 @@ function UsersFormView({
             label="Apellidos:"
             invalid={!!errors.lastName}
             feedBack={errors.lastName?.message}
+            className="text-uppercase"
           />
           <Entry
             register={register("phone", {
@@ -199,6 +201,7 @@ function UsersFormView({
             label="Teléfono:"
             invalid={!!errors.phone}
             feedBack={errors.phone?.message}
+            className="text-uppercase"
           />
           <FieldSelect
             register={register("gender", {
@@ -211,6 +214,7 @@ function UsersFormView({
             label="Género:"
             invalid={!!errors.gender}
             feedBack={errors.gender?.message}
+            className="text-uppercase"
           />
         </FieldGroup>
         <FieldGroup invisible={!profile}>

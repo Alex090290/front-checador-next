@@ -103,7 +103,6 @@ function EmployeeFormView({
       toast.success(res.message);
       router.back();
     } else {
-      
       const res = await updateEmploye({ data, id: Number(id) });
       if (!res.success) {
         modalError(res.message);
@@ -265,7 +264,7 @@ function EmployeeFormView({
       originalValuesRef.current = values;
       const department = employee.idDepartment as unknown as Department;
       setPuestos(department?.positions || []);
-      console.log("values: ",values);
+      console.log("values: ", values);
     }
   }, [employee, reset]);
 
@@ -635,20 +634,18 @@ function EmployeeFormView({
                   register={register("scheduleDescription")}
                   label="Descripción del horario:"
                 />
-                {
-                  session?.user?.permissions.some((p) => p.text === "visualizar_salario") 
-                  && (
+                {session?.user?.permissions.some(
+                  (p) => p.text === "visualizar_salario"
+                ) && (
                   <FieldGroup.Stack>
-                  <Entry
-                    className="text-center"
-                    register={register("dailyWage", { required: true })}
-                    label="Salario diario:"
-                    invalid={!!errors.dailyWage}
-                  />
-                </FieldGroup.Stack>
-                  ) 
-                }
-
+                    <Entry
+                      className="text-center"
+                      register={register("dailyWage", { required: true })}
+                      label="Salario diario:"
+                      invalid={!!errors.dailyWage}
+                    />
+                  </FieldGroup.Stack>
+                )}
               </FieldGroup>
               <FieldGroup>
                 <FieldGroup.Stack>
