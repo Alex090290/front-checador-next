@@ -1,11 +1,12 @@
 import NotFound from "@/app/not-found";
 import OverFormView from "./OverFormView";
 import OverListView from "./OverListView";
-import { IOvertime } from "@/lib/definitions";
+import { Employee, IOvertime } from "@/lib/definitions";
 import {
   fetchOvertimes,
   getOvertimeById,
 } from "@/app/actions/overtime-actions";
+import { fetchEmployees } from "@/app/actions/employee-actions";
 
 async function OvertimeMainView({
   viewType,
@@ -17,16 +18,21 @@ async function OvertimeMainView({
   let overtimes: IOvertime[] = [];
   let overtime: IOvertime | null = null;
 
+  let employees: Employee[] = [];
+
   if (id && id !== "null") {
     overtime = await getOvertimeById({ id });
   }
 
-  [overtimes] = await Promise.all([fetchOvertimes()]);
+  [overtimes, employees] = await Promise.all([
+    fetchOvertimes(),
+    fetchEmployees(),
+  ]);
 
   if (viewType === "list") {
-    return <OverListView overtimes={overtimes} />;
+    return <OverListView overtimes={overtimes.reverse()} />;
   } else if (viewType === "form") {
-    return <OverFormView />;
+    return <OverFormView id={id} overtime={overtime} employees={employees} />;
   } else {
     return <NotFound />;
   }

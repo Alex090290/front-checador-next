@@ -8,9 +8,9 @@ export async function createOvertime({
   data,
 }: {
   data: {
-    idEmployee: string;
-    idLeader: string;
-    idPersonDoh: string;
+    idEmployee: number | null;
+    idLeader: number | null;
+    idPersonDoh: number | null;
     motive: string;
     hourInit: string;
     hourEnd: string;
@@ -49,8 +49,8 @@ export async function createOvertime({
 
     return {
       success: true,
-      message: response.data.message,
-      data: response.data.data.insertId,
+      message: response.message,
+      data: response.data.insertId,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -477,8 +477,8 @@ export interface IOvertime {
     id: number;
     totalHours: number;
     totalDays: number;
-    dateInit: number;
-    dateEnd: number;
+    dateInit: string;
+    dateEnd: string;
     hourInit: string;
     hourEnd: string;
   };
@@ -512,4 +512,5 @@ export interface IOvertime {
     lastName: string;
   };
   status: "APPROVED" | "REFUSED" | "PENDING";
+  createdAt: string;
 }

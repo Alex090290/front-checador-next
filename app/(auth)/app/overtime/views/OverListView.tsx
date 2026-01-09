@@ -5,6 +5,7 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { IOvertime } from "@/lib/definitions";
+import { formatDate } from "date-fns";
 
 function OverListView({ overtimes }: { overtimes: IOvertime[] }) {
   const columns: TableTemplateColumn<IOvertime>[] = [
@@ -28,6 +29,23 @@ function OverListView({ overtimes }: { overtimes: IOvertime[] }) {
       accessor: (row) => row.informationDate.totalHours,
       render: (row) => (
         <div className="text-end">{row.informationDate.totalHours}</div>
+      ),
+    },
+    {
+      key: "motive",
+      label: "Motivo",
+      accessor: (row) => row.motive,
+    },
+    {
+      key: "createdAt",
+      label: "Creación",
+      accessor: (row) => row.createdAt,
+      type: "date",
+      groupFormat: "yyyy-MM",
+      render: (row) => (
+        <div className="text-end">
+          {formatDate(row.createdAt, "dd/MM/yyyy hh:mm")}
+        </div>
       ),
     },
   ];
