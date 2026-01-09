@@ -257,7 +257,9 @@ function EventosListView({
 
   const onSubmitData = async (
     type: string,
-    status: string
+    status: string,
+    dateHour: string,
+    minutesDifference: string
   ): Promise<ActionResponse<boolean>> => {
     const registro = eventosList.find(
       (even) => even.checks.id === Number(selectedIds)
@@ -271,6 +273,8 @@ function EventosListView({
       idRegistro,
       status,
       type,
+      dateHour,
+      minutesDifference: Number(minutesDifference),
     });
 
     if (!res.success) {
@@ -291,6 +295,8 @@ function EventosListView({
       }
       return evento;
     });
+
+    console.log(changedList);
 
     setEventosList(changedList);
     tableRef.current?.clearSelection();

@@ -4,7 +4,7 @@ import {
   fetchChecadorStatus,
   fetchChecadorTypes,
 } from "@/app/actions/eventos-actions";
-import { FieldSelect } from "@/components/fields";
+import { Entry, FieldSelect } from "@/components/fields";
 import { FieldGroup, FieldGroupFluid } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import { ActionResponse, ModalBasicProps } from "@/lib/definitions";
@@ -23,12 +23,16 @@ import { useForm, SubmitHandler } from "react-hook-form";
 type TInputs = {
   status: string;
   type: string;
+  dateHour: string;
+  minutesDifference: string;
 };
 
 type ModalAction = {
   sendData: (
     type: string,
-    status: string
+    status: string,
+    dateHour: string,
+    minutesDifference: string
   ) => Promise<ActionResponse<boolean | null>>;
   status: string;
   type: string;
@@ -80,7 +84,12 @@ function ModifyModalForm({
   };
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
-    const res = await sendData(data.type, data.status);
+    const res = await sendData(
+      data.type,
+      data.status,
+      data.dateHour,
+      data.minutesDifference
+    );
     if (!res.success) {
       modalError(res.message);
       return;
@@ -126,6 +135,16 @@ function ModifyModalForm({
                   }))}
                   label="Status:"
                   invalid={!!errors.type}
+                />
+                <Entry
+                  type="datetime-local"
+                  label="Fecha y Hora"
+                  register={register("dateHour")}
+                />
+                <Entry
+                  label="Diferencia"
+                  type="number"
+                  register={register("minutesDifference")}
                 />
                 <FieldGroup.Stack>
                   <Button type="submit">

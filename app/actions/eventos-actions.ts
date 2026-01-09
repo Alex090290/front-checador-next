@@ -6,7 +6,7 @@ import axios from "axios";
 
 export async function fetchEventos(): Promise<ICheckInFeedback[]> {
   try {
-    const { API_URL, apiToken,session } = await storeAction();
+    const { API_URL, apiToken, session } = await storeAction();
 
     let url = `${API_URL}/checador/view`;
 
@@ -96,28 +96,37 @@ export async function updateRegristrosChecador({
   idCheck,
   type,
   status,
+  dateHour,
+  minutesDifference,
 }: {
   idRegistro: number | null;
   idCheck: number | null;
   type: string;
   status: string;
+  dateHour: string;
+  minutesDifference: number;
 }): Promise<ActionResponse<boolean>> {
   try {
     const { API_URL, apiToken } = await storeAction();
     if (!idCheck && idRegistro) throw new Error("ID NOT DEFINED");
+
+    const getDate = dateHour.split(" ")[0];
+    const getHour = dateHour.split(" ")[1];
+
+    let body = {
+      type,
+      status,
+      date: dateHour.split("T")[0],
+      hour: dateHour.split("T")[1],
+      minutesDifference,
+    };
+
     await axios
-      .put(
-        `${API_URL}/checador/${idRegistro}/${idCheck}`,
-        {
-          type,
-          status,
+      .put(`${API_URL}/checador/${idRegistro}/${idCheck}`, body, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${apiToken}`,
-          },
-        }
-      )
+      })
       .then((res) => {
         return res.data;
       })
