@@ -23,6 +23,9 @@ import { Button, Form } from "react-bootstrap";
 import { Many2one } from "@/components/fields/Many2one";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Link from "next/link";
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 type TSearchInputs = {
   date: string | null;
@@ -39,6 +42,8 @@ function EventosListView({
   employees: Employee[];
   eventos: ICheckInFeedback[];
 }) {
+  const { data: eventosSwr } = useSWR("/api/eventos", fetcher);
+
   const {
     reset,
     control,
@@ -382,7 +387,7 @@ function EventosListView({
           <TableTemplate
             ref={tableRef}
             getRowId={(row) => row.checks.id}
-            data={eventosList}
+            data={eventosSwr ?? []}
             columns={columns}
             viewForm="/app/eventos?view_type=list"
             onSelectionChange={setSelectedIds}

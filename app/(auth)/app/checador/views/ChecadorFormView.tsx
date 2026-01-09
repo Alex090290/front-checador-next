@@ -68,6 +68,7 @@ function ChecadorFormView() {
     setMessage(res?.data || "");
 
     handleFetchFeedback();
+    toast.success(res.message, { id: toastId });
 
     return res;
   };
