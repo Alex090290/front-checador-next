@@ -67,7 +67,7 @@ export async function getOvertimeById({
   id,
 }: {
   id: string | null;
-}): Promise<ActionResponse<null>> {
+}): Promise<IOvertime | null> {
   try {
     if (!id) throw new Error("ID NO DEFINED");
 
@@ -90,18 +90,41 @@ export async function getOvertimeById({
         );
       });
 
-    return {
-      success: true,
-      message: response.data.message,
-      data: response.data.data,
-    };
+    return response.data;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(error);
-    return {
-      success: false,
-      message: error.message,
-    };
+    return null;
+  }
+}
+
+export async function fetchOvertimes(): Promise<IOvertime[]> {
+  try {
+    const { apiToken, API_URL: apiUrl } = await storeAction();
+
+    const response = await axios
+      .get(`${apiUrl}/overtime`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    return response.data;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return [];
   }
 }

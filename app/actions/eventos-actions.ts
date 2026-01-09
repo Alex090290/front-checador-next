@@ -110,10 +110,7 @@ export async function updateRegristrosChecador({
     const { API_URL, apiToken } = await storeAction();
     if (!idCheck && idRegistro) throw new Error("ID NOT DEFINED");
 
-    const getDate = dateHour.split(" ")[0];
-    const getHour = dateHour.split(" ")[1];
-
-    let body = {
+    const body = {
       type,
       status,
       date: dateHour.split("T")[0],
