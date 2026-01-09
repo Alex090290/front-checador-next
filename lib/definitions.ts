@@ -463,3 +463,53 @@ export type InabilityPayload = {
   dateInit: string; // yyyy-MM-dd
   dateEnd: string; // yyyy-MM-dd
 };
+
+export interface IOvertime {
+  _id: string;
+  id: number;
+  leaderApproval: "APPROVED" | "REFUSED" | "PENDING";
+  dohApproval: "APPROVED" | "REFUSED" | "PENDING";
+  motive: string;
+  incidence: string;
+  signatures: TSignatures[];
+  informationDate: {
+    _id: string;
+    id: number;
+    totalHours: number;
+    totalDays: number;
+    dateInit: number;
+    dateEnd: number;
+    hourInit: string;
+    hourEnd: string;
+  };
+  daysdaysBrokenDown: {
+    id: number;
+    fortnightlyPeriod: number;
+    day: string;
+  }[];
+  createForPerson: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  employee: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  leader: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  personDoh: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  status: "APPROVED" | "REFUSED" | "PENDING";
+}
