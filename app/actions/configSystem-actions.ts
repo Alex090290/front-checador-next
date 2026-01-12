@@ -1,45 +1,40 @@
-// app/actions/menuActions.ts
 "use server";
 import axios, { AxiosError } from "axios";
 import { storeAction } from "./storeActions";
 import { ActionResponse, ConfigSystemUpdate } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 
-export type IConfigSystem = {
-    _id: string,
-    permissions: {
-        approvalDoh: {
-            idPerson: number,
-            employee: {
-                name: string,
-                lastName: string
-            }
-        },
-        approvalLeaders: {
-            idPerson: number,
-            employee: {
-                name: string,
-                lastName: string
-            }
-        }
-    },
-    vacations: {
-        approvalDoh: {
-            idPerson: string,
-            employee: {
-                name: string,
-                lastName: string
-            }
-        },
-        approvalLeaders: {
-            idPerson: number,
-            employee: {
-                name: string,
-                lastName: string
-            }
-        }
-    }
+export type EmployeeRef = {
+  id: number;
+  name: string;
+  lastName: string;
 };
+
+export type ConfigApproval = {
+  idPerson: number;
+  employee: EmployeeRef;
+};
+
+export type ConfigExtra = {
+  ids: number[];
+  employees: EmployeeRef[];
+};
+
+export type ConfigBlock = {
+  approvalDoh: ConfigApproval;
+  approvalLeaders: ConfigApproval;
+  extra?: ConfigExtra;
+};
+
+export type IConfigSystem = {
+  _id: string;
+  idsViewDailyWage: number[];
+  permissions: ConfigBlock;
+  vacations: ConfigBlock;
+  penaltyForUnjustifiedAbsence: ConfigBlock;
+  overTime: ConfigBlock;
+};
+
 
 type IResponse = {
   message: string;
