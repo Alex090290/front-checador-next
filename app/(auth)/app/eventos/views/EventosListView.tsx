@@ -42,7 +42,13 @@ function EventosListView({
   employees: Employee[];
   eventos: ICheckInFeedback[];
 }) {
-  const { data: eventosSwr } = useSWR("/api/eventos", fetcher);
+  // ✅ SWR tipado + fallback para no parpadear
+  const {
+    data: eventosSwr,
+    mutate,
+  } = useSWR<ICheckInFeedback[]>("/api/eventos", fetcher, {
+    fallbackData: eventos,
+  });
 
   const {
     reset,
@@ -69,7 +75,15 @@ function EventosListView({
     status: string;
   }>({ show: false, type: "", status: "" });
 
-  const [eventosList, setEventosList] = useState<ICheckInFeedback[]>([]);
+  const [eventosList, setEventosList] = useState<ICheckInFeedback[]>(eventos);
+
+  // ✅ bandera para saber si estamos en “modo filtro”
+  const [isFiltering, setIsFiltering] = useState(false);
+
+  // ✅ si NO estamos filtrando, lo mostrado sigue a SWR
+  useEffect(() => {
+    if (!isFiltering) setEventosList(eventosSwr ?? []);
+  }, [eventosSwr, isFiltering]);
 
   const getSechedule = (type: string, schedules: Employee) => {
     let string: string = "";
@@ -112,6 +126,7 @@ function EventosListView({
 
     return string;
   };
+
   const columns: TableTemplateColumn<ICheckInFeedback>[] = [
     {
       key: "employee",
@@ -231,9 +246,7 @@ function EventosListView({
       label: "Sucursal",
       accessor: (row) => row.branchEmployee.name,
       filterable: true,
-      render: (row) => (
-        <div className="text-uppercase">{row.branchEmployee.name}</div>
-      ),
+      render: (row) => <div className="text-uppercase">{row.branchEmployee.name}</div>,
     },
   ];
 
@@ -244,14 +257,15 @@ function EventosListView({
     if (selectedIds.length > 1)
       return modalError("Sólo modificar un registro a la vez");
 
-    const registro = eventos.find(
-      (even) => even.checks.id === Number(selectedIds)
-    );
+    const idSel = Number(selectedIds[0]);
+    const registro = eventosList.find((even) => even.checks.id === idSel);
+
+    if (!registro) return modalError("No se encontró el registro seleccionado");
 
     setModalModify({
       show: !modalModify.show,
-      status: registro?.checks.status || "",
-      type: registro?.checks.type || "",
+      status: registro.checks.status || "",
+      type: registro.checks.type || "",
     });
   };
 
@@ -261,9 +275,8 @@ function EventosListView({
     dateHour: string,
     minutesDifference: string
   ): Promise<ActionResponse<boolean>> => {
-    const registro = eventosList.find(
-      (even) => even.checks.id === Number(selectedIds)
-    );
+    const idSel = Number(selectedIds[0]);
+    const registro = eventosList.find((even) => even.checks.id === idSel);
 
     const idRegistro = registro?.id || null;
     const idCheck = registro?.checks.id || null;
@@ -284,7 +297,7 @@ function EventosListView({
 
     const changedList = eventosList.map((evento) => {
       if (evento.checks.id === idCheck && evento.id === idRegistro) {
-        evento = {
+        return {
           ...evento,
           checks: {
             ...evento.checks,
@@ -296,8 +309,6 @@ function EventosListView({
       return evento;
     });
 
-    console.log(changedList);
-
     setEventosList(changedList);
     tableRef.current?.clearSelection();
 
@@ -307,11 +318,13 @@ function EventosListView({
   const onSubmitSearch: SubmitHandler<TSearchInputs> = async (data) => {
     const res = await searchEventosParams({
       ...data,
-      idEmployee: Number(data.idEmployee),
-      idUser: Number(data.idUser),
+      idEmployee: data.idEmployee ? Number(data.idEmployee) : null,
+      idUser: data.idUser ? Number(data.idUser) : null,
     });
 
-    if (res.length <= 0) {
+    setIsFiltering(true);
+
+    if (!res || res.length <= 0) {
       setEventosList([]);
       modalError("No se encontraron datos");
       return;
@@ -320,14 +333,13 @@ function EventosListView({
     setEventosList(res);
   };
 
-  const handleUpdateList = () => {
+  const handleUpdateList = async () => {
     reset({ date: null, idEmployee: null, idUser: null });
-    setEventosList(eventos);
+    setIsFiltering(false);
+    tableRef.current?.clearSelection();
+    setSelectedIds([]);
+    await mutate(); // opcional: fuerza refresco
   };
-
-  useEffect(() => {
-    setEventosList(eventos);
-  }, [eventos]);
 
   return (
     <>
@@ -393,7 +405,7 @@ function EventosListView({
           <TableTemplate
             ref={tableRef}
             getRowId={(row) => row.checks.id}
-            data={eventosSwr ?? []}
+            data={eventosList ?? []}
             columns={columns}
             viewForm="/app/eventos?view_type=list"
             onSelectionChange={setSelectedIds}
