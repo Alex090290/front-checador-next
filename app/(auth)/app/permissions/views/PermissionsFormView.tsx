@@ -298,8 +298,8 @@ function PermissionsFormView({
               register={register("idEmployee")}
               options={employees?.map((e) => ({
                 id: e.id ?? 0,
-                displayName: e.name?.toUpperCase() || "",
-                name: e.name?.toUpperCase(),
+                displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
               }))}
               label="Empleado:"
               callBackMode="id"
@@ -314,8 +314,8 @@ function PermissionsFormView({
                 register={register("idLeader")}
                 options={employees?.map((e) => ({
                   id: e.id ?? 0,
-                  displayName: e.name?.toUpperCase() || "",
-                  name: e.name?.toUpperCase(),
+                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                  name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                 }))}
                 label="Líder:"
                 callBackMode="id"
@@ -329,8 +329,8 @@ function PermissionsFormView({
                 register={register("idPersonDoh")}
                 options={employees?.map((e) => ({
                   id: e.id ?? 0,
-                  displayName: e.name?.toUpperCase() || "",
-                  name: e.name?.toUpperCase(),
+                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                  name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                 }))}
                 label="D.O.H."
                 callBackMode="id"
