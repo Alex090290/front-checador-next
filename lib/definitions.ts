@@ -436,6 +436,13 @@ export interface IInability {
     createdAt: string; // ISO
     updatedAt: string; // ISO
   };
+  documetCitt: {
+    id: number;
+    whoUploadId: number;
+    urlDocument: string;
+    createdAt: string; // ISO
+    updatedAt: string; // ISO
+  };
 
   status: string; // si tienes enum/union lo cambiamos
   createdAt: string; // ISO

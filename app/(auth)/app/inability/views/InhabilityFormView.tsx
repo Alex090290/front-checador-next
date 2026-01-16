@@ -25,6 +25,7 @@ import ST2Card from "./ST2Card";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import ModalAddDocuments from "./ModalUploadDocuments";
 import InhabilityDocCard from "./InhabilityDocumentCard";
+import DocumetCitt from "./DocumetCitt";
 
 type TInputs = {
   idEmployee: number | null;
@@ -205,6 +206,7 @@ function InhabilityFormView({
                   idDoc={id}
                 />
                 <ST2Card st2Doc={inhability?.sT2DischargeDocument} idDoc={id} />
+                <DocumetCitt documetCitt={inhability?.documetCitt} idDoc={id} />
               </PageSheet>
             </FormPage>
           )}
