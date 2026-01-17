@@ -15,7 +15,6 @@ import FormView, {
 import { useModals } from "@/context/ModalContext";
 import { Employee, IPermissionRequest } from "@/lib/definitions";
 import { formatDate } from "date-fns";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Container, Form, Row } from "react-bootstrap";
@@ -29,6 +28,7 @@ import PermissionPDFownload from "./PermissionPDFownload";
 import useSWR from "swr";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { findEmployeeById } from "@/app/actions/employee-actions";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
 type TInputs = {
   motive: string;
@@ -67,7 +67,8 @@ function PermissionsFormView({
     formState: { errors, isDirty, isSubmitting },
   } = useForm<TInputs>();
 
-  const { data: session } = useSession();
+  const session = useSessionSnapshot();
+
   const { data } = useSWR("/api/configsystem", fetcher);
 
   const config: IConfigSystem | null = useMemo(() => {
@@ -145,9 +146,9 @@ function PermissionsFormView({
         incidence: "PERMISOS",
         motive: "",
         type: "",
-        idEmployee: Number(session?.user?.id),
+        idEmployee: Number(session?.uid?.id),
         idLeader:
-          employees.find((e) => e.id === Number(session?.user?.id))?.leader
+          employees.find((e) => e.id === Number(session?.uid?.id))?.leader
             ?.id || null,
         idPersonDoh: null,
         modeSelect: "",
@@ -175,7 +176,7 @@ function PermissionsFormView({
       reset(values);
       originalValuesRef.current = values;
     }
-  }, [reset, permission, employees, session?.user]);
+  }, [reset, permission, employees, session]);
 
   useEffect(() => {
     if (id !== "null") return; // solo creando
@@ -235,7 +236,7 @@ function PermissionsFormView({
   const getSignatureEmployee = () => {
     let result = false;
     const sign = permission?.signatures.filter(
-      (f) => f.idSignatory === Number(session?.user?.idEmployee)
+      (f) => f.idSignatory === Number(session?.uid?.idEmployee),
     )[0];
 
     if (sign?.url === "") {
@@ -263,21 +264,21 @@ function PermissionsFormView({
             string: "Aprobar",
             variant: "warning",
             invisible:
-              permission?.leader.id !== Number(session?.user?.idEmployee) ||
+              permission?.leader.id !== Number(session?.uid?.idEmployee) ||
               permission.leaderApproval === "APPROVED",
           },
           {
             action: handleSignatureDoh,
             string: "Aprobar",
             variant: "success",
-            invisible: session?.user?.idEmployee !== permission?.personDoh.id,
+            invisible: session?.uid?.idEmployee !== permission?.personDoh.id,
           },
           {
             action: handleEmployeeSignature,
             string: "Firmar",
             variant: "primary",
             invisible:
-              session?.user?.idEmployee !== permission?.employee.id ||
+              session?.uid?.idEmployee !== permission?.employee.id ||
               getSignatureEmployee(),
           },
           {
@@ -298,15 +299,15 @@ function PermissionsFormView({
               register={register("idEmployee")}
               options={employees?.map((e) => ({
                 id: e.id ?? 0,
-                displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                displayName:
+                  `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                 name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
               }))}
               label="Empleado:"
               callBackMode="id"
               control={control}
               readonly={
-                session?.user?.role === "EMPLOYEE" &&
-                session.user.isDoh === false
+                session?.uid?.role === "EMPLOYEE" && session.uid.isDoh === false
               }
             />
             <FieldGroup.Stack>
@@ -314,22 +315,26 @@ function PermissionsFormView({
                 register={register("idLeader")}
                 options={employees?.map((e) => ({
                   id: e.id ?? 0,
-                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                  displayName:
+                    `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` ||
+                    "",
                   name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                 }))}
                 label="Líder:"
                 callBackMode="id"
                 control={control}
                 readonly={
-                  session?.user?.role === "EMPLOYEE" &&
-                  session.user.isDoh === false
+                  session?.uid?.role === "EMPLOYEE" &&
+                  session.uid.isDoh === false
                 }
               />
               <RelationField
                 register={register("idPersonDoh")}
                 options={employees?.map((e) => ({
                   id: e.id ?? 0,
-                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                  displayName:
+                    `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` ||
+                    "",
                   name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                 }))}
                 label="D.O.H."
