@@ -7,47 +7,129 @@ import { storeToken } from "@/lib/useToken";
 import { revalidatePath } from "next/cache";
 import { base64ToBlob } from "@/lib/helpers";
 
-export async function fetchVacations(): Promise<Vacations[]> {
+// export async function fetchVacations(): Promise<Vacations[]> {
+//   try {
+//     const { apiToken, API_URL: apiUrl, session } = await storeAction();
+
+//     let query = "";
+
+//     if (session?.role === "EMPLOYEE" && session.isDoh === false)
+//       query += `?employee=${session.idEmployee}`;
+
+//     if (session?.role !== "EMPLOYEE" && session?.isDoh === false)
+//       query += `?leader=${session?.idEmployee}`;
+
+//     if (session?.isDoh === true) query += "";
+
+//     const response = await axios
+//       .get(`${apiUrl}/vacations/listAll${query}`, {
+//         headers: {
+//           Authorization: `Bearer ${apiToken}`,
+//         },
+//       })
+//       .then((res) => {
+//         return res.data;
+//       })
+//       .catch((err) => {
+//         throw new Error(
+//           err.response.data.message
+//             ? err.response.data.message
+//             : "Error en la respuesta"
+//         );
+//       });
+
+//     return response.data;
+
+//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   } catch (error: any) {
+//     console.log(error);
+//     return [];
+//   }
+// }
+
+
+export type FetchVacationsParams = {
+  page?: number;
+  limit?: number;
+};
+
+export type VacationsPagedResult = {
+  data: Vacations[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+};
+type FetchVacationsArgs = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  leader?: number;
+  personDoh?: number;
+  employee?: number;
+};
+
+export async function fetchVacations(args: FetchVacationsArgs = {}): Promise<{
+  data: Vacations[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}> {
   try {
     const { apiToken, API_URL: apiUrl, session } = await storeAction();
 
-    let query = "";
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
 
-    console.log("ROLE: " + session?.role);
-    console.log("ISDOH: " + session?.isDoh);
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
 
-    if (session?.role === "EMPLOYEE" && session.isDoh === false)
-      query += `?employee=${session.idEmployee}`;
+    // ✅ filtros opcionales (si quisieras usarlos manualmente)
+    if (args.status) params.set("status", args.status);
+    if (args.leader) params.set("leader", String(args.leader));
+    if (args.personDoh) params.set("personDoh", String(args.personDoh));
+    if (args.employee) params.set("employee", String(args.employee));
 
-    if (session?.role !== "EMPLOYEE" && session?.isDoh === false)
-      query += `?leader=${session?.idEmployee}`;
+    /**
+     * ✅ reglas por sesión (estas deben dominar para que no puedan listar de más)
+     */
+    if (session?.role === "EMPLOYEE" && session.isDoh === false) {
+      params.set("employee", String(session.idEmployee));
+      params.delete("leader");
+      params.delete("personDoh");
+    }
 
-    if (session?.isDoh === true) query += "";
+    if (session?.role !== "EMPLOYEE" && session?.isDoh === false) {
+      params.set("leader", String(session.idEmployee));
+      params.delete("employee");
+      params.delete("personDoh");
+    }
 
-    console.log("QUERY: " + query);
+    // si es DOH, no forzamos filtros (puede ver todo)
+    const url = `${apiUrl}/vacations/listAll?${params.toString()}`;
+
     const response = await axios
-      .get(`${apiUrl}/vacations/listAll${query}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
+      .get(url, {
+        headers: { Authorization: `Bearer ${apiToken}` },
       })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+      .then((res) => res.data);
 
-    return response.data;
+    const total = Number(response.total ?? 0);
+    const pages = Math.max(Math.ceil(total / limitNum), 1);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return {
+      data: response.data ?? [],
+      total,
+      page: pageNum,
+      limit: limitNum,
+      pages,
+    };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(error);
-    return [];
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 
