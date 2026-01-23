@@ -13,6 +13,7 @@ export const vacationStatus: Record<VacationRequestStatus, string> = {
   REFUSED: "Rechazado",
   EMPLOYEE: "Empleado",
 };
+import { formatDate } from "date-fns";
 
 function VacationsListView({ vacations }: { vacations: Vacations[] }) {
   const columns: TableTemplateColumn<Vacations>[] = [
@@ -43,6 +44,29 @@ function VacationsListView({ vacations }: { vacations: Vacations[] }) {
       render: (row) => (
         <div className="text-center fs-6 fw-semibold">
           {row.period.periodDescription}
+        </div>
+      ),
+    },    
+    {
+      key: "dateInit",
+      label: "Fecha Inicio",
+      accessor: (row) => row.dateInit,
+      filterable: true,
+      type: "string",
+      render: (row) => (
+        <div className="text-center fs-6 fw-semibold">
+          {formatDate(row.dateInit, "dd/MM/yyyy")}
+        </div>
+      ),
+    },    {
+      key: "dateEnd",
+      label: "Fecha Fin",
+      accessor: (row) => row.dateEnd,
+      filterable: true,
+      type: "string",
+      render: (row) => (
+        <div className="text-center fs-6 fw-semibold">
+          {formatDate(row.dateEnd, "dd/MM/yyyy")}
         </div>
       ),
     },

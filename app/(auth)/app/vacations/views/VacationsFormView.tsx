@@ -20,7 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import SignaturesVacationView from "./SignaturesVacationView";
-import { Container, Row } from "react-bootstrap";
+import { Container, Row, Form } from "react-bootstrap";
 import ApproveVacationLeaderModal from "./ApproveVacationLeaderModal";
 import SignatureVacationDohModal from "./SignatureDohModal";
 import VacationPDFownload from "./VacationPDFownload";
@@ -43,6 +43,7 @@ type TInputs = Pick<
   incidence: string;
   signature: string;
 };
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function VacationsFormView({
@@ -67,6 +68,7 @@ function VacationsFormView({
 
   const dateInit = watch("dateInit");
   const idEmployeeSelected = watch("idEmployee");
+  const idPeriodSelected = watch("idPeriod");
 
   const session = useSessionSnapshot();
   const { data } = useSWR("/api/configsystem", fetcher);
@@ -75,8 +77,8 @@ function VacationsFormView({
     const maybe = data?.data?.[0];
     return maybe ?? null;
   }, [data]);
-  const { modalError } = useModals();
 
+  const { modalError } = useModals();
   const router = useRouter();
 
   const [approveModal, setApproveModal] = useState(false);
@@ -85,6 +87,13 @@ function VacationsFormView({
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
 
   const originalValuesRef = useRef<TInputs | null>(null);
+
+  // ✅ periodo seleccionado para mostrar stats
+  const selectedPeriod = useMemo(() => {
+    const pid = Number(idPeriodSelected);
+    if (!pid || Number.isNaN(pid)) return null;
+    return periods.find((p) => Number(p.id) === pid) ?? null;
+  }, [idPeriodSelected, periods]);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     if (id && id === "null") {
@@ -176,20 +185,17 @@ function VacationsFormView({
 
         if (cancelled) return;
 
-        // 👇 tu API regresa { message, status, data: {...} }
         const emp = res;
         if (!emp) return;
 
         const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
 
-        // ✅ si ES líder → setea el líder desde config
         if (emp.isLeader) {
           if (!leaderFromConfig) return;
           setValue("idLeader", Number(leaderFromConfig), { shouldDirty: true });
           return;
         }
 
-        // ✅ si NO es líder → setea el líder real del empleado (viene en emp.leader)
         const leaderId = emp?.leader?.id ?? null;
         setValue("idLeader", leaderId ? Number(leaderId) : null, {
           shouldDirty: true,
@@ -222,7 +228,7 @@ function VacationsFormView({
   const getPeriods = useCallback(async () => {
     try {
       if (!idEmployeeSelected) {
-        setPeriods([]); // si no hay empleado, limpia
+        setPeriods([]);
         return;
       }
 
@@ -230,12 +236,22 @@ function VacationsFormView({
         idEmployee: Number(idEmployeeSelected),
       });
 
-      setPeriods(res ?? []);
+      const nextPeriods = (res ?? []) as PeriodVacation[];
+      setPeriods(nextPeriods);
+
+      // ✅ si estamos creando y aún no hay periodo, setear el primero
+      if (id === "null") {
+        const current = watch("idPeriod");
+        const currentNum = Number(current);
+        if ((!current || Number.isNaN(currentNum) || currentNum === 0) && nextPeriods.length > 0) {
+          setValue("idPeriod", Number(nextPeriods[0].id), { shouldDirty: false });
+        }
+      }
     } catch (error) {
       console.error(error);
       setPeriods([]);
     }
-  }, [idEmployeeSelected]);
+  }, [idEmployeeSelected, id, setValue, watch]);
 
   useEffect(() => {
     getPeriods();
@@ -298,6 +314,7 @@ function VacationsFormView({
             callBackMode="id"
             control={control}
           />
+
           <FieldGroup.Stack>
             <RelationField
               register={register("idLeader")}
@@ -310,16 +327,18 @@ function VacationsFormView({
               callBackMode="id"
               control={control}
             />
+
             <FieldSelect
               label="Periodo"
               options={periods.map((p) => ({
                 label: p.periodDescription,
-                value: Number(p.id), // el DOM usa string
+                value: Number(p.id),
               }))}
               register={register("idPeriod", {
                 required: true,
               })}
             />
+
             <RelationField
               register={register("idPersonDoh")}
               options={employees.map((e) => ({
@@ -332,7 +351,7 @@ function VacationsFormView({
               control={control}
             />
           </FieldGroup.Stack>
-          {/* <Entry label="Descripción" register={register("periodDescription")} /> */}
+
           <FieldGroup.Stack>
             <Entry label="Inicio" type="date" register={register("dateInit")} />
             <Entry
@@ -342,6 +361,34 @@ function VacationsFormView({
               min={dateInit}
             />
           </FieldGroup.Stack>
+
+          {/* ✅ NUEVO: alineado con Inicio/Final */}
+          {selectedPeriod && (
+            <FieldGroup.Stack>
+              <Form.Group className="w-100">
+                <Form.Label className="small text-muted">
+                  Días aprobados usados
+                </Form.Label>
+                <Form.Control
+                  value={String(selectedPeriod.usedDaysApproved ?? 0)}
+                  disabled
+                  readOnly
+                />
+              </Form.Group>
+
+              <Form.Group className="w-100">
+                <Form.Label className="small text-muted">
+                  Días disponibles
+                </Form.Label>
+                <Form.Control
+                  value={String(selectedPeriod.availableDays ?? 0)}
+                  disabled
+                  readOnly
+                />
+              </Form.Group>
+            </FieldGroup.Stack>
+          )}
+
           {id === "null" && (
             <SignatureInput
               name="signature"
@@ -350,6 +397,7 @@ function VacationsFormView({
             />
           )}
         </FieldGroup>
+
         <FormBook dKey="signatures">
           {vacation?.signatures && vacation.signatures.length > 0 && (
             <FormPage title="Firmas" eventKey="signatures">
@@ -374,18 +422,21 @@ function VacationsFormView({
           )}
         </FormBook>
       </FormView>
+
       <ApproveVacationLeaderModal
         id={id}
         idPeriod={Number(vacation?.idPeriod)}
         show={approveModal}
         onHide={() => setApproveModal(!approveModal)}
       />
+
       <SignatureVacationDohModal
         show={signatureDohModal}
-        onHide={() => setSignatureDohModal(!setSignatureDohModal)}
+        onHide={() => setSignatureDohModal(!signatureDohModal)}
         id={id}
         idPeriod={Number(vacation?.idPeriod)}
       />
+
       <VacationPDFownload
         show={vacationPDFModal}
         onHide={() => setVacationPDFModal(!vacationPDFModal)}

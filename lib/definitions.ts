@@ -365,6 +365,8 @@ export interface PeriodVacation {
   _id: string;
   id: number;
   idEmployee: number;
+  usedDaysApproved: number;
+  availableDays: number;
   periodDescription: string;
   totalDaysPeriod: number;
   dateInitPeriod: string;
