@@ -276,7 +276,7 @@ export async function createNewDocument({
         const selfId = res.data.data.idDocument;
         const newFormData = new FormData();
         if (formData) newFormData.append("files", formData?.[0]);
-        await updateInabilityModal({ formData: newFormData, idDoc, selfId });
+        await updateInabilityModal({ formData: newFormData, idDoc, selfId,folio });
         return res.data;
       })
       .catch((err) => {
@@ -309,8 +309,10 @@ export async function updateInabilityModal({
   idDoc,
   selfId,
   formData,
+  folio
 }: {
   idDoc: string;
+  folio: string;
   selfId: string | null;
   formData: FormData;
 }): Promise<ActionResponse<null>> {
@@ -322,6 +324,7 @@ export async function updateInabilityModal({
     // Subir imagen al backend
     const data = new FormData();
     data.append("document", image);
+    data.append("folio", folio);
 
     await axios
       .put(`${API_URL}/inability/documentsInability/${idDoc}/${selfId}`, data, {

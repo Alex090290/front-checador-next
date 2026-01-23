@@ -67,7 +67,7 @@ function InhabilityDocCard({
         formData.append("files", file);
       });
 
-      const res = await updateInabilityModal({ formData, idDoc, selfId });
+      const res = await updateInabilityModal({ formData, idDoc, selfId, folio }); 
 
       if (!res.success) {
         setLoading(false);
