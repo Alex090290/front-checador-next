@@ -25,11 +25,12 @@ import ST2Card from "./ST2Card";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import ModalAddDocuments from "./ModalUploadDocuments";
 import InhabilityDocCard from "./InhabilityDocumentCard";
-import DocumetCitt from "./DocumetCitt";
+// import DocumetCitt from "./DocumetCitt";
 
 type TInputs = {
   idEmployee: number | null;
   disabilityCategory: string;
+  folio: string;
   typeOfDisability: string;
   dateInit: string;
   dateEnd: string;
@@ -96,6 +97,7 @@ function InhabilityFormView({
         dateInit: "",
         dateEnd: "",
         firstDoc: null,
+        folio:''
       };
       reset(values);
       originalValuesRef.current = values;
@@ -105,6 +107,7 @@ function InhabilityFormView({
         disabilityCategory: inhability.disabilityCategory,
         typeOfDisability: inhability.typeOfDisability,
         firstDoc: null,
+        folio: inhability.folio,
         dateInit: formatDate(
           inhability.documentsInability[0].dateInit,
           "yyyy-MM-dd"
@@ -118,7 +121,7 @@ function InhabilityFormView({
       originalValuesRef.current = values;
     }
   }, [reset, inhability, session, sessionEmployeeId]);
-
+  
   return (
     <>
       <FormView
@@ -184,12 +187,17 @@ function InhabilityFormView({
           {!inhability?.documentsInability[0].urlDocument && (
             <Form.Group className="mt-3">
               {/* CARGA DE DOCUMENTO */}
-              <Form.Label className="fw-semibold">Documento:</Form.Label>
+              <Form.Label className="fw-semibold">CITT:</Form.Label>
               <Form.Control
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf,.webp"
                 {...register("firstDoc")}
               />
+            <Entry 
+              register={register("folio")}
+              label="Folio CITT:"
+              className="text-uppercase"
+            />
             </Form.Group>
           )}
         </FieldGroup>
@@ -206,14 +214,14 @@ function InhabilityFormView({
                   idDoc={id}
                 />
                 <ST2Card st2Doc={inhability?.sT2DischargeDocument} idDoc={id} />
-                <DocumetCitt documetCitt={inhability?.documetCitt} idDoc={id} />
+                {/* <DocumetCitt documetCitt={inhability?.documetCitt} idDoc={id} /> */}
               </PageSheet>
             </FormPage>
           )}
           {id &&
             id !== "null" &&
             inhability?.documentsInability[0].urlDocument !== "" && (
-              <FormPage title="Documentos" eventKey="documents">
+              <FormPage title="Documentos CITT" eventKey="documents">
                 <Container fluid>
                   <Row className="mt-2 mb-2">
                     <Col md="12">
@@ -221,7 +229,7 @@ function InhabilityFormView({
                         onClick={() => setModalUploadDoc(!modalUploadDoc)}
                         variant="info"
                       >
-                        Nuevo documento
+                        Nuevo documento CITT
                       </Button>
                     </Col>
                   </Row>
@@ -236,6 +244,7 @@ function InhabilityFormView({
                             urlDocument={doc.urlDocument}
                             dateInit={doc.dateInit}
                             dateEnd={doc.dateEnd}
+                            folio={doc.folio}
                           />
                         );
                       })}

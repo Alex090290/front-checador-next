@@ -24,12 +24,14 @@ function InhabilityDocCard({
   urlDocument,
   dateInit,
   dateEnd,
+  folio
 }: {
   selfId: string | null;
   idDoc: string;
   urlDocument: string | null;
   dateInit: string;
   dateEnd: string;
+  folio: string;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -164,6 +166,7 @@ function InhabilityDocCard({
               <div className="d-flex flex-column justify-content-center gap-1">
                 {selectedFiles.length === 0 ? (
                   <>
+                  <p>Folio: {folio}</p>
                     <Button onClick={handleButtonClick}>
                       {urlDocument ? "Reemplazar" : "Cargar"}
                     </Button>

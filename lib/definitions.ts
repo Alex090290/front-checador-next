@@ -396,12 +396,13 @@ export interface IInability {
   accountingConfirmation: boolean;
   disabilityCategory: string;
   typeOfDisability: string;
-
+  folio: string;
   documentsInability: {
     id: number;
     whoUploadId: number;
     dateInit: string; // ISO
     dateEnd: string; // ISO
+    folio: string;
     daysdaysBrokenDown: {
       id: number;
       fortnightlyPeriod: number;
@@ -466,6 +467,7 @@ export interface IInability {
 export type InabilityPayload = {
   idEmployee: number | null;
   disabilityCategory: string;
+  folio: string;
   typeOfDisability: string;
   dateInit: string; // yyyy-MM-dd
   dateEnd: string; // yyyy-MM-dd

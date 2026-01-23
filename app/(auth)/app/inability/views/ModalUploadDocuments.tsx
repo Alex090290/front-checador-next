@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 
 type TInputs = {
   dateInit: string;
+  folio: string;
   dateEnd: string;
   document: FileList | null;
 };
@@ -21,6 +22,7 @@ function ModalAddDocuments({
     defaultValues: {
       dateEnd: "",
       dateInit: "",
+      folio: '',
       document: null,
     },
   });
@@ -35,6 +37,7 @@ function ModalAddDocuments({
     const toastId = toast.loading("Creando nuevo documento...");
     const res = await createNewDocument({
       idDoc,
+      folio: data.folio,
       dateEnd: data.dateEnd,
       dateInit: data.dateInit,
       formData: data.document,
@@ -74,8 +77,14 @@ function ModalAddDocuments({
               label="Fecha fin"
               min={onChangeDateInit}
             />
+            
           </Form.Group>
           <Form.Group>
+            <Entry 
+              register={register("folio")}
+              label="Folio CITT:"
+              className="text-uppercase"
+            />
             <Form.Label className="fw-semibold">Documento</Form.Label>
             <Form.Control type="file" {...register("document")} />
           </Form.Group>

@@ -113,7 +113,8 @@ export async function createInability(
         if (data.firstDoc) {
           await uploadFirstInhabilityDocument({
             formData: document,
-            idDoc: res.data.data.id,
+            id: res.data.data.id,
+            idDoc: res.data.data.idDocument,
           });
         }
         return res.data;
@@ -145,9 +146,11 @@ export async function createInability(
 }
 
 export async function uploadFirstInhabilityDocument({
+  id,
   idDoc,
   formData,
 }: {
+  id: string;
   idDoc: string;
   formData: FormData;
 }): Promise<ActionResponse<boolean>> {
@@ -161,7 +164,7 @@ export async function uploadFirstInhabilityDocument({
     data.append("document", image);
 
     const response = await axios
-      .put(`${apiUrl}/inability/documentsInability/${idDoc}/1`, data, {
+      .put(`${apiUrl}/inability/documentsInability/${id}/${idDoc}`, data, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
           "Content-Type": "multipart/form-data",
@@ -205,6 +208,7 @@ export async function updateInability(
 
     if (data.firstDoc) {
       document.append("document", data.firstDoc?.[0]);
+      document.append("folio", data.folio);
     }
 
     await axios
@@ -242,10 +246,12 @@ export async function updateInability(
 export async function createNewDocument({
   idDoc,
   dateInit,
+  folio,
   dateEnd,
   formData,
 }: {
   idDoc: string;
+  folio: string;
   dateInit: string;
   dateEnd: string;
   formData: FileList | null;
@@ -258,6 +264,7 @@ export async function createNewDocument({
         `${API_URL}/inability/newDocumentsInability`,
         {
           id: idDoc,
+          folio:folio,
           dateInit,
           dateEnd,
         },
@@ -425,7 +432,6 @@ export async function getInhabilityDocument({
 }): Promise<ActionResponse<string>> {
   try {
     const { apiToken, API_URL: apiUrl } = await storeAction();
-    console.log(`${apiUrl}/inability/documentsInability/${idDoc}/${selfId}`);
 
     if (!idDoc || !selfId) throw new Error("ID NOT DEFINED");
 
