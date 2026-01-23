@@ -246,6 +246,8 @@ function VacationsFormView({
         if ((!current || Number.isNaN(currentNum) || currentNum === 0) && nextPeriods.length > 0) {
           setValue("idPeriod", Number(nextPeriods[0].id), { shouldDirty: false });
         }
+      }else{
+        setValue("idPeriod", Number(vacation?.period.id), { shouldDirty: false });
       }
     } catch (error) {
       console.error(error);
@@ -256,7 +258,7 @@ function VacationsFormView({
   useEffect(() => {
     getPeriods();
   }, [getPeriods]);
-
+  
   return (
     <>
       <FormView
