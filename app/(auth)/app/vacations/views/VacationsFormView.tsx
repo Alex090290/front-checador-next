@@ -15,7 +15,6 @@ import FormView, {
 import { useModals } from "@/context/ModalContext";
 import { Employee, PeriodVacation, Vacations } from "@/lib/definitions";
 import { formatDate } from "date-fns";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -29,6 +28,7 @@ import { fetchPeriods } from "@/app/actions/vacations-actions";
 import { findEmployeeById } from "@/app/actions/employee-actions";
 import useSWR from "swr";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
 type TInputs = Pick<
   Vacations,
@@ -68,7 +68,7 @@ function VacationsFormView({
   const dateInit = watch("dateInit");
   const idEmployeeSelected = watch("idEmployee");
 
-  const { data: session } = useSession();
+  const session = useSessionSnapshot();
   const { data } = useSWR("/api/configsystem", fetcher);
 
   const config: IConfigSystem | null = useMemo(() => {
@@ -115,7 +115,7 @@ function VacationsFormView({
   const getSignatureEmployee = () => {
     let result = false;
     const sign = vacation?.signatures.filter(
-      (f) => f.idSignatory === Number(session?.user?.idEmployee)
+      (f) => f.idSignatory === Number(session?.uid?.idEmployee),
     )[0];
 
     if (sign?.url === "") {
@@ -134,7 +134,7 @@ function VacationsFormView({
   useEffect(() => {
     if (!vacation) {
       const values: TInputs = {
-        idEmployee: Number(session?.user?.id),
+        idEmployee: Number(session?.uid?.id),
         idLeader: null,
         idPersonDoh: null,
         idPeriod: null,
@@ -162,7 +162,8 @@ function VacationsFormView({
       reset(values);
       originalValuesRef.current = values;
     }
-  }, [reset, vacation, session?.user]);
+  }, [reset, vacation, session]);
+
   useEffect(() => {
     if (id !== "null") return; // solo creando
     if (!idEmployeeSelected) return;
@@ -256,21 +257,21 @@ function VacationsFormView({
             string: "Aprobar",
             variant: "warning",
             invisible:
-              vacation?.idLeader !== Number(session?.user?.idEmployee) ||
+              vacation?.idLeader !== Number(session?.uid?.idEmployee) ||
               vacation.leaderApproval === "APPROVED",
           },
           {
             action: handleSignatureDoh,
             string: "Aprobar",
             variant: "success",
-            invisible: session?.user?.idEmployee !== vacation?.idPersonDoh,
+            invisible: session?.uid?.idEmployee !== vacation?.idPersonDoh,
           },
           {
             action: handleEmployeeSignature,
             string: "Firmar",
             variant: "primary",
             invisible:
-              session?.user?.idEmployee !== vacation?.employee.id ||
+              session?.uid?.idEmployee !== vacation?.employee.id ||
               getSignatureEmployee(),
           },
           {

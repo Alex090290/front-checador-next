@@ -3,8 +3,8 @@
 import { createOvertime } from "@/app/actions/overtime-actions";
 import { Entry, RelationField } from "@/components/fields";
 import FormView, { FieldGroup } from "@/components/templates/FormView";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { Employee, IOvertime } from "@/lib/definitions";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -36,8 +36,8 @@ function OverFormView({
     formState: { isDirty, isSubmitting },
   } = useForm<TInputs>();
 
-  const { data: session } = useSession();
-  const sessionEmployeeId = Number(session?.user?.idEmployee);
+  const session = useSessionSnapshot();
+  const sessionEmployeeId = Number(session?.uid?.idEmployee);
 
   const router = useRouter();
 
@@ -67,7 +67,7 @@ function OverFormView({
     if (!overtime) {
       const values: TInputs = {
         idEmployee:
-          session?.user?.role === "EMPLOYEE" ? sessionEmployeeId : null,
+          session?.uid?.role === "EMPLOYEE" ? sessionEmployeeId : null,
         idLeader: null,
         idPersonDoh: null,
         motive: "",
@@ -111,7 +111,7 @@ function OverFormView({
             name: `${e.lastName} ${e.name}`.toUpperCase(),
           }))}
           register={register("idEmployee", { required: true })}
-          readonly={id !== "null" || session?.user?.role === "EMPLOYEE"}
+          readonly={id !== "null" || session?.uid?.role === "EMPLOYEE"}
         />
         <RelationField
           callBackMode="id"

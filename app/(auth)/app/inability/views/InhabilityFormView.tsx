@@ -14,7 +14,6 @@ import FormView, {
 import { useModals } from "@/context/ModalContext";
 import { Employee, IInability } from "@/lib/definitions";
 import { formatDate } from "date-fns";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -25,7 +24,8 @@ import ST2Card from "./ST2Card";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import ModalAddDocuments from "./ModalUploadDocuments";
 import InhabilityDocCard from "./InhabilityDocumentCard";
-// import DocumetCitt from "./DocumetCitt";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import DocumetCitt from "./DocumetCitt";
 
 type TInputs = {
   idEmployee: number | null;
@@ -57,8 +57,8 @@ function InhabilityFormView({
 
   const onChangeDateInit = watch("dateInit");
 
-  const { data: session } = useSession();
-  const sessionEmployeeId = Number(session?.user?.idEmployee);
+  const session = useSessionSnapshot();
+  const sessionEmployeeId = Number(session?.uid?.idEmployee);
 
   const { modalError } = useModals();
 
@@ -91,7 +91,7 @@ function InhabilityFormView({
     if (!inhability) {
       const values: TInputs = {
         idEmployee:
-          session?.user?.role === "EMPLOYEE" ? sessionEmployeeId : null,
+          session?.uid?.role === "EMPLOYEE" ? sessionEmployeeId : null,
         disabilityCategory: "",
         typeOfDisability: "Inicial",
         dateInit: "",
@@ -110,11 +110,11 @@ function InhabilityFormView({
         folio: inhability.folio,
         dateInit: formatDate(
           inhability.documentsInability[0].dateInit,
-          "yyyy-MM-dd"
+          "yyyy-MM-dd",
         ),
         dateEnd: formatDate(
           inhability.documentsInability[0].dateEnd,
-          "yyyy-MM-dd"
+          "yyyy-MM-dd",
         ),
       };
       reset(values);
@@ -144,7 +144,7 @@ function InhabilityFormView({
               name: `${em.lastName} ${em.name}`.toUpperCase(),
             }))}
             register={register("idEmployee", { required: true })}
-            readonly={session?.user?.role === "EMPLOYEE" || !id}
+            readonly={session?.uid?.role === "EMPLOYEE" || !id}
           />
           <FieldGroup.Stack>
             <FieldSelect
@@ -155,7 +155,7 @@ function InhabilityFormView({
                 { label: "Maternidad", value: "maternidad" },
               ]}
               register={register("disabilityCategory", { required: true })}
-              readonly={session?.user?.role === "EMPLOYEE" || !id}
+              readonly={session?.uid?.role === "EMPLOYEE" || !id}
             />
 
             <FieldSelect
@@ -166,7 +166,7 @@ function InhabilityFormView({
                 { label: "Alta", value: "alta" },
               ]}
               register={register("typeOfDisability", { required: true })}
-              readonly={session?.user?.role === "EMPLOYEE" || !id}
+              readonly={session?.uid?.role === "EMPLOYEE" || !id}
             />
           </FieldGroup.Stack>
           <FieldGroup.Stack>
@@ -174,14 +174,14 @@ function InhabilityFormView({
               label="Fecha inicio:"
               type="date"
               register={register("dateInit", { required: true })}
-              readonly={session?.user?.role === "EMPLOYEE" || !id}
+              readonly={session?.uid?.role === "EMPLOYEE" || !id}
             />
             <Entry
               label="Fecha fin:"
               type="date"
               min={onChangeDateInit}
               register={register("dateEnd", { required: true })}
-              readonly={session?.user?.role === "EMPLOYEE" || !id}
+              readonly={session?.uid?.role === "EMPLOYEE" || !id}
             />
           </FieldGroup.Stack>
           {!inhability?.documentsInability[0].urlDocument && (
