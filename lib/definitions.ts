@@ -307,6 +307,7 @@ export interface Vacations {
   _id: string;
   id: number;
   idEmployee: number | null;
+  dohApproval?: "APPROVED" | "REFUSED" | "PENDING";
   periodDescription: string;
   totalDaysPeriod: number;
   dateInitPeriod: string;
@@ -359,6 +360,25 @@ export interface Vacations {
   usedDays: number;
   availableDays: number;
   pendingDays: number;
+  createdAt?: string;
+  updatedAt?: string;
+  daysdaysBrokenDown?: {
+    id: number;
+    fortnightlyPeriod: number;
+    day: string; // ISO
+  }[];
+  leader?: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  personDoh?: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
 }
 
 export interface PeriodVacation {

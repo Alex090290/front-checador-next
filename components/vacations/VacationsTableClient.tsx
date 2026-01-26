@@ -1,39 +1,33 @@
 "use client";
 
-import ListView from "@/components/templates/ListView";
-import TableTemplate, {
-  TableTemplateColumn,
-} from "@/components/templates/TableTemplate";
-import { VacationRequestStatus, Vacations } from "@/lib/definitions";
-import { Badge, Button } from "react-bootstrap";
-import { formatDate } from "date-fns";
 import { useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import TableTemplateServer from "@/components/templates/TablePage";
+import { Badge } from "react-bootstrap";
+import { formatDate } from "date-fns";
 
-export const vacationStatus: Record<VacationRequestStatus, string> = {
-  APPROVED: "Aprobado",
-  PENDING: "Pendiente",
-  REFUSED: "Rechazado",
-  EMPLOYEE: "Empleado",
-};
+import ListView from "../templates/ListView";
+import TableTemplateServer from "../templates/TablePage";
+import { TableTemplateColumn } from "../templates/TableTemplate";
 
-function VacationsListView({
+import { Vacations } from "@/lib/definitions";
+import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
+
+export default function VacationsTableClient({
+  
   vacations,
   total,
   page,
   limit,
 }: {
+  id: string;
   vacations: Vacations[];
   total: number;
   page: number;
-  pages: number;
   limit: number;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
 
-  // ✅ faltaba esto (lo usas en el ref)
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
   const goToPage = (nextPage: number) => {
@@ -42,7 +36,7 @@ function VacationsListView({
     params.set("id", "null");
     params.set("page", String(nextPage));
     params.set("limit", String(limit));
-    router.push(`/app/vacations?${params.toString()}`);
+    router.push(`/app/vacationList?${params.toString()}`);
   };
 
   const columns: TableTemplateColumn<Vacations>[] = useMemo(
@@ -118,16 +112,17 @@ function VacationsListView({
     ],
     []
   );
-  
- return (
+
+  return (
     <ListView>
       <ListView.Header
         title={`Vacaciones (${total})`}
-        formView="/app/vacations?view_type=form&id=null" // ✅ botón Nuevo aquí
+        formView="/app/vacationList?view_type=form&id=null"
       />
 
       <ListView.Body>
         <TableTemplateServer
+          ref={tableRef}
           columns={columns}
           data={vacations}
           total={total}
@@ -135,11 +130,9 @@ function VacationsListView({
           limit={limit}
           onPageChange={(p) => goToPage(p)}
           getRowId={(row) => row.id}
-          viewForm="/app/vacations?view_type=form" // click fila -> form
+          viewForm="/app/vacationList?view_type=form"
         />
       </ListView.Body>
     </ListView>
   );
 }
-
-export default VacationsListView;
