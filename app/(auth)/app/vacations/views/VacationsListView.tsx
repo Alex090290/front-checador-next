@@ -67,7 +67,7 @@ function VacationsListView({
       },
       {
         key: "period",
-        label: "Periodo",
+        label: "Periodo Vacacional",
         accessor: (row) => row.period.periodDescription,
         filterable: true,
         type: "string",
@@ -118,19 +118,28 @@ function VacationsListView({
     ],
     []
   );
+  console.log(vacations);
+  
+ return (
+    <ListView>
+      <ListView.Header
+        title={`Vacaciones (${total})`}
+        formView="/app/vacations?view_type=form&id=null" // ✅ botón Nuevo aquí
+      />
 
-  return (
-    <TableTemplateServer
-      ref={tableRef}
-      columns={columns}
-      data={vacations ?? []}
-      total={total ?? 0}
-      page={page ?? 1}
-      limit={limit ?? 20}
-      onPageChange={(p: number) => goToPage(p)}
-      getRowId={(row: Vacations) => row.id}
-      viewForm="/app/vacations?view_type=form"
-    />
+      <ListView.Body>
+        <TableTemplateServer
+          columns={columns}
+          data={vacations}
+          total={total}
+          page={page}
+          limit={limit}
+          onPageChange={(p) => goToPage(p)}
+          getRowId={(row) => row.id}
+          viewForm="/app/vacations?view_type=form" // click fila -> form
+        />
+      </ListView.Body>
+    </ListView>
   );
 }
 

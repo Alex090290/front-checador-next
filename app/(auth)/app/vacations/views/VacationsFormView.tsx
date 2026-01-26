@@ -331,7 +331,7 @@ function VacationsFormView({
             />
 
             <FieldSelect
-              label="Periodo"
+              label="Periodo Vacacional"
               options={periods.map((p) => ({
                 label: p.periodDescription,
                 value: Number(p.id),
