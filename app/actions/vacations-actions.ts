@@ -474,6 +474,47 @@ export async function approvedVacation({
   }
 }
 
+export async function deleteVacation(idRequest: number, idPeriod: number): Promise<ActionResponse<boolean>> {
+  try {
+    if (!idRequest) throw new Error("ID NOT DEFINED");
+
+    const { apiToken, apiUrl } = await storeToken();
+
+    await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`,{
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+
+    revalidatePath("/app/vacationList");
+
+    return {
+      success: true,
+      message: "Proceso completado",
+      data: true,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 export async function approvedVacationDoh({
   data,
 }: {
@@ -567,8 +608,6 @@ export async function fetchVacatiionPDF({
     if (!id) throw new Error("ID NOT DEFINED");
 
     const { apiToken, API_URL: apiUrl } = await storeAction();
-
-    console.log("TOKEN: " + apiToken);
 
     const resImg = await axios
       .post(
