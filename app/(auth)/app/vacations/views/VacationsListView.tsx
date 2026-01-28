@@ -7,6 +7,7 @@ import TableTemplate, {
 import { VacationRequestStatus, Vacations } from "@/lib/definitions";
 import { Badge, Button } from "react-bootstrap";
 import { formatDate } from "date-fns";
+import moment from "moment-timezone";
 import { useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import TableTemplateServer from "@/components/templates/TablePage";
@@ -85,7 +86,7 @@ function VacationsListView({
         type: "string",
         render: (row) => (
           <div className="text-center fs-6 fw-semibold">
-            {formatDate(row.dateInit, "dd/MM/yyyy")}
+            {moment.utc(row.dateInit).format("DD/MM/YYYY")}
           </div>
         ),
       },
@@ -97,7 +98,7 @@ function VacationsListView({
         type: "string",
         render: (row) => (
           <div className="text-center fs-6 fw-semibold">
-            {formatDate(row.dateEnd, "dd/MM/yyyy")}
+            {moment.utc(row.dateEnd).format("DD/MM/YYYY")}
           </div>
         ),
       },
@@ -118,7 +119,6 @@ function VacationsListView({
     ],
     []
   );
-  console.log(vacations);
   
  return (
     <ListView>

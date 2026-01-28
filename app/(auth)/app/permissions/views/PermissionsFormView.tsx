@@ -350,7 +350,7 @@ function PermissionsFormView({
                 },
                 {
                   label: "SITUACIÓN VIAL",
-                  value: "PERMISO POER SITUACIÓN VIAL",
+                  value: "PERMISO POR SITUACIÓN VIAL",
                 },
                 {
                   label: "POR SALUD (PROPIA O DE FAMILIAR)",
