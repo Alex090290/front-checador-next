@@ -117,7 +117,7 @@ export default function VacationsTableClient({
     <ListView>
       <ListView.Header
         title={`Vacaciones (${total})`}
-        formView="/app/vacations?view_type=form&id=null"
+        formView="/app/vacationList?view_type=form&id=null"
       />
 
       <ListView.Body>
@@ -130,7 +130,7 @@ export default function VacationsTableClient({
           limit={limit}
           onPageChange={(p) => goToPage(p)}
           getRowId={(row) => row.id}
-          viewForm="/app/vacations?view_type=form"
+          viewForm="/app/vacationList?view_type=form"
         />
       </ListView.Body>
     </ListView>
