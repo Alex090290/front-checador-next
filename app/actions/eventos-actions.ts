@@ -194,3 +194,30 @@ export async function searchEventosParams({
     return [];
   }
 }
+
+export async function generateFault(): Promise<string[]> {
+  try {
+    const { API_URL, apiToken } = await storeAction();
+    const response = await axios
+      .get(`${API_URL}/checador/registrarFaltas`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+    return response.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return [];
+  }
+}

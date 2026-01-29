@@ -1,4 +1,5 @@
-import LoadingPage from "@/app/LoadingPage";
+// import LoadingPage from "@/app/LoadingPage";
+import Loading from "@/components/LoadingSpinner";
 import { lazy, Suspense } from "react";
 
 const EventosMainView = lazy(() => import("./views/EventosMainView"));
@@ -10,9 +11,13 @@ async function PageEventos({
 }) {
   const { view_type: viewType, id } = await searchParams;
   return (
-    <Suspense fallback={<LoadingPage />}>
+    // <Suspense fallback={<LoadingPage />}>
+    //   <EventosMainView viewType={viewType} id={id} />
+    // </Suspense>
+    <Suspense fallback={<Loading message="Cargando módulo..." />}>
       <EventosMainView viewType={viewType} id={id} />
     </Suspense>
+
   );
 }
 

@@ -16,6 +16,7 @@ import { formatDate } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import ModifyModalForm from "./ModifyModalForm";
 import {
+  generateFault,
   searchEventosParams,
   updateRegristrosChecador,
 } from "@/app/actions/eventos-actions";
@@ -24,6 +25,11 @@ import { Many2one } from "@/components/fields/Many2one";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Link from "next/link";
 import useSWR from "swr";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
+import LoadingProgressBar from "@/components/LoadingProgressBar";
+import Modal from "@/components/Modal";
+
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -49,6 +55,8 @@ function EventosListView({
   } = useSWR<ICheckInFeedback[]>("/api/eventos", fetcher, {
     fallbackData: eventos,
   });
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const {
     reset,
@@ -64,7 +72,7 @@ function EventosListView({
     },
   });
 
-  const { modalError } = useModals();
+  const { modalError,modalConfirm } = useModals();
 
   const tableRef = useRef<TableTemplateRef>(null);
 
@@ -267,7 +275,23 @@ function EventosListView({
       status: registro.checks.status || "",
       type: registro.checks.type || "",
     });
+  };  
+  
+
+  const handleDeletePuesto = () => {
+      modalConfirm("¿Seguro que desea generar las faltas del día?", async() =>
+      {
+        setLoading(true)
+        await generateFault().then((r:any)=>{
+              setLoading(false)
+        }).catch((err)=>{
+
+            setLoading(false)
+        })
+      }
+      );
   };
+
 
   const onSubmitData = async (
     type: string,
@@ -339,10 +363,93 @@ function EventosListView({
     tableRef.current?.clearSelection();
     setSelectedIds([]);
     await mutate(); // opcional: fuerza refresco
+  };  
+  const modal = () => {
+      setShowModal(true)
   };
 
   return (
     <>
+    <ConditionalRender cond={loading}>
+        <Loading message="Generando registros..." />    
+    </ConditionalRender>
+    
+      <ConditionalRender cond={showModal}>
+        <Modal onClose={() => setShowModal(false)} locked={isSubmitting}>
+          <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div className="fw-semibold text-uppercase">Generar faltas</div>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setShowModal(false)}
+              disabled={isSubmitting}
+              type="button"
+            >
+              <i className="bi bi-x-lg" />
+            </button>
+          </div>
+
+          <form className="p-3">
+            <div className="row g-3">
+              <div className="col-12 col-md-6">
+                <label className="form-label small text-muted">Fecha</label>
+                <input className="form-control" type="date" />
+              </div>
+
+              <div className="col-12 col-md-6">
+                <label className="form-label small text-muted">Empleado</label>
+                <select className="form-select">
+                  <option value="">Seleccionar...</option>
+                  <option>JUAN PÉREZ</option>
+                  <option>MARÍA LÓPEZ</option>
+                </select>
+              </div>
+
+              <div className="col-12 col-md-6">
+                <label className="form-label small text-muted">Checador</label>
+                <select className="form-select">
+                  <option value="">Seleccionar...</option>
+                  <option>CHECADOR 1</option>
+                  <option>CHECADOR 2</option>
+                </select>
+              </div>
+
+              <div className="col-12 col-md-6">
+                <label className="form-label small text-muted">Motivo</label>
+                <input className="form-control" placeholder="Ej. Falta por inasistencia" />
+              </div>
+
+              <div className="col-12">
+                <label className="form-label small text-muted">Notas</label>
+                <textarea className="form-control" rows={3} placeholder="Opcional..." />
+              </div>
+
+              <div className="col-12 d-flex gap-2 align-items-center">
+                <input className="form-check-input" type="checkbox" id="notify" />
+                <label className="form-check-label small" htmlFor="notify">
+                  Notificar al empleado
+                </label>
+              </div>
+            </div>
+          </form>
+
+          <div className="p-3 border-top d-flex justify-content-end gap-2">
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => setShowModal(false)}
+              type="button"
+            >
+              Cancelar
+            </button>
+            <button className="btn btn-primary" type="button" disabled={isSubmitting}>
+              Aceptar
+            </button>
+          </div>
+        </Modal>
+
+      </ConditionalRender>
+
+
+
       <ListView>
         <ListView.Header
           title={`Eventos de checador (${eventosList.length || 0})`}
@@ -355,7 +462,24 @@ function EventosListView({
                   <span>Modificar</span>
                 </>
               ),
-            },
+            },            
+            {
+              action: handleDeletePuesto,
+              string: (
+                <>
+                  <i className="bi bi-calendar-x-fill me-1"></i>
+                  <span>Generar faltas</span>
+                </>
+              ),
+            },            
+            {
+              action: modal ,
+              string: (
+                <>
+                  <span>Mostrar modal</span>
+                </>
+              ),
+            }
           ]}
         >
           <Form onSubmit={handleSubmit(onSubmitSearch)}>
