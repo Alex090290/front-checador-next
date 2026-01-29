@@ -8,14 +8,16 @@ type ModalProps = {
   locked?: boolean;
   closeOnEsc?: boolean;
   zIndex?: number;
+  showCloseButton?: boolean;
 };
 
-export default function Modal({
+export default function ModalBlur({
   onClose,
   children,
   locked = false,
   closeOnEsc = true,
   zIndex = 2000,
+  showCloseButton = true,
 }: ModalProps) {
   const handleClose = () => {
     if (locked) return;
@@ -62,9 +64,23 @@ export default function Modal({
     >
       <div className="w-100 px-3" style={{ maxWidth: 900, maxHeight: "90vh" }}>
         <div
-          className="bg-body rounded-3 shadow"
+          className="bg-body rounded-3 shadow position-relative"
           style={{ maxHeight: "90vh", overflow: "auto" }}
         >
+          {showCloseButton && (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-secondary position-absolute"
+              style={{ top: 12, right: 12, zIndex: 2 }}
+              onClick={handleClose}
+              disabled={locked}
+              aria-label="Cerrar"
+              title="Cerrar"
+            >
+              <i className="bi bi-x-lg" />
+            </button>
+          )}
+
           {children}
         </div>
       </div>

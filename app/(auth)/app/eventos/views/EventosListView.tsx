@@ -28,7 +28,9 @@ import useSWR from "swr";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import LoadingProgressBar from "@/components/LoadingProgressBar";
-import Modal from "@/components/Modal";
+import Modal from "@/components/ModalBlur";
+import ModalBlur from "@/components/ModalBlur";
+import FormUpdateEvent from "./UpdateDataEvent";
 
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -57,6 +59,8 @@ function EventosListView({
   });
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [statusUpdate, setStatusUpdate] = useState('');
+  const [typeUpdate, setTypeUpdate] = useState('');
 
   const {
     reset,
@@ -269,7 +273,8 @@ function EventosListView({
     const registro = eventosList.find((even) => even.checks.id === idSel);
 
     if (!registro) return modalError("No se encontró el registro seleccionado");
-
+    console.log("registro: ",registro);
+    
     setModalModify({
       show: !modalModify.show,
       status: registro.checks.status || "",
@@ -365,7 +370,24 @@ function EventosListView({
     await mutate(); // opcional: fuerza refresco
   };  
   const modal = () => {
-      setShowModal(true)
+        if (selectedIds.length === 0)
+        return modalError("No hay registros seleccionados");
+
+        if (selectedIds.length > 1)
+          return modalError("Sólo modificar un registro a la vez");
+
+        const idSel = Number(selectedIds[0]);
+        const registro = eventosList.find((even) => even.checks.id === idSel);
+        
+        if (!registro) return modalError("No se encontró el registro seleccionado");
+
+        const nextStatus = String(registro.checks.status ?? "");
+        const nextType = String(registro.checks.type ?? "");
+
+        setStatusUpdate(nextStatus);
+        setTypeUpdate(nextType);
+        
+        setShowModal(true)
   };
 
   return (
@@ -373,89 +395,26 @@ function EventosListView({
     <ConditionalRender cond={loading}>
         <Loading message="Generando registros..." />    
     </ConditionalRender>
-    
+
       <ConditionalRender cond={showModal}>
-        <Modal onClose={() => setShowModal(false)} locked={isSubmitting}>
-          <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
-            <div className="fw-semibold text-uppercase">Generar faltas</div>
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setShowModal(false)}
-              disabled={isSubmitting}
-              type="button"
-            >
-              <i className="bi bi-x-lg" />
-            </button>
-          </div>
-
-          <form className="p-3">
-            <div className="row g-3">
-              <div className="col-12 col-md-6">
-                <label className="form-label small text-muted">Fecha</label>
-                <input className="form-control" type="date" />
-              </div>
-
-              <div className="col-12 col-md-6">
-                <label className="form-label small text-muted">Empleado</label>
-                <select className="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option>JUAN PÉREZ</option>
-                  <option>MARÍA LÓPEZ</option>
-                </select>
-              </div>
-
-              <div className="col-12 col-md-6">
-                <label className="form-label small text-muted">Checador</label>
-                <select className="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option>CHECADOR 1</option>
-                  <option>CHECADOR 2</option>
-                </select>
-              </div>
-
-              <div className="col-12 col-md-6">
-                <label className="form-label small text-muted">Motivo</label>
-                <input className="form-control" placeholder="Ej. Falta por inasistencia" />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label small text-muted">Notas</label>
-                <textarea className="form-control" rows={3} placeholder="Opcional..." />
-              </div>
-
-              <div className="col-12 d-flex gap-2 align-items-center">
-                <input className="form-check-input" type="checkbox" id="notify" />
-                <label className="form-check-label small" htmlFor="notify">
-                  Notificar al empleado
-                </label>
-              </div>
-            </div>
-          </form>
-
-          <div className="p-3 border-top d-flex justify-content-end gap-2">
-            <button
-              className="btn btn-outline-secondary"
-              onClick={() => setShowModal(false)}
-              type="button"
-            >
-              Cancelar
-            </button>
-            <button className="btn btn-primary" type="button" disabled={isSubmitting}>
-              Aceptar
-            </button>
-          </div>
-        </Modal>
-
+        <ModalBlur onClose={() => setShowModal(false)} locked={isSubmitting}>
+            <FormUpdateEvent 
+                      show={modalModify.show}
+                      onHide={() => setShowModal(false)}
+                      sendData={onSubmitData}
+                      status={statusUpdate}
+                      type={typeUpdate}
+            />
+        </ModalBlur>
       </ConditionalRender>
-
-
 
       <ListView>
         <ListView.Header
           title={`Eventos de checador (${eventosList.length || 0})`}
           actions={[
             {
-              action: handleModify,
+              // action: handleModify,
+                 action: modal,
               string: (
                 <>
                   <i className="bo bi-pencil me-1"></i>
@@ -472,14 +431,14 @@ function EventosListView({
                 </>
               ),
             },            
-            {
-              action: modal ,
-              string: (
-                <>
-                  <span>Mostrar modal</span>
-                </>
-              ),
-            }
+            // {
+            //   action: modal ,
+            //   string: (
+            //     <>
+            //       <span>Mostrar modal</span>
+            //     </>
+            //   ),
+            // }
           ]}
         >
           <Form onSubmit={handleSubmit(onSubmitSearch)}>
@@ -536,6 +495,7 @@ function EventosListView({
           />
         </ListView.Body>
       </ListView>
+      
       <ModifyModalForm
         show={modalModify.show}
         onHide={() => setModalModify({ ...modalModify, show: false })}

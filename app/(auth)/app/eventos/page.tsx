@@ -14,7 +14,7 @@ async function PageEventos({
     // <Suspense fallback={<LoadingPage />}>
     //   <EventosMainView viewType={viewType} id={id} />
     // </Suspense>
-    <Suspense fallback={<Loading message="Cargando módulo..." />}>
+    <Suspense fallback={<Loading message="Cargando datos..." />}>
       <EventosMainView viewType={viewType} id={id} />
     </Suspense>
 
