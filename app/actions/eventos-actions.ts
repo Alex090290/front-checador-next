@@ -152,6 +152,54 @@ export async function updateRegristrosChecador({
   }
 }
 
+export async function deleteRegristrosChecador({
+  idRegistro,
+  idCheck
+}: {
+  idRegistro: number | null;
+  idCheck: number | null;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const { API_URL, apiToken } = await storeAction();
+    if (!idCheck && idRegistro) throw new Error("ID NOT DEFINED");
+
+    console.log("idRegistro: ",idRegistro);
+    console.log("idCheck: ",idCheck);
+    
+
+    await axios.delete(`${API_URL}/checador/${idRegistro}/${idCheck}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    // revalidatePath("/app/eventos");
+
+    return {
+      success: true,
+      message: "Se ha eliminado el registro correctamente",
+      data: true,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 export async function searchEventosParams({
   date,
   idEmployee,

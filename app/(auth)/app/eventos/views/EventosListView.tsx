@@ -16,6 +16,7 @@ import { formatDate } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import ModifyModalForm from "./ModifyModalForm";
 import {
+  deleteRegristrosChecador,
   generateFault,
   searchEventosParams,
   updateRegristrosChecador,
@@ -27,11 +28,8 @@ import Link from "next/link";
 import useSWR from "swr";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
-import LoadingProgressBar from "@/components/LoadingProgressBar";
-import Modal from "@/components/ModalBlur";
 import ModalBlur from "@/components/ModalBlur";
 import FormUpdateEvent from "./UpdateDataEvent";
-
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -51,16 +49,19 @@ function EventosListView({
   eventos: ICheckInFeedback[];
 }) {
   // ✅ SWR tipado + fallback para no parpadear
-  const {
-    data: eventosSwr,
-    mutate,
-  } = useSWR<ICheckInFeedback[]>("/api/eventos", fetcher, {
-    fallbackData: eventos,
-  });
+  const { data: eventosSwr, mutate } = useSWR<ICheckInFeedback[]>(
+    "/api/eventos",
+    fetcher,
+    {
+      fallbackData: eventos,
+    }
+  );
+
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [statusUpdate, setStatusUpdate] = useState('');
-  const [typeUpdate, setTypeUpdate] = useState('');
+  const [statusUpdate, setStatusUpdate] = useState("");
+  const [typeUpdate, setTypeUpdate] = useState("");
+  const [messageLoading, setMessageLoading] = useState("");
 
   const {
     reset,
@@ -76,7 +77,7 @@ function EventosListView({
     },
   });
 
-  const { modalError,modalConfirm } = useModals();
+  const { modalError, modalConfirm } = useModals();
 
   const tableRef = useRef<TableTemplateRef>(null);
 
@@ -89,10 +90,30 @@ function EventosListView({
 
   const [eventosList, setEventosList] = useState<ICheckInFeedback[]>(eventos);
 
-  // ✅ bandera para saber si estamos en “modo filtro”
   const [isFiltering, setIsFiltering] = useState(false);
 
-  // ✅ si NO estamos filtrando, lo mostrado sigue a SWR
+  const [tableResetKey, setTableResetKey] = useState(0);
+
+  const isClearingSelectionRef = useRef(false);
+
+  const clearSelectedIds = () => {
+    isClearingSelectionRef.current = true;
+
+    tableRef.current?.clearSelection();
+    setSelectedIds([]);
+    setTableResetKey((k) => k + 1);
+
+    // suelta el lock en el siguiente tick
+    setTimeout(() => {
+      isClearingSelectionRef.current = false;
+    }, 0);
+  };
+
+  const handleSelectionChange = (ids: Array<string | number>) => {
+    if (isClearingSelectionRef.current) return;
+    setSelectedIds(ids);
+  };
+
   useEffect(() => {
     if (!isFiltering) setEventosList(eventosSwr ?? []);
   }, [eventosSwr, isFiltering]);
@@ -258,45 +279,33 @@ function EventosListView({
       label: "Sucursal",
       accessor: (row) => row.branchEmployee.name,
       filterable: true,
-      render: (row) => <div className="text-uppercase">{row.branchEmployee.name}</div>,
+      render: (row) => (
+        <div className="text-uppercase">{row.branchEmployee.name}</div>
+      ),
     },
   ];
 
-  const handleModify = () => {
-    if (selectedIds.length === 0)
-      return modalError("No hay registros seleccionados");
+  const handleGenerateFaults = () => {
+    modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
+      setMessageLoading(`Generando registros..`);
+      setLoading(true);
 
-    if (selectedIds.length > 1)
-      return modalError("Sólo modificar un registro a la vez");
-
-    const idSel = Number(selectedIds[0]);
-    const registro = eventosList.find((even) => even.checks.id === idSel);
-
-    if (!registro) return modalError("No se encontró el registro seleccionado");
-    console.log("registro: ",registro);
-    
-    setModalModify({
-      show: !modalModify.show,
-      status: registro.checks.status || "",
-      type: registro.checks.type || "",
-    });
-  };  
-  
-
-  const handleDeletePuesto = () => {
-      modalConfirm("¿Seguro que desea generar las faltas del día?", async() =>
-      {
-        setLoading(true)
-        await generateFault().then((r:any)=>{
-              setLoading(false)
-        }).catch((err)=>{
-
-            setLoading(false)
+      await generateFault()
+        .then((r: any) => {
+          mutate();
+          setStatusUpdate("");
+          setTypeUpdate("");
+          clearSelectedIds();
+          setLoading(false);
         })
-      }
-      );
+        .catch((err) => {
+          setStatusUpdate("");
+          setTypeUpdate("");
+          clearSelectedIds();
+          setLoading(false);
+        });
+    });
   };
-
 
   const onSubmitData = async (
     type: string,
@@ -339,7 +348,7 @@ function EventosListView({
     });
 
     setEventosList(changedList);
-    tableRef.current?.clearSelection();
+    clearSelectedIds();
 
     return res;
   };
@@ -356,55 +365,94 @@ function EventosListView({
     if (!res || res.length <= 0) {
       setEventosList([]);
       modalError("No se encontraron datos");
+      clearSelectedIds(); 
       return;
     }
 
     setEventosList(res);
+    clearSelectedIds(); 
   };
 
-  const handleUpdateList = async () => {
+  const handleUpdateList = () => {
     reset({ date: null, idEmployee: null, idUser: null });
     setIsFiltering(false);
-    tableRef.current?.clearSelection();
-    setSelectedIds([]);
-    await mutate(); // opcional: fuerza refresco
-  };  
-  const modal = () => {
-        if (selectedIds.length === 0)
-        return modalError("No hay registros seleccionados");
-
-        if (selectedIds.length > 1)
-          return modalError("Sólo modificar un registro a la vez");
-
-        const idSel = Number(selectedIds[0]);
-        const registro = eventosList.find((even) => even.checks.id === idSel);
-        
-        if (!registro) return modalError("No se encontró el registro seleccionado");
-
-        const nextStatus = String(registro.checks.status ?? "");
-        const nextType = String(registro.checks.type ?? "");
-
-        setStatusUpdate(nextStatus);
-        setTypeUpdate(nextType);
-        
-        setShowModal(true)
+    clearSelectedIds(); 
+    mutate(); // opcional: fuerza refresco
   };
 
+  const modal = () => {
+    if (selectedIds.length === 0) return modalError("No hay registros seleccionados");
+    if (selectedIds.length > 1) return modalError("Sólo modificar un registro a la vez");
+
+    const idSel = Number(selectedIds[0]);
+    const registro = eventosList.find((even) => even.checks.id === idSel);
+
+    if (!registro) return modalError("No se encontró el registro seleccionado");
+
+    const nextStatus = String(registro.checks.status ?? "");
+    const nextType = String(registro.checks.type ?? "");
+
+    setStatusUpdate(nextStatus);
+    setTypeUpdate(nextType);
+
+    setShowModal(true);
+  };
+
+  const modalDelete = async () => {
+    if (selectedIds.length === 0) return modalError("No hay registros seleccionados");
+    if (selectedIds.length > 1) return modalError("Sólo modificar un registro a la vez");
+
+    const idSel = Number(selectedIds[0]);
+    const registro = eventosList.find((even) => even.checks.id === idSel);
+
+    if (!registro) return modalError("No se encontró el registro seleccionado");
+
+    modalConfirm("¿Seguro que desea eliminar este registro?", async () => {
+      setMessageLoading(`Eliminando registro...`);
+      setLoading(true);
+
+      await deleteRegristrosChecador({
+        idRegistro: registro.id,
+        idCheck: registro.checks.id,
+      })
+        .then((res: any) => {
+          mutate();
+          setStatusUpdate("");
+          setTypeUpdate("");
+          clearSelectedIds(); 
+          setLoading(false);
+        })
+        .catch((err) => {
+          mutate();
+          setStatusUpdate("");
+          setTypeUpdate("");
+          clearSelectedIds(); 
+          setLoading(false);
+        });
+    });
+  };
+  
   return (
     <>
-    <ConditionalRender cond={loading}>
-        <Loading message="Generando registros..." />    
-    </ConditionalRender>
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
 
       <ConditionalRender cond={showModal}>
-        <ModalBlur onClose={() => setShowModal(false)} locked={isSubmitting}>
-            <FormUpdateEvent 
-                      show={modalModify.show}
-                      onHide={() => setShowModal(false)}
-                      sendData={onSubmitData}
-                      status={statusUpdate}
-                      type={typeUpdate}
-            />
+        <ModalBlur onClose={() => {
+          clearSelectedIds()
+          setShowModal(false)
+          }} locked={isSubmitting}>
+          <FormUpdateEvent
+            show={modalModify.show}
+            onHide={() => {
+              clearSelectedIds()
+              setShowModal(false)
+            }}
+            sendData={onSubmitData}
+            status={statusUpdate}
+            type={typeUpdate}
+          />
         </ModalBlur>
       </ConditionalRender>
 
@@ -413,32 +461,32 @@ function EventosListView({
           title={`Eventos de checador (${eventosList.length || 0})`}
           actions={[
             {
-              // action: handleModify,
-                 action: modal,
+              action: modal,
               string: (
                 <>
                   <i className="bo bi-pencil me-1"></i>
                   <span>Modificar</span>
                 </>
               ),
-            },            
+            },
             {
-              action: handleDeletePuesto,
+              action: handleGenerateFaults,
               string: (
                 <>
                   <i className="bi bi-calendar-x-fill me-1"></i>
                   <span>Generar faltas</span>
                 </>
               ),
-            },            
-            // {
-            //   action: modal ,
-            //   string: (
-            //     <>
-            //       <span>Mostrar modal</span>
-            //     </>
-            //   ),
-            // }
+            },
+            {
+              action: modalDelete,
+              string: (
+                <>
+                  <i className="bi bi-trash3-fill" />
+                  <span>Eliminar registro </span>
+                </>
+              ),
+            },
           ]}
         >
           <Form onSubmit={handleSubmit(onSubmitSearch)}>
@@ -484,18 +532,20 @@ function EventosListView({
             </fieldset>
           </Form>
         </ListView.Header>
+
         <ListView.Body>
           <TableTemplate
+            key={tableResetKey}
             ref={tableRef}
             getRowId={(row) => row.checks.id}
             data={eventosList ?? []}
             columns={columns}
             viewForm="/app/eventos?view_type=list"
-            onSelectionChange={setSelectedIds}
+            onSelectionChange={handleSelectionChange} 
           />
         </ListView.Body>
       </ListView>
-      
+
       <ModifyModalForm
         show={modalModify.show}
         onHide={() => setModalModify({ ...modalModify, show: false })}
