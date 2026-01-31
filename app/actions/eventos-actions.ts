@@ -1,8 +1,14 @@
 "use server";
 
-import { ActionResponse, ICheckInFeedback } from "@/lib/definitions";
+import { ActionResponse, AttendanceReportItem, ICheckInFeedback } from "@/lib/definitions";
 import { storeAction } from "./storeActions";
 import axios from "axios";
+
+type FetchArgs = {
+  idPeriod?: number;
+  page?: number;
+  limit?: number;
+};
 
 export async function fetchEventos(): Promise<ICheckInFeedback[]> {
   try {
@@ -267,5 +273,43 @@ export async function generateFault(): Promise<string[]> {
   } catch (error: any) {
     console.log(error);
     return [];
+  }
+}
+
+export async function fetchEventosReports(args: FetchArgs = {}): Promise<{
+  data: AttendanceReportItem[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}> {
+  try {
+    const { API_URL, apiToken, session } = await storeAction();
+
+    let url = `${API_URL}/checador/reports/${args.idPeriod}`;
+
+    if (session?.role === "CHECADOR") url += `?idUser=${session?.id}`;
+
+    const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    return response.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+      return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }

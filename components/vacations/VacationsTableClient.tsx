@@ -13,7 +13,6 @@ import { Vacations } from "@/lib/definitions";
 import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
 
 export default function VacationsTableClient({
-  
   vacations,
   total,
   page,

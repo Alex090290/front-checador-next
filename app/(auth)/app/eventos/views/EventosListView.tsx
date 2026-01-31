@@ -287,7 +287,7 @@ function EventosListView({
 
   const handleGenerateFaults = () => {
     modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
-      setMessageLoading(`Generando registros..`);
+      setMessageLoading(`Generando registros...`);
       setLoading(true);
 
       await generateFault()
@@ -354,6 +354,8 @@ function EventosListView({
   };
 
   const onSubmitSearch: SubmitHandler<TSearchInputs> = async (data) => {
+    setMessageLoading(`Buscando registros...`);
+    setLoading(true);
     const res = await searchEventosParams({
       ...data,
       idEmployee: data.idEmployee ? Number(data.idEmployee) : null,
@@ -364,6 +366,7 @@ function EventosListView({
 
     if (!res || res.length <= 0) {
       setEventosList([]);
+      setLoading(false);
       modalError("No se encontraron datos");
       clearSelectedIds(); 
       return;
@@ -371,13 +374,19 @@ function EventosListView({
 
     setEventosList(res);
     clearSelectedIds(); 
+    setLoading(false);
   };
 
   const handleUpdateList = () => {
+    setMessageLoading(`Cargando datos...`);
+    setLoading(true);
     reset({ date: null, idEmployee: null, idUser: null });
     setIsFiltering(false);
     clearSelectedIds(); 
     mutate(); // opcional: fuerza refresco
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
   };
 
   const modal = () => {

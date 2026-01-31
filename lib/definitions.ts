@@ -545,3 +545,42 @@ export interface IOvertime {
   status: "APPROVED" | "REFUSED" | "PENDING";
   createdAt: string;
 }
+
+export interface ICurrentPeriod {
+		_id: string;
+		id: number;
+		year: string;
+		numberPeriod: number;
+		description: string;
+		dateInit: string;
+		dateEnd: string;
+		payrollReport: boolean;
+		createdAt: string;
+		updatedAt: string;
+	}
+
+export interface EmployeeStats {
+  id: number;
+  name: string;
+  lastName: string;
+  idDepartment: number;
+  branch: number;
+  status: number;
+}
+
+export interface FaultStatsByStatus {
+  [status: string]: number; // ej: { ausencia: 4 }
+}
+
+export interface AttendanceReportItem {
+  totalChecks: number;
+  lunchExcessMinutes: number;
+  lunchExcessTimes: number;
+  statsByStatus: FaultStatsByStatus;
+  faultsDays: string[]; // "YYYY-MM-DD"
+  totalFaults: number;
+  employee: EmployeeStats;
+  idEmployee: number;
+  totalRecords: number;
+  usersCount: number;
+}
