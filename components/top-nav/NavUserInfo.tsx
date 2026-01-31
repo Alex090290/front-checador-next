@@ -9,6 +9,7 @@ import { loadAvatar } from "@/app/actions/user-actions";
 import { useSearchParams } from "next/navigation";
 import { getCurrentPeriod } from "@/app/actions/periods-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
+import moment from "moment-timezone";
 
 function NavUserInfo() {
   const { data: session } = useSession();
@@ -107,25 +108,52 @@ function NavUserInfo() {
       )}
     </Button>
 
-    {/* ✅ Periodo/Año compactos */}
-    <div className="d-none d-md-flex align-items-center gap-2 ms-1">
-      <span className="text-muted small text-uppercase">Periodo:</span>
-      <span className="fw-semibold small text-uppercase">
-        {currentPeriod?.description ?? "—"}
-      </span>
+{/* ✅ Periodo/Año/Fechas compactos */}
+<div className="d-none d-md-flex align-items-center gap-2 ms-1">
+  <span className="text-muted small text-uppercase">Periodo:</span>
+  <span className="fw-semibold small text-uppercase">
+    {currentPeriod?.description ?? "—"}
+  </span>
 
-      <span className="text-muted small">·</span>
+  <span className="text-muted small">·</span>
 
-      <span className="text-muted small text-uppercase">Año:</span>
-      <span className="fw-semibold small">{currentPeriod?.year ?? "—"}</span>
-    </div>
+  {/* <span className="text-muted small text-uppercase">Año:</span>
+  <span className="fw-semibold small">{currentPeriod?.year ?? "—"}</span>
 
-    {/* ✅ En móvil: un solo renglón compactado */}
-    <div className="d-flex d-md-none align-items-center ms-1">
-      <span className="badge bg-secondary text-uppercase">
-        {currentPeriod?.description ?? "—"} · {currentPeriod?.year ?? "—"}
-      </span>
-    </div>
+  <span className="text-muted small">·</span> */}
+
+  <span className="text-muted small text-uppercase">Inicio:</span>
+  <span className="fw-semibold small">
+    {currentPeriod?.dateInit
+      ? moment.utc(currentPeriod.dateInit).format("DD/MM/YYYY")
+      : "—"}
+  </span>
+
+  <span className="text-muted small">·</span>
+
+  <span className="text-muted small text-uppercase">Fin:</span>
+  <span className="fw-semibold small">
+    {currentPeriod?.dateEnd
+      ? moment.utc(currentPeriod.dateEnd).format("DD/MM/YYYY")
+      : "—"}
+  </span>
+</div>
+
+{/* ✅ En móvil: un solo renglón compactado */}
+<div className="d-flex d-md-none align-items-center ms-1">
+  <span className="badge bg-secondary text-uppercase">
+    {currentPeriod?.description ?? "—"} · {currentPeriod?.year ?? "—"}
+    {" · "}
+    {currentPeriod?.dateInit
+      ? moment.utc(currentPeriod.dateInit).format("DD/MM/YYYY")
+      : "—"}
+    {" - "}
+    {currentPeriod?.dateEnd
+      ? moment.utc(currentPeriod.dateEnd).format("DD/MM/YYYY")
+      : "—"}
+  </span>
+</div>
+
   </Stack>
 );
 

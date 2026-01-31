@@ -35,12 +35,14 @@ export default function AttendanceTable({
   total,
   page,
   limit,
+  year
 }: {
   id: string;
   data: AttendanceReportRow[];
   total: number;
   page: number;
   limit: number;
+  year: string;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
@@ -49,8 +51,8 @@ export default function AttendanceTable({
 
   const goToPage = (nextPage: number) => {
     const params = new URLSearchParams(sp.toString());
-    params.set("view_type", "list");
-    params.set("id", "null");
+    params.set("id", id);
+    params.set("year", `${year}`);
     params.set("page", String(nextPage));
     params.set("limit", String(limit));
     router.push(`/app/attendanceReport?${params.toString()}`);
@@ -89,16 +91,6 @@ export default function AttendanceTable({
         type: "number",
         render: (row) => (
           <div className="text-center fw-semibold">{row.totalRecords}</div>
-        ),
-      },
-      {
-        key: "usersCount",
-        label: "Usuarios",
-        accessor: (row) => row.usersCount,
-        filterable: true,
-        type: "number",
-        render: (row) => (
-          <div className="text-center fw-semibold">{row.usersCount}</div>
         ),
       },
       {
@@ -144,31 +136,7 @@ export default function AttendanceTable({
         render: (row) => (
           <div className="text-center fw-semibold">{row.lunchExcessTimes}</div>
         ),
-      },
-      {
-        key: "statsByStatus",
-        label: "Stats",
-        accessor: (row) => JSON.stringify(row.statsByStatus ?? {}),
-        filterable: true,
-        type: "string",
-        render: (row) => {
-          const entries = Object.entries(row.statsByStatus ?? {});
-          if (entries.length === 0) return <div className="text-center">—</div>;
-
-          return (
-            <div className="d-flex flex-wrap gap-2 justify-content-center">
-              {entries.map(([k, v]) => (
-                <span
-                  key={k}
-                  className="badge text-bg-secondary text-uppercase"
-                >
-                  {k}: {v}
-                </span>
-              ))}
-            </div>
-          );
-        },
-      },
+      },  
     ],
     []
   );

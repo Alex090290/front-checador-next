@@ -296,7 +296,7 @@ export async function fetchEventosReports(args: FetchArgs = {}): Promise<{
         },
       })
       .then((res) => {
-        return res.data;
+        return res;
       })
       .catch((err) => {
         throw new Error(
