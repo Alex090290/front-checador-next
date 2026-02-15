@@ -285,27 +285,28 @@ function EventosListView({
     },
   ];
 
-  const handleGenerateFaults = () => {
-    modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
-      setMessageLoading(`Generando registros...`);
-      setLoading(true);
+const handleGenerateFaults = () => {
+  modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
+    setMessageLoading(`Generando registros...`);
+    setLoading(true);
 
-      await generateFault()
-        .then((r: any) => {
-          mutate();
-          setStatusUpdate("");
-          setTypeUpdate("");
-          clearSelectedIds();
-          setLoading(false);
-        })
-        .catch((err) => {
-          setStatusUpdate("");
-          setTypeUpdate("");
-          clearSelectedIds();
-          setLoading(false);
-        });
-    });
-  };
+    await generateFault()
+      .then(() => {
+        mutate();
+        setStatusUpdate("");
+        setTypeUpdate("");
+        clearSelectedIds();
+        setLoading(false);
+      })
+      .catch(() => {
+        setStatusUpdate("");
+        setTypeUpdate("");
+        clearSelectedIds();
+        setLoading(false);
+      });
+  });
+};
+
 
   const onSubmitData = async (
     type: string,
@@ -408,8 +409,11 @@ function EventosListView({
   };
 
   const modalDelete = async () => {
-    if (selectedIds.length === 0) return modalError("No hay registros seleccionados");
-    if (selectedIds.length > 1) return modalError("Sólo modificar un registro a la vez");
+    if (selectedIds.length === 0)
+      return modalError("No hay registros seleccionados");
+
+    if (selectedIds.length > 1)
+      return modalError("Sólo modificar un registro a la vez");
 
     const idSel = Number(selectedIds[0]);
     const registro = eventosList.find((even) => even.checks.id === idSel);
@@ -417,29 +421,30 @@ function EventosListView({
     if (!registro) return modalError("No se encontró el registro seleccionado");
 
     modalConfirm("¿Seguro que desea eliminar este registro?", async () => {
-      setMessageLoading(`Eliminando registro...`);
+      setMessageLoading("Eliminando registro...");
       setLoading(true);
 
-      await deleteRegristrosChecador({
-        idRegistro: registro.id,
-        idCheck: registro.checks.id,
-      })
-        .then((res: any) => {
-          mutate();
-          setStatusUpdate("");
-          setTypeUpdate("");
-          clearSelectedIds(); 
-          setLoading(false);
-        })
-        .catch((err) => {
-          mutate();
-          setStatusUpdate("");
-          setTypeUpdate("");
-          clearSelectedIds(); 
-          setLoading(false);
+      try {
+        await deleteRegristrosChecador({
+          idRegistro: registro.id,
+          idCheck: registro.checks.id,
         });
+
+        mutate();
+        setStatusUpdate("");
+        setTypeUpdate("");
+        clearSelectedIds();
+      } catch {
+        mutate();
+        setStatusUpdate("");
+        setTypeUpdate("");
+        clearSelectedIds();
+      } finally {
+        setLoading(false);
+      }
     });
   };
+
   
   return (
     <>

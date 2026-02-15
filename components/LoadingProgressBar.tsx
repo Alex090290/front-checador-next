@@ -1,6 +1,6 @@
 "use client";
 
-import { ProgressBar, Spinner } from "react-bootstrap";
+import { ProgressBar } from "react-bootstrap";
 
 export default function LoadingProgressBar({
   message = "Cargando...",

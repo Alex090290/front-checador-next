@@ -25,7 +25,7 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import ModalAddDocuments from "./ModalUploadDocuments";
 import InhabilityDocCard from "./InhabilityDocumentCard";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import DocumetCitt from "./DocumetCitt";
+// import DocumetCitt from "./DocumetCitt";
 
 type TInputs = {
   idEmployee: number | null;

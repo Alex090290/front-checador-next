@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PeriodVacation, Vacations } from "@/lib/definitions";
-import { Badge, Button, Card, Col, Container, Row, Table } from "react-bootstrap";
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Row,
+  Table,
+} from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import SignaturesVacationView from "@/app/(auth)/app/vacations/views/SignaturesVacationView";
@@ -56,6 +64,12 @@ function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
   }
 }
 
+type DayBreakdown = {
+  id: number;
+  day?: string | Date | null;
+  fortnightlyPeriod?: string | number | null;
+};
+
 export default function ShowInfoVacation({
   vacation,
 }: {
@@ -68,6 +82,65 @@ export default function ShowInfoVacation({
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
   const [periods, setPeriods] = useState<PeriodVacation[]>([]);
 
+  // ✅ Estos cálculos quedan ANTES del early return para no romper hooks
+  const daysList: DayBreakdown[] = Array.isArray(vacation?.daysdaysBrokenDown)
+    ? (vacation?.daysdaysBrokenDown as DayBreakdown[])
+    : [];
+
+  const signatures = Array.isArray(vacation?.signatures)
+    ? vacation!.signatures
+    : [];
+
+  const getSignatureEmployee = () => {
+    const sign = vacation?.signatures?.filter(
+      (f) => f.idSignatory === Number(session?.uid?.idEmployee)
+    )?.[0];
+
+    return sign?.url !== "";
+  };
+
+  const showLeaderApprove =
+    vacation?.idLeader === Number(session?.uid?.idEmployee) &&
+    vacation?.leaderApproval !== "APPROVED";
+
+  const showDohApprove =
+    session?.uid?.idEmployee === vacation?.idPersonDoh &&
+    vacation?.dohApproval !== "APPROVED";
+
+  const showEmployeeSign =
+    session?.uid?.idEmployee === vacation?.employee?.id &&
+    !getSignatureEmployee();
+
+  const showAnyActions = useMemo(() => {
+    return showLeaderApprove || showDohApprove || showEmployeeSign || true; // Descargar siempre
+  }, [showLeaderApprove, showDohApprove, showEmployeeSign]);
+
+  const getPeriods = useCallback(async () => {
+    try {
+      const idEmp = vacation?.idEmployee;
+
+      if (!idEmp) {
+        setPeriods([]);
+        return;
+      }
+
+      const res = await fetchPeriods({
+        idEmployee: Number(idEmp),
+      });
+
+      const nextPeriods = (res ?? []) as PeriodVacation[];
+      setPeriods(nextPeriods);
+    } catch (error) {
+      console.error(error);
+      setPeriods([]);
+    }
+  }, [vacation?.idEmployee]);
+
+  useEffect(() => {
+    getPeriods();
+  }, [getPeriods]);
+
+  // ✅ Early return ahora va DESPUÉS de los hooks
   if (!vacation) {
     return (
       <Card className="border-0">
@@ -83,26 +156,6 @@ export default function ShowInfoVacation({
   const overallStatus = vacation.status ?? "PENDING";
   const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy HH:mm");
 
-  const daysList = Array.isArray(vacation.daysdaysBrokenDown)
-    ? vacation.daysdaysBrokenDown
-    : [];
-
-  const getSignatureEmployee = () => {
-    const sign = vacation?.signatures?.filter(
-      (f) => f.idSignatory === Number(session?.uid?.idEmployee)
-    )?.[0];
-
-    return sign?.url !== "";
-  };
-
-  const showLeaderApprove =
-    vacation?.idLeader === Number(session?.uid?.idEmployee) &&
-    vacation.leaderApproval !== "APPROVED";
-  
-  const showDohApprove = session?.uid?.idEmployee === vacation?.idPersonDoh && vacation.dohApproval !== 'APPROVED';
-
-  const showEmployeeSign = session?.uid?.idEmployee === vacation?.employee?.id && !getSignatureEmployee();
-
   const handleApprove = () => setApproveModal(true);
   const handleSignatureDoh = () => setSignatureDohModal(true);
   const handleDownloadPDF = () => setVacationPDFModal(true);
@@ -112,36 +165,6 @@ export default function ShowInfoVacation({
     // TODO: conectar flujo de firma empleado
   };
 
-  const signatures = Array.isArray(vacation.signatures) ? vacation.signatures : [];
-
-  const showAnyActions = useMemo(() => {
-    return showLeaderApprove || showDohApprove || showEmployeeSign || true; // Descargar siempre
-  }, [showLeaderApprove, showDohApprove, showEmployeeSign]);
-
-  const getPeriods = useCallback(async () => {
-    try {
-      if (!vacation.idEmployee) {
-        setPeriods([]);
-        return;
-      }
-
-      const res = await fetchPeriods({
-        idEmployee: Number(vacation.idEmployee),
-      });
-
-      const nextPeriods = (res ?? []) as PeriodVacation[];
-      setPeriods(nextPeriods);
-
-    } catch (error) {
-      console.error(error);
-      setPeriods([]);
-    }
-  }, []);
-
-    useEffect(() => {
-      getPeriods();
-    }, [getPeriods]);
-  
   return (
     <>
       <Card className="border-0 h-100">
@@ -176,7 +199,9 @@ export default function ShowInfoVacation({
                         Periodo Vacacional
                       </div>
                       <div className="fw-semibold text-uppercase">
-                        {formatDate(vacation.period.dateInitPeriod, "dd/MM/yyyy")} - {formatDate(vacation.period.dateEndPeriod, "dd/MM/yyyy")}
+                        {formatDate(vacation.period.dateInitPeriod, "dd/MM/yyyy")}{" "}
+                        -{" "}
+                        {formatDate(vacation.period.dateEndPeriod, "dd/MM/yyyy")}
                       </div>
                     </div>
 
@@ -224,8 +249,11 @@ export default function ShowInfoVacation({
                           <i className="bi bi-filetype-pdf me-2" />
                           Descargar
                         </Button>
-                        <DeleteleVacation idRequest={vacation.id} idPeriod={Number(vacation.idPeriod)}/>
 
+                        <DeleteleVacation
+                          idRequest={vacation.id}
+                          idPeriod={Number(vacation.idPeriod)}
+                        />
                       </div>
                     )}
                   </Card.Body>
@@ -278,7 +306,6 @@ export default function ShowInfoVacation({
                                   {fullName(vacation.leader)}
                                 </div>
                               </div>
-    
                             </div>
                           </Card.Body>
                         </Card>
@@ -330,7 +357,7 @@ export default function ShowInfoVacation({
                                 <div className="fw-semibold">
                                   {safeDate(vacation.dateEnd)}
                                 </div>
-                              </Col>                              
+                              </Col>
                             </Row>
                           </Card.Body>
                         </Card>
@@ -344,7 +371,9 @@ export default function ShowInfoVacation({
               <Col xs={12} lg={4}>
                 <Card className="border-0 h-100">
                   <Card.Header className="table-active border-0">
-                    <div className="fw-semibold text-uppercase">Días solicitados</div>
+                    <div className="fw-semibold text-uppercase">
+                      Días solicitados
+                    </div>
                   </Card.Header>
                   <Card.Body className="p-0">
                     {daysList.length === 0 ? (
@@ -360,10 +389,12 @@ export default function ShowInfoVacation({
                           </tr>
                         </thead>
                         <tbody>
-                          {daysList.map((d: any) => (
+                          {daysList.map((d) => (
                             <tr key={d.id}>
                               <td className="fw-semibold">{safeDate(d.day)}</td>
-                              <td className="text-end">{d.fortnightlyPeriod ?? "—"}</td>
+                              <td className="text-end">
+                                {d.fortnightlyPeriod ?? "—"}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
