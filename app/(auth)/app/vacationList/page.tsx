@@ -1,4 +1,6 @@
 import ListVacationsAll from "@/app/(auth)/app/vacationList/views/ListVacations";
+import Loading from "@/components/LoadingSpinner";
+import { Suspense } from "react";
 
 // app/(auth)/app/vacationList
 type SearchParams = {
@@ -19,7 +21,10 @@ export default function PageVacations({
   const limit = searchParams?.limit ?? "20";
     
   return (
-    <ListVacationsAll id={id} limit={limit} page={page} />
+        <Suspense fallback={<Loading message="Cargando datos..." />}>
+           <ListVacationsAll id={id} limit={limit} page={page} />
+        </Suspense>
+
   );
 }
  

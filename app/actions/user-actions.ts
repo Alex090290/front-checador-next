@@ -9,10 +9,11 @@ import {
   UserRole,
 } from "@/lib/definitions";
 import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 import { storeAction } from "./storeActions";
 import { createUserImage } from "./image-field-actions";
+import { ApiError } from "next/dist/server/api-utils";
 
 export async function userLogin({
   email,
@@ -33,16 +34,37 @@ export async function userLogin({
       message: "Success",
       data: true,
     };
+  } catch (error: unknown) {
+    // Auth.js / NextAuth suele lanzar CredentialsSignin cuando authorize retorna null
+    const err = error as {
+      name?: string;
+      message?: string;
+      cause?: unknown;
+      type?: string;
+      code?: string;
+    };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
+    const causeMsg =
+      typeof err.cause === "object" && err.cause !== null && "message" in err.cause
+        ? String((err.cause as { message?: unknown }).message ?? "")
+        : "";
+
+    if (err.name === "CredentialsSignin" || err.type === "CredentialsSignin" || err.code === "credentials") {
+      return {
+        success: false,
+        message: "Credenciales inválidas",
+        data: false,
+      };
+    }
+
     return {
       success: false,
-      message: String(error?.cause?.err ?? error.message),
+      message: causeMsg || err.message || "Error inesperado",
+      data: false,
     };
   }
 }
+
 
 export async function userLoginCredentials({
   email,
@@ -54,34 +76,27 @@ export async function userLoginCredentials({
   try {
     const { API_URL } = await storeAction();
 
-    const response = await axios
-      .post(`${API_URL}/users/login`, {
-        email,
-        password,
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+    const { data } = await axios.post<ApiResponse<string>>(
+      `${API_URL}/users/login`,
+      { email, password }
+    );
 
     return {
       success: true,
-      message: response.data,
-      data: response,
+      message: data?.message ?? "OK",
+      data,
     };
+  } catch (error: unknown) {
+    const err = error as AxiosError<ApiError>;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error.mesaage);
+    const apiMsg =
+      err.response?.data?.message ??
+      err.message ??
+      "Error en la respuesta";
+
     return {
       success: false,
-      message: error.message,
+      message: apiMsg,
     };
   }
 }
@@ -466,31 +481,40 @@ export async function reEntryUser({
 export async function loadAvatar(): Promise<ActionResponse<string>> {
   try {
     const { API_URL: apiUrl, apiToken } = await storeAction();
-    // Obtener imagen en binario
+
     if (!apiToken) throw new Error("TOKEN IS REQUIRED");
+
     const resImg = await axios.get(`${apiUrl}/users/imgProfile`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
+      headers: { Authorization: `Bearer ${apiToken}` },
       responseType: "arraybuffer",
+      validateStatus: () => true, // para manejar 400 sin throw automático
     });
 
-    // Convertir a base64
-    const base64 = Buffer.from(resImg.data, "binary").toString("base64");
-    const imageBase64Url = `data:image/jpeg;base64,${base64}`;
+    if (resImg.status !== 200) {
+      // aquí verás el motivo real que manda tu backend
+      const raw = Buffer.from(resImg.data ?? "").toString("utf8");
+      return {
+        success: false,
+        message: raw || `Error al cargar avatar (status ${resImg.status})`,
+      };
+    }
+
+    const contentType = resImg.headers?.["content-type"] ?? "image/jpeg";
+    const base64 = Buffer.from(resImg.data).toString("base64");
+    const imageBase64Url = `data:${contentType};base64,${base64}`;
 
     return {
       success: true,
       message: "Imagen cargada",
       data: imageBase64Url,
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // si quieres, aquí puedes tipar AxiosError también
     console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: "Error al cargar avatar",
     };
   }
 }
+

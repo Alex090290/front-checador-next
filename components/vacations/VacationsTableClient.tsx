@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "react-bootstrap";
 import { formatDate } from "date-fns";
@@ -11,6 +11,8 @@ import { TableTemplateColumn } from "../templates/TableTemplate";
 
 import { Vacations } from "@/lib/definitions";
 import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 
 export default function VacationsTableClient({
   vacations,
@@ -24,12 +26,25 @@ export default function VacationsTableClient({
   page: number;
   limit: number;
 }) {
+  
   const router = useRouter();
   const sp = useSearchParams();
-
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState('');
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
+  
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      setMessageLoading("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sp.toString()]);
+
   const goToPage = (nextPage: number) => {
+    setLoading(true);
+    setMessageLoading('Cargando');
     const params = new URLSearchParams(sp.toString());
     params.set("view_type", "list");
     params.set("id", "null");
@@ -112,7 +127,10 @@ export default function VacationsTableClient({
     []
   );
 
-  return (
+  return <>
+    <ConditionalRender cond={loading}>
+      <Loading message={messageLoading} />
+    </ConditionalRender>
     <ListView>
       <ListView.Header
         title={`Vacaciones (${total})`}
@@ -133,5 +151,5 @@ export default function VacationsTableClient({
         />
       </ListView.Body>
     </ListView>
-  );
+  </>
 }

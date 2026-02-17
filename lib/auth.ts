@@ -11,30 +11,27 @@ export const authOptions = {
         password: {},
       },
       authorize: async (credentials) => {
-        const { email, password } = credentials;
-        let user = null;
+        const email = String(credentials?.email ?? "").trim();
+        const password = String(credentials?.password ?? "");
 
-        console.log("Validando credenciales...");
-        user = await userLoginCredentials({
-          email: email as string,
-          password: password as string,
-        });
+        if (!email || !password) return null;
 
-        if (!user.success) {
-          throw new Error(user.message);
-        }
+        const user = await userLoginCredentials({ email, password });
 
-        if (user.data?.message !== "OK") {
-          throw new Error("Credenciales inválidas");
-        }
+        if (!user.success) return null;
 
-        console.log("Cargando datos de sesión...");
-        const meData = await getUserData({ apiToken: user.data.data });
+        if (user.data?.message !== "OK") return null;
 
+        const token = user.data?.data;
+        if (!token) return null;
+
+        const meData = await getUserData({ apiToken: token });
         const userData = meData.data as unknown as User;
 
+        if (!userData?.id) return null;
+
         return {
-          apiToken: user.data.data,
+          apiToken: token,
           id: String(userData.id),
           name: userData.name,
           email: userData.email,
@@ -50,7 +47,7 @@ export const authOptions = {
   session: {
     strategy: "jwt",
     maxAge: 10 * 365 * 24 * 60 * 60,
-    updateAge: 60 * 5, // Opcional: actualiza el token cada 5 minutos si hay actividad
+    updateAge: 60 * 5,
   },
   secret: process.env.AUTH_SECRET,
   trustHost: true,
