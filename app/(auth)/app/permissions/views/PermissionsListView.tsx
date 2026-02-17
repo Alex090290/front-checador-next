@@ -91,7 +91,7 @@ function PermissionsListView({
               bg={
                 status === "APROBADO"
                   ? "success"
-                  : status === "PENDIENTE"
+                  : status === "PENDIENTE" 
                   ? "warning"
                   : "danger"
               }
