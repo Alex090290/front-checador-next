@@ -12,7 +12,7 @@ export default async function ListVacationsAll({
   limit?: string;
 }) {
 
-    if (id && id !== "null") {
+  if (id && id !== "null") {
     return <VacationsInfoOne id={id} />;
   }
 
