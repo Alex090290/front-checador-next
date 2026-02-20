@@ -46,7 +46,7 @@ export default function VacationsTableClient({
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
-    setMessageLoading('Cargando');
+    setMessageLoading('Cargando...');
     const params = new URLSearchParams(sp.toString());
     params.set("view_type", "list");
     params.set("id", "null");
@@ -129,7 +129,9 @@ export default function VacationsTableClient({
   );
 
   const handleCreate = () => {
-    setButtonCreate(true);
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/vacationList/create");
   };
 
 

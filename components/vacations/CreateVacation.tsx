@@ -53,7 +53,7 @@ function CreateVacationComponent({
     getValues,
     formState: { isDirty, isSubmitting },
   } = useForm<TInputs>();
-
+  
   const dateInit = watch("dateInit");
   const idEmployeeSelected = watch("idEmployee");
   const idPeriodSelected = watch("idPeriod");

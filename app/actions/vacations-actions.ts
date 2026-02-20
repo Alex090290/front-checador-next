@@ -92,9 +92,7 @@ export async function fetchVacations(args: FetchVacationsArgs = {}): Promise<{
     if (args.personDoh) params.set("personDoh", String(args.personDoh));
     if (args.employee) params.set("employee", String(args.employee));
 
-    /**
-     * ✅ reglas por sesión (estas deben dominar para que no puedan listar de más)
-     */
+
     if (session?.role === "EMPLOYEE" && session.isDoh === false) {
       params.set("employee", String(session.idEmployee));
       params.delete("leader");
@@ -107,7 +105,6 @@ export async function fetchVacations(args: FetchVacationsArgs = {}): Promise<{
       params.delete("personDoh");
     }
 
-    // si es DOH, no forzamos filtros (puede ver todo)
     const url = `${apiUrl}/vacations/listAll?${params.toString()}`;
 
     const response = await axios
