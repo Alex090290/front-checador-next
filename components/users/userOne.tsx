@@ -104,52 +104,67 @@ export default function ShowInfoOneUser({
       <Card className="border-0 h-100">
       <Card.Body className="p-3 p-md-4">
         <Container fluid className="px-0">
-          {/* Header */}
-          <Row className="g-3 align-items-start align-items-md-center">
-            <Col xs={12} md={8}>
-              <div className="d-flex flex-wrap align-items-center gap-2">
-                <h4 className="m-0 fw-bold">{fullName(user)}</h4>
+        {/* Header */}
+        <Row className="g-3 align-items-start">
+        <Col xs={12}>
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+
+            {/* IZQUIERDA */}
+            <div>
+                <div className="d-flex align-items-center gap-2">
+                <h4 className="m-0 fw-bold text-capitalize">
+                    {fullName(user)}
+                </h4>
 
                 <Badge bg={statusVariant(user.status)}>
-                  {statusLabel(user.status)}
+                    {statusLabel(user.status)}
                 </Badge>
-              </div>
+                </div>
 
-              <div className="text-muted mt-2">
+                <div className="text-muted mt-2">
                 <div className="small">Información general del usuario</div>
-              </div>
-            </Col>
+                </div>
+            </div>
 
-            <Col xs={12} md={4}>
-              <Card className="border-0 table-active">
-                <Card.Body className="py-2 px-3">
-                  <div className="text-muted small text-uppercase">
+            {/* DERECHA */}
+            <div className="d-flex flex-column align-items-md-end gap-2">
+
+                {/* BOTONES ARRIBA */}
+                <div className="d-flex flex-wrap gap-2">
+                <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => setShowUpdateUserModal(true)}
+                >
+                    <i className="bi bi-pencil me-2" />
+                    Actualizar usuario
+                </Button>
+
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setShowPasswordModal(true)}
+                >
+                    <i className="bi bi-key-fill me-2" />
+                    Actualizar contraseña
+                </Button>
+                </div>
+
+                {/* FECHA ABAJO */}
+                <div className="text-md-end">
+                <div className="text-muted small text-uppercase">
                     Fecha de creación
-                  </div>
-                  <div className="fw-semibold">{user.createdAt ?? "—"}</div>
+                </div>
+                <div className="fw-semibold">
+                    {user.createdAt ?? "—"}
+                </div>
+                </div>
 
-                  <div className="d-flex flex-column gap-2 mt-3">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={() => setShowUpdateUserModal(true)}
-                    >
-                      <i className="bi bi-pencil me-2" />
-                      Actualizar usuario
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => setShowPasswordModal(true)}
-                    >
-                      <i className="bi bi-key-fill me-2" />
-                      Actualizar contraseña
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+            </div>
+
+            </div>
+        </Col>
+        </Row>
 
           {/* Main info */}
           <Row className="g-3 mt-1">
