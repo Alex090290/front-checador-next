@@ -37,7 +37,6 @@ type ModalAction = {
 };
 
 function FormUpdateEvent({
-  show,
   onHide,
   sendData,
   status: currentStatus,

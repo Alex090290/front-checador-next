@@ -367,6 +367,7 @@ function UsersFormView({
       </FormView>
       <ChangePasswordModal
         show={modalChangePassword}
+        userId={Number.isFinite(id) ? id : null}
         onHide={() => setModalChangePassword(!modalChangePassword)}
       />
     </>

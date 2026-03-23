@@ -65,6 +65,7 @@ function NavUserInfo() {
   <Stack direction="horizontal" gap={2} className="align-items-center">
     <Dropdown>
       <Dropdown.Toggle
+        id="nav-user-dropdown-toggle"
         variant={darkMode ? "dark" : "light"}
         className="border-0 d-flex align-items-center"
       >

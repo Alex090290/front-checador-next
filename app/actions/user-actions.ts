@@ -12,8 +12,26 @@ import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios, { AxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 import { storeAction } from "./storeActions";
+import { isNonEmptyImagePayload } from "@/lib/isNonEmptyImagePayload";
 import { createUserImage } from "./image-field-actions";
 import { ApiError } from "next/dist/server/api-utils";
+
+export type UsersPagedResult = {
+  data: User[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+};
+
+type FetchUsersArgs = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  leader?: number;
+  personDoh?: number;
+  employee?: number;
+};
 
 export async function userLogin({
   email,
@@ -64,7 +82,6 @@ export async function userLogin({
     };
   }
 }
-
 
 export async function userLoginCredentials({
   email,
@@ -139,6 +156,57 @@ export async function getUserData({
       success: false,
       message: error.message,
     };
+  }
+}
+
+export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
+  data: User[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}>  {
+  try {
+    const { apiToken, API_URL: apiUrl, session } = await storeAction();
+
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+    
+    const response = await axios.get(`${apiUrl}/allUsers?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+      const total = Number(response.total ?? 0);
+      const pages = Math.max(Math.ceil(total / limitNum), 1);
+  
+      return {
+        data: response.data ?? [],
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages,
+      };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 
@@ -299,7 +367,8 @@ export async function updateUser({
   phone: PhoneNumberFormat | string | null;
   id: number;
   idEmployee: number | null;
-  imageUrl?: string | null;
+  /** Solo se sube perfil si viene archivo nuevo o string no vacío (p. ej. base64). */
+  imageUrl?: string | File | null;
 }): Promise<string | boolean> {
   const { apiToken, API_URL } = await storeAction();
 
@@ -336,7 +405,9 @@ export async function updateUser({
       );
     });
 
-  await createUserImage({ imageUrl: imageUrl || "" });
+  if (isNonEmptyImagePayload(imageUrl)) {
+    await createUserImage({ imageUrl });
+  }
 
   revalidatePath("/app/users");
   return true;

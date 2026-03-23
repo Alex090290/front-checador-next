@@ -453,10 +453,12 @@ const handleGenerateFaults = () => {
       </ConditionalRender>
 
       <ConditionalRender cond={showModal}>
-        <ModalBlur onClose={() => {
-          clearSelectedIds()
-          setShowModal(false)
-          }} locked={isSubmitting}>
+        <ModalBlur 
+          onClose={() => {
+            clearSelectedIds()
+            setShowModal(false)
+          }} 
+          locked={isSubmitting}>
           <FormUpdateEvent
             show={modalModify.show}
             onHide={() => {

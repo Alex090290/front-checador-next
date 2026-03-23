@@ -1,19 +1,20 @@
 "use server";
 
 import { ActionResponse } from "@/lib/definitions";
+import { isNonEmptyImagePayload } from "@/lib/isNonEmptyImagePayload";
 import { storeToken } from "@/lib/useToken";
 import axios from "axios";
 
 export async function createUserImage({
   imageUrl,
 }: {
-  imageUrl: string;
+  imageUrl: string | File | Blob;
 }): Promise<ActionResponse<string>> {
   const { apiToken, apiUrl } = await storeToken();
 
-  // const formData = new FormData();
-  // const image = formData.get("image") as File;
-  if (!imageUrl) throw new Error("La imagen no fue cargada");
+  if (!isNonEmptyImagePayload(imageUrl)) {
+    throw new Error("La imagen no fue cargada");
+  }
 
   try {
     // Subir imagen al backend
