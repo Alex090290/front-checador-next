@@ -7,45 +7,74 @@ import { storeToken } from "@/lib/useToken";
 import { revalidatePath } from "next/cache";
 import { base64ToBlob } from "@/lib/helpers";
 
-export async function fetchPermissionsByEmployee(): Promise<
-  IPermissionRequest[]
-> {
+type FetchVacationsArgs = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  leader?: number;
+  personDoh?: number;
+  employee?: number;
+};
+
+export async function fetchPermissionsByEmployee(
+  args: FetchVacationsArgs = {}
+): Promise<{
+  data: IPermissionRequest[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}> {
   try {
     const { API_URL: apiUrl, apiToken, session } = await storeAction();
 
-    let query = "";
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
 
-    if (session?.role === "EMPLOYEE" && session.isDoh === false)
-      query += `?employee=${session.idEmployee}`;
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
 
-    if (session?.role !== "EMPLOYEE" && session?.isDoh === false)
-      query += `?leader=${session?.idEmployee}`;
+    // Si luego quieres soportar args.employee/leader/personDoh manual:
+    if (args.employee) params.set("employee", String(args.employee));
+    if (args.leader) params.set("leader", String(args.leader));
+    if (args.personDoh) params.set("personDoh", String(args.personDoh));
+    if (args.status) params.set("status", args.status);
 
-    if (session?.isDoh === true) query += "";
+    // Reglas por rol (mismo estilo que vacations)
+    if (session?.role === "EMPLOYEE" && session.isDoh === false) {
+      params.set("employee", String(session.idEmployee));
+      params.delete("leader");
+      params.delete("personDoh");
+    }
 
-    const response = await axios
-      .get(`${apiUrl}/permissionRequest/list${query}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+    if (session?.role !== "EMPLOYEE" && session?.isDoh === false) {
+      params.set("leader", String(session.idEmployee));
+      params.delete("employee");
+      params.delete("personDoh");
+    }
 
-    return response.data;
+    // DOH ve todo: no forzamos nada
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+    const url = `${apiUrl}/permissionRequest/list?${params.toString()}`;
+
+    const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${apiToken}` },
+      }).then((res) => res.data);
+
+    const total = Number(response.total ?? 0);
+    const pages = Math.max(Math.ceil(total / limitNum), 1);
+
+    return {
+      data: response.data ?? [],
+      total,
+      page: pageNum,
+      limit: limitNum,
+      pages,
+    };
+  } catch (error) {
     console.log(error);
-    return [];
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 

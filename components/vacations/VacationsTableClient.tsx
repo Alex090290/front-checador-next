@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge } from "react-bootstrap";
+import { Badge, Button } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import ListView from "../templates/ListView";
@@ -13,6 +13,7 @@ import { Vacations } from "@/lib/definitions";
 import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import CreateVacationComponent from "./CreateVacation";
 
 export default function VacationsTableClient({
   vacations,
@@ -30,6 +31,7 @@ export default function VacationsTableClient({
   const router = useRouter();
   const sp = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [ buttonCrete, setButtonCreate] = useState(false);
   const [messageLoading, setMessageLoading] = useState('');
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
@@ -44,7 +46,7 @@ export default function VacationsTableClient({
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
-    setMessageLoading('Cargando');
+    setMessageLoading('Cargando...');
     const params = new URLSearchParams(sp.toString());
     params.set("view_type", "list");
     params.set("id", "null");
@@ -53,8 +55,7 @@ export default function VacationsTableClient({
     router.push(`/app/vacationList?${params.toString()}`);
   };
 
-  const columns: TableTemplateColumn<Vacations>[] = useMemo(
-    () => [
+  const columns: TableTemplateColumn<Vacations>[] = useMemo( () => [
       {
         key: "employee",
         label: "Empleado",
@@ -127,15 +128,31 @@ export default function VacationsTableClient({
     []
   );
 
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/vacationList/create");
+  };
+
+
   return <>
     <ConditionalRender cond={loading}>
       <Loading message={messageLoading} />
-    </ConditionalRender>
+    </ConditionalRender>    
+
     <ListView>
-      <ListView.Header
-        title={`Vacaciones (${total})`}
-        formView="/app/vacationList?view_type=form&id=null"
-      />
+
+    <div className="d-flex justify-content-end mb-2">
+      <Button
+        size="sm"
+        variant="primary"
+        className="fw-semibold d-inline-flex align-items-center gap-2"
+        onClick={() => handleCreate()}
+      >
+        <i className="bi bi-plus-lg" />
+        Crear
+      </Button>
+    </div>
 
       <ListView.Body>
         <TableTemplateServer

@@ -7,12 +7,27 @@ import { revalidatePath } from "next/cache";
 import { TInputsEmployee } from "../(auth)/app/employee/definition";
 import { storeAction } from "./storeActions";
 
-export async function fetchEmployees(): Promise<Employee[]> {
+type FetchVacationsArgs = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  leader?: number;
+  personDoh?: number;
+  employee?: number;
+};
+
+export async function fetchEmployees(args: FetchVacationsArgs = {}): Promise<Employee[]> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
-    const response = await axios
-      .get(`${API_URL}/employee/listall`, {
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+
+    const response = await axios.get(`${API_URL}/employee/listall?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },

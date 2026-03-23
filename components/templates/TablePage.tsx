@@ -400,7 +400,7 @@ function TableTemplateServerInner<T>(
       <tfoot className="sticky-bottom">
         <tr style={{ display: total > 0 ? "table-row" : "none" }}>
           <td colSpan={columns.length + 1}>
-            <div className="d-flex justify-content-end align-items-center gap-2">
+            <div className="d-flex justify-content-first align-items-center gap-2">
               <span className="text-muted small">
                 Mostrando {from}-{to} de {total} — Página {page} de {pages}
               </span>

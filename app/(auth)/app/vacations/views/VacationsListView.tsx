@@ -34,8 +34,6 @@ function VacationsListView({
   const router = useRouter();
   const sp = useSearchParams();
 
-  // ✅ faltaba esto (lo usas en el ref)
-  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
   const goToPage = (nextPage: number) => {
     const params = new URLSearchParams(sp.toString());
@@ -124,7 +122,7 @@ function VacationsListView({
     <ListView>
       <ListView.Header
         title={`Vacaciones (${total})`}
-        formView="/app/vacations?view_type=form&id=null" // ✅ botón Nuevo aquí
+        formView="/app/vacations?view_type=form&id=null" 
       />
 
       <ListView.Body>
@@ -136,7 +134,7 @@ function VacationsListView({
           limit={limit}
           onPageChange={(p) => goToPage(p)}
           getRowId={(row) => row.id}
-          viewForm="/app/vacations?view_type=form" // click fila -> form
+          viewForm="/app/vacations?view_type=form"
         />
       </ListView.Body>
     </ListView>
