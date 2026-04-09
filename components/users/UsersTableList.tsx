@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ListView from "../templates/ListView";
 import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { Badge, Form } from "react-bootstrap";
+import { Badge, Button, Form } from "react-bootstrap";
 
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
@@ -28,11 +28,6 @@ const userStatus = {
   3: "eliminado",
 };
 
-type TSearchInputs = {
-  date: string | null;
-  idEmployee: number | null;
-  idUser: number | null;
-};
 
 export type TInputsUser = {
   name: string;
@@ -266,6 +261,11 @@ export default function UserTableClient({
       ),
     },
   ];
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/users/create");
+  };
 
   return (
     <>
@@ -291,7 +291,18 @@ export default function UserTableClient({
         userId={passwordModalUserId}
         onHide={handleClosePasswordModal}
       />
-
+      
+    <div className="d-flex justify-content-between mb-2 mt-2">
+      <Button
+        size="sm"
+        variant="primary"
+        className="fw-semibold d-inline-flex align-items-center gap-2"
+        onClick={() => handleCreate()}
+      >
+        <i className="bi bi-plus-lg" />
+        Crear Usuario
+      </Button>
+    </div>
       <ListView>
         <ListView.Header
           title={`Usuarios (${total})`}
@@ -315,7 +326,7 @@ export default function UserTableClient({
               ),
             },
           ]}
-          formView="/app/users?view_type=form&id=null"
+          // formView="/app/users?view_type=form&id=null"
         />
 
         <ListView.Body>

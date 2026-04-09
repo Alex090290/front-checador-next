@@ -8,6 +8,9 @@ import { TInputsUser } from "@/components/users/UsersTableList";
 import { ActionResponse, Employee, Permission, User } from "@/lib/definitions";
 import { useState } from "react";
 import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
+import { useRouter } from "next/navigation";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
 
 function formatPermission(text?: string | null) {
   if (!text) return "—";
@@ -43,6 +46,10 @@ export default function ShowInfoOneUser({
 }) {
   const [showUpdateUserModal, setShowUpdateUserModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+
+  const router = useRouter();
 
   if (!user) {
     return (
@@ -99,8 +106,48 @@ export default function ShowInfoOneUser({
     };
   };
 
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/users/create");
+  };
+
   return (
     <>
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
+
+  <div className="d-flex flex-wrap align-items-center gap-2 my-2">
+    <Button
+      size="sm"
+      variant="primary"
+      className="fw-semibold d-inline-flex align-items-center gap-2"
+      onClick={handleCreate}
+    >
+      <i className="bi bi-plus-lg" />
+      Crear Usuario
+    </Button>
+
+    <Button
+      size="sm"
+      variant="primary"
+      onClick={() => setShowUpdateUserModal(true)}
+    >
+      <i className="bi bi-pencil me-2" />
+      Actualizar usuario
+    </Button>
+
+    <Button
+      size="sm"
+      variant="secondary"
+      onClick={() => setShowPasswordModal(true)}
+    >
+      <i className="bi bi-key-fill me-2" />
+      Actualizar contraseña
+    </Button>
+  </div>
+
       <Card className="border-0 h-100">
       <Card.Body className="p-3 p-md-4">
         <Container fluid className="px-0">
@@ -129,26 +176,8 @@ export default function ShowInfoOneUser({
             {/* DERECHA */}
             <div className="d-flex flex-column align-items-md-end gap-2">
 
-                {/* BOTONES ARRIBA */}
-                <div className="d-flex flex-wrap gap-2">
-                <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => setShowUpdateUserModal(true)}
-                >
-                    <i className="bi bi-pencil me-2" />
-                    Actualizar usuario
-                </Button>
 
-                <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setShowPasswordModal(true)}
-                >
-                    <i className="bi bi-key-fill me-2" />
-                    Actualizar contraseña
-                </Button>
-                </div>
+                
 
                 {/* FECHA ABAJO */}
                 <div className="text-md-end">

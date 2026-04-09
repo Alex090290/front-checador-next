@@ -13,7 +13,6 @@ import { Vacations } from "@/lib/definitions";
 import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
-import CreateVacationComponent from "./CreateVacation";
 
 export default function VacationsTableClient({
   vacations,
