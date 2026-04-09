@@ -268,11 +268,11 @@ export default function UserTableClient({
   };
 
   return (
-    <>
+    <div className="d-flex flex-column h-100 overflow-hidden">
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
-
+  
       <ConditionalRender cond={showUpdateUserModal && !!selectedUser}>
         <ModalBlur onClose={handleCloseUserFormModal}>
           <FormUpdateUser
@@ -285,66 +285,68 @@ export default function UserTableClient({
           />
         </ModalBlur>
       </ConditionalRender>
-
+  
       <ChangePasswordModal
         show={showPasswordModal}
         userId={passwordModalUserId}
         onHide={handleClosePasswordModal}
       />
-      
-    <div className="d-flex justify-content-between mb-2 mt-2">
-      <Button
-        size="sm"
-        variant="primary"
-        className="fw-semibold d-inline-flex align-items-center gap-2"
-        onClick={() => handleCreate()}
-      >
-        <i className="bi bi-plus-lg" />
-        Crear Usuario
-      </Button>
-    </div>
-      <ListView>
-        <ListView.Header
-          title={`Usuarios (${total})`}
-          actions={[
-            {
-              action: openModifyModal,
-              string: (
-                <>
-                  <i className="bi bi-pencil me-1"></i>
-                  <span>Actualizar usuario</span>
-                </>
-              ),
-            },
-            {
-              action: openChangePasswordModal,
-              string: (
-                <>
-                  <i className="bi bi-key-fill me-1"></i>
-                  <span>Actualizar contraseña</span>
-                </>
-              ),
-            },
-          ]}
-          // formView="/app/users?view_type=form&id=null"
-        />
-
-        <ListView.Body>
-          <TableTemplateServer
-            ref={tableRef}
-            key={tableResetKey}
-            columns={columns}
-            data={users}
-            total={total}
-            page={page}
-            limit={limit}
-            onPageChange={(p) => goToPage(p)}
-            getRowId={(row) => row.id}
-            viewForm="/app/users?view_type=form"
-            onSelectionChange={handleSelectionChange}
+  
+      <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+        <Button
+          size="sm"
+          variant="primary"
+          className="fw-semibold d-inline-flex align-items-center gap-2"
+          onClick={handleCreate}
+        >
+          <i className="bi bi-plus-lg" />
+          Crear Usuario
+        </Button>
+      </div>
+  
+      <div className="flex-grow-1 overflow-hidden">
+        <ListView>
+          <ListView.Header
+            title={`Usuarios (${total})`}
+            actions={[
+              {
+                action: openModifyModal,
+                string: (
+                  <>
+                    <i className="bi bi-pencil me-1"></i>
+                    <span>Actualizar usuario</span>
+                  </>
+                ),
+              },
+              {
+                action: openChangePasswordModal,
+                string: (
+                  <>
+                    <i className="bi bi-key-fill me-1"></i>
+                    <span>Actualizar contraseña</span>
+                  </>
+                ),
+              },
+            ]}
           />
-        </ListView.Body>
-      </ListView>
-    </>
+  
+          <ListView.Body>
+            <TableTemplateServer
+              ref={tableRef}
+              key={tableResetKey}
+              columns={columns}
+              data={users}
+              total={total}
+              page={page}
+              limit={limit}
+              onPageChange={(p) => goToPage(p)}
+              getRowId={(row) => row.id}
+              viewForm="/app/users?view_type=form"
+              onSelectionChange={handleSelectionChange}
+            />
+          </ListView.Body>
+        </ListView>
+      </div>
+    </div>
   );
 }
