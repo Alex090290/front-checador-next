@@ -25,9 +25,6 @@ async function EmployeeMainView({
   id: string;
 }) {
   let employee: Employee | null = null;
-  let employees: Employee[] = [];
-  let departments: Department[] = [];
-  let branches: Branch[] = [];
   let documents: IPeriod[] = [];
   let vacations: Vacations[] = [];
 
@@ -39,14 +36,14 @@ async function EmployeeMainView({
     ]);
   }
 
-  [employees, departments, branches] = await Promise.all([
-    fetchEmployees(),
+  const [employees, departments, branches] = await Promise.all([
+    fetchEmployees({ page: 1, limit: 500 }),
     fetchDepartments(),
     fetchBranches(),
   ]);
 
   if (viewType === "list") {
-    return <CatalogListView employees={employees} />;
+    return <CatalogListView employees={employees.data} />;
   } else if (viewType === "form") {
     return (
       <EmployeeFormView
@@ -54,7 +51,7 @@ async function EmployeeMainView({
         id={id}
         departments={departments || []}
         branches={branches || []}
-        employees={employees || []}
+        employees={employees.data || []}
         documents={documents || []}
         vacations={vacations || []}
       />

@@ -16,7 +16,13 @@ type FetchVacationsArgs = {
   employee?: number;
 };
 
-export async function fetchEmployees(args: FetchVacationsArgs = {}): Promise<Employee[]> {
+export async function fetchEmployees(args: FetchVacationsArgs = {}): Promise<{
+  data: Employee[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+  }> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
@@ -43,12 +49,22 @@ export async function fetchEmployees(args: FetchVacationsArgs = {}): Promise<Emp
         );
       });
 
-    return response.data || [];
+  
+      const total = Number(response.total ?? 0);
+      const pages = Math.max(Math.ceil(total / limitNum), 1);
+  
+      return {
+        data: response.data ?? [],
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages,
+      };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(error);
-    return [];
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 

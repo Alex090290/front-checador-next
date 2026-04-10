@@ -6,20 +6,16 @@ import { fetchEmployees } from "@/app/actions/employee-actions";
 import { fetchUsers } from "@/app/actions/user-actions";
 
 async function EventosMainView({ viewType }: { viewType: string; id: string }) {
-  let eventos: ICheckInFeedback[] = [];
-  let employees: Employee[] = [];
-  let users: User[] = [];
 
-  [eventos, employees, users] = await Promise.all([
+
+  const [eventos, employees, users] = await Promise.all([
     fetchEventos(),
-    fetchEmployees(),
+    fetchEmployees({ page: 1, limit: 500 }),
     fetchUsers(),
   ]);
 
   if (viewType === "list") {
-    return (
-      <EventosListView eventos={eventos} users={users} employees={employees} />
-    );
+    return (<EventosListView eventos={eventos} users={users} employees={employees.data} />);
   } else {
     return <NotFound />;
   }

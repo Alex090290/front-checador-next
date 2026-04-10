@@ -10,14 +10,14 @@ export default async function UserInfoOne({id}:{id:string}){
     const [findUSer, perms, employees] = await Promise.all([
       findUserById({ id: Number(id) }),
       fetchPermissions(),
-      fetchEmployees(),
+      fetchEmployees({ page: 1, limit: 500 }),
     ]);
 
     return <> 
         {/* <Suspense fallback={<Loading message="Cargando datos..." />}>
           <ShowInfoOneUser user={findUSer} perms={perms} employees={employees} />    
         </Suspense> */}
-        <ShowInfoOneUser user={findUSer} perms={perms} employees={employees} />    
+        <ShowInfoOneUser user={findUSer} perms={perms} employees={employees.data} />    
 
     </>
 

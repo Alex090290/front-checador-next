@@ -17,14 +17,13 @@ async function InhabilityMainView({
   id: string;
 }) {
   let inhability: IInability | null = null;
-  let inhabilities: IInability[] = [];
-  let employees: Employee[] = [];
+
 
   if (id && id !== "null") {
     inhability = await getOneInability(Number(id));
   }
 
-  [inhabilities, employees] = await Promise.all([
+  const [inhabilities, employees] = await Promise.all([
     getAllInability(),
     fetchEmployees(),
   ]);
@@ -34,7 +33,7 @@ async function InhabilityMainView({
   } else if (viewType === "form") {
     return (
       <InhabilityFormView
-        employees={employees}
+        employees={employees.data}
         inhability={inhability}
         id={id}
       />

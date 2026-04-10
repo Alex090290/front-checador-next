@@ -12,12 +12,12 @@ export default async function CreateUserPage(){
 
   const [ permissions, employees ] = await Promise.all([
     fetchPermissions(),
-    fetchEmployees(),
+    fetchEmployees({ page: 1, limit: 500 }),
   ]);
 
   return <>
 
-    <CreateUserComponent perms={permissions} employees={employees} />
+    <CreateUserComponent perms={permissions} employees={employees.data} />
 
   </>
 }

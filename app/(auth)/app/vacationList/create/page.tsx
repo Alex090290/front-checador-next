@@ -13,7 +13,7 @@ export default async function CreateVacation() {
 
   return <>
         <Suspense fallback={<Loading message="Cargando datos..." />}>
-            <CreateVacationComponent employees={employeesRes} />
+            <CreateVacationComponent employees={employeesRes.data} />
         </Suspense>
 
   </>

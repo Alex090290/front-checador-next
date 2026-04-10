@@ -31,7 +31,7 @@ export default async function ListAllUsers({
       page={pageParse}
       limit={limitParse}
       perms={permissions ?? []}
-      employees={employees ?? []}
+      employees={employees.data ?? []}
     />
   );
 }

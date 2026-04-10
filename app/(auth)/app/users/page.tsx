@@ -18,8 +18,6 @@ async function PageUsers({
 
   const page = searchParams?.page ?? "1";
   const limit = searchParams?.limit ?? "20";
-
-  console.log("searchParams: ",searchParams);
   
 
   return (
