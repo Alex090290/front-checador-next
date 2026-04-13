@@ -15,17 +15,15 @@ async function DepartmentsMainView({
   viewType: string;
   id: number;
 }) {
-  let departments: Department[] = [];
   let department: Department | null = null;
-  let employees: Employee[] = [];
 
   if (id && !isNaN(id)) {
     department = await findDepartmentById({ id });
   }
 
-  [departments, employees] = await Promise.all([
+  const [departments, employees] = await Promise.all([
     fetchDepartments(),
-    fetchEmployees(),
+    fetchEmployees({ page: 1, limit: 500 }),
   ]);
 
   if (viewType === "list") {
@@ -35,7 +33,7 @@ async function DepartmentsMainView({
       <DepartmentsFormView
         department={department}
         id={id}
-        employees={employees || []}
+        employees={employees.data || []}
       />
     );
   } else {

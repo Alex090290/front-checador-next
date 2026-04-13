@@ -437,3 +437,42 @@ export async function deleteEmployee({
     };
   }
 }
+
+export async function reEntry({
+  id,
+}: {
+  id: number | null;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.put(
+      `${API_URL}/employee/reEntry/${String(id)}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    );
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: "Empleado reingresado",
+    };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error en la respuesta",
+    };
+  }
+}

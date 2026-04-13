@@ -63,15 +63,14 @@ export default function ModalBlur({
       }}
     >
       <div className="w-100 px-3" style={{ maxWidth: 900, maxHeight: "90vh" }}>
-        <div
-          className="bg-body rounded-3 shadow position-relative"
+        <div className="bg-body rounded-3 shadow position-relative"
           style={{ maxHeight: "90vh", overflow: "auto" }}
         >
           {showCloseButton && (
             <button
               type="button"
               className="btn btn-sm btn-outline-secondary position-absolute"
-              style={{ top: 12, right: 12, zIndex: 2 }}
+              style={{ top: 4, right: 12, zIndex: 2 }}
               onClick={handleClose}
               disabled={locked}
               aria-label="Cerrar"
