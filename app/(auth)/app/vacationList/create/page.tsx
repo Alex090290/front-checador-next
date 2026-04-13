@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { fetchEmployees } from "@/app/actions/employee-actions";
 import Loading from "@/components/LoadingSpinner";
 import CreateVacationComponent from "@/components/vacations/CreateVacation";

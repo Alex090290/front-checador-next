@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { fetchEmployees } from "@/app/actions/employee-actions";
 import { fetchPermissions } from "@/app/actions/permission-actions";
 import CreateUserComponent from "@/components/users/CreateUser";

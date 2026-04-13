@@ -21,6 +21,7 @@ import ChangePasswordModal from "@/app/(auth)/app/users/views/ModalChangePasswor
 import ModalBlur from "../ModalBlur";
 import FormUpdateUser from "@/app/(auth)/app/users/views/UpdateUser";
 import { updateUser } from "@/app/actions/user-actions";
+import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 
 const userStatus = {
   1: "activo",
@@ -37,7 +38,7 @@ export type TInputsUser = {
   gender: "MASCULINO" | "FEMENINO" | null;
   role: "SUPER_ADMIN" | "ADMIN" | "CHECADOR" | null;
   permissions: Permission[];
-  phone: any;
+  phone: PhoneNumberFormat | string | null;
   status: 1 | 2 | 3;
   imageUrl?: string | null;
   idEmployee: number | null;

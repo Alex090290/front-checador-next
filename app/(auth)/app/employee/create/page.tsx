@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { fetchBranches } from "@/app/actions/branches-actionst";
 import { fetchDepartments } from "@/app/actions/departments-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";

@@ -464,15 +464,20 @@ export async function reEntry({
       success: true,
       message: "Empleado reingresado",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log(error);
+
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
 
     return {
       success: false,
-      message:
-        error?.response?.data?.message ||
-        error?.message ||
-        "Error en la respuesta",
+      message,
     };
   }
 }
