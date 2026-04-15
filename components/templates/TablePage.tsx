@@ -11,6 +11,8 @@ import React, {
 import { Table, Form, Button } from "react-bootstrap";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 
 export type TableTemplateColumn<T> = {
   key: string;
@@ -80,6 +82,8 @@ function TableTemplateServerInner<T>(
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(
     {}
   );
+  const [navigating, setNavigating] = useState(false);
+  const [navigationMessage, setNavigationMessage] = useState("Cargando...");
 
   // 🔹 Exponer función para limpiar selección
   useImperativeHandle(ref, () => ({
@@ -275,7 +279,10 @@ function TableTemplateServerInner<T>(
   const from = total === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
 
-  return (
+  return <>
+    <ConditionalRender cond={navigating}>
+      <Loading message={navigationMessage} />
+    </ConditionalRender>
     <Table borderless hover style={{ fontSize: "0.9rem" }}>
       <thead className="sticky-top text-uppercase" style={{ zIndex: 1 }}>
         <tr>
@@ -367,6 +374,8 @@ function TableTemplateServerInner<T>(
                         e.stopPropagation();
                         if (disableRowClick) return;
                         if (!viewForm) return;
+                        setNavigationMessage("Cargando registro...");
+                        setNavigating(true);
                         router.push(buildRowHref(viewForm, id));
                       }}
                       style={{ cursor: viewForm && !disableRowClick ? "pointer" : "default" }}
@@ -429,7 +438,7 @@ function TableTemplateServerInner<T>(
         </tr>
       </tfoot>
     </Table>
-  );
+  </>
 }
 
 const TableTemplateServer = forwardRef(TableTemplateServerInner) as <T>(

@@ -1,20 +1,32 @@
-import Loading from "@/components/templates/Loaging";
+import Loading from "@/components/LoadingSpinner";
 import { lazy, Suspense } from "react";
+import ListAllBranches from "./ListAllBranches";
 
 const BranchesMainView = lazy(() => import("./BranchesMainView"));
+
+type SearchParams = {
+  view_type?: string;
+  id?: string;
+  page?: string;
+  limit?: string;
+};
 
 async function PageBranches({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string }>;
+  searchParams?: SearchParams;
 }) {
-  const { view_type: ViewType, id } = await searchParams;
 
-  return (
-    <Suspense fallback={<Loading />}>
-      <BranchesMainView viewType={ViewType} id={Number(id)} />
-    </Suspense>
-  );
+  const id = searchParams?.id ?? "null";
+
+  const page = searchParams?.page ?? "1";
+  const limit = searchParams?.limit ?? "20";
+  
+  return <>
+      <Suspense fallback={<Loading message="Cargando datos..." />}>
+        <ListAllBranches id={id} limit={limit} page={page} />
+      </Suspense>
+  </>
 }
 
 export default PageBranches;
