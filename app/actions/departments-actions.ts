@@ -5,6 +5,16 @@ import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { storeAction } from "./storeActions";
 
+type FetchUsersArgs = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  leader?: number;
+  personDoh?: number;
+  employee?: number;
+};
+
+
 export async function fetchDepartments(): Promise<Department[]> {
   try {
     const { apiToken, API_URL } = await storeAction();
@@ -31,6 +41,56 @@ export async function fetchDepartments(): Promise<Department[]> {
   } catch (error: any) {
     console.log(error);
     return [];
+  }
+}
+export async function fetchDepartmentsQuery(args: FetchUsersArgs = {}): Promise<{
+  data: Department[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+
+    const response = await axios
+      .get(`${API_URL}/department/listAll?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+      const total = Number(response.total ?? 0);
+      const pages = Math.max(Math.ceil(total / limitNum), 1);
+  
+      return {
+        data: response.data ?? [],
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages,
+      };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 

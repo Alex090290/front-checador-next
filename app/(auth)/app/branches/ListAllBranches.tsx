@@ -1,8 +1,4 @@
-import { fetchPermissions } from "@/app/actions/permission-actions";
-import { fetchEmployees } from "@/app/actions/employee-actions";
-import { fetchUsersPages } from "@/app/actions/user-actions";
-import UserTableClient from "@/components/users/UsersTableList";
-import { fetchBranches, fetchBranchesQueries } from "@/app/actions/branches-actionst";
+import { fetchBranchesQueries } from "@/app/actions/branches-actionst";
 import BranchesTableClient from "@/components/branches/brancheTableList";
 import BrancheInfoOne from "./brancheInfoOne";
 
@@ -25,11 +21,11 @@ export default async function ListAllBranches({
   ]);
 
   return (
-        <BranchesTableClient
-        branches={branches.data}
-        total={branches.total}
-        page={pageParse}
-        limit={limitParse}
-    />
+      <BranchesTableClient
+          branches={branches.data}
+          total={branches.total}
+          page={pageParse}
+          limit={limitParse}
+      />
   )
 }

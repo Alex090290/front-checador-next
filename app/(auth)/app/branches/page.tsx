@@ -1,8 +1,6 @@
 import Loading from "@/components/LoadingSpinner";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import ListAllBranches from "./ListAllBranches";
-
-const BranchesMainView = lazy(() => import("./BranchesMainView"));
 
 type SearchParams = {
   view_type?: string;
