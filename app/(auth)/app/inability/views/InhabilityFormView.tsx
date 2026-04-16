@@ -255,7 +255,6 @@ function InhabilityFormView({
         </FormBook>
       </FormView>
       <ModalAddDocuments
-        show={modalUploadDoc}
         onHide={() => setModalUploadDoc(!modalUploadDoc)}
         idDoc={id}
       />
