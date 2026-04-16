@@ -1,55 +1,29 @@
-// import TableInability from "@/components/inability/tableList";
-// import InabilityFormView from "@/components/inability/inabilityFormView";
-// import InabilityUpdateClient from "@/components/inability/inabilityUpdateClient";
-
-// import { fetchEmployees } from "@/app/actions/employee-actions";
-// import type { EmployeeLite } from "@/components/configSystem/formUpdate";
-
-// type Props = {
-//   searchParams?: {
-//     view_type?: "list" | "form" | "update";
-//     id?: string;
-//   };
-// };
-
-// export default async function Inability({ searchParams }: Props) {
-//   const viewType = searchParams?.view_type ?? "list";
-//   const idParam = searchParams?.id ?? "null";
-
-//   if (viewType === "list") return <TableInability />;
-
-//   if (viewType === "form") {
-//     const raw = await fetchEmployees();
-
-//     const employees: EmployeeLite[] = raw
-//       .filter((e) => typeof e.id === "number") // ✅ quita undefined
-//       .map((e) => ({
-//         _id: e._id,
-//         id: e.id as number,
-//         name: e.name ?? "",
-//         lastName: e.lastName ?? "",
-//       }));
-
-//     return <InabilityFormView employees={employees} />;
-//   }
-
-//   return <InabilityUpdateClient id={idParam} />;
-// }
-import LoadingPage from "@/app/LoadingPage";
+import Loading from "@/components/LoadingSpinner";
 import React, { lazy, Suspense } from "react";
+import ListAllInability from "./views/ListAllInabilities";
 
-const InhabilityMainView = lazy(() => import("./views/InhabilityMainView"));
+type SearchParams = {
+  view_type?: string;
+  id?: string;
+  page?: string;
+  limit?: string;
+};
+
 
 async function PageInahibility({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string }>;
+  searchParams?: SearchParams;
 }) {
-  const { view_type: viewType, id } = await searchParams;
+  // const { view_type: viewType, id } = await searchParams;
+  const id = searchParams?.id ?? "null";
+
+  const page = searchParams?.page ?? "1";
+  const limit = searchParams?.limit ?? "20";
 
   return (
-    <Suspense fallback={<LoadingPage />}>
-      <InhabilityMainView id={id} viewType={viewType} />
+    <Suspense fallback={<Loading message="Cargando datos..." />}>
+        <ListAllInability id={id} limit={limit} page={page} />
     </Suspense>
   );
 }

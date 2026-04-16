@@ -29,7 +29,7 @@ async function InhabilityMainView({
   ]);
 
   if (viewType === "list") {
-    return <InhabilityListView inhabilities={inhabilities.reverse()} />;
+    return <InhabilityListView inhabilities={inhabilities.data.reverse()} />;
   } else if (viewType === "form") {
     return (
       <InhabilityFormView

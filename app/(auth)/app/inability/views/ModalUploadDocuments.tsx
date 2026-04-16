@@ -1,8 +1,11 @@
+"use client";
+
 import { createNewDocument } from "@/app/actions/inability-actions";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 import { Entry } from "@/components/fields";
-import { ModalBasicProps } from "@/lib/definitions";
-import React from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import React, { useState } from "react";
+import { Button, Form, Row, Col } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -13,90 +16,143 @@ type TInputs = {
   document: FileList | null;
 };
 
-function ModalAddDocuments({
-  idDoc,
-  show,
-  onHide,
-}: ModalBasicProps & { idDoc: string }) {
-  const { register, reset, watch, handleSubmit } = useForm<TInputs>({
+type Props = {
+  idDoc: string;
+  onHide: () => void;
+};
+
+function ModalAddDocuments({ idDoc, onHide }: Props) {
+  const {
+    register,
+    reset,
+    watch,
+    handleSubmit,
+    formState: { isSubmitting, errors },
+  } = useForm<TInputs>({
     defaultValues: {
       dateEnd: "",
       dateInit: "",
-      folio: '',
+      folio: "",
       document: null,
     },
   });
 
+  const [loading, setLoading] = useState(false);
   const onChangeDateInit = watch("dateInit");
 
-  const handleOnEntered = () => {
-    reset({ dateEnd: "", dateInit: "", document: null });
+  const handleClose = () => {
+    reset({
+      dateEnd: "",
+      dateInit: "",
+      folio: "",
+      document: null,
+    });
+    onHide();
   };
 
   const onSubmit = handleSubmit(async (data) => {
     const toastId = toast.loading("Creando nuevo documento...");
-    const res = await createNewDocument({
-      idDoc,
-      folio: data.folio,
-      dateEnd: data.dateEnd,
-      dateInit: data.dateInit,
-      formData: data.document,
-    });
 
-    if (!res.success) {
-      toast.error(res.message, { id: toastId });
-      return;
+    try {
+      setLoading(true);
+
+      const res = await createNewDocument({
+        idDoc,
+        folio: data.folio,
+        dateEnd: data.dateEnd,
+        dateInit: data.dateInit,
+        formData: data.document,
+      });
+
+      if (!res.success) {
+        toast.error(res.message, { id: toastId });
+        return;
+      }
+
+      toast.success(res.message, { id: toastId });
+      handleClose();
+    } finally {
+      setLoading(false);
     }
-
-    toast.success(res.message, { id: toastId });
-    onHide();
   });
 
   return (
-    <Modal
-      show={show}
-      onHide={onHide}
-      backdrop="static"
-      centered
-      onEntered={handleOnEntered}
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Documento</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group className="d-flex justify-content-between align-items-center mb-3">
-            <Entry
-              type="date"
-              register={register("dateInit", { required: true })}
-              label="Fecha inicio"
-            />
-            <Entry
-              type="date"
-              register={register("dateEnd", { required: true })}
-              label="Fecha fin"
-              min={onChangeDateInit}
-            />
-            
-          </Form.Group>
-          <Form.Group>
-            <Entry 
-              register={register("folio")}
-              label="Folio CITT:"
-              className="text-uppercase"
-            />
-            <Form.Label className="fw-semibold">Documento</Form.Label>
-            <Form.Control type="file" {...register("document")} />
-          </Form.Group>
+    <>
+      <ConditionalRender cond={loading || isSubmitting}>
+        <Loading message="Cargando documento..." />
+      </ConditionalRender>
+
+      <div className="p-2">
+        <div className="mb-4">
+          <h4 className="mb-1">Documento CITT</h4>
+          <p className="text-secondary mb-0">
+            Agrega un nuevo documento con su rango de fechas y folio.
+          </p>
+        </div>
+
+        <Form onSubmit={onSubmit}>
+          <Row className="g-3">
+            <Col md={6}>
+              <Entry
+                type="date"
+                register={register("dateInit", { required: true })}
+                label="Fecha inicio"
+                invalid={!!errors.dateInit}
+              />
+            </Col>
+
+            <Col md={6}>
+              <Entry
+                type="date"
+                register={register("dateEnd", { required: true })}
+                label="Fecha fin"
+                min={onChangeDateInit}
+                invalid={!!errors.dateEnd}
+              />
+            </Col>
+
+            <Col md={12}>
+              <Entry
+                register={register("folio", { required: true })}
+                label="Folio CITT"
+                className="text-uppercase"
+                invalid={!!errors.folio}
+              />
+            </Col>
+
+            <Col md={12}>
+              <Form.Group>
+                <Form.Label className="fw-semibold">Documento</Form.Label>
+                <Form.Control
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf,.webp"
+                  {...register("document", { required: true })}
+                  isInvalid={!!errors.document}
+                />
+                <Form.Control.Feedback type="invalid">
+                  Este campo es requerido
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleClose}
+              disabled={loading || isSubmitting}
+            >
+              Cancelar
+            </Button>
+
+            <Button type="submit" disabled={loading || isSubmitting}>
+              {loading || isSubmitting ? "Cargando..." : "Cargar"}
+            </Button>
+          </div>
         </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Cancelar
-        </Button>
-        <Button onClick={onSubmit}>Cargar</Button>
-      </Modal.Footer>
-    </Modal>
+      </div>
+    </>
   );
 }
 

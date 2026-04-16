@@ -1,46 +1,88 @@
 "use client";
 
-import useSWR from "swr";
-import { useMemo } from "react";
-import { format } from "date-fns";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Badge, Button } from "react-bootstrap";
+import moment from "moment-timezone";
 
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 import ListView from "@/components/templates/ListView";
-import TableTemplate, {
+import TableTemplateServer, {
   TableTemplateColumn,
-} from "@/components/templates/TableTemplate";
-import type { IInability } from "@/lib/definitions";
+} from "@/components/templates/TablePage";
+import { IInability } from "@/lib/definitions";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-type ApiResponse<T> = {
-  success?: boolean;
-  message?: string;
-  status?: number;
-  data: T;
+const statusVariantMap: Record<string, string> = {
+  APROBADA: "success",
+  APROBADO: "success",
+  PENDIENTE: "warning",
+  RECHAZADA: "danger",
+  RECHAZADO: "danger",
 };
 
-const fmt = (iso?: string) => {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "-";
-  return format(d, "yyyy-MM-dd");
-};
-
-export default function TableInability() {
+export default function TableInabilityComponent({
+  total,
+  page,
+  limit,
+  inhabilities = [],
+}: {
+  total: number;
+  page: number;
+  limit: number;
+  inhabilities?: IInability[];
+}) {
   const router = useRouter();
+  const sp = useSearchParams();
 
-  const { data, isLoading, error } = useSWR<ApiResponse<IInability[]>>(
-    "/api/inability",
-    fetcher
-  );
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
+  const [tableResetKey, setTableResetKey] = useState(0);
+  const isClearingSelectionRef = useRef(false);
+  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
 
-  const rows = useMemo(() => data?.data ?? [], [data]);
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      setMessageLoading("");
+    }
+  }, [sp.toString()]);
 
-  const goUpdate = (row: IInability) => {
-    // ✅ guardamos el objeto completo
-    sessionStorage.setItem("inability_edit_row", JSON.stringify(row));
-    router.push(`/app/inability?view_type=update&id=${row.id}`);
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
+    router.push("/app/inability/create");
+  };
+
+  const clearSelectedIds = () => {
+    isClearingSelectionRef.current = true;
+
+    tableRef.current?.clearSelection();
+    setSelectedIds([]);
+    setTableResetKey((k) => k + 1);
+
+    setTimeout(() => {
+      isClearingSelectionRef.current = false;
+    }, 0);
+  };
+
+  const goToPage = (nextPage: number) => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
+
+    const params = new URLSearchParams(sp.toString());
+    params.set("id", "null");
+    params.set("view_type", "list");
+    params.set("page", String(nextPage));
+    params.set("limit", String(limit));
+
+    router.push(`/app/inability?${params.toString()}`);
+  };
+
+  const handleSelectionChange = (ids: Array<string | number>) => {
+    if (isClearingSelectionRef.current) return;
+    setSelectedIds(ids);
   };
 
   const columns: TableTemplateColumn<IInability>[] = [
@@ -52,17 +94,8 @@ export default function TableInability() {
       filterable: true,
       type: "string",
       render: (r) => (
-        <div
-          role="button"
-          className="text-uppercase cursor-pointer"
-          style={{ cursor: "pointer" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            goUpdate(r);
-          }}
-
-        >
-          {(r.employee?.name ?? "")} {(r.employee?.lastName ?? "")}
+        <div className="text-uppercase">
+          {r.employee?.name ?? ""} {r.employee?.lastName ?? ""}
         </div>
       ),
     },
@@ -82,7 +115,9 @@ export default function TableInability() {
       accessor: (r) => r.typeOfDisability,
       filterable: true,
       type: "string",
-      render: (r) => <div className="text-uppercase">{r.typeOfDisability}</div>,
+      render: (r) => (
+        <div className="text-uppercase">{r.typeOfDisability}</div>
+      ),
     },
     {
       key: "status",
@@ -90,30 +125,15 @@ export default function TableInability() {
       accessor: (r) => r.status,
       filterable: true,
       type: "string",
-      render: (r) => <div className="text-uppercase">{r.status}</div>,
-    },
-    {
-      key: "period",
-      label: "Periodo",
-      accessor: (r) => {
-        const doc = r.documentsInability?.[0];
-        return doc ? `${fmt(doc.dateInit)} - ${fmt(doc.dateEnd)}` : "-";
-      },
-      filterable: true,
-      type: "string",
       render: (r) => {
-        const doc = r.documentsInability?.[0];
+        const status = String(r.status ?? "").toUpperCase();
+        const variant = statusVariantMap[status] ?? "secondary";
+
         return (
-          <div className="small">
-            {doc ? (
-              <div>
-                <span className="fw-semibold">{fmt(doc.dateInit)}</span>{" "}
-                <span className="text-muted">a</span>{" "}
-                <span className="fw-semibold">{fmt(doc.dateEnd)}</span>
-              </div>
-            ) : (
-              "-"
-            )}
+          <div className="text-center">
+            <Badge pill bg={variant}>
+              {status}
+            </Badge>
           </div>
         );
       },
@@ -127,7 +147,7 @@ export default function TableInability() {
       type: "string",
       render: (r) => (
         <div className="text-uppercase">
-          {(r.whoCreate?.name ?? "")} {(r.whoCreate?.lastName ?? "")}
+          {r.whoCreate?.name ?? ""} {r.whoCreate?.lastName ?? ""}
         </div>
       ),
     },
@@ -137,34 +157,55 @@ export default function TableInability() {
       accessor: (r) => r.createdAt,
       filterable: true,
       type: "date",
-      render: (r) => <div className="small">{fmt(r.createdAt)}</div>,
+      render: (r) => (
+        <div className="small text-center">
+          {r.createdAt ? moment.utc(r.createdAt).format("DD/MM/YYYY") : ""}
+        </div>
+      ),
     },
   ];
 
   return (
-    <ListView>
-      <ListView.Header
-        title={
-          isLoading
-            ? "Incapacidades (Cargando...)"
-            : `Incapacidades (${rows.length})`
-        }
-        formView="/app/inability?view_type=form&id=null"
-      />
+    <>
+      <div className="d-flex flex-column h-100 overflow-hidden">
+        <ConditionalRender cond={loading}>
+          <Loading message={messageLoading} />
+        </ConditionalRender>
 
-      <ListView.Body>
-        {error ? (
-          <div className="text-danger">Error cargando incapacidades</div>
-        ) : (
-          <TableTemplate
-            getRowId={(row) => row.id}
-            data={rows}
-            columns={columns}
-            // 👇 ya NO lo usamos para navegación de fila
-            viewForm="/app/inability?view_type=update"
-          />
-        )}
-      </ListView.Body>
-    </ListView>
+        <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+          <Button
+            size="sm"
+            variant="primary"
+            className="fw-semibold d-inline-flex align-items-center gap-2"
+            onClick={handleCreate}
+          >
+            <i className="bi bi-plus-lg" />
+            Crear Incapacidad
+          </Button>
+        </div>
+
+        <div className="flex-grow-1 overflow-hidden">
+          <ListView>
+            <ListView.Header title={`Incapacidades (${total})`} />
+
+            <ListView.Body>
+              <TableTemplateServer
+                ref={tableRef}
+                key={tableResetKey}
+                columns={columns}
+                data={inhabilities || []}
+                total={total}
+                page={page}
+                limit={limit}
+                onPageChange={(p) => goToPage(p)}
+                getRowId={(row) => Number(row.id)}
+                viewForm="/app/inability"
+                onSelectionChange={handleSelectionChange}
+              />
+            </ListView.Body>
+          </ListView>
+        </div>
+      </div>
+    </>
   );
 }
