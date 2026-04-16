@@ -10,8 +10,6 @@ type SearchParams = {
   limit?: string;
 };
 
-
-
 async function PagePermissions({
   searchParams,
 }: {

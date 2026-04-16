@@ -141,17 +141,17 @@ export default function VacationsTableClient({
 
     <ListView>
 
-    <div className="d-flex justify-content-end mb-2">
-      <Button
-        size="sm"
-        variant="primary"
-        className="fw-semibold d-inline-flex align-items-center gap-2"
-        onClick={() => handleCreate()}
-      >
-        <i className="bi bi-plus-lg" />
-        Crear
-      </Button>
-    </div>
+    <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+        <Button
+          size="sm"
+          variant="primary"
+          className="fw-semibold d-inline-flex align-items-center gap-2"
+          onClick={handleCreate}
+        >
+          <i className="bi bi-plus-lg" />
+          Crear Registro
+        </Button>
+      </div>
 
       <ListView.Body>
         <TableTemplateServer

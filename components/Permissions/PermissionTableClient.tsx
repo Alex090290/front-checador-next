@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge } from "react-bootstrap";
+import { Badge, Button } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import ListView from "../templates/ListView";
@@ -145,29 +145,46 @@ export default function PermissionsTableClient({
     },
   ];
 
-  return <>
-    <ConditionalRender cond={loading}>
-      <Loading message={messageLoading} />
-    </ConditionalRender>
-    <ListView>
-      <ListView.Header
-        title={`Permisos (${total})`}
-        formView="/app/permissions?id=null"
-      />
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/permissions/create");
+  };
 
-      <ListView.Body>
-        <TableTemplateServer
-          ref={tableRef}
-          columns={columns}
-          data={permissions}
-          total={total}
-          page={page}
-          limit={limit}
-          onPageChange={(p) => goToPage(p)}
-          getRowId={(row) => row.id}
-          viewForm="/app/permissions"
-        />
-      </ListView.Body>
-    </ListView>
-  </>
+  return <>
+    <div className="d-flex flex-column h-100 overflow-hidden">
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
+
+
+      <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+          <Button
+          size="sm"
+          variant="primary"
+          className="fw-semibold d-inline-flex align-items-center gap-2"
+          onClick={handleCreate}
+          >
+          <i className="bi bi-plus-lg" />
+          Registrar Permiso
+          </Button>
+      </div>
+
+      <ListView>
+        <ListView.Body>
+          <TableTemplateServer
+            ref={tableRef}
+            columns={columns}
+            data={permissions}
+            total={total}
+            page={page}
+            limit={limit}
+            onPageChange={(p) => goToPage(p)}
+            getRowId={(row) => row.id}
+            viewForm="/app/permissions"
+          />
+        </ListView.Body>
+      </ListView>
+    </div>
+    </>
 }

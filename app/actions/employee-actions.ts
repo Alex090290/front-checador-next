@@ -27,7 +27,7 @@ export async function fetchEmployees(args: FetchVacationsArgs = {}): Promise<{
     const { apiToken, API_URL } = await storeAction();
 
     const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
-    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 500);
 
     const params = new URLSearchParams();
     params.set("page", String(pageNum));
