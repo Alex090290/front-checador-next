@@ -41,6 +41,7 @@ import { useModals } from "@/context/ModalContext";
 import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
+import RegisterBiometricModal from "./rekognition";
 
 const employeeStatus = {
   1: "activo",
@@ -140,7 +141,7 @@ export default function EmployeeDetailsView({
 }: Props) {
   const { modalError, modalConfirm } = useModals();
   const { data: session } = useSession();
-
+  const [showRegisterBiometricModal, setShowRegisterBiometricModal] = useState(false);
   const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -258,6 +259,14 @@ const handleReEntry = async () => {
             Reingreso
           </Button>
         )}
+        <Button
+          size="sm"
+          variant="warning"
+          onClick={() => setShowRegisterBiometricModal(true)}
+        >
+          <i className="bi bi-person-bounding-box me-2" />
+          Registrar biométricos
+        </Button>
       </div>
 
       <FormBook dKey="personalInfo">
@@ -859,6 +868,18 @@ const handleReEntry = async () => {
             departments={departments}
             branches={branches}
             employees={employees}
+          />
+        </ModalBlur>
+      )}
+      {showRegisterBiometricModal && employee?.id && (
+        <ModalBlur onClose={() => setShowRegisterBiometricModal(false)}>
+          <RegisterBiometricModal
+            employeeId={Number(employee.id)}
+            employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
+            onClose={() => setShowRegisterBiometricModal(false)}
+            onSuccess={() => {
+              setShowRegisterBiometricModal(false);
+            }}
           />
         </ModalBlur>
       )}

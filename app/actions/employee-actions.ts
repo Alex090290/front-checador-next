@@ -16,6 +16,12 @@ type FetchVacationsArgs = {
   employee?: number;
 };
 
+export interface EmployeeBiometricPhoto {
+  key: string;
+  type?: "front" | "left" | "right" | "smile" | "custom";
+  createdAt?: string | Date;
+  active?: boolean;
+}
 export async function fetchEmployees(
   args: FetchVacationsArgs & { search?: string } = {}
 ): Promise<{
@@ -58,6 +64,124 @@ export async function fetchEmployees(
       page: 1,
       limit: 20,
       pages: 1,
+    };
+  }
+}
+
+
+export async function enrollEmployeeFace({
+  idEmployee,
+  files,
+}: {
+  idEmployee: number;
+  files: File[];
+}): Promise<
+  ActionResponse<{
+    idEmployee: number;
+    biometricPhotos: EmployeeBiometricPhoto[];
+    biometricEnrolledAt: string | Date;
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append("img", file);
+    });
+
+    const response = await axios
+      .post(`${API_URL}/employee/enrollFace/${idEmployee}`, formData, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message
+            ? err.response.data.message
+            : "Error al registrar biométricos"
+        );
+      });
+
+    return {
+      success: true,
+      message: response.message || "Biométricos enrolados correctamente",
+      data: response.data || null,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      success: false,
+      message: error.message || "Error al registrar biométricos",
+      data: null,
+    };
+  }
+}
+
+export async function validateEmployeeFaceCheck({
+  idEmployee,
+  file,
+}: {
+  idEmployee: number;
+  file: File;
+}): Promise<
+  ActionResponse<{
+    matched: boolean;
+    similarity: number;
+    bestMatchKey?: string | null;
+    results?: {
+      key: string;
+      similarity: number;
+      matched: boolean;
+      data?: unknown;
+    }[];
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const formData = new FormData();
+    formData.append("img", file);
+
+    const response = await axios
+      .post(`${API_URL}/employee/validateFaceCheck/${idEmployee}`, formData, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message
+            ? err.response.data.message
+            : "Error al validar biométricos"
+        );
+      });
+
+    return {
+      success: true,
+      message: response.message || "Rostro validado correctamente",
+      data: response.data || null,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      success: false,
+      message: error.message || "Error al validar biométricos",
+      data: null,
     };
   }
 }
