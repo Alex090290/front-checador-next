@@ -16,7 +16,6 @@ function NavUserInfo() {
   const [darkMode, setDarkMode] = useState(false);
   const [currentPeriod, setCurrentPeriod] = useState<ICurrentPeriod | null> (null)
   const [imgAvatar, setImgAvatar] = useState<string | null>(null);
-
   const params = useSearchParams();
   const profile = params.get("profile") || null;
 
@@ -83,7 +82,7 @@ function NavUserInfo() {
       <Dropdown.Menu>
         <Dropdown.Item
           as={Link}
-          href={`/app/users?view_type=form&id=${session?.user?.id}&profile=true`}
+          href={`/app/users/profile?id=${session?.user?.id}`}
         >
           <i className="bi bi-person-circle me-2"></i>
           <span>Perfil</span>
