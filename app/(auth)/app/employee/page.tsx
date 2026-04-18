@@ -8,6 +8,7 @@ type SearchParams = {
   id?: string;
   page?: string;
   limit?: string;
+  search?: string;
 };
 
 
@@ -20,13 +21,13 @@ async function PageEmployee({
 
   const page = searchParams?.page ?? "1";
   const limit = searchParams?.limit ?? "20";
-  
+  const search = searchParams?.search ?? "";
   // const { view_type: viewType, id } = await searchParams;
 
   return (
 
     <Suspense fallback={<Loading message="Cargando datos..." />}>
-        <ListAllEmployees id={id} limit={limit} page={page} />
+        <ListAllEmployees id={id} limit={limit} page={page} search={search} />
     </Suspense>
   );
 }

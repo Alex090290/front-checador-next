@@ -16,13 +16,15 @@ type FetchVacationsArgs = {
   employee?: number;
 };
 
-export async function fetchEmployees(args: FetchVacationsArgs = {}): Promise<{
+export async function fetchEmployees(
+  args: FetchVacationsArgs & { search?: string } = {}
+): Promise<{
   data: Employee[];
   total: number;
   page: number;
   limit: number;
   pages: number;
-  }> {
+}> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
@@ -33,38 +35,30 @@ export async function fetchEmployees(args: FetchVacationsArgs = {}): Promise<{
     params.set("page", String(pageNum));
     params.set("limit", String(limitNum));
 
-    const response = await axios.get(`${API_URL}/employee/listall?${params.toString()}`, {
+    if (args.search?.trim()) {
+      params.set("search", args.search.trim());
+    }
+
+    const response = await axios.get(
+      `${API_URL}/employee/listall?${params.toString()}`,
+      {
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+      }
+    );
 
-  
-      const total = Number(response.total ?? 0);
-      const pages = Math.max(Math.ceil(total / limitNum), 1);
-  
-      return {
-        data: response.data ?? [],
-        total,
-        page: pageNum,
-        limit: limitNum,
-        pages,
-      };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+    return response.data;
+  } catch (error) {
     console.log(error);
-    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
+
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      pages: 1,
+    };
   }
 }
 
