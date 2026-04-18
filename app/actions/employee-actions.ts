@@ -186,6 +186,72 @@ export async function validateEmployeeFaceCheck({
   }
 }
 
+export async function identifyEmployeeByFace({
+  file,
+  lat,
+  lng,
+}: {
+  file: File;
+  lat: number;
+  lng: number;
+}): Promise<
+  ActionResponse<{
+    matched: boolean;
+    similarity: number;
+    employee?: {
+      id: number;
+      name: string;
+      lastName: string;
+    };
+    checkMessage?: string;
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const formData = new FormData();
+    formData.append("img", file);
+    formData.append("lat", String(lat));
+    formData.append("lng", String(lng));
+
+    const response = await axios
+      .post(`${API_URL}/check/identifyByFace`, formData, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message
+            ? err.response.data.message
+            : "Error al identificar por rostro"
+        );
+      });
+
+    return {
+      success: true,
+      message:
+        response?.data?.checkMessage ||
+        response.message ||
+        "Identificación facial correcta",
+      data: response.data || null,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      success: false,
+      message: error.message || "Error al identificar por rostro",
+      data: null,
+    };
+  }
+}
+
 export async function findEmployeeById({
   id,
   _id,

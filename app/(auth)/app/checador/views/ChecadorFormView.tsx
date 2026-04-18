@@ -1,7 +1,11 @@
 "use client";
 
-import { checkIn, fetchCheckInFeedback } from "@/app/actions/entry-actions";
+import {
+  checkIn,
+  fetchCheckInFeedback,
+} from "@/app/actions/entry-actions";
 import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
+import FaceCheckPanel from "@/components/checador/FaceCheckPanel";
 import Clock from "@/components/top-nav/Clock";
 import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -34,25 +38,25 @@ function ChecadorFormView() {
     refreshInterval: 60000,
   });
 
-  let toastId: string = "";
+  const toastIdRef = useRef<string>("");
 
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
     null
   );
-  const [feedbackDisplay, setFeedbackDisplay] = useState<IFeedbackDisplay[]>(
-    []
-  );
-
+  const [feedbackDisplay, setFeedbackDisplay] = useState<IFeedbackDisplay[]>([]);
   const [message, setMessage] = useState<string>("");
+
+  const [manualEnabled, setManualEnabled] = useState(false);
 
   const feedbackContainerRef = useRef<HTMLDivElement | null>(null);
 
   const receiveCheckData = async (
     data: TCheckData
   ): Promise<ActionResponse<string>> => {
-    toastId = toast.loading("Enviando datos...", {
+    toastIdRef.current = toast.loading("Enviando datos...", {
       position: "top-center",
     });
+
     const newObj = {
       ...data,
       lat: location?.lat || 0,
@@ -60,23 +64,24 @@ function ChecadorFormView() {
     };
 
     const res = await checkIn(newObj);
+
     if (!res.success) {
-      toast.error(res.message, { id: toastId });
+      toast.error(res.message, { id: toastIdRef.current });
       return res;
     }
 
     setMessage(res?.data || "");
-
-    handleFetchFeedback();
-    toast.success(res.message, { id: toastId });
+    await handleFetchFeedback();
+    toast.success(res.message, { id: toastIdRef.current });
 
     return res;
   };
 
   const handleFetchFeedback = useCallback(async () => {
-    let toastLoading: string = "";
-    if (toastId !== "") {
-      toast.loading("Esperando respuesta...", { id: toastId });
+    let toastLoading = "";
+
+    if (toastIdRef.current !== "") {
+      toast.loading("Esperando respuesta...", { id: toastIdRef.current });
     } else {
       toastLoading = toast.loading("Cargando registros...");
     }
@@ -84,7 +89,9 @@ function ChecadorFormView() {
     const res = await fetchCheckInFeedback();
 
     if (!res.success) {
-      toast.error(res.message, { id: toastId });
+      toast.error(res.message, {
+        id: toastIdRef.current || toastLoading,
+      });
       return;
     }
 
@@ -99,14 +106,13 @@ function ChecadorFormView() {
       })) || [];
 
     setFeedbackDisplay(newFeedback);
-    // toast.dismiss(toastId);
 
-    if (toastId !== "") {
-      toast.success("Registro completado...", { id: toastId });
+    if (toastIdRef.current !== "") {
+      toast.success("Registro completado...", { id: toastIdRef.current });
     } else {
       toast.success("Se han cargado los registros...", { id: toastLoading });
     }
-  }, [toastId]);
+  }, []);
 
   useEffect(() => {
     handleFetchFeedback();
@@ -133,7 +139,6 @@ function ChecadorFormView() {
     );
   }, []);
 
-  // 👇 Auto-scroll cuando cambia feedbackDisplay
   useEffect(() => {
     if (feedbackContainerRef.current) {
       feedbackContainerRef.current.scrollTo({
@@ -142,6 +147,19 @@ function ChecadorFormView() {
       });
     }
   }, [feedbackDisplay]);
+
+  const handleEnableManual = () => {
+    setManualEnabled(true);
+    setMessage(
+      "No fue posible validar por rostro. Puedes continuar con código y contraseña."
+    );
+  };
+
+  const handleFaceSuccess = async (faceMessage: string) => {
+    setManualEnabled(false);
+    setMessage(faceMessage);
+    await handleFetchFeedback();
+  };
 
   return (
     <Row className="h-100 overflow-auto">
@@ -156,17 +174,34 @@ function ChecadorFormView() {
                 {formatDatelocal(new Date())}
               </span>
             </div>
+
             <Row>
               <Col md="6">
+                <div className="mb-3">
+                  <FaceCheckPanel
+                    lat={location?.lat}
+                    lng={location?.lon}
+                    onEnableManual={handleEnableManual}
+                    onFaceSuccess={handleFaceSuccess}
+                  />
+                </div>
+
                 <div className="row align-items-stretch">
-                  <ChecadorEntryForm receiveCheckData={receiveCheckData} />
-                  <div className="col-md-7 bg-body-tertiary">
+                  {manualEnabled && (
+                    <ChecadorEntryForm
+                      receiveCheckData={receiveCheckData}
+                      disabled={false}
+                    />
+                  )}
+
+                  <div className={manualEnabled ? "col-md-7 bg-body-tertiary" : "col-md-12 bg-body-tertiary"}>
                     <div>
                       <h2 className="text-center">{message}</h2>
                     </div>
                   </div>
                 </div>
               </Col>
+
               <Col md="6" className="text-center text-uppercase fw-semibold">
                 <div style={{ fontSize: "4rem" }}>
                   <Clock />
@@ -174,6 +209,7 @@ function ChecadorFormView() {
               </Col>
             </Row>
           </Card.Header>
+
           <Card.Body className="flex-fill overflow-auto p-1">
             <Container fluid className="h-100">
               <Row className="h-100">
@@ -181,7 +217,7 @@ function ChecadorFormView() {
                   md="6"
                   className="overflow-auto h-100 bg-body-tertiary px-0"
                   id="feedback-container"
-                  ref={feedbackContainerRef} // 👈 Referencia al contenedor
+                  ref={feedbackContainerRef}
                 >
                   <Table
                     size="sm"
@@ -217,6 +253,7 @@ function ChecadorFormView() {
                     </tbody>
                   </Table>
                 </Col>
+
                 <Col md="6" className="h-100 px-1">
                   <Card className="h-100">
                     <Card.Body className="d-flex flex-column p-3 gap-3">

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Button, Form, Image } from "react-bootstrap";
 import toast from "react-hot-toast";
 import { enrollEmployeeFace } from "@/app/actions/employee-actions";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 
 type Props = {
   employeeId: number;
@@ -37,6 +39,7 @@ export default function RegisterBiometricModal({
   const [loading, setLoading] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [startingCamera, setStartingCamera] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
 
   useEffect(() => {
     return () => {
@@ -114,6 +117,7 @@ export default function RegisterBiometricModal({
       }
 
       setStartingCamera(true);
+      setMessageLoading("Abriendo cámara...");
       stopCamera();
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -137,6 +141,7 @@ export default function RegisterBiometricModal({
       toast.error("No se pudo acceder a la cámara");
     } finally {
       setStartingCamera(false);
+      setMessageLoading("");
     }
   };
 
@@ -213,6 +218,7 @@ export default function RegisterBiometricModal({
 
     try {
       setLoading(true);
+      setMessageLoading("Registrando biométricos...");
 
       const res = await enrollEmployeeFace({
         idEmployee: employeeId,
@@ -232,11 +238,16 @@ export default function RegisterBiometricModal({
       toast.error("Error al registrar biométricos");
     } finally {
       setLoading(false);
+      setMessageLoading("");
     }
   };
 
   return (
     <div className="p-4">
+      <ConditionalRender cond={loading || startingCamera}>
+        <Loading message={messageLoading || "Cargando..."} />
+      </ConditionalRender>
+
       <div className="mb-3 pe-4">
         <h4 className="mb-1">Registrar biométricos</h4>
         <div className="text-secondary">
@@ -306,13 +317,17 @@ export default function RegisterBiometricModal({
               <Button
                 variant="success"
                 onClick={handleTakePhoto}
-                disabled={files.length >= MAX_FILES}
+                disabled={files.length >= MAX_FILES || loading}
               >
                 <i className="bi bi-camera-fill me-2" />
                 Capturar foto
               </Button>
 
-              <Button variant="secondary" onClick={stopCamera}>
+              <Button
+                variant="secondary"
+                onClick={stopCamera}
+                disabled={loading}
+              >
                 Cancelar cámara
               </Button>
             </div>
