@@ -516,12 +516,12 @@ const handleReEntry = async () => {
 
               <FieldGroup.Stack>
                 <InfoItem
-                  label="Entrada:"
+                  label="Entrada Oficina:"
                   value={formatText(employee?.scheduleOffice?.entry)}
                   uppercase={false}
                 />
                 <InfoItem
-                  label="Salida:"
+                  label="Salida Oficina:"
                   value={formatText(employee?.scheduleOffice?.exit)}
                   uppercase={false}
                 />
