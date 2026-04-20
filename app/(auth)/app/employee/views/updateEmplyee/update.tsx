@@ -522,21 +522,22 @@ export default function FormUpdateEmployee({
 
                     <Entry
                     register={register("entryLunch", {
-                        required: "Salida comedor requerida",
-                    })}
-                    label="Salida comedor:"
-                    invalid={!!errors.entryLunch}
-                    feedBack={errors.entryLunch?.message}
-                    />
-
-                    <Entry
-                    register={register("exitLunch", {
                         required: "Entrada comedor requerida",
                     })}
                     label="Entrada comedor:"
+                    invalid={!!errors.entryLunch}
+                    feedBack={errors.entryLunch?.message}
+                    />
+                    <Entry
+                    register={register("exitLunch", {
+                        required: "Salida comedor requerida",
+                    })}
+                    label="Salida comedor:"
                     invalid={!!errors.exitLunch}
                     feedBack={errors.exitLunch?.message}
                     />
+
+
 
                     <Entry
                     register={register("entrySaturdayOffice", {
