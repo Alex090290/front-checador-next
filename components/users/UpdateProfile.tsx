@@ -86,16 +86,14 @@ export default function FormUpdateProfile({
   }, [setValue]);
 
   const onSubmit: SubmitHandler<TInputsProfile> = async (data) => {
-    modalConfirm("¿Deseas guardar los cambios del perfil?", async () => {
-      const res = await sendData(data);
+    const res = await sendData(data);
 
-      if (!res.success) {
-        modalError(res.message);
-        return;
-      }
+    if (!res.success) {
+      modalError(res.message);
+      return;
+    }
 
-      onHide();
-    });
+    onHide();
   };
 
   return (

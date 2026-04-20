@@ -79,7 +79,7 @@ export default function UserProfileView({
       status: user.status,
       idEmployee: user.idEmployee || null,
     });
-
+  
     if (!res) {
       return {
         success: false,
@@ -87,16 +87,15 @@ export default function UserProfileView({
         data: null,
       };
     }
-
+  
     toast.success("Perfil actualizado correctamente");
-
+  
     return {
       success: true,
       message: "Perfil actualizado correctamente",
       data: true,
     };
   };
-
   return (
     <>
       <ConditionalRender cond={loading}>
