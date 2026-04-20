@@ -506,7 +506,7 @@ export default function FormUpdateEmployee({
                     register={register("entryOffice", {
                         required: "Entrada requerida",
                     })}
-                    label="Entrada:"
+                    label="Entrada Oficina:"
                     invalid={!!errors.entryOffice}
                     feedBack={errors.entryOffice?.message}
                     />
@@ -515,7 +515,7 @@ export default function FormUpdateEmployee({
                     register={register("exitOffice", {
                         required: "Salida requerida",
                     })}
-                    label="Salida:"
+                    label="Salida Oficina:"
                     invalid={!!errors.exitOffice}
                     feedBack={errors.exitOffice?.message}
                     />
