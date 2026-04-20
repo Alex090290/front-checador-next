@@ -529,13 +529,13 @@ const handleReEntry = async () => {
 
               <FieldGroup.Stack>
                 <InfoItem
-                  label="Salida comedor:"
-                  value={formatText(employee?.scheduleLunch?.exit)}
+                  label="Entrada comedor:"
+                  value={formatText(employee?.scheduleLunch?.entry)}
                   uppercase={false}
                 />
                 <InfoItem
-                  label="Entrada comedor:"
-                  value={formatText(employee?.scheduleLunch?.entry)}
+                  label="Salida comedor:"
+                  value={formatText(employee?.scheduleLunch?.exit)}
                   uppercase={false}
                 />
               </FieldGroup.Stack>
