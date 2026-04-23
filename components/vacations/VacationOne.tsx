@@ -80,7 +80,7 @@ export default function ShowInfoVacation({
   const [approveModal, setApproveModal] = useState(false);
   const [signatureDohModal, setSignatureDohModal] = useState(false);
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
-  const [periods, setPeriods] = useState<PeriodVacation[]>([]);
+  const [, setPeriods] = useState<PeriodVacation[]>([]);
 
   // ✅ Estos cálculos quedan ANTES del early return para no romper hooks
   const daysList: DayBreakdown[] = Array.isArray(vacation?.daysdaysBrokenDown)

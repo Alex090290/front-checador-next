@@ -2,7 +2,7 @@ import React from "react";
 import InhabilityListView from "./InhabilityListView";
 import InhabilityFormView from "./InhabilityFormView";
 import NotFound from "@/app/not-found";
-import { Employee, IInability } from "@/lib/definitions";
+import { IInability } from "@/lib/definitions";
 import {
   getAllInability,
   getOneInability,

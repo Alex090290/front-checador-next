@@ -167,7 +167,7 @@ export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
   pages: number;
 }>  {
   try {
-    const { apiToken, API_URL: apiUrl, session } = await storeAction();
+    const { apiToken, API_URL: apiUrl } = await storeAction();
 
     const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
     const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);

@@ -61,6 +61,8 @@ export default function UserTableClient({
 }) {
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
+
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
@@ -80,12 +82,12 @@ export default function UserTableClient({
       setLoading(false);
       setMessageLoading("");
     }
-  }, [sp.toString()]);
+  }, [searchParamsString,loading]);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
     setMessageLoading("Cargando");
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
     params.set("page", String(nextPage));
     params.set("limit", String(limit));

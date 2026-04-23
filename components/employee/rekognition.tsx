@@ -46,7 +46,6 @@ export default function RegisterBiometricModal({
       files.forEach((item) => URL.revokeObjectURL(item.preview));
       stopCamera();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
   const stopCamera = () => {

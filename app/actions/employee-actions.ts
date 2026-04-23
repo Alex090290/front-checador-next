@@ -1,7 +1,7 @@
 "use server";
 
 import { ActionResponse, Employee } from "@/lib/definitions";
-import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
+import { CountryCode, PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { TInputsEmployee } from "../(auth)/app/employee/definition";
@@ -16,6 +16,28 @@ type FetchVacationsArgs = {
   employee?: number;
 };
 
+function getPhoneString(
+  value: PhoneNumberFormat | string | null | undefined
+): string {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value.internationalNumber || value.number || "";
+}
+
+function getEmptyPhone(): PhoneNumberFormat {
+  return {
+    countryCode: CountryCode.MX,
+    dialCode: "",
+    e164Number: "",
+    internationalNumber: "",
+    nationalNumber: "",
+    number: "",
+  };
+}
 export interface EmployeeBiometricPhoto {
   key: string;
   type?: "front" | "left" | "right" | "smile" | "custom";
@@ -302,38 +324,28 @@ export async function createEmployee({
   try {
     const { apiToken, API_URL } = await storeAction();
 
-    const sanitizedPhone = sanitizePhoneNumber(
-      data.phonePersonal as unknown as string
+    const sanitizedPhonePersonal = sanitizePhoneNumber(
+      getPhoneString(data.phonePersonal)
     );
 
-    /* const sanitizedPhonePersonal = sanitizePhoneNumber(
-      data.phonePersonal as unknown as string
-    ); */
+    const phoneCompanyString = getPhoneString(data.phoneCompany);
+    const homePhoneString = getPhoneString(data.homePhone);
 
-    const sanitizedPhoneCompany = data.phoneCompany
-      ? sanitizePhoneNumber(data.phoneCompany)
-      : ({
-          countryCode: "MX",
-          dialCode: "",
-          e164Number: "",
-          internationalNumber: "",
-          nationalNumber: "",
-          number: "",
-        } as PhoneNumberFormat);
+    const sanitizedPhoneCompany = phoneCompanyString
+      ? sanitizePhoneNumber(phoneCompanyString)
+      : getEmptyPhone();
 
-    const sanitizedEmergencyContacts = data?.emergencyContacts.map(
-      (contact) => {
-        return {
-          ...contact,
-          phone: sanitizePhoneNumber(
-            contact.phone.internationalNumber as unknown as string
-          ),
-        };
-      }
-    );
+    const sanitizedEmergencyContacts = data.emergencyContacts.map((contact) => {
+      const phoneString = getPhoneString(contact.phone);
 
-    const sanitizedHomePhone = data.homePhone
-      ? sanitizePhoneNumber(data.homePhone)
+      return {
+        ...contact,
+        phone: phoneString ? sanitizePhoneNumber(phoneString) : getEmptyPhone(),
+      };
+    });
+
+    const sanitizedHomePhone = homePhoneString
+      ? sanitizePhoneNumber(homePhoneString)
       : null;
 
     await axios
@@ -342,7 +354,7 @@ export async function createEmployee({
         {
           name: data.name,
           lastName: data.lastName,
-          phonePersonal: sanitizedPhone,
+          phonePersonal: sanitizedPhonePersonal,
           emailPersonal: data.emailPersonal,
           idCheck: data.idCheck,
           passwordCheck: data.passwordCheck,
@@ -395,24 +407,14 @@ export async function createEmployee({
           },
         }
       )
-      .then((res) => {
-        return res.data;
-      })
+      .then((res) => res.data)
       .catch((err) => {
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
             : "Error en la respuesta"
         );
       });
-
-    /* if (response.data.status === 400) {
-      const errs = response.data.errors
-        .map((err: { message: string }) => err.message)
-        .join("\n");
-
-      throw new Error(`${errs}`);
-    } */
 
     revalidatePath("/app/employee");
 
@@ -420,13 +422,13 @@ export async function createEmployee({
       success: true,
       message: "Empleado creado",
     };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: err.message,
     };
   }
 }
@@ -444,35 +446,29 @@ export async function updateEmploye({
     if (!id) {
       throw new Error("No se ha definido ID");
     }
-    
+
     const sanitizedPhonePersonal = sanitizePhoneNumber(
-      data.phonePersonal as unknown as string
+      getPhoneString(data.phonePersonal)
     );
 
-    const sanitizedPhoneCompany = data.phoneCompany
-      ? sanitizePhoneNumber(data.phoneCompany)
-      : ({
-          countryCode: "MX",
-          dialCode: "",
-          e164Number: "",
-          internationalNumber: "",
-          nationalNumber: "",
-          number: "",
-        } as PhoneNumberFormat);
+    const phoneCompanyString = getPhoneString(data.phoneCompany);
+    const homePhoneString = getPhoneString(data.homePhone);
 
-    const sanitizedEmergencyContacts = data?.emergencyContacts.map(
-      (contact) => {
-        return {
-          ...contact,
-          phone: sanitizePhoneNumber(
-            contact.phone.internationalNumber as unknown as string
-          ),
-        };
-      }
-    );
+    const sanitizedPhoneCompany = phoneCompanyString
+      ? sanitizePhoneNumber(phoneCompanyString)
+      : getEmptyPhone();
 
-    const sanitizedHomePhone = data.homePhone
-      ? sanitizePhoneNumber(data.homePhone)
+    const sanitizedEmergencyContacts = data.emergencyContacts.map((contact) => {
+      const phoneString = getPhoneString(contact.phone);
+
+      return {
+        ...contact,
+        phone: phoneString ? sanitizePhoneNumber(phoneString) : getEmptyPhone(),
+      };
+    });
+
+    const sanitizedHomePhone = homePhoneString
+      ? sanitizePhoneNumber(homePhoneString)
       : null;
 
     await axios
@@ -539,25 +535,14 @@ export async function updateEmploye({
           },
         }
       )
-      .then((res) => {
-        return res.data;
-      })
+      .then((res) => res.data)
       .catch((err) => {
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
             : "Error en la respuesta"
         );
       });
-
-    /* if (response.data.status === 400) {
-      const errs = response.data.errors
-        .map((err: { message: string }) => err.message)
-        .join("\n");
-
-      console.log(errs);
-      throw new Error(`${errs}`);
-    } */
 
     revalidatePath("/app/employee");
 
@@ -566,18 +551,17 @@ export async function updateEmploye({
       message: "Empleado actualizado",
       data: true,
     };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: err.message,
       data: false,
     };
   }
 }
-
 export async function deleteEmployee({
   id,
 }: {

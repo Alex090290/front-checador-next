@@ -10,11 +10,6 @@ import {
 } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 
-type IResponse = {
-  message: string;
-  status: number;
-  data: IInability[];
-};
 
 export interface IResponseInabilityCreate {
   message: string;

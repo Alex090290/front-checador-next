@@ -28,6 +28,7 @@ export default function AttendanceFiltersBar({
 }) {
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
 
   const currentYear = new Date().getFullYear();
 
@@ -41,7 +42,7 @@ export default function AttendanceFiltersBar({
   const [periodId, setPeriodId] = useState<string>(periodInitial ?? "null");
 
   const pushParams = (next: Record<string, string>) => {
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     Object.entries(next).forEach(([k, v]) => params.set(k, v));
     router.push(`${basePath}?${params.toString()}`);
   };

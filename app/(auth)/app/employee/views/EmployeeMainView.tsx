@@ -2,8 +2,6 @@ import NotFound from "@/app/not-found";
 import CatalogListView from "./EmployeeListView";
 import EmployeeFormView from "./EmployeeFormView";
 import {
-  Branch,
-  Department,
   Employee,
   IPeriod,
   Vacations,

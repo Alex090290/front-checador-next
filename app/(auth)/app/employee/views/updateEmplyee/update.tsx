@@ -4,7 +4,6 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import {
-  FieldGroup,
   FieldGroupFluid,
   FormBook,
   FormPage,
@@ -21,9 +20,8 @@ import {
 
 import { formatDate } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
-import { Button, Col, Form, Row, Table } from "react-bootstrap";
+import { Button, Col, Form, Table } from "react-bootstrap";
 import {
-  Controller,
   SubmitHandler,
   useFieldArray,
   useForm,

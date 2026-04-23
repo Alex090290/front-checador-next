@@ -13,7 +13,7 @@ import {
   User,
   Employee,
 } from "@/lib/definitions";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 
@@ -94,9 +94,9 @@ export default function FormUpdateUser({
     }
   };
 
-  const handleFetchResources = async () => {
+  const handleFetchResources = useCallback(async () => {
     setLoading(true);
-
+  
     try {
       reset({
         name: user?.name ?? "",
@@ -111,16 +111,16 @@ export default function FormUpdateUser({
         imageUrl: null,
         idEmployee: user?.idEmployee ?? null,
       });
-    } catch (error) {
+    } catch {
       modalError("No se pudo cargar la información del usuario");
     } finally {
       setLoading(false);
     }
-  };
+  }, [reset, user, modalError]);
 
   useEffect(() => {
     handleFetchResources();
-  }, [user]);
+  }, [handleFetchResources]);
 
   const onSubmit: SubmitHandler<TInputsUser> = async (data) => {
     const res = await sendData(data);

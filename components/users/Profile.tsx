@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import ModalBlur from "@/components/ModalBlur";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
-import { useModals } from "@/context/ModalContext";
 import { updateUser } from "@/app/actions/user-actions";
 import { User } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
@@ -58,7 +57,6 @@ export default function UserProfileView({
   const [loading] = useState(false);
   const [messageLoading] = useState("");
 
-  const { modalError } = useModals();
 
   if (!user) {
     return (

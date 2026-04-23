@@ -34,20 +34,21 @@ export default function TableInabilityComponent({
 }) {
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const [tableResetKey, setTableResetKey] = useState(0);
   const isClearingSelectionRef = useRef(false);
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-
+  const [, setSelectedIds] = useState<Array<string | number>>([]);
+  const tableResetKey = 0;
+  
   useEffect(() => {
     if (loading) {
       setLoading(false);
       setMessageLoading("");
     }
-  }, [sp.toString()]);
+  }, [searchParamsString, loading]);
 
   const handleCreate = () => {
     setLoading(true);
@@ -55,23 +56,11 @@ export default function TableInabilityComponent({
     router.push("/app/inability/create");
   };
 
-  const clearSelectedIds = () => {
-    isClearingSelectionRef.current = true;
-
-    tableRef.current?.clearSelection();
-    setSelectedIds([]);
-    setTableResetKey((k) => k + 1);
-
-    setTimeout(() => {
-      isClearingSelectionRef.current = false;
-    }, 0);
-  };
-
   const goToPage = (nextPage: number) => {
     setLoading(true);
     setMessageLoading("Cargando...");
 
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
     params.set("view_type", "list");
     params.set("page", String(nextPage));
@@ -166,46 +155,44 @@ export default function TableInabilityComponent({
   ];
 
   return (
-    <>
-      <div className="d-flex flex-column h-100 overflow-hidden">
-        <ConditionalRender cond={loading}>
-          <Loading message={messageLoading} />
-        </ConditionalRender>
+    <div className="d-flex flex-column h-100 overflow-hidden">
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
 
-        <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
-          <Button
-            size="sm"
-            variant="primary"
-            className="fw-semibold d-inline-flex align-items-center gap-2"
-            onClick={handleCreate}
-          >
-            <i className="bi bi-plus-lg" />
-            Crear Incapacidad
-          </Button>
-        </div>
-
-        <div className="flex-grow-1 overflow-hidden">
-          <ListView>
-            <ListView.Header title={`Incapacidades (${total})`} />
-
-            <ListView.Body>
-              <TableTemplateServer
-                ref={tableRef}
-                key={tableResetKey}
-                columns={columns}
-                data={inhabilities || []}
-                total={total}
-                page={page}
-                limit={limit}
-                onPageChange={(p) => goToPage(p)}
-                getRowId={(row) => Number(row.id)}
-                viewForm="/app/inability"
-                onSelectionChange={handleSelectionChange}
-              />
-            </ListView.Body>
-          </ListView>
-        </div>
+      <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+        <Button
+          size="sm"
+          variant="primary"
+          className="fw-semibold d-inline-flex align-items-center gap-2"
+          onClick={handleCreate}
+        >
+          <i className="bi bi-plus-lg" />
+          Crear Incapacidad
+        </Button>
       </div>
-    </>
+
+      <div className="flex-grow-1 overflow-hidden">
+        <ListView>
+          <ListView.Header title={`Incapacidades (${total})`} />
+
+          <ListView.Body>
+            <TableTemplateServer
+              ref={tableRef}
+              key={tableResetKey}
+              columns={columns}
+              data={inhabilities || []}
+              total={total}
+              page={page}
+              limit={limit}
+              onPageChange={(p) => goToPage(p)}
+              getRowId={(row) => Number(row.id)}
+              viewForm="/app/inability"
+              onSelectionChange={handleSelectionChange}
+            />
+          </ListView.Body>
+        </ListView>
+      </div>
+    </div>
   );
 }

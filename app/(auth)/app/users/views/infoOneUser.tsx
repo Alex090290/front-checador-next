@@ -14,10 +14,10 @@ export default async function UserInfoOne({id}:{id:string}){
     ]);
 
     return <> 
-        {/* <Suspense fallback={<Loading message="Cargando datos..." />}>
-          <ShowInfoOneUser user={findUSer} perms={perms} employees={employees} />    
-        </Suspense> */}
-        <ShowInfoOneUser user={findUSer} perms={perms} employees={employees.data} />    
+        <Suspense fallback={<Loading message="Cargando datos..." />}>
+          <ShowInfoOneUser user={findUSer} perms={perms} employees={employees.data} />    
+        </Suspense>
+  
 
     </>
 

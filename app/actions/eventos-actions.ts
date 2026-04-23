@@ -286,30 +286,51 @@ export async function fetchEventosReports(args: FetchArgs = {}): Promise<{
   try {
     const { API_URL, apiToken, session } = await storeAction();
 
-    let url = `${API_URL}/checador/reports/${args.idPeriod}`;
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
 
-    if (session?.role === "CHECADOR") url += `?idUser=${session?.id}`;
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
 
-    const response = await axios.get(url, {
+    if (session?.role === "CHECADOR" && session?.id) {
+      params.set("idUser", String(session.id));
+    }
+
+    const url = `${API_URL}/checador/reports/${args.idPeriod}?${params.toString()}`;
+
+    const response = await axios
+      .get(url, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },
       })
       .then((res) => {
-        return res;
+        return res.data;
       })
       .catch((err) => {
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
-            : "Error en la respuesta"
+            : "Error al listar registros de checador"
         );
       });
 
-    return response.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
-      return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
+    return {
+      data: response?.data ?? [],
+      total: response?.total ?? 0,
+      page: response?.page ?? pageNum,
+      limit: response?.limit ?? limitNum,
+      pages: response?.pages ?? 1,
+    };
+  } catch {
+
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      pages: 1,
+    };
   }
 }

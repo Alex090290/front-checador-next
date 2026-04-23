@@ -1,6 +1,5 @@
 import NotFound from "@/app/not-found";
 import EventosListView from "./EventosListView";
-import { Employee, ICheckInFeedback, User } from "@/lib/definitions";
 import { fetchEventos } from "@/app/actions/eventos-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
 import { fetchUsers } from "@/app/actions/user-actions";

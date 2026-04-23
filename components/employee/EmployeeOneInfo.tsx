@@ -43,10 +43,6 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import RegisterBiometricModal from "./rekognition";
 
-const employeeStatus = {
-  1: "activo",
-  2: "baja",
-} as const;
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
   if (!value) return "-";

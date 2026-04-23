@@ -1,5 +1,3 @@
-import { fetchBranchesQueries } from "@/app/actions/branches-actionst";
-import BranchesTableClient from "@/components/branches/brancheTableList";
 import { fetchDepartmentsQuery } from "@/app/actions/departments-actions";
 import DepartmentsTableList from "@/components/departments/TableListDepartments";
 import DepartmentInfoOnePage from "./DepartmentInfoOne";

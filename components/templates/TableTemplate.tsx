@@ -123,7 +123,7 @@ function TableTemplateInner<T>(
   const handleSelectAll = (checked: boolean) => {
     const visibleIds = Object.entries(paginatedData)
       .filter(([group]) => !(collapsedGroups[group] ?? false))
-      .flatMap(([_, rows]) => rows.map(getRowId));
+      .flatMap(([, rows]) => rows.map(getRowId));
 
     if (checked) {
       const hiddenIds = selectedIds.filter((id) => !visibleIds.includes(id));
@@ -236,7 +236,7 @@ function TableTemplateInner<T>(
 
   const allVisibleIds = Object.entries(paginatedData)
     .filter(([group]) => !(collapsedGroups[group] ?? false))
-    .flatMap(([_, rows]) => rows.map(getRowId));
+    .flatMap(([, rows]) => rows.map(getRowId));
 
   return (
     <Table borderless hover style={{ fontSize: "0.9rem" }}>

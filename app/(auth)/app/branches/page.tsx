@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Loading from "@/components/LoadingSpinner";
 import { Suspense } from "react";
 import ListAllBranches from "./ListAllBranches";
@@ -12,13 +13,15 @@ type SearchParams = {
 async function PageBranches({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
 
-  const id = searchParams?.id ?? "null";
+  const params = await searchParams;
 
-  const page = searchParams?.page ?? "1";
-  const limit = searchParams?.limit ?? "20";
+  const id = params?.id ?? "null";
+
+  const page = params?.page ?? "1";
+  const limit = params?.limit ?? "20";
   
   return <>
       <Suspense fallback={<Loading message="Cargando datos..." />}>

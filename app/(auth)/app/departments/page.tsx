@@ -1,9 +1,8 @@
-import LoadingPage from "@/app/LoadingPage";
+export const dynamic = "force-dynamic";
 import Loading from "@/components/LoadingSpinner";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import ListAllDepartments from "./views/ListAllDepartments";
 
-const DepartmentsMainView = lazy(() => import("./views/DepartmentsMainView"));
 
 type SearchParams = {
   view_type?: string;
@@ -15,12 +14,14 @@ type SearchParams = {
 async function PageDepartments({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const id = searchParams?.id ?? "null";
+  const params = await searchParams;
 
-  const page = searchParams?.page ?? "1";
-  const limit = searchParams?.limit ?? "20";
+  const id = params?.id ?? "null";
+
+  const page = params?.page ?? "1";
+  const limit = params?.limit ?? "20";
 
   return (
     <Suspense fallback={<Loading message="Cargando datos..." />}>

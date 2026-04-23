@@ -2,7 +2,7 @@
 import NotFound from "@/app/not-found";
 import VacationsFormView from "./VacationsFormView";
 import VacationsListView from "./VacationsListView";
-import { Employee, Vacations } from "@/lib/definitions";
+import { Vacations } from "@/lib/definitions";
 import {
   fetchVacations,
   findVacationById,

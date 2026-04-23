@@ -48,6 +48,7 @@ export default function AttendanceTable({
 }) {
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
 
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -58,13 +59,13 @@ export default function AttendanceTable({
       setLoading(false);
       setMessageLoading("");
     }
-  }, [sp.toString(), loading]);
+  }, [searchParamsString, loading]);
 
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
     setMessageLoading("Cargando...");
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     params.set("id", id);
     params.set("year", `${year}`);
     params.set("page", String(nextPage));

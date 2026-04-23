@@ -29,8 +29,9 @@ export default function VacationsTableClient({
   
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
+
   const [loading, setLoading] = useState(false);
-  const [ buttonCrete, setButtonCreate] = useState(false);
   const [messageLoading, setMessageLoading] = useState('');
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
@@ -41,7 +42,7 @@ export default function VacationsTableClient({
       setMessageLoading("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sp.toString()]);
+  }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);

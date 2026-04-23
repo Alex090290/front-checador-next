@@ -1,7 +1,7 @@
 "use client";
 
 import { identifyEmployeeByFace } from "@/app/actions/employee-actions";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Button, Spinner } from "react-bootstrap";
 import toast from "react-hot-toast";
 
@@ -21,34 +21,23 @@ export default function FaceCheckPanel({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const resetTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [cameraOpen, setCameraOpen] = useState(false);
   const [startingCamera, setStartingCamera] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState("Colócate frente a la cámara");
 
-  useEffect(() => {
-    handleOpenCamera();
-
-    return () => {
-      stopCamera();
-
-      if (resetTimerRef.current) {
-        clearTimeout(resetTimerRef.current);
-      }
-    };
-  }, []);
-
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
-    setCameraOpen(false);
-  };
 
-  const handleOpenCamera = async () => {
+    setCameraOpen(false);
+  }, []);
+
+  const handleOpenCamera = useCallback(async () => {
     try {
       setStartingCamera(true);
       setMessage("Abriendo cámara...");
@@ -79,7 +68,19 @@ export default function FaceCheckPanel({
     } finally {
       setStartingCamera(false);
     }
-  };
+  }, [onEnableManual]);
+
+  useEffect(() => {
+    handleOpenCamera();
+
+    return () => {
+      stopCamera();
+
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, [handleOpenCamera, stopCamera]);
 
   const capturePhotoAsFile = async (): Promise<File | null> => {
     const video = videoRef.current;

@@ -57,7 +57,7 @@ export default function FormUpdateProfile({
   });
 
   const [loading, setLoading] = useState(false);
-  const { modalError, modalConfirm } = useModals();
+  const { modalError } = useModals();
 
   useEffect(() => {
     setLoading(true);

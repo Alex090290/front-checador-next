@@ -30,19 +30,22 @@ export default function EmployeeTableClient({
 }) {
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
+  const currentSearch = sp.get("search") ?? "";
+
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [tableResetKey, setTableResetKey] = useState(0);
   const isClearingSelectionRef = useRef(false);
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
+  const [, setSelectedIds] = useState<Array<string | number>>([]);
 
   useEffect(() => {
     if (loading) {
       setLoading(false);
       setMessageLoading("");
     }
-  }, [sp.toString(), loading]);
+  }, [searchParamsString, loading]);
 
   const handleCreate = () => {
     setLoading(true);
@@ -50,7 +53,7 @@ export default function EmployeeTableClient({
     router.push("/app/employee/create");
   };
 
-  const clearSelectedIds = () => {
+  const clearSelectedIds = useCallback(() => {
     isClearingSelectionRef.current = true;
 
     tableRef.current?.clearSelection();
@@ -60,12 +63,12 @@ export default function EmployeeTableClient({
     setTimeout(() => {
       isClearingSelectionRef.current = false;
     }, 0);
-  };
+  }, []);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
     setMessageLoading("Cargando...");
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
     params.set("view_type", "list");
     params.set("page", String(nextPage));
@@ -87,13 +90,12 @@ export default function EmployeeTableClient({
 
   const handleSearch = useCallback(
     (value: string) => {
-      const currentSearch = sp.get("search") ?? "";
       if (value === currentSearch) return;
 
       setLoading(true);
       setMessageLoading("Buscando...");
 
-      const params = new URLSearchParams(sp.toString());
+      const params = new URLSearchParams(searchParamsString);
       params.set("id", "null");
       params.set("view_type", "list");
       params.set("page", "1");
@@ -108,7 +110,7 @@ export default function EmployeeTableClient({
       clearSelectedIds();
       router.push(`/app/employee?${params.toString()}`);
     },
-    [sp, limit, router]
+    [currentSearch, searchParamsString, limit, router, clearSelectedIds]
   );
 
   const columns: TableTemplateColumn<Employee>[] = [
@@ -201,56 +203,54 @@ export default function EmployeeTableClient({
   ];
 
   return (
-    <>
-      <div className="d-flex flex-column h-100 overflow-hidden">
-        <ConditionalRender cond={loading}>
-          <Loading message={messageLoading} />
-        </ConditionalRender>
+    <div className="d-flex flex-column h-100 overflow-hidden">
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
 
-        <div className="flex-shrink-0 mb-2 mt-2">
-          <Row className="g-2 align-items-center">
-            <Col xs={12} md="auto">
-              <Button
-                size="sm"
-                variant="primary"
-                className="fw-semibold d-inline-flex align-items-center gap-2"
-                onClick={handleCreate}
-              >
-                <i className="bi bi-plus-lg" />
-                Crear Empleado
-              </Button>
-            </Col>
+      <div className="flex-shrink-0 mb-2 mt-2">
+        <Row className="g-2 align-items-center">
+          <Col xs={12} md="auto">
+            <Button
+              size="sm"
+              variant="primary"
+              className="fw-semibold d-inline-flex align-items-center gap-2"
+              onClick={handleCreate}
+            >
+              <i className="bi bi-plus-lg" />
+              Crear Empleado
+            </Button>
+          </Col>
 
-            <Col xs={12} md={5} lg={4}>
-              <EmployeeSearchInput
-                initialValue={search}
-                onSearch={handleSearch}
-                placeholder="Buscar por nombre, apellido, departamento..."
-              />
-            </Col>
-          </Row>
-        </div>
-
-        <div className="flex-grow-1 overflow-hidden">
-          <ListView>
-            <ListView.Body>
-              <TableTemplateServer
-                ref={tableRef}
-                key={tableResetKey}
-                columns={columns}
-                data={employees || []}
-                total={total}
-                page={page}
-                limit={limit}
-                onPageChange={(p) => goToPage(p)}
-                getRowId={(row) => Number(row.id)}
-                viewForm="/app/employee"
-                onSelectionChange={handleSelectionChange}
-              />
-            </ListView.Body>
-          </ListView>
-        </div>
+          <Col xs={12} md={5} lg={4}>
+            <EmployeeSearchInput
+              initialValue={search}
+              onSearch={handleSearch}
+              placeholder="Buscar por nombre, apellido, departamento..."
+            />
+          </Col>
+        </Row>
       </div>
-    </>
+
+      <div className="flex-grow-1 overflow-hidden">
+        <ListView>
+          <ListView.Body>
+            <TableTemplateServer
+              ref={tableRef}
+              key={tableResetKey}
+              columns={columns}
+              data={employees || []}
+              total={total}
+              page={page}
+              limit={limit}
+              onPageChange={(p) => goToPage(p)}
+              getRowId={(row) => Number(row.id)}
+              viewForm="/app/employee"
+              onSelectionChange={handleSelectionChange}
+            />
+          </ListView.Body>
+        </ListView>
+      </div>
+    </div>
   );
 }

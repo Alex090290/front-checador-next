@@ -17,6 +17,7 @@ export default function DeleteleVacation({
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
 
   const permissionDelete =
     session?.uid?.permissions?.some(
@@ -24,7 +25,7 @@ export default function DeleteleVacation({
     ) ?? false;
 
   const goToPage = (nextPage: number) => {
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     params.set("view_type", "list");
     params.set("id", "null");
     params.set("page", String(nextPage));

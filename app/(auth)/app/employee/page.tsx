@@ -1,5 +1,6 @@
+export const dynamic = "force-dynamic";
 import Loading from "@/components/LoadingSpinner";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import ListAllEmployees from "./views/ListAllEmployees";
 
 
@@ -15,13 +16,15 @@ type SearchParams = {
 async function PageEmployee({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const id = searchParams?.id ?? "null";
+  const params = await searchParams;
 
-  const page = searchParams?.page ?? "1";
-  const limit = searchParams?.limit ?? "20";
-  const search = searchParams?.search ?? "";
+  const id = params?.id ?? "null";
+
+  const page = params?.page ?? "1";
+  const limit = params?.limit ?? "20";
+  const search = params?.search ?? "";
   // const { view_type: viewType, id } = await searchParams;
 
   return (

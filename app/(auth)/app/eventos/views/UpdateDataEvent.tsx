@@ -10,12 +10,8 @@ import Loading from "@/components/LoadingSpinner";
 import { FieldGroup, FieldGroupFluid } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import { ActionResponse, ModalBasicProps } from "@/lib/definitions";
-import { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Spinner,
-} from "react-bootstrap";
+import { useCallback, useEffect, useState } from "react";
+import { Button, Form, Spinner } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 type TInputs = {
@@ -48,41 +44,34 @@ function FormUpdateEvent({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<TInputs>();
-  
+
   const { modalError } = useModals();
 
   const [checadorTypes, setChecadorTypes] = useState<string[]>([]);
   const [checadorStatus, setChecadorStatus] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleFetchResources = async () => {
+  const handleFetchResources = useCallback(async () => {
     setLoading(true);
-    let types: string[] = [];
-    let status: string[] = [];
 
-    [types, status] = await Promise.all([
-      fetchChecadorTypes(),
-      fetchChecadorStatus(),
-    ]);
+    try {
+      const [types, status] = await Promise.all([
+        fetchChecadorTypes(),
+        fetchChecadorStatus(),
+      ]);
 
-    setChecadorTypes(types);
-    setChecadorStatus(status);
+      setChecadorTypes(types);
+      setChecadorStatus(status);
 
-    reset({ status: currentStatus, type: currentType });
-    setLoading(false);
-  };
+      reset({ status: currentStatus, type: currentType });
+    } finally {
+      setLoading(false);
+    }
+  }, [reset, currentStatus, currentType]);
 
   useEffect(() => {
     handleFetchResources();
-  }, []);
-
-  // const handleOnEntered = () => {
-  //   handleFetchResources();
-  // };
-
-  // const handleOnExited = () => {
-  //   reset({ status: "", type: "" });
-  // };
+  }, [handleFetchResources]);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     const res = await sendData(
@@ -91,6 +80,7 @@ function FormUpdateEvent({
       data.dateHour,
       data.minutesDifference
     );
+
     if (!res.success) {
       modalError(res.message);
       return;
@@ -99,61 +89,68 @@ function FormUpdateEvent({
     onHide();
   };
 
-  return <>
-        <ConditionalRender cond={loading}>
-            <Loading message="Cargando..." />    
-        </ConditionalRender>
-        <Form onSubmit={handleSubmit(onSubmit)}>
+  return (
+    <>
+      <ConditionalRender cond={loading}>
+        <Loading message="Cargando..." />
+      </ConditionalRender>
 
-            <fieldset disabled={isSubmitting || loading}>
-              <FieldGroupFluid>
-                <FieldSelect
-                  register={register("type", { required: true })}
-                  options={checadorTypes.map((t) => ({
-                    label: t.replace(/_/g, " ").toUpperCase(),
-                    value: t,
-                  }))}
-                  label="Evento:"
-                  invalid={!!errors.type}
-                />
-                <FieldSelect
-                  register={register("status", { required: true })}
-                  options={checadorStatus.map((ev) => ({
-                    label: ev.replace(/_/g, " ").toUpperCase(),
-                    value: ev,
-                  }))}
-                  label="Status:"
-                  invalid={!!errors.type}
-                />
-                <Entry
-                  type="datetime-local"
-                  label="Fecha y Hora"
-                  register={register("dateHour")}
-                />
-                <Entry
-                  label="Diferencia"
-                  type="number"
-                  register={register("minutesDifference")}
-                />
-                <FieldGroup.Stack>
-                  <Button type="submit">
-                    {isSubmitting ? (
-                      <>
-                        <Spinner size="sm" animation="border" />
-                        <span>Modificando...</span>
-                      </>
-                    ) : (
-                      <span>Modificar</span>
-                    )}
-                  </Button>
-                  <Button type="reset" variant="secondary" onClick={onHide}>
-                    Cancelar
-                  </Button>
-                </FieldGroup.Stack>
-              </FieldGroupFluid>
-            </fieldset>
-        </Form>
-  </>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset disabled={isSubmitting || loading}>
+          <FieldGroupFluid>
+            <FieldSelect
+              register={register("type", { required: true })}
+              options={checadorTypes.map((t) => ({
+                label: t.replace(/_/g, " ").toUpperCase(),
+                value: t,
+              }))}
+              label="Evento:"
+              invalid={!!errors.type}
+            />
+
+            <FieldSelect
+              register={register("status", { required: true })}
+              options={checadorStatus.map((ev) => ({
+                label: ev.replace(/_/g, " ").toUpperCase(),
+                value: ev,
+              }))}
+              label="Status:"
+              invalid={!!errors.status}
+            />
+
+            <Entry
+              type="datetime-local"
+              label="Fecha y Hora"
+              register={register("dateHour")}
+            />
+
+            <Entry
+              label="Diferencia"
+              type="number"
+              register={register("minutesDifference")}
+            />
+
+            <FieldGroup.Stack>
+              <Button type="submit">
+                {isSubmitting ? (
+                  <>
+                    <Spinner size="sm" animation="border" />
+                    <span>Modificando...</span>
+                  </>
+                ) : (
+                  <span>Modificar</span>
+                )}
+              </Button>
+
+              <Button type="reset" variant="secondary" onClick={onHide}>
+                Cancelar
+              </Button>
+            </FieldGroup.Stack>
+          </FieldGroupFluid>
+        </fieldset>
+      </Form>
+    </>
+  );
 }
 
 export default FormUpdateEvent;

@@ -87,7 +87,6 @@ export async function updateConfigSystem(data: ConfigSystemUpdate): Promise<Acti
       success: true,
       message: "Departamento actualizado",
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Error inesperado";
       console.log(error);

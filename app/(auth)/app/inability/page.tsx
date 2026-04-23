@@ -1,5 +1,6 @@
+export const dynamic = "force-dynamic";
 import Loading from "@/components/LoadingSpinner";
-import React, { lazy, Suspense } from "react";
+import React, { Suspense } from "react";
 import ListAllInability from "./views/ListAllInabilities";
 
 type SearchParams = {
@@ -13,13 +14,13 @@ type SearchParams = {
 async function PageInahibility({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  // const { view_type: viewType, id } = await searchParams;
-  const id = searchParams?.id ?? "null";
+  const params = await searchParams;
+  const id = params?.id ?? "null";
 
-  const page = searchParams?.page ?? "1";
-  const limit = searchParams?.limit ?? "20";
+  const page = params?.page ?? "1";
+  const limit = params?.limit ?? "20";
 
   return (
     <Suspense fallback={<Loading message="Cargando datos..." />}>

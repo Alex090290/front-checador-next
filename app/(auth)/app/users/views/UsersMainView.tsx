@@ -1,6 +1,6 @@
 import NotFound from "@/app/not-found";
 import UsersListView from "./UsersListView";
-import { Employee, Permission, User } from "@/lib/definitions";
+import { User } from "@/lib/definitions";
 import { fetchUsers, findUserById } from "@/app/actions/user-actions";
 import UsersFormView from "./UsersFormView";
 import { fetchPermissions } from "@/app/actions/permission-actions";

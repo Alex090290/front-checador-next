@@ -1,7 +1,7 @@
 import NotFound from "@/app/not-found";
 import OverFormView from "./OverFormView";
 import OverListView from "./OverListView";
-import { Employee, IOvertime } from "@/lib/definitions";
+import { IOvertime } from "@/lib/definitions";
 import {
   fetchOvertimes,
   getOvertimeById,

@@ -1,16 +1,17 @@
 "use client";
 
 import ListView from "@/components/templates/ListView";
-import TableTemplate, {
+import {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { VacationRequestStatus, Vacations } from "@/lib/definitions";
-import { Badge, Button } from "react-bootstrap";
-import { formatDate } from "date-fns";
+import { Badge } from "react-bootstrap";
 import moment from "moment-timezone";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import TableTemplateServer from "@/components/templates/TablePage";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 
 export const vacationStatus: Record<VacationRequestStatus, string> = {
   APPROVED: "Aprobado",
@@ -33,10 +34,21 @@ function VacationsListView({
 }) {
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
+
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      setMessageLoading("");
+    }
+  }, [searchParamsString, loading]);
 
 
   const goToPage = (nextPage: number) => {
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     params.set("view_type", "list");
     params.set("id", "null");
     params.set("page", String(nextPage));
@@ -119,11 +131,12 @@ function VacationsListView({
   );
   
  return (
+  <div className="d-flex flex-column h-100 overflow-hidden">
+    <ConditionalRender cond={loading}>
+      <Loading message={messageLoading} />
+    </ConditionalRender>
+
     <ListView>
-      <ListView.Header
-        title={`Vacaciones (${total})`}
-        formView="/app/vacations?view_type=form&id=null" 
-      />
 
       <ListView.Body>
         <TableTemplateServer
@@ -138,6 +151,7 @@ function VacationsListView({
         />
       </ListView.Body>
     </ListView>
+      </div>
   );
 }
 

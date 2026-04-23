@@ -261,7 +261,7 @@ function TableTemplateServerInner<T>(
 
   const allVisibleIds = Object.entries(visibleData)
     .filter(([group]) => !(collapsedGroups[group] ?? false))
-    .flatMap(([_, rows]) => rows.map(getRowId));
+    .flatMap(([, rows]) => rows.map(getRowId));
 
   const handleSelectAll = (checked: boolean) => {
     const visibleIds = allVisibleIds;

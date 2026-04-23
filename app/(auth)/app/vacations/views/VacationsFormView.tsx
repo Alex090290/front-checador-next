@@ -231,30 +231,38 @@ function VacationsFormView({
         setPeriods([]);
         return;
       }
-
+  
       const res = await fetchPeriods({
         idEmployee: Number(idEmployeeSelected),
       });
-
+  
       const nextPeriods = (res ?? []) as PeriodVacation[];
       setPeriods(nextPeriods);
-
-      // ✅ si estamos creando y aún no hay periodo, setear el primero
+  
       if (id === "null") {
         const current = watch("idPeriod");
         const currentNum = Number(current);
-        if ((!current || Number.isNaN(currentNum) || currentNum === 0) && nextPeriods.length > 0) {
-          setValue("idPeriod", Number(nextPeriods[0].id), { shouldDirty: false });
+  
+        if (
+          (!current || Number.isNaN(currentNum) || currentNum === 0) &&
+          nextPeriods.length > 0
+        ) {
+          setValue("idPeriod", Number(nextPeriods[0].id), {
+            shouldDirty: false,
+          });
         }
-      }else{
-        setValue("idPeriod", Number(vacation?.period.id), { shouldDirty: false });
+      } else {
+        setValue("idPeriod", Number(vacation?.period?.id), {
+          shouldDirty: false,
+        });
       }
     } catch (error) {
       console.error(error);
       setPeriods([]);
     }
-  }, [idEmployeeSelected, id, setValue, watch]);
+  }, [idEmployeeSelected, id, setValue, watch, vacation?.period?.id]);
 
+  
   useEffect(() => {
     getPeriods();
   }, [getPeriods]);

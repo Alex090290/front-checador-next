@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge, Button } from "react-bootstrap";
 import { formatDate } from "date-fns";
@@ -9,8 +9,7 @@ import ListView from "../templates/ListView";
 import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 
-import { IPermissionRequest, Vacations } from "@/lib/definitions";
-import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
+import { IPermissionRequest } from "@/lib/definitions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 
@@ -37,6 +36,8 @@ export default function PermissionsTableClient({
   
   const router = useRouter();
   const sp = useSearchParams();
+  const searchParamsString = sp.toString();
+
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState('');
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
@@ -48,12 +49,12 @@ export default function PermissionsTableClient({
       setMessageLoading("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sp.toString()]);
+  }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
     setMessageLoading('Cargando');
-    const params = new URLSearchParams(sp.toString());
+    const params = new URLSearchParams(searchParamsString);
     params.set("view_type", "list");
     params.set("id", "null");
     params.set("page", String(nextPage));
