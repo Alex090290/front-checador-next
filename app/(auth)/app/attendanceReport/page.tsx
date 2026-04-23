@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import ListAttendanceAll from "./views/ListReportAll";
+import Loading from "@/components/LoadingSpinner";
 
 type SearchParams = {
   id?: string;
@@ -19,7 +21,9 @@ export default function PageAttendanceReport({
   const year = searchParams?.year ?? "2026";
     
   return (
-    <ListAttendanceAll year={year} id={id} limit={limit} page={page} />
+    <Suspense fallback={<Loading message="Cargando datos..." />}>
+        <ListAttendanceAll year={year} id={id} limit={limit} page={page} />
+    </Suspense>
   );
 }
  

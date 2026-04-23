@@ -30,7 +30,6 @@ export default async function ListAttendanceAll({
       ? await fetchEventosReports({ idPeriod, page: pageParse, limit: limitParse })
       : { data: [], total: 0 };
 
-      console.log("listAttendance: ",listAttendance);
       
   return (
     <>

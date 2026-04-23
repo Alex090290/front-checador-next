@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
 import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
 
 // ✅ ajusta el import a donde dejaste la interface
 // ejemplo: import { AttendanceReportRow } from "@/lib/definitions";
@@ -48,8 +50,20 @@ export default function AttendanceTable({
   const sp = useSearchParams();
 
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      setMessageLoading("");
+    }
+  }, [sp.toString(), loading]);
+
 
   const goToPage = (nextPage: number) => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
     const params = new URLSearchParams(sp.toString());
     params.set("id", id);
     params.set("year", `${year}`);
@@ -142,27 +156,29 @@ export default function AttendanceTable({
   );
 
   return (
-    <ListView>
-      <ListView.Header
-        title={`Reporte de asistencias (${total})`}
-        // si tendrás form/detalle, aquí va tu ruta:
-        // formView="/app/attendanceReport?view_type=form&id=null"
-      />
+    <div className="d-flex flex-column h-100 overflow-hidden">
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
 
-      <ListView.Body>
-        <TableTemplateServer
-          ref={tableRef}
-          columns={columns}
-          data={data}
-          total={total}
-          page={page}
-          limit={limit}
-          onPageChange={(p) => goToPage(p)}
-          getRowId={(row) => row.idEmployee}
-          // si quieres click a detalle por empleado:
-          // viewForm="/app/attendanceReport?view_type=form"
-        />
-      </ListView.Body>
-    </ListView>
+      <div className="flex-grow-1 overflow-hidden">
+        <ListView>
+          <ListView.Body>
+            <TableTemplateServer
+              ref={tableRef}
+              columns={columns}
+              data={data}
+              total={total}
+              page={page}
+              limit={limit}
+              onPageChange={(p) => goToPage(p)}
+              getRowId={(row) => row.idEmployee}
+              // si quieres click a detalle por empleado:
+              // viewForm="/app/attendanceReport?view_type=form"
+            />
+          </ListView.Body>
+        </ListView>
+      </div>
+    </div>
   );
 }
