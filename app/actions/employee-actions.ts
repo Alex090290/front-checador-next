@@ -649,3 +649,57 @@ export async function reEntry({
     };
   }
 }
+
+export async function createNewDocumentEmployee({
+  nameDocument,
+}: {
+  nameDocument: string;
+}): Promise<
+  ActionResponse<{
+    newDocumentId: number;
+    documentName: string;
+    employeesUpdated: number;
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const response = await axios
+      .post(
+        `${API_URL}/employee/newDocument`,
+        {
+          nameDocument,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => res.data)
+      .catch((err) => {
+        throw new Error(
+          err.response?.data?.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: response.message || "Nueva plantilla creada correctamente",
+      data: response.data || null,
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
+
+    return {
+      success: false,
+      message: err.message,
+      data: null,
+    };
+  }
+}

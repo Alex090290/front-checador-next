@@ -455,10 +455,12 @@ export async function updatePasswordUser({
 export async function unsubscribeUser({
   dischargeReason,
   typeOfDischarge,
+  dischargeDate,
   id,
 }: {
   dischargeReason: string;
   typeOfDischarge: string;
+  dischargeDate: string;
   id: number | null;
 }): Promise<ActionResponse<boolean>> {
   try {
@@ -470,6 +472,7 @@ export async function unsubscribeUser({
         {
           dischargeReason,
           typeOfDischarge,
+          dischargeDate
         },
         {
           headers: {
@@ -494,12 +497,19 @@ export async function unsubscribeUser({
       success: true,
       message: "",
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any    
   } catch (error: any) {
-    console.log(error);
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
     return {
       success: false,
-      message: error.message,
+      message: message,
     };
   }
 }

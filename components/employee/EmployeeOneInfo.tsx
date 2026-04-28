@@ -42,6 +42,8 @@ import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import RegisterBiometricModal from "./rekognition";
+import UnsubscribeEmployeeComponent from "./Unsubscribe";
+import NewDocumentEmployeeComponent from "./NewDocument";
 
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
@@ -140,6 +142,8 @@ export default function EmployeeDetailsView({
   const [showRegisterBiometricModal, setShowRegisterBiometricModal] = useState(false);
   const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showUnsubscribeEmployeeModal, setShowUnsubscribeEmployeeModal] = useState(false);
+  const [showNewDocumentEmployeeModal, setShowNewDocumentEmployeeModal] = useState(false);
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||
@@ -172,29 +176,6 @@ export default function EmployeeDetailsView({
     });
   };
 
-const handleDeleteEmployee = async () => {
-  if (!employee?.id) {
-    modalError("No se encontró el empleado");
-    return;
-  }
-
-  modalConfirm("Confirma la baja del empleado", async () => {
-    try {
-      setLoading(true);
-
-      const res = await deleteEmployee({ id: Number(employee.id) });
-
-      if (!res.success) {
-        modalError(res.message);
-        return;
-      }
-
-      toast.success(res.message);
-    } finally {
-      setLoading(false);
-    }
-  });
-};
 
 const handleReEntry = async () => {
   if (!employee?.id) {
@@ -243,7 +224,11 @@ const handleReEntry = async () => {
         </Button>
 
         {employee?.status === 1 && (
-          <Button size="sm" variant="danger" onClick={handleDeleteEmployee}>
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() => setShowUnsubscribeEmployeeModal(true)}
+          >
             <i className="bi bi-arrow-down me-2" />
             Dar de baja
           </Button>
@@ -735,15 +720,20 @@ const handleReEntry = async () => {
 
         <FormPage title="Documentos" eventKey="documents">
           <Container className="mt-1">
-            <Row>
+            <Row className="mb-2">
               <Col md="12">
                 <Nav>
                   {session?.user?.permissions.some(
                     (p) => p.text === "crear_plantilla_de_documento"
                   ) && (
-                    <Nav.Item>
-                      <Nav.Link>Nueva plantilla</Nav.Link>
-                    </Nav.Item>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => setShowNewDocumentEmployeeModal(true)}
+                    >
+                      <i className="bi bi-file-earmark-plus me-2 mt-2" />
+                      Nueva plantilla
+                    </Button>
                   )}
                 </Nav>
               </Col>
@@ -879,6 +869,28 @@ const handleReEntry = async () => {
           />
         </ModalBlur>
       )}
+      {showUnsubscribeEmployeeModal && employee?.id && (
+      <ModalBlur onClose={() => setShowUnsubscribeEmployeeModal(false)}>
+        <UnsubscribeEmployeeComponent
+          employeeId={Number(employee.id)}
+          employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
+          onClose={() => setShowUnsubscribeEmployeeModal(false)}
+          onSuccess={() => {
+            setShowUnsubscribeEmployeeModal(false);
+          }}
+        />
+      </ModalBlur>
+    )}
+    {showNewDocumentEmployeeModal && (
+      <ModalBlur onClose={() => setShowNewDocumentEmployeeModal(false)}>
+        <NewDocumentEmployeeComponent
+          onClose={() => setShowNewDocumentEmployeeModal(false)}
+          onSuccess={() => {
+            setShowNewDocumentEmployeeModal(false);
+          }}
+        />
+      </ModalBlur>
+    )}
     </>
   );
 }
