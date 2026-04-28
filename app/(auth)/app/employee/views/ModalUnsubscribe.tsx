@@ -36,6 +36,7 @@ function ModalUnsubscribe({
     const res = await unsubscribeUser({
       dischargeReason: data.dischargeReason || "",
       typeOfDischarge: data.typeOfDischarge || "",
+      dischargeDate: '',
       id,
     });
 
