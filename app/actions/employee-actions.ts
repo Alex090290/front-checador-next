@@ -1,20 +1,123 @@
 "use server";
 
 import { ActionResponse, Employee } from "@/lib/definitions";
-import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
+import { CountryCode, PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { TInputsEmployee } from "../(auth)/app/employee/definition";
 import { storeAction } from "./storeActions";
 
-export async function fetchEmployees(): Promise<Employee[]> {
+type FetchVacationsArgs = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  leader?: number;
+  personDoh?: number;
+  employee?: number;
+};
+
+function getPhoneString(
+  value: PhoneNumberFormat | string | null | undefined
+): string {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value.internationalNumber || value.number || "";
+}
+
+function getEmptyPhone(): PhoneNumberFormat {
+  return {
+    countryCode: CountryCode.MX,
+    dialCode: "",
+    e164Number: "",
+    internationalNumber: "",
+    nationalNumber: "",
+    number: "",
+  };
+}
+export interface EmployeeBiometricPhoto {
+  key: string;
+  type?: "front" | "left" | "right" | "smile" | "custom";
+  createdAt?: string | Date;
+  active?: boolean;
+}
+export async function fetchEmployees(
+  args: FetchVacationsArgs & { search?: string } = {}
+): Promise<{
+  data: Employee[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
-    const response = await axios
-      .get(`${API_URL}/employee/listall`, {
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 500);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+
+    if (args.search?.trim()) {
+      params.set("search", args.search.trim());
+    }
+
+    const response = await axios.get(
+      `${API_URL}/employee/listall?${params.toString()}`,
+      {
         headers: {
           Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.log(error);
+
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      pages: 1,
+    };
+  }
+}
+
+
+export async function enrollEmployeeFace({
+  idEmployee,
+  files,
+}: {
+  idEmployee: number;
+  files: File[];
+}): Promise<
+  ActionResponse<{
+    idEmployee: number;
+    biometricPhotos: EmployeeBiometricPhoto[];
+    biometricEnrolledAt: string | Date;
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append("img", file);
+    });
+
+    const response = await axios
+      .post(`${API_URL}/employee/enrollFace/${idEmployee}`, formData, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
         },
       })
       .then((res) => {
@@ -22,18 +125,152 @@ export async function fetchEmployees(): Promise<Employee[]> {
       })
       .catch((err) => {
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
-            : "Error en la respuesta"
+            : "Error al registrar biométricos"
         );
       });
 
-    return response.data || [];
-
+    return {
+      success: true,
+      message: response.message || "Biométricos enrolados correctamente",
+      data: response.data || null,
+    };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(error);
-    return [];
+
+    return {
+      success: false,
+      message: error.message || "Error al registrar biométricos",
+      data: null,
+    };
+  }
+}
+
+export async function validateEmployeeFaceCheck({
+  idEmployee,
+  file,
+}: {
+  idEmployee: number;
+  file: File;
+}): Promise<
+  ActionResponse<{
+    matched: boolean;
+    similarity: number;
+    bestMatchKey?: string | null;
+    results?: {
+      key: string;
+      similarity: number;
+      matched: boolean;
+      data?: unknown;
+    }[];
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const formData = new FormData();
+    formData.append("img", file);
+
+    const response = await axios
+      .post(`${API_URL}/employee/validateFaceCheck/${idEmployee}`, formData, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message
+            ? err.response.data.message
+            : "Error al validar biométricos"
+        );
+      });
+
+    return {
+      success: true,
+      message: response.message || "Rostro validado correctamente",
+      data: response.data || null,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      success: false,
+      message: error.message || "Error al validar biométricos",
+      data: null,
+    };
+  }
+}
+
+export async function identifyEmployeeByFace({
+  file,
+  lat,
+  lng,
+}: {
+  file: File;
+  lat: number;
+  lng: number;
+}): Promise<
+  ActionResponse<{
+    matched: boolean;
+    similarity: number;
+    employee?: {
+      id: number;
+      name: string;
+      lastName: string;
+    };
+    checkMessage?: string;
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const formData = new FormData();
+    formData.append("img", file);
+    formData.append("lat", String(lat));
+    formData.append("lng", String(lng));
+
+    const response = await axios
+      .post(`${API_URL}/check/identifyByFace`, formData, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message
+            ? err.response.data.message
+            : "Error al identificar por rostro"
+        );
+      });
+
+    return {
+      success: true,
+      message:
+        response?.data?.checkMessage ||
+        response.message ||
+        "Identificación facial correcta",
+      data: response.data || null,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      success: false,
+      message: error.message || "Error al identificar por rostro",
+      data: null,
+    };
   }
 }
 
@@ -87,38 +324,28 @@ export async function createEmployee({
   try {
     const { apiToken, API_URL } = await storeAction();
 
-    const sanitizedPhone = sanitizePhoneNumber(
-      data.phonePersonal as unknown as string
+    const sanitizedPhonePersonal = sanitizePhoneNumber(
+      getPhoneString(data.phonePersonal)
     );
 
-    /* const sanitizedPhonePersonal = sanitizePhoneNumber(
-      data.phonePersonal as unknown as string
-    ); */
+    const phoneCompanyString = getPhoneString(data.phoneCompany);
+    const homePhoneString = getPhoneString(data.homePhone);
 
-    const sanitizedPhoneCompany = data.phoneCompany
-      ? sanitizePhoneNumber(data.phoneCompany)
-      : ({
-          countryCode: "MX",
-          dialCode: "",
-          e164Number: "",
-          internationalNumber: "",
-          nationalNumber: "",
-          number: "",
-        } as PhoneNumberFormat);
+    const sanitizedPhoneCompany = phoneCompanyString
+      ? sanitizePhoneNumber(phoneCompanyString)
+      : getEmptyPhone();
 
-    const sanitizedEmergencyContacts = data?.emergencyContacts.map(
-      (contact) => {
-        return {
-          ...contact,
-          phone: sanitizePhoneNumber(
-            contact.phone.internationalNumber as unknown as string
-          ),
-        };
-      }
-    );
+    const sanitizedEmergencyContacts = data.emergencyContacts.map((contact) => {
+      const phoneString = getPhoneString(contact.phone);
 
-    const sanitizedHomePhone = data.homePhone
-      ? sanitizePhoneNumber(data.homePhone)
+      return {
+        ...contact,
+        phone: phoneString ? sanitizePhoneNumber(phoneString) : getEmptyPhone(),
+      };
+    });
+
+    const sanitizedHomePhone = homePhoneString
+      ? sanitizePhoneNumber(homePhoneString)
       : null;
 
     await axios
@@ -127,7 +354,7 @@ export async function createEmployee({
         {
           name: data.name,
           lastName: data.lastName,
-          phonePersonal: sanitizedPhone,
+          phonePersonal: sanitizedPhonePersonal,
           emailPersonal: data.emailPersonal,
           idCheck: data.idCheck,
           passwordCheck: data.passwordCheck,
@@ -180,24 +407,14 @@ export async function createEmployee({
           },
         }
       )
-      .then((res) => {
-        return res.data;
-      })
+      .then((res) => res.data)
       .catch((err) => {
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
             : "Error en la respuesta"
         );
       });
-
-    /* if (response.data.status === 400) {
-      const errs = response.data.errors
-        .map((err: { message: string }) => err.message)
-        .join("\n");
-
-      throw new Error(`${errs}`);
-    } */
 
     revalidatePath("/app/employee");
 
@@ -205,13 +422,13 @@ export async function createEmployee({
       success: true,
       message: "Empleado creado",
     };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: err.message,
     };
   }
 }
@@ -229,35 +446,29 @@ export async function updateEmploye({
     if (!id) {
       throw new Error("No se ha definido ID");
     }
-    
+
     const sanitizedPhonePersonal = sanitizePhoneNumber(
-      data.phonePersonal as unknown as string
+      getPhoneString(data.phonePersonal)
     );
 
-    const sanitizedPhoneCompany = data.phoneCompany
-      ? sanitizePhoneNumber(data.phoneCompany)
-      : ({
-          countryCode: "MX",
-          dialCode: "",
-          e164Number: "",
-          internationalNumber: "",
-          nationalNumber: "",
-          number: "",
-        } as PhoneNumberFormat);
+    const phoneCompanyString = getPhoneString(data.phoneCompany);
+    const homePhoneString = getPhoneString(data.homePhone);
 
-    const sanitizedEmergencyContacts = data?.emergencyContacts.map(
-      (contact) => {
-        return {
-          ...contact,
-          phone: sanitizePhoneNumber(
-            contact.phone.internationalNumber as unknown as string
-          ),
-        };
-      }
-    );
+    const sanitizedPhoneCompany = phoneCompanyString
+      ? sanitizePhoneNumber(phoneCompanyString)
+      : getEmptyPhone();
 
-    const sanitizedHomePhone = data.homePhone
-      ? sanitizePhoneNumber(data.homePhone)
+    const sanitizedEmergencyContacts = data.emergencyContacts.map((contact) => {
+      const phoneString = getPhoneString(contact.phone);
+
+      return {
+        ...contact,
+        phone: phoneString ? sanitizePhoneNumber(phoneString) : getEmptyPhone(),
+      };
+    });
+
+    const sanitizedHomePhone = homePhoneString
+      ? sanitizePhoneNumber(homePhoneString)
       : null;
 
     await axios
@@ -324,25 +535,14 @@ export async function updateEmploye({
           },
         }
       )
-      .then((res) => {
-        return res.data;
-      })
+      .then((res) => res.data)
       .catch((err) => {
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
             : "Error en la respuesta"
         );
       });
-
-    /* if (response.data.status === 400) {
-      const errs = response.data.errors
-        .map((err: { message: string }) => err.message)
-        .join("\n");
-
-      console.log(errs);
-      throw new Error(`${errs}`);
-    } */
 
     revalidatePath("/app/employee");
 
@@ -351,18 +551,17 @@ export async function updateEmploye({
       message: "Empleado actualizado",
       data: true,
     };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: err.message,
       data: false,
     };
   }
 }
-
 export async function deleteEmployee({
   id,
 }: {
@@ -403,6 +602,104 @@ export async function deleteEmployee({
     return {
       success: false,
       message: error.message,
+    };
+  }
+}
+
+export async function reEntry({
+  id,
+}: {
+  id: number | null;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.put(
+      `${API_URL}/employee/reEntry/${String(id)}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    );
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: "Empleado reingresado",
+    };
+  } catch (error: unknown) {
+    console.log(error);
+
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return {
+      success: false,
+      message,
+    };
+  }
+}
+
+export async function createNewDocumentEmployee({
+  nameDocument,
+}: {
+  nameDocument: string;
+}): Promise<
+  ActionResponse<{
+    newDocumentId: number;
+    documentName: string;
+    employeesUpdated: number;
+  } | null>
+> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const response = await axios
+      .post(
+        `${API_URL}/employee/newDocument`,
+        {
+          nameDocument,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => res.data)
+      .catch((err) => {
+        throw new Error(
+          err.response?.data?.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: response.message || "Nueva plantilla creada correctamente",
+      data: response.data || null,
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
+
+    return {
+      success: false,
+      message: err.message,
+      data: null,
     };
   }
 }

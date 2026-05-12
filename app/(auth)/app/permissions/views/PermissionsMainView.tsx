@@ -1,46 +1,39 @@
-import NotFound from "@/app/not-found";
-import PermissionsFormView from "./PermissionsFormView";
-import PermissionsListView from "./PermissionsListView";
-import { Employee, IPermissionRequest } from "@/lib/definitions";
+
 import {
-  fetchPermissionsByEmployee,
-  fetchPermissionsById,
+  fetchPermissionsByEmployee
 } from "@/app/actions/permissions-actions";
-import { fetchEmployees } from "@/app/actions/employee-actions";
+import PermissionsTableClient from "@/components/Permissions/PermissionTableClient";
+import PermissionInfoOne from "./infoOnePermission";
 
 async function PermissionsMainView({
   id,
-  viewType,
+  page = "1",
+  limit = "20",
 }: {
   id: string;
-  viewType: string;
+  page?: string;
+  limit?: string;
 }) {
-  let permissions: IPermissionRequest[] = [];
-  let permission: IPermissionRequest | null = null;
-  let employees: Employee[] = [];
 
-  if (id && id !== "null") {
-    permission = await fetchPermissionsById({ id });
-  }
 
-  [permissions, employees] = await Promise.all([
-    fetchPermissionsByEmployee(),
-    fetchEmployees(),
-  ]);
+    if (id && id !== "null") {
+      return <PermissionInfoOne id={id} />;
+    }
 
-  if (viewType === "list") {
-    return <PermissionsListView permissions={permissions.reverse()} />;
-  } else if (viewType === "form") {
+    const pageParse = Math.max(Number(page || "1") || 1, 1);
+    const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
+  
+    const permissionPaged = await fetchPermissionsByEmployee({ page: pageParse, limit: limitParse });
+  
     return (
-      <PermissionsFormView
+      <PermissionsTableClient
         id={id}
-        permission={permission}
-        employees={employees}
+        permissions={permissionPaged.data}
+        total={permissionPaged.total}
+        page={pageParse}
+        limit={limitParse}
       />
     );
-  } else {
-    return <NotFound />;
-  }
 }
 
 export default PermissionsMainView;

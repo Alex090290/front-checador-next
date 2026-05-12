@@ -1,6 +1,6 @@
 import NotFound from "@/app/not-found";
 import UsersListView from "./UsersListView";
-import { Employee, Permission, User } from "@/lib/definitions";
+import { User } from "@/lib/definitions";
 import { fetchUsers, findUserById } from "@/app/actions/user-actions";
 import UsersFormView from "./UsersFormView";
 import { fetchPermissions } from "@/app/actions/permission-actions";
@@ -17,10 +17,8 @@ async function UsersMainView({
   id: string;
   profile: string;
 }) {
-  let users: User[] = [];
   let user: User | null = null;
-  let permissions: Permission[] = [];
-  let employees: Employee[] = [];
+
 
   let getUsers: User[] = [];
 
@@ -28,10 +26,10 @@ async function UsersMainView({
     user = await findUserById({ id: Number(id) });
   }
 
-  [users, permissions, employees] = await Promise.all([
+  const [users, permissions, employees] = await Promise.all([
     fetchUsers(),
     fetchPermissions(),
-    fetchEmployees(),
+    fetchEmployees({ page: 1, limit: 500 }),
   ]);
 
   getUsers = users.filter((u) => u.role !== "EMPLOYEE");
@@ -46,7 +44,7 @@ async function UsersMainView({
           id={Number(id)}
           perms={permissions || []}
           profile={profile}
-          employees={employees}
+          employees={employees.data}
         />
       </Suspense>
     );

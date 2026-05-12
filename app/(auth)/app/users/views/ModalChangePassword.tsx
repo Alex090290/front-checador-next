@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Form, Modal, Spinner } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useSearchParams } from "next/navigation";
@@ -8,13 +8,24 @@ import { useModals } from "@/context/ModalContext";
 import { Entry } from "@/components/fields";
 import { updatePasswordUser } from "@/app/actions/user-actions";
 import toast from "react-hot-toast";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 
 type TInputs = {
   password: string;
   password2: string;
 };
 
-function ChangePasswordModal({ onHide, show }: ModalBasicProps) {
+type ChangePasswordModalProps = ModalBasicProps & {
+  /** Si viene (p. ej. desde la tabla), se usa en lugar del `id` de la URL. */
+  userId?: number | null;
+};
+
+function ChangePasswordModal({
+  onHide,
+  show,
+  userId,
+}: ChangePasswordModalProps) {
   const {
     register,
     setFocus,
@@ -39,9 +50,21 @@ function ChangePasswordModal({ onHide, show }: ModalBasicProps) {
       });
       return;
     }
+
+    const fromUrl = activeId != null ? Number(activeId) : NaN;
+    const targetId =
+      userId != null && Number.isFinite(userId) && userId > 0
+        ? userId
+        : fromUrl;
+
+    if (!Number.isFinite(targetId) || targetId <= 0) {
+      modalError("No se pudo identificar al usuario");
+      return;
+    }
+
     const res = await updatePasswordUser({
       password: data.password,
-      id: Number(activeId),
+      id: targetId,
     });
 
     if (!res) {
@@ -62,12 +85,16 @@ function ChangePasswordModal({ onHide, show }: ModalBasicProps) {
       backdrop="static"
       animation
       onEntered={() => setFocus("password")}
-      onExited={() => reset({ password: "" })}
+      onExited={() => reset({ password: "", password2: "" })}
     >
       <Modal.Header closeButton>
         <Modal.Title>Cambiar cotraseña</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        <ConditionalRender cond={isSubmitting}>
+          <Loading message="Cambiando contraseña..." />
+        </ConditionalRender>
+
         <Form onSubmit={handleSubmit(onSubmit)}>
           <fieldset disabled={isSubmitting}>
             <Entry
@@ -111,11 +138,7 @@ function ChangePasswordModal({ onHide, show }: ModalBasicProps) {
               feedBack={errors.password2?.message}
             />
             <Button type="submit">
-              {isSubmitting ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                <span>Aceptar</span>
-              )}
+              <span>Aceptar</span>
             </Button>
           </fieldset>
         </Form>

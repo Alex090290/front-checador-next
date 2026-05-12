@@ -2,7 +2,7 @@ import React from "react";
 import InhabilityListView from "./InhabilityListView";
 import InhabilityFormView from "./InhabilityFormView";
 import NotFound from "@/app/not-found";
-import { Employee, IInability } from "@/lib/definitions";
+import { IInability } from "@/lib/definitions";
 import {
   getAllInability,
   getOneInability,
@@ -17,24 +17,23 @@ async function InhabilityMainView({
   id: string;
 }) {
   let inhability: IInability | null = null;
-  let inhabilities: IInability[] = [];
-  let employees: Employee[] = [];
+
 
   if (id && id !== "null") {
     inhability = await getOneInability(Number(id));
   }
 
-  [inhabilities, employees] = await Promise.all([
+  const [inhabilities, employees] = await Promise.all([
     getAllInability(),
     fetchEmployees(),
   ]);
 
   if (viewType === "list") {
-    return <InhabilityListView inhabilities={inhabilities.reverse()} />;
+    return <InhabilityListView inhabilities={inhabilities.data.reverse()} />;
   } else if (viewType === "form") {
     return (
       <InhabilityFormView
-        employees={employees}
+        employees={employees.data}
         inhability={inhability}
         id={id}
       />

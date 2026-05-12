@@ -5,7 +5,7 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { IInability } from "@/lib/definitions";
-import { formatDate } from "date-fns";
+// import { formatDate } from "date-fns";
 import moment from "moment-timezone";
 
 function InhabilityListView({ inhabilities }: { inhabilities: IInability[] }) {

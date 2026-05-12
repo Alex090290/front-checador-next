@@ -9,10 +9,29 @@ import {
   UserRole,
 } from "@/lib/definitions";
 import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { revalidatePath } from "next/cache";
 import { storeAction } from "./storeActions";
+import { isNonEmptyImagePayload } from "@/lib/isNonEmptyImagePayload";
 import { createUserImage } from "./image-field-actions";
+import { ApiError } from "next/dist/server/api-utils";
+
+export type UsersPagedResult = {
+  data: User[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+};
+
+type FetchUsersArgs = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  leader?: number;
+  personDoh?: number;
+  employee?: number;
+};
 
 export async function userLogin({
   email,
@@ -33,13 +52,33 @@ export async function userLogin({
       message: "Success",
       data: true,
     };
+  } catch (error: unknown) {
+    // Auth.js / NextAuth suele lanzar CredentialsSignin cuando authorize retorna null
+    const err = error as {
+      name?: string;
+      message?: string;
+      cause?: unknown;
+      type?: string;
+      code?: string;
+    };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
+    const causeMsg =
+      typeof err.cause === "object" && err.cause !== null && "message" in err.cause
+        ? String((err.cause as { message?: unknown }).message ?? "")
+        : "";
+
+    if (err.name === "CredentialsSignin" || err.type === "CredentialsSignin" || err.code === "credentials") {
+      return {
+        success: false,
+        message: "Credenciales inválidas",
+        data: false,
+      };
+    }
+
     return {
       success: false,
-      message: String(error?.cause?.err ?? error.message),
+      message: causeMsg || err.message || "Error inesperado",
+      data: false,
     };
   }
 }
@@ -54,34 +93,27 @@ export async function userLoginCredentials({
   try {
     const { API_URL } = await storeAction();
 
-    const response = await axios
-      .post(`${API_URL}/users/login`, {
-        email,
-        password,
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+    const { data } = await axios.post<ApiResponse<string>>(
+      `${API_URL}/users/login`,
+      { email, password }
+    );
 
     return {
       success: true,
-      message: response.data,
-      data: response,
+      message: data?.message ?? "OK",
+      data,
     };
+  } catch (error: unknown) {
+    const err = error as AxiosError<ApiError>;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error.mesaage);
+    const apiMsg =
+      err.response?.data?.message ??
+      err.message ??
+      "Error en la respuesta";
+
     return {
       success: false,
-      message: error.message,
+      message: apiMsg,
     };
   }
 }
@@ -124,6 +156,57 @@ export async function getUserData({
       success: false,
       message: error.message,
     };
+  }
+}
+
+export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
+  data: User[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}>  {
+  try {
+    const { apiToken, API_URL: apiUrl } = await storeAction();
+
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+    
+    const response = await axios.get(`${apiUrl}/allUsers?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+      const total = Number(response.total ?? 0);
+      const pages = Math.max(Math.ceil(total / limitNum), 1);
+  
+      return {
+        data: response.data ?? [],
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages,
+      };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 
@@ -284,7 +367,8 @@ export async function updateUser({
   phone: PhoneNumberFormat | string | null;
   id: number;
   idEmployee: number | null;
-  imageUrl?: string | null;
+  /** Solo se sube perfil si viene archivo nuevo o string no vacío (p. ej. base64). */
+  imageUrl?: string | File | null;
 }): Promise<string | boolean> {
   const { apiToken, API_URL } = await storeAction();
 
@@ -321,7 +405,9 @@ export async function updateUser({
       );
     });
 
-  await createUserImage({ imageUrl: imageUrl || "" });
+  if (isNonEmptyImagePayload(imageUrl)) {
+    await createUserImage({ imageUrl });
+  }
 
   revalidatePath("/app/users");
   return true;
@@ -369,10 +455,12 @@ export async function updatePasswordUser({
 export async function unsubscribeUser({
   dischargeReason,
   typeOfDischarge,
+  dischargeDate,
   id,
 }: {
   dischargeReason: string;
   typeOfDischarge: string;
+  dischargeDate: string;
   id: number | null;
 }): Promise<ActionResponse<boolean>> {
   try {
@@ -384,6 +472,7 @@ export async function unsubscribeUser({
         {
           dischargeReason,
           typeOfDischarge,
+          dischargeDate
         },
         {
           headers: {
@@ -408,12 +497,19 @@ export async function unsubscribeUser({
       success: true,
       message: "",
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any    
   } catch (error: any) {
-    console.log(error);
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
     return {
       success: false,
-      message: error.message,
+      message: message,
     };
   }
 }
@@ -466,31 +562,40 @@ export async function reEntryUser({
 export async function loadAvatar(): Promise<ActionResponse<string>> {
   try {
     const { API_URL: apiUrl, apiToken } = await storeAction();
-    // Obtener imagen en binario
+
     if (!apiToken) throw new Error("TOKEN IS REQUIRED");
+
     const resImg = await axios.get(`${apiUrl}/users/imgProfile`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
+      headers: { Authorization: `Bearer ${apiToken}` },
       responseType: "arraybuffer",
+      validateStatus: () => true, // para manejar 400 sin throw automático
     });
 
-    // Convertir a base64
-    const base64 = Buffer.from(resImg.data, "binary").toString("base64");
-    const imageBase64Url = `data:image/jpeg;base64,${base64}`;
+    if (resImg.status !== 200) {
+      // aquí verás el motivo real que manda tu backend
+      const raw = Buffer.from(resImg.data ?? "").toString("utf8");
+      return {
+        success: false,
+        message: raw || `Error al cargar avatar (status ${resImg.status})`,
+      };
+    }
+
+    const contentType = resImg.headers?.["content-type"] ?? "image/jpeg";
+    const base64 = Buffer.from(resImg.data).toString("base64");
+    const imageBase64Url = `data:${contentType};base64,${base64}`;
 
     return {
       success: true,
       message: "Imagen cargada",
       data: imageBase64Url,
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // si quieres, aquí puedes tipar AxiosError también
     console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: "Error al cargar avatar",
     };
   }
 }
+

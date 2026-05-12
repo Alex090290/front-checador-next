@@ -4,7 +4,6 @@ import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 export type TInputsEmployee = {
   name: string;
   lastName: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   phonePersonal: string;
   emailPersonal: string;
   idCheck: number;
@@ -15,14 +14,12 @@ export type TInputsEmployee = {
   exitSaturdayOffice: string;
   entryLunch: string;
   exitLunch: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   idDepartment: Department | null;
   idPosition: number | null;
   branch: number | null;
   gender: "MASCULINO" | "FEMENINO";
   status: 1 | 2 | 3;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  phoneCompany: string | any;
+  phoneCompany: PhoneNumberFormat | string | null;
   phoneExtCompany: number | 0;
   address: {
     street: string;
@@ -38,8 +35,7 @@ export type TInputsEmployee = {
   scheduleDescription: string;
   policies: string;
   group: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  homePhone: string | any;
+  homePhone: PhoneNumberFormat | string | null;
   sons: number | 0;
   daughters: number | 0;
   birthDate: string;
@@ -55,14 +51,12 @@ export type TInputsEmployee = {
   education: string;
   skills: string;
   comments: string;
-  emergencyContacts:
-    | {
-        id?: number;
-        name: string;
-        kinship: string;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        phone: PhoneNumberFormat | any;
-      }[];
+  emergencyContacts: {
+    id?: number;
+    name: string;
+    kinship: string;
+    phone: PhoneNumberFormat | string | null;
+  }[];
   keyAspelNOI: string;
   keyCONTPAQi: string;
   admissionDate: string;

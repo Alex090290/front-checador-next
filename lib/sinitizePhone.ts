@@ -1,4 +1,4 @@
-enum CountryCode {
+export enum CountryCode {
   MX = "MX",
   US = "US",
   ES = "ES",

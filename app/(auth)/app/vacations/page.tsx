@@ -38,7 +38,6 @@ export default function PageVacations({
   const viewType = searchParams?.view_type ?? "list";
   const id = searchParams?.id ?? "null";
 
-  // 👇 lo mandamos tal como strings (para no pelear con typings)
   const page = searchParams?.page ?? "1";
   const limit = searchParams?.limit ?? "20";
 

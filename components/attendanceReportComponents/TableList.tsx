@@ -1,0 +1,185 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import ListView from "../templates/ListView";
+import TableTemplateServer from "../templates/TablePage";
+import { TableTemplateColumn } from "../templates/TableTemplate";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
+
+// ✅ ajusta el import a donde dejaste la interface
+// ejemplo: import { AttendanceReportRow } from "@/lib/definitions";
+type AttendanceReportRow = {
+  totalChecks: number;
+  lunchExcessMinutes: number;
+  lunchExcessTimes: number;
+  statsByStatus: Record<string, number>;
+  faultsDays: string[];
+  totalFaults: number;
+  employee: {
+    id: number;
+    name: string;
+    lastName: string;
+    idDepartment: number;
+    branch: number;
+    status: number;
+  };
+  idEmployee: number;
+  totalRecords: number;
+  usersCount: number;
+};
+
+export default function AttendanceTable({
+  id,
+  data,
+  total,
+  page,
+  limit,
+  year
+}: {
+  id: string;
+  data: AttendanceReportRow[];
+  total: number;
+  page: number;
+  limit: number;
+  year: string;
+}) {
+  const router = useRouter();
+  const sp = useSearchParams();
+  const searchParamsString = sp.toString();
+
+  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      setMessageLoading("");
+    }
+  }, [searchParamsString, loading]);
+
+
+  const goToPage = (nextPage: number) => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
+    const params = new URLSearchParams(searchParamsString);
+    params.set("id", id);
+    params.set("year", `${year}`);
+    params.set("page", String(nextPage));
+    params.set("limit", String(limit));
+    router.push(`/app/attendanceReport?${params.toString()}`);
+  };
+
+  const columns: TableTemplateColumn<AttendanceReportRow>[] = useMemo(
+    () => [
+      {
+        key: "employee",
+        label: "Empleado",
+        accessor: (row) =>
+          `${row.employee.lastName} ${row.employee.name}`.toUpperCase(),
+        filterable: true,
+        type: "string",
+        render: (row) => (
+          <div className="text-uppercase fw-semibold">
+            {row.employee.lastName} {row.employee.name}
+          </div>
+        ),
+      },
+      {
+        key: "totalChecks",
+        label: "Checadas",
+        accessor: (row) => row.totalChecks,
+        filterable: true,
+        type: "number",
+        render: (row) => (
+          <div className="text-center fw-semibold">{row.totalChecks}</div>
+        ),
+      },
+      {
+        key: "totalRecords",
+        label: "Registros",
+        accessor: (row) => row.totalRecords,
+        filterable: true,
+        type: "number",
+        render: (row) => (
+          <div className="text-center fw-semibold">{row.totalRecords}</div>
+        ),
+      },
+      {
+        key: "totalFaults",
+        label: "Faltas",
+        accessor: (row) => row.totalFaults,
+        filterable: true,
+        type: "number",
+        render: (row) => (
+          <div className="text-center fw-semibold">{row.totalFaults}</div>
+        ),
+      },
+      {
+        key: "faultsDays",
+        label: "Días con falta",
+        accessor: (row) => (row.faultsDays ?? []).join(", "),
+        filterable: true,
+        type: "string",
+        render: (row) => (
+          <div className="text-center fw-semibold">
+            {(row.faultsDays ?? []).length === 0
+              ? "—"
+              : row.faultsDays.join(", ")}
+          </div>
+        ),
+      },
+      {
+        key: "lunchExcessMinutes",
+        label: "Exceso comida (min)",
+        accessor: (row) => row.lunchExcessMinutes,
+        filterable: true,
+        type: "number",
+        render: (row) => (
+          <div className="text-center fw-semibold">{row.lunchExcessMinutes}</div>
+        ),
+      },
+      {
+        key: "lunchExcessTimes",
+        label: "Exceso comida (veces)",
+        accessor: (row) => row.lunchExcessTimes,
+        filterable: true,
+        type: "number",
+        render: (row) => (
+          <div className="text-center fw-semibold">{row.lunchExcessTimes}</div>
+        ),
+      },  
+    ],
+    []
+  );
+
+  return (
+    <div className="d-flex flex-column h-100 overflow-hidden">
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
+
+      <div className="flex-grow-1 overflow-hidden">
+        <ListView>
+          <ListView.Body>
+            <TableTemplateServer
+              ref={tableRef}
+              columns={columns}
+              data={data}
+              total={total}
+              page={page}
+              limit={limit}
+              onPageChange={(p) => goToPage(p)}
+              getRowId={(row) => row.idEmployee}
+              // si quieres click a detalle por empleado:
+              // viewForm="/app/attendanceReport?view_type=form"
+            />
+          </ListView.Body>
+        </ListView>
+      </div>
+    </div>
+  );
+}

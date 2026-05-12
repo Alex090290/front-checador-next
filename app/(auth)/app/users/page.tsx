@@ -1,18 +1,30 @@
-import LoadingPage from "@/app/LoadingPage";
-import { lazy, Suspense } from "react";
+export const dynamic = "force-dynamic";
+import Loading from "@/components/LoadingSpinner";
+import { Suspense } from "react";
+import ListAllUsers from "./views/ListAllUsers";
 
-const UsersMainView = lazy(() => import("./views/UsersMainView"));
+type SearchParams = {
+  view_type?: string;
+  id?: string;
+  page?: string;
+  limit?: string;
+};
 
 async function PageUsers({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
-  const { view_type: viewType, id, profile } = await searchParams;
+  const params = await searchParams;
+
+  const id = params?.id ?? "null";
+  const page = params?.page ?? "1";
+  const limit = params?.limit ?? "20";
+  
 
   return (
-    <Suspense fallback={<LoadingPage />}>
-      <UsersMainView viewType={viewType} id={id} profile={profile} />
+    <Suspense fallback={<Loading message="Cargando datos..." />}>
+      <ListAllUsers id={id} limit={limit} page={page} />
     </Suspense>
   );
 }

@@ -1,8 +1,14 @@
 "use server";
 
-import { ActionResponse, ICheckInFeedback } from "@/lib/definitions";
+import { ActionResponse, AttendanceReportItem, ICheckInFeedback } from "@/lib/definitions";
 import { storeAction } from "./storeActions";
 import axios from "axios";
+
+type FetchArgs = {
+  idPeriod?: number;
+  page?: number;
+  limit?: number;
+};
 
 export async function fetchEventos(): Promise<ICheckInFeedback[]> {
   try {
@@ -152,6 +158,54 @@ export async function updateRegristrosChecador({
   }
 }
 
+export async function deleteRegristrosChecador({
+  idRegistro,
+  idCheck
+}: {
+  idRegistro: number | null;
+  idCheck: number | null;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const { API_URL, apiToken } = await storeAction();
+    if (!idCheck && idRegistro) throw new Error("ID NOT DEFINED");
+
+    console.log("idRegistro: ",idRegistro);
+    console.log("idCheck: ",idCheck);
+    
+
+    await axios.delete(`${API_URL}/checador/${idRegistro}/${idCheck}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    // revalidatePath("/app/eventos");
+
+    return {
+      success: true,
+      message: "Se ha eliminado el registro correctamente",
+      data: true,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 export async function searchEventosParams({
   date,
   idEmployee,
@@ -192,5 +246,91 @@ export async function searchEventosParams({
   } catch (error: any) {
     console.log(error);
     return [];
+  }
+}
+
+export async function generateFault(): Promise<string[]> {
+  try {
+    const { API_URL, apiToken } = await storeAction();
+    const response = await axios
+      .get(`${API_URL}/checador/registrarFaltas`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+    return response.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return [];
+  }
+}
+
+export async function fetchEventosReports(args: FetchArgs = {}): Promise<{
+  data: AttendanceReportItem[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}> {
+  try {
+    const { API_URL, apiToken, session } = await storeAction();
+
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+
+    if (session?.role === "CHECADOR" && session?.id) {
+      params.set("idUser", String(session.id));
+    }
+
+    const url = `${API_URL}/checador/reports/${args.idPeriod}?${params.toString()}`;
+
+    const response = await axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message
+            ? err.response.data.message
+            : "Error al listar registros de checador"
+        );
+      });
+
+    return {
+      data: response?.data ?? [],
+      total: response?.total ?? 0,
+      page: response?.page ?? pageNum,
+      limit: response?.limit ?? limitNum,
+      pages: response?.pages ?? 1,
+    };
+  } catch {
+
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      pages: 1,
+    };
   }
 }

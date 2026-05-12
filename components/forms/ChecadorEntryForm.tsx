@@ -11,11 +11,15 @@ type TInputs = {
   passwordCheck: string;
 };
 
+type Props = {
+  receiveCheckData: (data: TCheckData) => Promise<ActionResponse<string>>;
+  disabled?: boolean;
+};
+
 function ChecadorEntryForm({
   receiveCheckData,
-}: {
-  receiveCheckData: (data: TCheckData) => Promise<ActionResponse<string>>;
-}) {
+  disabled = false,
+}: Props) {
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -33,12 +37,14 @@ function ChecadorEntryForm({
   });
 
   const onSubmit: SubmitHandler<TInputs> = async (formData) => {
+    if (disabled) return;
+
     const res = await receiveCheckData(formData);
 
     if (!res.success) {
       setError("passwordCheck", { type: "custom", message: res.message });
       setTimeout(() => setFocus("passwordCheck"), 100);
-      return; // ❗️No reseteamos si hubo error
+      return;
     }
 
     reset({ idCheck: "", passwordCheck: "" });
@@ -47,7 +53,7 @@ function ChecadorEntryForm({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/") {
+      if (e.key === "/" && !disabled) {
         e.preventDefault();
         setFocus("idCheck");
       }
@@ -55,7 +61,7 @@ function ChecadorEntryForm({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setFocus]);
+  }, [setFocus, disabled]);
 
   return (
     <div className="col-md-5">
@@ -63,7 +69,7 @@ function ChecadorEntryForm({
         className="card bg-body-tertiary border-0"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <fieldset className="card-body" disabled={isSubmitting}>
+        <fieldset className="card-body" disabled={isSubmitting || disabled}>
           <Form.Group className="mb-2">
             <Form.Control
               type="text"
@@ -71,7 +77,7 @@ function ChecadorEntryForm({
               className="text-center fw-bold"
               size="lg"
               autoComplete="off"
-              autoFocus
+              autoFocus={!disabled}
               {...register("idCheck")}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {

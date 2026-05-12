@@ -11,6 +11,8 @@ import React, {
 import { Table, Form, Button } from "react-bootstrap";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 
 export type TableTemplateColumn<T> = {
   key: string;
@@ -80,6 +82,8 @@ function TableTemplateServerInner<T>(
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(
     {}
   );
+  const [navigating, setNavigating] = useState(false);
+  const [navigationMessage, setNavigationMessage] = useState("Cargando...");
 
   // 🔹 Exponer función para limpiar selección
   useImperativeHandle(ref, () => ({
@@ -257,7 +261,7 @@ function TableTemplateServerInner<T>(
 
   const allVisibleIds = Object.entries(visibleData)
     .filter(([group]) => !(collapsedGroups[group] ?? false))
-    .flatMap(([_, rows]) => rows.map(getRowId));
+    .flatMap(([, rows]) => rows.map(getRowId));
 
   const handleSelectAll = (checked: boolean) => {
     const visibleIds = allVisibleIds;
@@ -275,7 +279,10 @@ function TableTemplateServerInner<T>(
   const from = total === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
 
-  return (
+  return <>
+    <ConditionalRender cond={navigating}>
+      <Loading message={navigationMessage} />
+    </ConditionalRender>
     <Table borderless hover style={{ fontSize: "0.9rem" }}>
       <thead className="sticky-top text-uppercase" style={{ zIndex: 1 }}>
         <tr>
@@ -367,6 +374,8 @@ function TableTemplateServerInner<T>(
                         e.stopPropagation();
                         if (disableRowClick) return;
                         if (!viewForm) return;
+                        setNavigationMessage("Cargando registro...");
+                        setNavigating(true);
                         router.push(buildRowHref(viewForm, id));
                       }}
                       style={{ cursor: viewForm && !disableRowClick ? "pointer" : "default" }}
@@ -400,7 +409,7 @@ function TableTemplateServerInner<T>(
       <tfoot className="sticky-bottom">
         <tr style={{ display: total > 0 ? "table-row" : "none" }}>
           <td colSpan={columns.length + 1}>
-            <div className="d-flex justify-content-end align-items-center gap-2">
+            <div className="d-flex justify-content-first align-items-center gap-2">
               <span className="text-muted small">
                 Mostrando {from}-{to} de {total} — Página {page} de {pages}
               </span>
@@ -429,7 +438,7 @@ function TableTemplateServerInner<T>(
         </tr>
       </tfoot>
     </Table>
-  );
+  </>
 }
 
 const TableTemplateServer = forwardRef(TableTemplateServerInner) as <T>(

@@ -10,11 +10,6 @@ import {
 } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 
-type IResponse = {
-  message: string;
-  status: number;
-  data: IInability[];
-};
 
 export interface IResponseInabilityCreate {
   message: string;
@@ -33,6 +28,11 @@ export type InabilityDocPayload = {
   dateEnd: string;
   inProgress: boolean;
   urlDocument: string;
+};
+
+type FetchArgs = {
+  page?: number;
+  limit?: number;
 };
 
 export type InabilityPayloadBase = {
@@ -60,19 +60,54 @@ export type InabilityUpdatePayload = InabilityPayloadBase & {
   idDocument: number;
 };
 
-export async function getAllInability(): Promise<IInability[]> {
+export async function getAllInability(args: FetchArgs = {}): Promise<{
+  data: IInability[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+  }>{
   try {
+
     const { apiToken, API_URL } = await storeAction();
-    const res = await axios.get<IResponse>(`${API_URL}/inability/all`, {
+
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 500);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+
+
+    const response = await axios.get(`${API_URL}/inability/all?${params.toString()}`, {
       headers: { Authorization: `Bearer ${apiToken}` },
+    }).then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      throw new Error(
+        err.response.data.message
+          ? err.response.data.message
+          : "Error en la respuesta"
+      );
     });
-    return res.data.data ?? [];
+
+    const total = Number(response.total ?? 0);
+    const pages = Math.max(Math.ceil(total / limitNum), 1);
+
+    return {
+      data: response.data ?? [],
+      total,
+      page: pageNum,
+      limit: limitNum,
+      pages,
+    };
   } catch (err: unknown) {
     const axiosErr = err as AxiosError<{ message?: string }>;
     console.log(
       axiosErr.response?.data?.message ?? axiosErr.message ?? "Error"
     );
-    return [];
+        return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 

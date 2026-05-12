@@ -3,6 +3,7 @@
 import { ActionResponse, ICheckInFeedback } from "@/lib/definitions";
 import { storeToken } from "@/lib/useToken";
 import axios, { AxiosResponse } from "axios";
+import { redirect } from "next/navigation";
 
 export async function getWelcome(): Promise<ActionResponse<AxiosResponse>> {
   try {
@@ -18,28 +19,31 @@ export async function getWelcome(): Promise<ActionResponse<AxiosResponse>> {
         return res.data;
       })
       .catch((err) => {
-        return err.response.data;
+        return err?.response?.data;
       });
 
-    if (response.status === 403 && response.message === "jwt expired") {
-      throw new Error("jwt");
+    if (
+      response?.status === 401 ||
+      (response?.status === 403 && response?.message === "jwt expired")
+    ) {
+      redirect("/auth");
     }
 
-    if (response.status >= 400) {
-      throw new Error("NO HAY RESPUESTA DEL SERVIDOR");
+    if (response?.status >= 400) {
+      throw new Error(response?.message || "NO HAY RESPUESTA DEL SERVIDOR");
     }
 
     return {
       success: true,
       message: response,
     };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: err.message,
     };
   }
 }
@@ -77,8 +81,16 @@ export async function checkIn({
         return res.data;
       })
       .catch((err) => {
+        if (
+          err?.response?.status === 401 ||
+          (err?.response?.status === 403 &&
+            err?.response?.data?.message === "jwt expired")
+        ) {
+          redirect("/auth");
+        }
+
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
             : "Error en la respuesta"
         );
@@ -89,13 +101,13 @@ export async function checkIn({
       message: "REGISTRO CORRECTO",
       data: response.data.message,
     };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: err.message,
     };
   }
 }
@@ -120,8 +132,16 @@ export async function fetchCheckInFeedback(): Promise<
         return res.data;
       })
       .catch((err) => {
+        if (
+          err?.response?.status === 401 ||
+          (err?.response?.status === 403 &&
+            err?.response?.data?.message === "jwt expired")
+        ) {
+          redirect("/auth");
+        }
+
         throw new Error(
-          err.response.data.message
+          err?.response?.data?.message
             ? err.response.data.message
             : "Error en la respuesta"
         );
@@ -132,13 +152,13 @@ export async function fetchCheckInFeedback(): Promise<
       message: response.message,
       data: response.data,
     };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
     return {
       success: false,
-      message: error.message,
+      message: err.message,
     };
   }
 }

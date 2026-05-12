@@ -1,258 +1,216 @@
-// "use client";
-
-// import { useEffect, useRef, useState } from "react";
-// import { useRouter } from "next/navigation";
-// import { useForm, SubmitHandler } from "react-hook-form";
-// import toast from "react-hot-toast";
-
-// import FormView, { FieldGroup } from "@/components/templates/FormView";
-// import { Entry, FieldSelect } from "@/components/fields";
-// import { useModals } from "@/context/ModalContext";
-
-// import type { IInability, InabilityPayload } from "@/lib/definitions";
-// import { updateInability } from "@/app/actions/inability-actions";
-
-// type TInputs = InabilityPayload;
-
-// export default function InabilityFormUpdate({
-//   id,
-//   inability,
-// }: {
-//   id: string;
-//   inability: IInability;
-// }) {
-//   const router = useRouter();
-//   const { modalError } = useModals();
-//   const [saving, setSaving] = useState(false);
-
-//   const { register, handleSubmit, reset, formState: { isDirty } } = useForm<TInputs>();
-//   const originalValuesRef = useRef<TInputs | null>(null);
-
-//   useEffect(() => {
-//     // tomamos el primer documento para fechas (porque tu objeto real lo trae así)
-//     const doc0 = inability.documentsInability?.[0];
-
-//     const values: TInputs = {
-//       idEmployee: Number(inability.idEmployee),
-//       disabilityCategory: inability.disabilityCategory ?? "Enfermedad general",
-//       typeOfDisability: inability.typeOfDisability ?? "Inicial",
-//       dateInit: doc0?.dateInit ? String(doc0.dateInit).slice(0, 10) : "",
-//       dateEnd: doc0?.dateEnd ? String(doc0.dateEnd).slice(0, 10) : "",
-//     };
-
-//     reset(values);
-//     originalValuesRef.current = values;
-//   }, [inability, reset]);
-
-//   const handleReverse = () => {
-//     if (originalValuesRef.current) reset(originalValuesRef.current);
-//   };
-
-//   const onSubmit: SubmitHandler<TInputs> = async (form) => {
-//     try {
-//       setSaving(true);
-
-//       const idNum = Number(id);
-//       if (Number.isNaN(idNum)) return modalError("ID inválido");
-
-//       const payload: InabilityPayload = {
-//         idEmployee: Number(form.idEmployee),
-//         disabilityCategory: form.disabilityCategory,
-//         typeOfDisability: form.typeOfDisability,
-//         dateInit: form.dateInit,
-//         dateEnd: form.dateEnd,
-//       };
-
-//       const res = await updateInability(idNum, payload);
-//       if (!res.success) return modalError(res.message);
-
-//       toast.success(res.message);
-//       router.push("/app/inability?view_type=list&id=null");
-//       router.refresh();
-//     } catch (err) {
-//       const message = err instanceof Error ? err.message : "Error inesperado";
-//       modalError(message);
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   return (
-//     <FormView
-//       title="Incapacidad (Actualizar)"
-//       cleanUrl="/app/inability?view_type=form&id=null"
-//       id={Number(id)}
-//       isDirty={isDirty}
-//       disabled={saving}
-//       reverse={handleReverse}
-//       onSubmit={handleSubmit(onSubmit)}
-//       name={
-//         inability.employee
-//           ? `${inability.employee.name} ${inability.employee.lastName}`
-//           : null
-//       }
-//     >
-//       <FieldGroup>
-//         <Entry
-//           label="ID Empleado:"
-//           type="number"
-//           register={register("idEmployee", { valueAsNumber: true, required: true })}
-//         />
-
-//         <FieldSelect
-//           label="Categoría:"
-//           options={[
-//             { label: "Enfermedad general", value: "Enfermedad general" },
-//             { label: "Riesgo de trabajo", value: "Riesgo de trabajo" },
-//             { label: "Maternidad", value: "Maternidad" },
-//           ]}
-//           register={register("disabilityCategory", { required: true })}
-//         />
-
-//         <FieldSelect
-//           label="Tipo:"
-//           options={[
-//             { label: "Inicial", value: "Inicial" },
-//             { label: "Subsecuente", value: "Subsecuente" },
-//             { label: "Alta", value: "Alta" },
-//           ]}
-//           register={register("typeOfDisability", { required: true })}
-//         />
-
-//         <FieldGroup.Stack>
-//           <Entry label="Fecha inicio:" type="date" register={register("dateInit", { required: true })} />
-//           <Entry label="Fecha fin:" type="date" register={register("dateEnd", { required: true })} />
-//         </FieldGroup.Stack>
-//       </FieldGroup>
-//     </FormView>
-//   );
-// }
 "use client";
 
-// import { useEffect, useRef, useState } from "react";
-// import { useRouter } from "next/navigation";
-// import { useForm, SubmitHandler } from "react-hook-form";
-// import toast from "react-hot-toast";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
+import { Entry, FieldSelect, RelationField } from "@/components/fields";
+import { FieldGroup, FieldGroupFluid } from "@/components/templates/FormView";
+import { useModals } from "@/context/ModalContext";
+import {
+  ActionResponse,
+  Employee,
+  IInability,
+  ModalBasicProps,
+} from "@/lib/definitions";
+import { formatDate } from "date-fns";
+import { useEffect, useState } from "react";
+import { Button, Form } from "react-bootstrap";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
-// import FormView, { FieldGroup } from "@/components/templates/FormView";
-// import { Entry, FieldSelect } from "@/components/fields";
-// import { useModals } from "@/context/ModalContext";
+export type TInputsInability = {
+  idEmployee: number | null;
+  disabilityCategory: string;
+  folio: string;
+  typeOfDisability: string;
+  dateInit: string;
+  dateEnd: string;
+  firstDoc: FileList | null;
+};
 
-// import type { IInability, InabilityPayload } from "@/lib/definitions";
-// import { updateInability } from "@/app/actions/inability-actions";
+type ModalAction = {
+  sendData: (
+    data: TInputsInability
+  ) => Promise<ActionResponse<boolean | null>>;
+  inhability?: IInability | null;
+  employees?: Employee[];
+};
 
-// type TInputs = InabilityPayload;
+function getDefaultValues(
+  inhability?: IInability | null,
+  sessionRole?: string,
+  sessionEmployeeId?: number
+): TInputsInability {
+  if (!inhability) {
+    return {
+      idEmployee: sessionRole === "EMPLOYEE" ? sessionEmployeeId || null : null,
+      disabilityCategory: "",
+      typeOfDisability: "inicial",
+      dateInit: "",
+      dateEnd: "",
+      firstDoc: null,
+      folio: "",
+    };
+  }
 
-// export default function InabilityFormUpdate({
-//   id,
-//   inability,
-// }: {
-//   id: string;
-//   inability: IInability;
-// }) {
-//   const router = useRouter();
-//   const { modalError } = useModals();
-//   const [saving, setSaving] = useState(false);
+  const firstDocument = inhability.documentsInability?.[0];
 
-//   const { register, handleSubmit, reset, formState: { isDirty } } = useForm<TInputs>();
-//   const originalValuesRef = useRef<TInputs | null>(null);
+  return {
+    idEmployee: inhability.idEmployee,
+    disabilityCategory: inhability.disabilityCategory,
+    typeOfDisability: inhability.typeOfDisability,
+    firstDoc: null,
+    folio: inhability.folio || firstDocument?.folio || "",
+    dateInit: firstDocument?.dateInit
+      ? formatDate(firstDocument.dateInit, "yyyy-MM-dd")
+      : "",
+    dateEnd: firstDocument?.dateEnd
+      ? formatDate(firstDocument.dateEnd, "yyyy-MM-dd")
+      : "",
+  };
+}
 
-//   useEffect(() => {
-//     // tomamos el primer documento para fechas (porque tu objeto real lo trae así)
-//     const doc0 = inability.documentsInability?.[0];
+export default function FormUpdateInability({
+  onHide,
+  sendData,
+  inhability,
+  employees = [],
+}: ModalBasicProps & ModalAction) {
+  const session = useSessionSnapshot();
+  const sessionEmployeeId = Number(session?.uid?.idEmployee);
 
-//     const values: TInputs = {
-//       idEmployee: Number(inability.idEmployee),
-//       disabilityCategory: inability.disabilityCategory ?? "Enfermedad general",
-//       typeOfDisability: inability.typeOfDisability ?? "Inicial",
-//       dateInit: doc0?.dateInit ? String(doc0.dateInit).slice(0, 10) : "",
-//       dateEnd: doc0?.dateEnd ? String(doc0.dateEnd).slice(0, 10) : "",
-//     };
+  const {
+    reset,
+    register,
+    handleSubmit,
+    watch,
+    control,
+    formState: { isSubmitting, errors },
+  } = useForm<TInputsInability>({
+    defaultValues: getDefaultValues(
+      inhability,
+      session?.uid?.role,
+      sessionEmployeeId
+    ),
+  });
 
-//     reset(values);
-//     originalValuesRef.current = values;
-//   }, [inability, reset]);
+  const onChangeDateInit = watch("dateInit");
 
-//   const handleReverse = () => {
-//     if (originalValuesRef.current) reset(originalValuesRef.current);
-//   };
+  const [loading, setLoading] = useState(false);
 
-//   const onSubmit: SubmitHandler<TInputs> = async (form) => {
-//     try {
-//       setSaving(true);
+  const { modalError, modalConfirm } = useModals();
 
-//       const idNum = Number(id);
-//       if (Number.isNaN(idNum)) return modalError("ID inválido");
+  useEffect(() => {
+    setLoading(true);
 
-//       const payload: InabilityPayload = {
-//         idEmployee: Number(form.idEmployee),
-//         disabilityCategory: form.disabilityCategory,
-//         typeOfDisability: form.typeOfDisability,
-//         dateInit: form.dateInit,
-//         dateEnd: form.dateEnd,
-//       };
+    try {
+      reset(
+        getDefaultValues(inhability, session?.uid?.role, sessionEmployeeId)
+      );
+    } catch {
+      modalError("No se pudo cargar la información de la incapacidad");
+    } finally {
+      setLoading(false);
+    }
+  }, [inhability, reset, modalError, session?.uid?.role, sessionEmployeeId]);
 
-//       const res = await updateInability(idNum, payload);
-//       if (!res.success) return modalError(res.message);
+  const onSubmit: SubmitHandler<TInputsInability> = async (data) => {
+    modalConfirm("¿Deseas guardar los cambios de esta incapacidad?", async () => {
+      const res = await sendData(data);
 
-//       toast.success(res.message);
-//       router.push("/app/inability?view_type=list&id=null");
-//       router.refresh();
-//     } catch (err) {
-//       const message = err instanceof Error ? err.message : "Error inesperado";
-//       modalError(message);
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
+      if (!res.success) {
+        modalError(res.message);
+        return;
+      }
 
-//   return (
-//     <FormView
-//       title="Incapacidad (Actualizar)"
-//       cleanUrl="/app/inability?view_type=form&id=null"
-//       id={Number(id)}
-//       isDirty={isDirty}
-//       disabled={saving}
-//       reverse={handleReverse}
-//       onSubmit={handleSubmit(onSubmit)}
-//       name={
-//         inability.employee
-//           ? `${inability.employee.name} ${inability.employee.lastName}`
-//           : null
-//       }
-//     >
-//       <FieldGroup>
-//         <Entry
-//           label="ID Empleado:"
-//           type="number"
-//           register={register("idEmployee", { valueAsNumber: true, required: true })}
-//         />
+      onHide();
+    });
+  };
 
-//         <FieldSelect
-//           label="Categoría:"
-//           options={[
-//             { label: "Enfermedad general", value: "Enfermedad general" },
-//             { label: "Riesgo de trabajo", value: "Riesgo de trabajo" },
-//             { label: "Maternidad", value: "Maternidad" },
-//           ]}
-//           register={register("disabilityCategory", { required: true })}
-//         />
+  return (
+    <>
+      <ConditionalRender cond={loading}>
+        <Loading message="Cargando..." />
+      </ConditionalRender>
 
-//         <FieldSelect
-//           label="Tipo:"
-//           options={[
-//             { label: "Inicial", value: "Inicial" },
-//             { label: "Subsecuente", value: "Subsecuente" },
-//             { label: "Alta", value: "Alta" },
-//           ]}
-//           register={register("typeOfDisability", { required: true })}
-//         />
+      <ConditionalRender cond={isSubmitting}>
+        <Loading message="Guardando..." />
+      </ConditionalRender>
 
-//         <FieldGroup.Stack>
-//           <Entry label="Fecha inicio:" type="date" register={register("dateInit", { required: true })} />
-//           <Entry label="Fecha fin:" type="date" register={register("dateEnd", { required: true })} />
-//         </FieldGroup.Stack>
-//       </FieldGroup>
-//     </FormView>
-//   );
-// }
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset disabled={loading || isSubmitting}>
+          <FieldGroupFluid>
+            <RelationField
+              callBackMode="id"
+              control={control}
+              label="Empleado"
+              options={employees.map((em) => ({
+                id: Number(em.id),
+                displayName: `${em.lastName} ${em.name}`.toUpperCase(),
+                name: `${em.lastName} ${em.name}`.toUpperCase(),
+              }))}
+              register={register("idEmployee", { required: true })}
+              readonly={session?.uid?.role === "EMPLOYEE"}
+            />
+
+            <FieldGroup.Stack>
+              <FieldSelect
+                label="Categoría:"
+                options={[
+                  { label: "Enfermedad general", value: "enfermedad general" },
+                  { label: "Riesgo de trabajo", value: "riesgo de trabajo" },
+                  { label: "Maternidad", value: "maternidad" },
+                ]}
+                register={register("disabilityCategory", { required: true })}
+                readonly={session?.uid?.role === "EMPLOYEE"}
+                invalid={!!errors.disabilityCategory}
+              />
+
+              <FieldSelect
+                label="Tipo:"
+                options={[
+                  { label: "Inicial", value: "inicial" },
+                  { label: "Subsecuente", value: "subsecuente" },
+                  { label: "Alta", value: "alta" },
+                ]}
+                register={register("typeOfDisability", { required: true })}
+                readonly={session?.uid?.role === "EMPLOYEE"}
+                invalid={!!errors.typeOfDisability}
+              />
+            </FieldGroup.Stack>
+
+            <FieldGroup.Stack>
+              <Entry
+                label="Fecha inicio:"
+                type="date"
+                register={register("dateInit", { required: true })}
+                readonly={session?.uid?.role === "EMPLOYEE"}
+                invalid={!!errors.dateInit}
+              />
+              <Entry
+                label="Fecha fin:"
+                type="date"
+                min={onChangeDateInit}
+                register={register("dateEnd", { required: true })}
+                readonly={session?.uid?.role === "EMPLOYEE"}
+                invalid={!!errors.dateEnd}
+              />
+            </FieldGroup.Stack>
+
+            <Entry
+              register={register("folio")}
+              label="Folio CITT:"
+              className="text-uppercase"
+            />
+
+            <FieldGroup.Stack>
+              <Button type="submit">Guardar</Button>
+              <Button type="button" variant="secondary" onClick={onHide}>
+                Cancelar
+              </Button>
+            </FieldGroup.Stack>
+          </FieldGroupFluid>
+        </fieldset>
+      </Form>
+    </>
+  );
+}

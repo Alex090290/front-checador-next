@@ -307,6 +307,7 @@ export interface Vacations {
   _id: string;
   id: number;
   idEmployee: number | null;
+  dohApproval?: "APPROVED" | "REFUSED" | "PENDING";
   periodDescription: string;
   totalDaysPeriod: number;
   dateInitPeriod: string;
@@ -359,6 +360,25 @@ export interface Vacations {
   usedDays: number;
   availableDays: number;
   pendingDays: number;
+  createdAt?: string;
+  updatedAt?: string;
+  daysdaysBrokenDown?: {
+    id: number;
+    fortnightlyPeriod: number;
+    day: string; // ISO
+  }[];
+  leader?: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  personDoh?: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
 }
 
 export interface PeriodVacation {
@@ -524,4 +544,43 @@ export interface IOvertime {
   };
   status: "APPROVED" | "REFUSED" | "PENDING";
   createdAt: string;
+}
+
+export interface ICurrentPeriod {
+		_id: string;
+		id: number;
+		year: string;
+		numberPeriod: number;
+		description: string;
+		dateInit: string;
+		dateEnd: string;
+		payrollReport: boolean;
+		createdAt: string;
+		updatedAt: string;
+	}
+
+export interface EmployeeStats {
+  id: number;
+  name: string;
+  lastName: string;
+  idDepartment: number;
+  branch: number;
+  status: number;
+}
+
+export interface FaultStatsByStatus {
+  [status: string]: number; // ej: { ausencia: 4 }
+}
+
+export interface AttendanceReportItem {
+  totalChecks: number;
+  lunchExcessMinutes: number;
+  lunchExcessTimes: number;
+  statsByStatus: FaultStatsByStatus;
+  faultsDays: string[]; // "YYYY-MM-DD"
+  totalFaults: number;
+  employee: EmployeeStats;
+  idEmployee: number;
+  totalRecords: number;
+  usersCount: number;
 }
