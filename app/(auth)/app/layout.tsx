@@ -12,9 +12,9 @@ export default function LayoutApp({ children }: { children: React.ReactNode }) {
         <div className="d-flex flex-column vh-100">
           <TopNav />
           <HealthCheck />
-          <div className="d-flex flex-grow-1 overflow-hidden">
+          <div className="d-flex overflow-hidden" style={{height: "100vh", minHeight: 0,}}>
             <Sidebar />
-            <main className="flex-grow-1 overflow-auto">{children}</main>
+            <main className="flex-grow-1 overflow-auto" style={{minWidth: 0, minHeight: 0,}}>{children}</main>
           </div>
         </div>
       </ModalProvider>

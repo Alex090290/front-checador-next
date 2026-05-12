@@ -39,13 +39,16 @@ export default function Sidebar() {
 
       {/* Static sidebar - only for large screens */}
       <Card
-        className="d-none d-lg-block border-0 h-100 me-1"
-        style={{ minWidth: "180px" }}
-      >
-        {/* <Card.Header>
-          <Card.Title>Menú Principal</Card.Title>
-        </Card.Header> */}
-        <Card.Body className="p-0">{renderMenu()}</Card.Body>
+        className="d-none d-lg-flex flex-column border-0 me-1"
+        style={{width: "180px", minWidth: "180px", flexShrink: 0, height: "100%", minHeight: 0, overflow: "hidden",}}>
+        <Card.Body
+          className="p-0"
+          style={{flex: "1 1 auto", minHeight: 0, overflow: "hidden",}}>
+          <div
+            style={{height: "90%", overflowY: "auto", overflowX: "hidden",}}>
+            {renderMenu()}
+          </div>
+        </Card.Body>
       </Card>
     </>
   );
