@@ -156,11 +156,16 @@ export default function CreateEmployeeComponent({
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      {/* ============================================ */}
+      {/* // Aquí inicia la pagina Empleados  */}
+      {/* ============================================ */}
+      <div className="d-flex justify-content-between align-items-center m-4 ms-0">
         <h1 className="mb-0">Crear empleado</h1>
 
         <div className="d-flex gap-2">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit"
+            className="btn-success"
+            disabled={isSubmitting}>
             {isSubmitting ? "Guardando..." : "Guardar"}
           </Button>
 
@@ -175,6 +180,9 @@ export default function CreateEmployeeComponent({
         </div>
       </div>
 
+      {/* ============================================ */}
+      {/* //Apartado Información Personal */}
+      {/* ============================================ */}
       <FormBook dKey="personalInfo">
         <FormPage title="Información Personal" eventKey="personalInfo">
           <PageSheet>
@@ -351,6 +359,9 @@ export default function CreateEmployeeComponent({
           </PageSheet>
         </FormPage>
 
+        {/* ============================================ */}
+        {/* // Apartado Información laboral  */}
+        {/* ============================================ */}
         <FormPage title="Información Laboral" eventKey="jobInfo">
           <PageSheet>
             <FieldGroup>
@@ -486,15 +497,15 @@ export default function CreateEmployeeComponent({
               {session?.user?.permissions.some(
                 (p) => p.text === "visualizar_salario"
               ) && (
-                <FieldGroup.Stack>
-                  <Entry
-                    className="text-center"
-                    register={register("dailyWage", { required: true })}
-                    label="Salario diario:"
-                    invalid={!!errors.dailyWage}
-                  />
-                </FieldGroup.Stack>
-              )}
+                  <FieldGroup.Stack>
+                    <Entry
+                      className="text-center"
+                      register={register("dailyWage", { required: true })}
+                      label="Salario diario:"
+                      invalid={!!errors.dailyWage}
+                    />
+                  </FieldGroup.Stack>
+                )}
             </FieldGroup>
 
             <FieldGroup>
@@ -537,94 +548,102 @@ export default function CreateEmployeeComponent({
           </PageSheet>
         </FormPage>
 
+        {/* ============================================ */}
+        {/* // Apartado contactos  */}
+        {/* ============================================ */}
         <FormPage title="Contactos" eventKey="contacts">
           <FormSheet>
-            <Col md="12">
-              <Table size="sm" borderless hover responsive>
-                <thead>
-                  <tr className="border-bottom table-active">
-                    <th className="border-end">Name</th>
-                    <th className="border-end">Parentezco</th>
-                    <th className="border-end">Contacto</th>
-                    <th className="border-end text-center">
-                      <i className="bi bi-trash"></i>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fieldsContacts.map((contact, index) => (
-                    <tr key={contact.id}>
-                      <td valign="middle" className="border-bottom">
-                        <Form.Control
-                          {...register(`emergencyContacts.${index}.name`, {
-                            required: true,
-                          })}
-                          size="sm"
-                          className="border-0 shadow-none"
-                          isInvalid={!!errors.emergencyContacts?.[index]?.name}
-                        />
-                      </td>
-                      <td valign="middle" className="border-bottom">
-                        <Form.Control
-                          {...register(`emergencyContacts.${index}.kinship`, {
-                            required: true,
-                          })}
-                          size="sm"
-                          className="border-0 shadow-none"
-                          isInvalid={
-                            !!errors.emergencyContacts?.[index]?.kinship
-                          }
-                        />
-                      </td>
-                      <td valign="middle" className="border-bottom">
-                        <Form.Control
-                          {...register(
-                            `emergencyContacts.${index}.phone.internationalNumber`,
-                            {
+            <Col className="m-2">
+              <div className="border rounded-2 overflow-hidden">
+                <Table size="sm" borderless hover responsive className="mb-0">
+                  <thead>
+                    <tr className="border-bottom table-active">
+                      <th className="border-end">Name</th>
+                      <th className="border-end">Parentezco</th>
+                      <th className="border-end">Contacto</th>
+                      <th className="border-end text-center">
+                        <i className="bi bi-trash"></i>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fieldsContacts.map((contact, index) => (
+                      <tr key={contact.id}>
+                        <td valign="middle" className="border-bottom">
+                          <Form.Control
+                            {...register(`emergencyContacts.${index}.name`, {
                               required: true,
+                            })}
+                            size="sm"
+                            className="border-0 shadow-none"
+                            isInvalid={!!errors.emergencyContacts?.[index]?.name}
+                          />
+                        </td>
+                        <td valign="middle" className="border-bottom">
+                          <Form.Control
+                            {...register(`emergencyContacts.${index}.kinship`, {
+                              required: true,
+                            })}
+                            size="sm"
+                            className="border-0 shadow-none"
+                            isInvalid={
+                              !!errors.emergencyContacts?.[index]?.kinship
                             }
-                          )}
-                          size="sm"
-                          className="border-0 shadow-none"
-                          isInvalid={!!errors.emergencyContacts?.[index]?.phone}
-                        />
-                      </td>
-                      <td
-                        valign="middle"
-                        className="border-bottom text-center"
-                      >
+                          />
+                        </td>
+                        <td valign="middle" className="border-bottom">
+                          <Form.Control
+                            {...register(
+                              `emergencyContacts.${index}.phone.internationalNumber`,
+                              {
+                                required: true,
+                              }
+                            )}
+                            size="sm"
+                            className="border-0 shadow-none"
+                            isInvalid={!!errors.emergencyContacts?.[index]?.phone}
+                          />
+                        </td>
+                        <td
+                          valign="middle"
+                          className="border-bottom text-center"
+                        >
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="link"
+                            onClick={() => removeContacts(index)}
+                          >
+                            <i className="bi bi-trash"></i>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    <tr>
+                      <td colSpan={4}>
                         <Button
                           type="button"
                           size="sm"
                           variant="link"
-                          onClick={() => removeContacts(index)}
+                          onClick={() =>
+                            appContacts({ name: "", kinship: "", phone: "" })
+                          }
                         >
-                          <i className="bi bi-trash"></i>
+                          Agregar
                         </Button>
                       </td>
                     </tr>
-                  ))}
-
-                  <tr>
-                    <td colSpan={4}>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="link"
-                        onClick={() =>
-                          appContacts({ name: "", kinship: "", phone: "" })
-                        }
-                      >
-                        Agregar
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+                  </tbody>
+                </Table>
+              </div>
             </Col>
           </FormSheet>
         </FormPage>
 
+        {/* ============================================ */}
+        {/* //Apartado Ingresos y bajas  */}
+        {/* ============================================ */}
         <FormPage title="Ingresos y Bajas" eventKey="historical">
           <Container>
             <Row className="py-1">
