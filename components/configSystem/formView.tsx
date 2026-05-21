@@ -121,6 +121,15 @@ export default function ConfigSystemView({
               extras={data.overTime?.extra}
             />
           </div>
+
+          <div className="col-12 col-md-6">
+            <BlockView
+              title="Constancias"
+              doh={data.constancy?.approvalDoh}
+              leaders={data.constancy?.approvalLeaders}
+              extras={data.constancy?.extra}
+            />
+          </div>
         </div>
       </Card.Body>
     </Card>

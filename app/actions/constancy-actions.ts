@@ -1,6 +1,6 @@
 "use server";
 
-import { ActionResponse } from "@/lib/definitions";
+import { ActionResponse, Employee } from "@/lib/definitions";
 import { Constancy } from "@/lib/constancy/interface";
 import axios from "axios";
 import { storeAction } from "./storeActions";
@@ -16,33 +16,36 @@ export async function createConstancy({
     try {
         const { apiToken, API_URL } = await storeAction();
 
-        await axios
-            .post(
-                `${API_URL}/constancy`,
-                {
-                    idEmployee: data.idEmployee,
-                    dateTheEvents: data.dateTheEventsscene,
-                    hourTheEvents: data.hourTheEvents,
-                    sceneOfTheEvents: data.sceneOfTheEvents,
-                    backgroundIds: data.backgroundIds,
-                    typeOfPenalty: data.typeOfPenalty
+        console.log("Data: ", data);
+
+        await axios.post(`${API_URL}/constancy`,
+            {
+                idEmployee: data.idEmployee,
+                dateTheEvents: data.dateTheEventsscene,
+                hourTheEvents: data.hourTheEvents,
+                sceneOfTheEvents: data.sceneOfTheEvents,
+                backgroundIds: data.backgroundIds,
+                typeOfPenalty: data.typeOfPenalty,
+                signatures: data.signatures,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${apiToken}`,
-                    },
-                }
-            )
-            .then((res) => {
-                return res.data;
-            })
-            .catch((err) => {
-                throw new Error(
-                    err.response.data.message
-                        ? err.response.data.message
-                        : "Error en la respuesta"
-                );
-            });
+            }
+        ).then((res) => {
+            console.log("Respuesta correcta: ", res.data);
+
+            return res.data;
+        }).catch((err) => {
+            console.log("Respuesta incorrecta: ", err);
+
+            throw new Error(
+                err.response.data.message
+                    ? err.response.data.message
+                    : "Error en la respuesta"
+            );
+        });
 
         revalidatePath("/app/constancy");
 
@@ -58,3 +61,83 @@ export async function createConstancy({
         };
     }
 }
+
+//Funcion para buscar una constancia por id de empleado 
+export async function findConstancyByIdEmployee({
+    idEmployee,
+}: {
+    idEmployee?: number | null;
+}): Promise<Constancy[] | null> {
+
+    try {
+        if (!idEmployee || idEmployee <= 0) return [];
+
+        const { apiToken, API_URL } = await storeAction();
+
+        const response = await axios
+            .get(`${API_URL}/constancyAll`, {
+                params: {
+                    idEmployee: Number(idEmployee),
+                },
+
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                },
+            })
+
+            .then((res) => {
+                console.log("Respuesta correcta: ", res.data);
+                return res.data;
+            })
+
+            .catch((err) => {
+                console.log("Respuesta incorrecta: ", err);
+
+                throw new Error(
+                    err.response.data.message
+                        ? err.response.data.message
+                        : "Error en la respuesta"
+                );
+            });
+
+        return response.data || null;
+
+    } catch (error: any) {
+
+        console.log(error);
+
+        return null;
+    }
+}
+
+//Listar contancias 
+export async function fetchConstancies(): Promise<Constancy[]> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const response = await axios.get(`${API_URL}/constancyAll`, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+        })
+            .then((res) => {
+                console.log("Respuesta correcta: ", res.data)
+                return res.data;
+            })
+            .catch((err) => {
+                console.log("Respuestas incorrecta: ", err);
+
+                throw new Error(
+                    err.response.message
+                        ? err.respone.data.message
+                        : "Error en la respuesta"
+                );
+            });
+        return response.data || [];
+
+    } catch (error: any) {
+        console.log(error);
+        return [];
+    }
+}
+

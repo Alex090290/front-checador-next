@@ -33,6 +33,7 @@ export type IConfigSystem = {
   vacations: ConfigBlock;
   penaltyForUnjustifiedAbsence: ConfigBlock;
   overTime: ConfigBlock;
+  constancy: ConfigBlock;
 };
 
 
