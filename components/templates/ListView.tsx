@@ -21,7 +21,7 @@ type HeaderActionProps = {
 type HeaderProps = {
   children?: React.ReactNode;
   formView?: string;
-  title: string;
+  title: React.ReactNode;
   formSearch?: FormSearchProps;
   actions?: HeaderActionProps[];
 };
@@ -106,7 +106,7 @@ type ListViewProps = {
 };
 
 function ListView({ children }: ListViewProps) {
-  return <Card className="h-100 d-flex flex-column border-0">{children}</Card>;
+  return <Card className="h-100 d-flex flex-column border-0 ">{children}</Card>;
 }
 
 ListView.Header = Header;

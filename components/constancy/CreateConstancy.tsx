@@ -10,7 +10,7 @@ import { Employee } from "@/lib/definitions";
 import { useModals } from "@/context/ModalContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, Form} from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FieldGroup } from "../templates/FormView";
@@ -25,7 +25,7 @@ const DEFAULT_VALUES: Constancy = {
     id: 0,
     idEmployee: 0,
     dateAndTimeOfTheEvents: "",
-    dateTheEventsscene: "",
+    dateTheEvents: "",
     hourTheEvents: "",
     sceneOfTheEvents: "",
     backgroundIds: [],
@@ -54,16 +54,17 @@ export default function CreateConstancyComponent({
     const idEmployeeSelected = watch("idEmployee"); //whatch para indicar que campo es el que nos dice cuando hay alguna constancia previa (se filtra por id empleado)
     const [previousConstancies, setPreviousConstancies] = useState<Constancy[]>([]); //Guarda y renderiza 
 
-    const [selectedConstancy, setSelectedConstancy] = useState<Constancy | null>(null); 
+
+    const existenConstancy = Number(idEmployeeSelected) > 0;
+    const [selectedConstancy, setSelectedConstancy] = useState<Constancy | null>(null);
 
     //Paraa hacer dinamico el campo de antecedentes y que aparezcan constancias previas 
     useEffect(() => {
         const loadConstancies = async () => {
             //En caso de que no haya constancias previas, sale de la busqueda
-            if (!idEmployeeSelected) {
+            if (!existenConstancy) {
                 setPreviousConstancies([]);
                 setSelectedConstancy(null);
-
                 return;
             }
 
@@ -74,13 +75,13 @@ export default function CreateConstancyComponent({
 
             setPreviousConstancies(result ?? []); //Para guardar los resultados en el estado 
 
-            if(!result || result.length === 0){
+            if (!result || result.length === 0) {
                 setSelectedConstancy(null);
             }
         };
 
         loadConstancies(); //Ejcuta la funcion 
-    }, [idEmployeeSelected]); //Dependencias 
+    }, [existenConstancy, idEmployeeSelected]); //Dependencias 
 
     //Para el arreglo de penalizaciones, las que tenemos de cajon
     const penalties: typeOfPenalty[] = [{ id: 1, name: "Descuento" },];
@@ -171,11 +172,11 @@ export default function CreateConstancyComponent({
 
                             {/* Campo Fecha de los hechos  */}
                             <Entry
-                                register={register("dateTheEventsscene", { required: true })}
+                                register={register("dateTheEvents", { required: true })}
                                 type="date"
                                 max={formatDate(new Date(), "yyyy-MM-dd")}
                                 label="Fecha de los hechos: "
-                                invalid={!!errors.dateTheEventsscene}
+                                invalid={!!errors.dateTheEvents}
                             />
 
                             {/* Campo Hora de los hechos  */}
@@ -197,7 +198,7 @@ export default function CreateConstancyComponent({
                             />
 
                             {/* Antecedentes de constancias previas */}
-                            {idEmployeeSelected && Number(idEmployeeSelected) > 0 && (
+                            <ConditionalRender cond={existenConstancy}>
                                 <div className="mt-3">
                                     <label className="form-label">Antecedentes</label>
 
@@ -218,7 +219,7 @@ export default function CreateConstancyComponent({
                                                         onClick={() => setSelectedConstancy(constancy)}
                                                     >
                                                         constancia: {constancy.id}
-                                                        {constancy.dateTheEventsscene}
+                                                        {constancy.dateTheEvents}
                                                     </li>
                                                 ))}
                                             </ul>
@@ -240,7 +241,8 @@ export default function CreateConstancyComponent({
                                         </div>
                                     )}
                                 </div>
-                            )}
+                            </ConditionalRender>
+
 
                             {/* Campo penalizaciones  */}
                             <div className="mb-3">
@@ -277,7 +279,7 @@ export default function CreateConstancyComponent({
                                             {penalty.name}
                                         </option>
                                     ))}
-                                </select>=
+                                </select>
                             </div>
 
                             {/* Campo firmas  */}

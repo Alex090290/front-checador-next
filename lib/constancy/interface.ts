@@ -20,12 +20,21 @@ export interface Constancy {
     _id?: string;
     id: number;
     idEmployee: number;
+
+    employee?: {
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  
     dateAndTimeOfTheEvents?: string,
-    dateTheEventsscene: string;
+    dateTheEvents: string;
     hourTheEvents: string;
     sceneOfTheEvents: string;
     backgroundIds: backgroundIdsPermitidos[];
     typeOfPenalty: typeOfPenalty[];
     signatures: signatures[];
 }
+
+
 

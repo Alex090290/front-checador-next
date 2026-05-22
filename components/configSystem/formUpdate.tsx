@@ -79,6 +79,7 @@ export function EmployeeAutocomplete({
   isEmployeesLoading,
   inputSize,
   inputClassName,
+  clearOnSelect = false, //prop para limpiar campo de ids extra 
 }: {
   employees: EmployeeLite[];
   value: number;
@@ -89,6 +90,7 @@ export function EmployeeAutocomplete({
   isEmployeesLoading?: boolean;
   inputSize?: "sm" | "lg";
   inputClassName?: string;
+  clearOnSelect?: boolean; 
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -165,7 +167,8 @@ export function EmployeeAutocomplete({
     onChange(id);
     onTouched?.();
 
-    setQ(`${empName(e)}`);
+    setQ(clearOnSelect ? "" : empName(e));
+
     setOpen(false);
     userTypingRef.current = false;
   };
@@ -269,6 +272,7 @@ function EmployeeMultiSelect({
         onChange={(id) => addOne(id)}
         placeholder={placeholder ?? "Agregar empleado extra..."}
         isEmployeesLoading={isEmployeesLoading}
+        clearOnSelect
       />
 
       <div className="mt-2 d-flex flex-wrap gap-2">
@@ -535,7 +539,7 @@ export default function ConfigSystemUpdate({
   return (
     <>
       <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Guardando constancia..."} />
+        <Loading message={messageLoading || "Guardando actualización..."} />
       </ConditionalRender>
 
       <Card className="border-0 shadow-sm">
@@ -602,7 +606,7 @@ export default function ConfigSystemUpdate({
                   </Card>
                 </div>
 
-                {/* VACACIONES */}
+                {/* VACACIONES */}  
                 <div className="col-12 col-md-6">
                   <Card className="bg-body-tertiary border-0">
                     <Card.Body>

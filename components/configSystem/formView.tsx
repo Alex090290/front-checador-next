@@ -2,6 +2,8 @@
 
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { Button, Card } from "react-bootstrap";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
 
 function fullName(emp?: { name: string; lastName: string }) {
   if (!emp) return "-";
@@ -23,6 +25,7 @@ function BlockView({
   doh?: { employee?: { name: string; lastName: string } };
   leaders?: { employee?: { name: string; lastName: string } };
   extras?: { employees?: { name: string; lastName: string }[] };
+
 }) {
   return (
     <Card className="bg-body-tertiary border-0">
@@ -60,78 +63,86 @@ export default function ConfigSystemView({
   isLoading?: boolean;
 }) {
   return (
-    <Card className="border-0 shadow-sm">
-      <Card.Body>
-        <div className="d-flex align-items-start justify-content-between gap-3">
-          <div>
-            <Card.Title className="mb-1">Configuración del sistema</Card.Title>
+    //Bloque para bloquear pagina y mostrar mensaje cargando
+    <>
+      <ConditionalRender cond={isLoading}>
+        <Loading message="Cargando actualización..." />
+      </ConditionalRender>
+
+      <Card className="border-0 shadow-sm">
+
+        <Card.Body>
+          <div className="d-flex align-items-start justify-content-between gap-3">
+            <div>
+              <Card.Title className="mb-1">Configuración del sistema</Card.Title>
+            </div>
+
+            <Button variant="primary" onClick={onEdit} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Cargando...
+                </>
+              ) : (
+                "Actualizar"
+              )}
+            </Button>
           </div>
 
-          <Button variant="primary" onClick={onEdit} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <span
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                  aria-hidden="true"
-                />
-                Cargando...
-              </>
-            ) : (
-              "Actualizar"
-            )}
-          </Button>
-        </div>
+          <hr />
 
-        <hr />
+          <div className="row g-3">
+            <div className="col-12 col-md-6">
+              <BlockView
+                title="Permisos"
+                doh={data.permissions?.approvalDoh}
+                leaders={data.permissions?.approvalLeaders}
+                extras={data.permissions?.extra}
+              />
+            </div>
 
-        <div className="row g-3">
-          <div className="col-12 col-md-6">
-            <BlockView
-              title="Permisos"
-              doh={data.permissions?.approvalDoh}
-              leaders={data.permissions?.approvalLeaders}
-              extras={data.permissions?.extra}
-            />
+            <div className="col-12 col-md-6">
+              <BlockView
+                title="Vacaciones"
+                doh={data.vacations?.approvalDoh}
+                leaders={data.vacations?.approvalLeaders}
+                extras={data.vacations?.extra}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <BlockView
+                title="Falta injustificada"
+                doh={data.penaltyForUnjustifiedAbsence?.approvalDoh}
+                leaders={data.penaltyForUnjustifiedAbsence?.approvalLeaders}
+                extras={data.penaltyForUnjustifiedAbsence?.extra}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <BlockView
+                title="Horas extra"
+                doh={data.overTime?.approvalDoh}
+                leaders={data.overTime?.approvalLeaders}
+                extras={data.overTime?.extra}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <BlockView
+                title="Constancias"
+                doh={data.constancy?.approvalDoh}
+                leaders={data.constancy?.approvalLeaders}
+                extras={data.constancy?.extra}
+              />
+            </div>
           </div>
-
-          <div className="col-12 col-md-6">
-            <BlockView
-              title="Vacaciones"
-              doh={data.vacations?.approvalDoh}
-              leaders={data.vacations?.approvalLeaders}
-              extras={data.vacations?.extra}
-            />
-          </div>
-
-          <div className="col-12 col-md-6">
-            <BlockView
-              title="Falta injustificada"
-              doh={data.penaltyForUnjustifiedAbsence?.approvalDoh}
-              leaders={data.penaltyForUnjustifiedAbsence?.approvalLeaders}
-              extras={data.penaltyForUnjustifiedAbsence?.extra}
-            />
-          </div>
-
-          <div className="col-12 col-md-6">
-            <BlockView
-              title="Horas extra"
-              doh={data.overTime?.approvalDoh}
-              leaders={data.overTime?.approvalLeaders}
-              extras={data.overTime?.extra}
-            />
-          </div>
-
-          <div className="col-12 col-md-6">
-            <BlockView
-              title="Constancias"
-              doh={data.constancy?.approvalDoh}
-              leaders={data.constancy?.approvalLeaders}
-              extras={data.constancy?.extra}
-            />
-          </div>
-        </div>
-      </Card.Body>
-    </Card>
+        </Card.Body>
+      </Card>
+    </>
   );
 }

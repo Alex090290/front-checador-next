@@ -1,9 +1,7 @@
 export const dynamic = "force-dynamic";
-import ListAllConstancies from "@/components/constancy/ListAllConstancies";
 import Loading from "@/components/LoadingSpinner";
 import { Suspense } from "react";
-// import ListAllDepartments from "./views/ListAllConstancies";
-
+import ListAllConstancies from "./views/ListAllConstancies";
 
 type SearchParams = {
   view_type?: string;
@@ -26,7 +24,7 @@ async function PageConstancies({
 
   return (
     <Suspense fallback={<Loading message="Cargando datos..." />}>
-      {/* <ListAllConstancies id={id} limit={limit} page={page} /> */}
+      <ListAllConstancies id={id} limit={limit} page={page} />
     </Suspense>
   );
 }
