@@ -13,6 +13,37 @@ type FetchUsersArgs = {
     //   status?: string;
 };
 
+//Listar contancias 
+export async function fetchConstancies(p0: { page: number; limit: number; }): Promise<Constancy[]> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const response = await axios.get(`${API_URL}/constancyAll`, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+        })
+            .then((res) => {
+                console.log("Respuesta correcta: ", res.data)
+                return res.data;
+            })
+            .catch((err) => {
+                console.log("Respuestas incorrecta: ", err);
+
+                throw new Error(
+                    err.response.message
+                        ? err.respone.data.message
+                        : "Error en la respuesta"
+                );
+            });
+        return response.data || [];
+
+    } catch (error: any) {
+        console.log(error);
+        return [];
+    }
+}
+
 //Funcion para paginar constancias 
 export async function fetchConstanciesQueries(args: FetchUsersArgs = {}): Promise<{
     data: Constancy[];
@@ -49,14 +80,11 @@ export async function fetchConstanciesQueries(args: FetchUsersArgs = {}): Promis
                 );
             });
 
-        console.log("RESPONSE CONSTANCIES:", response);
-
-        const constancies = response?.data ?? [];
-        const total = constancies.length;
+        const total = Number(response.total ?? 0);
         const pages = Math.max(Math.ceil(total / limitNum), 1);
 
         return {
-            data: constancies,
+            data: response.data ?? [],
             total,
             page: pageNum,
             limit: limitNum,
@@ -173,34 +201,5 @@ export async function findConstancyByIdEmployee({
     }
 }
 
-//Listar contancias 
-export async function fetchConstancies(p0: { page: number; limit: number; }): Promise<Constancy[]> {
-    try {
-        const { apiToken, API_URL } = await storeAction();
 
-        const response = await axios.get(`${API_URL}/constancyAll`, {
-            headers: {
-                Authorization: `Bearer ${apiToken}`,
-            },
-        })
-            .then((res) => {
-                console.log("Respuesta correcta: ", res.data)
-                return res.data;
-            })
-            .catch((err) => {
-                console.log("Respuestas incorrecta: ", err);
-
-                throw new Error(
-                    err.response.message
-                        ? err.respone.data.message
-                        : "Error en la respuesta"
-                );
-            });
-        return response.data || [];
-
-    } catch (error: any) {
-        console.log(error);
-        return [];
-    }
-}
 

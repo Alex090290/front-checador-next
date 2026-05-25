@@ -187,7 +187,7 @@ export default function ConstanciesTableClient({
                 <ListView>
                     <ListView.Header
                         title={
-                            <span className="fs-2 fw-semibold">
+                            <span className="fs-3 fw-semibold">
                                 Constancias ({total})
                             </span>
                         }
