@@ -5,11 +5,7 @@ import Loading from "@/components/LoadingSpinner";
 import { Entry } from "@/components/fields";
 import { FieldGroup, FieldGroupFluid } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
-import {
-  ActionResponse,
-  Branch,
-  ModalBasicProps,
-} from "@/lib/definitions";
+import { ActionResponse, Branch, ModalBasicProps } from "@/lib/definitions";
 import { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";

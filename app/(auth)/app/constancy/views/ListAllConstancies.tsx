@@ -1,24 +1,28 @@
 import { fetchConstanciesQueries } from "@/app/actions/constancy-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
 import ConstanciesTableClient from "@/components/constancy/ConstanciesTableList";
+import ConstancyInfoOne from "./constancyInfoOne";
 
 export default async function ListAllConstancies({
     id,
     page = "1",
-    limit = '20',
-
+    limit = "20",
 }: {
     id: string;
     page?: string;
     limit?: string;
 }) {
+    if (id && id !== "null") {
+        return <ConstancyInfoOne id={id} />;
+    }
+
     const pageParse = Math.max(Number(page || "1") || 1, 1);
     const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
 
     const [constancies, employeesResponse] = await Promise.all([
         fetchConstanciesQueries({
             page: pageParse,
-            limit: limitParse
+            limit: limitParse,
         }),
         fetchEmployees({
             page: 1,
@@ -32,16 +36,14 @@ export default async function ListAllConstancies({
             page={pageParse}
             limit={limitParse}
             constancies={constancies.data}
-            employees={
-                (employeesResponse.data ?? [])
-                    .filter((e) => e.id !== undefined)
-                    .map((e) => ({
-                        _id: e._id,
-                        id: e.id!,
-                        name: e.name ?? "",
-                        lastName: e.lastName ?? "",
-                    }))
-            }
+            employees={(employeesResponse.data ?? [])
+                .filter((e) => e.id !== undefined)
+                .map((e) => ({
+                    _id: e._id,
+                    id: e.id!,
+                    name: e.name ?? "",
+                    lastName: e.lastName ?? "",
+                }))}
         />
-    )
+    );
 }

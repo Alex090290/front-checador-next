@@ -158,10 +158,10 @@ export async function findConstancyByIdEmployee({
     idEmployee,
 }: {
     idEmployee?: number | null;
-}): Promise<Constancy[] | null> {
+}): Promise<Constancy | null> {
 
     try {
-        if (!idEmployee || idEmployee <= 0) return [];
+        if (!idEmployee || idEmployee <= 0) return null;
 
         const { apiToken, API_URL } = await storeAction();
 
@@ -191,13 +191,156 @@ export async function findConstancyByIdEmployee({
                 );
             });
 
-        return response.data || null;
+        return response.data?.[0] ?? null;
 
     } catch (error: any) {
 
         console.log(error);
-
         return null;
+    }
+}
+
+//Funcion para buscar una constancia por id de constancia
+export async function findConstancyById({
+    id,
+}: {
+    id?: number | null;
+}): Promise<Constancy | null> {
+
+    try {
+        if (!id || id <= 0) return null;
+
+        const { apiToken, API_URL } = await storeAction();
+
+        const response = await axios
+            .get(`${API_URL}/constancy/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                },
+            })
+
+            .then((res) => {
+                console.log("Respuesta correcta: ", res.data);
+                return res.data;
+            })
+
+            .catch((err) => {
+                console.log("Respuesta incorrecta: ", err);
+
+                throw new Error(
+                    err.response.data.message
+                        ? err.response.data.message
+                        : "Error en la respuesta"
+                );
+            });
+
+        console.log("URL:", `${API_URL}/constancy/${id}`);
+        console.log("RESPUESTA CONSTANCY BY ID:", response.data);
+
+        return response.data?.data ?? response.data ?? null;
+
+    } catch (error: any) {
+
+        console.log(error);
+        return null;
+    }
+}
+
+export async function updateConstancy({
+    id,
+    constancy,
+}: {
+    id: number;
+    constancy: Constancy;
+}): Promise<ActionResponse<boolean | null>> {
+
+    try {
+        if (!id) throw new Error("ID NO ESPECIFICADO");
+
+        const { apiToken, API_URL } = await storeAction();
+
+        await axios.put(
+            `${API_URL}/constancy/${String(id)}`,
+            {
+                id: constancy.id,
+                idEmployee: constancy.idEmployee,
+                dateTheEvents: constancy.dateTheEvents,
+                hourTheEvents: constancy.hourTheEvents,
+                sceneOfTheEvents: constancy.sceneOfTheEvents,
+                backgroundIds: constancy.backgroundIds,
+                typeOfPenalty: constancy.typeOfPenalty,
+                signatures: constancy.signatures,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                },
+            }
+        );
+
+        revalidatePath("/app/constancy");
+
+        return {
+            success: true,
+            message: "Constancia actualizada",
+            data: true,
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+            data: null,
+        };
+    }
+}
+
+export async function deleteConstancy({
+    id,
+}: {
+    id: number | null;
+}): Promise<ActionResponse<boolean>> {
+    try {
+        if (!id) throw new Error("ID NO ESPECIFICADO");
+
+        const { apiToken, API_URL } = await storeAction();
+
+        await axios.delete(`${API_URL}/constancy/${String(id)}`, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+        });
+
+        revalidatePath("/app/constancy");
+
+        return {
+            success: true,
+            message: "Constancia eliminada",
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+        };
     }
 }
 
