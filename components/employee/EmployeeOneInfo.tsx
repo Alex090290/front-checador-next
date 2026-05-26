@@ -763,6 +763,7 @@ const handleReEntry = async () => {
           </Container>
         </FormPage>
 
+       {/* Pestaña de vacaciones (A reciclar) */}
         <FormPage title="Vacaciones" eventKey="vacations">
           <Container className="mt-1">
             <Row>
@@ -842,6 +843,7 @@ const handleReEntry = async () => {
             </Row>
           </Container>
         </FormPage>
+        {/* =============== Aqui termina ================  */}
       </FormBook>
 
       {showUpdateEmployeeModal && (

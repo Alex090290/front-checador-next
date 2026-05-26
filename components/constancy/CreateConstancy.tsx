@@ -5,7 +5,6 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 
 import { createConstancy, findConstancyByIdEmployee } from "@/app/actions/constancy-actions";
-import { Constancy, signatures, typeOfPenalty } from "@/lib/constancy/interface";
 import { Employee } from "@/lib/definitions";
 import { useModals } from "@/context/ModalContext";
 import { useRouter } from "next/navigation";
@@ -17,7 +16,7 @@ import { FieldGroup } from "../templates/FormView";
 import { Entry, RelationField } from "../fields";
 import { formatDate } from "date-fns";
 import moment from "moment-timezone";
-
+import { Constancy, typeOfPenalty } from "@/lib/constancy/interface";
 
 
 const DEFAULT_VALUES: Constancy = {
@@ -28,9 +27,10 @@ const DEFAULT_VALUES: Constancy = {
     dateTheEvents: "",
     hourTheEvents: "",
     sceneOfTheEvents: "",
+    backgrounds: [],
     backgroundIds: [],
     typeOfPenalty: [],
-    signatures: [],
+    witness: 0,
 };
 
 export default function CreateConstancyComponent({
@@ -87,7 +87,7 @@ export default function CreateConstancyComponent({
     const penalties: typeOfPenalty[] = [{ id: 1, name: "Descuento" },];
 
     //Para el arreglo de firmas, las preestablecidas
-    const signatures: signatures[] = [{ id: 1, idSignatory: 10, name: " Juan Perez", url: "", sendNotify: true }]
+    // const signatures: signatures[] = [{ id: 1, idSignatory: 10, name: " Juan Perez", url: "", sendNotify: true }]
 
     const { modalError, modalConfirm } = useModals();
     const router = useRouter();
@@ -102,6 +102,8 @@ export default function CreateConstancyComponent({
             try {
                 setLoading(true);
                 setMessageLoading("Guardando constancia...");
+
+                console.log("DATA:", data);
 
                 const res = await createConstancy({ data });
 
@@ -282,39 +284,20 @@ export default function CreateConstancyComponent({
                                 </select>
                             </div>
 
-                            {/* Campo firmas  */}
+                            {/* Campo Testigo  */}
                             <div className="mb-3">
-                                <label className="form-label">
-                                    Firmas
-                                </label>
-
-                                <select
-                                    className="form-select"
-                                    defaultValue=""
-                                    onChange={(e) => {
-                                        if (!e.target.value) {
-                                            setValue("signatures", []);
-                                            return;
-                                        }
-
-                                        const selectedSignature = signatures.find(
-                                            (s) => s.id === Number(e.target.value)
-                                        );
-
-                                        setValue(
-                                            "signatures",
-                                            selectedSignature ? [selectedSignature] : []
-                                        );
-                                    }}
-                                >
-                                    <option value="">-- Selecciona --</option>
-
-                                    {signatures.map((signature) => (
-                                        <option key={signature.id} value={signature.id}>
-                                            {signature.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <RelationField
+                                register={register("witness", { required: true, valueAsNumber: true,})}
+                                options={employees.map((e) => ({
+                                    id: e.id!,
+                                    displayName:
+                                        `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                    name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                                }))}
+                                label="Testigo:"
+                                callBackMode="id"
+                                control={control}
+                            />
                             </div>
 
                         </FieldGroup>

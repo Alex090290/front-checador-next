@@ -10,7 +10,6 @@ import Loading from "../LoadingSpinner";
 import { Button } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import moment from "moment";
-import { EmployeeLite } from "../configSystem/formUpdate";
 import { usePathname } from "next/navigation";
 
 export default function ConstanciesTableClient({
@@ -18,13 +17,11 @@ export default function ConstanciesTableClient({
     page,
     limit,
     constancies = [],
-    employees = [],
 }: {
     total: number;
     page: number;
     limit: number;
     constancies?: Constancy[];
-    employees?: EmployeeLite[];
 }) {
     const router = useRouter();
     const sp = useSearchParams();
@@ -36,6 +33,8 @@ export default function ConstanciesTableClient({
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const tableResetKey = 0;
     const pathname = usePathname();
+
+    const [backgroundsByEmployee, setBackgroundsByEmployee] = useState<Record<number, number>>({});
 
     useEffect(() => {
         if (loading) {
@@ -54,15 +53,20 @@ export default function ConstanciesTableClient({
         router.push(`/app/constancy?${params.toString()}`);
     };
 
-    const getEmployeeName = (u: Constancy) => {
-        const employee = employees.find(
-            (e) => Number(e.id) === Number(u.idEmployee)
-        );
+    useEffect(() => {
+        const counts: Record<number, number> = {};
 
-        return employee
-            ? `${employee.name} ${employee.lastName}`
-            : `Empleado #${u.idEmployee}`;
-    };
+        constancies.forEach((item) => {
+            const employeeId = Number(item.idEmployee);
+
+            if (!employeeId) return;
+
+            counts[employeeId] = (counts[employeeId] ?? 0) + 1;
+        });
+
+        setBackgroundsByEmployee(counts);
+    }, [constancies]);
+
 
     const getDate = (u: Constancy) =>
         u.dateAndTimeOfTheEvents
@@ -74,17 +78,34 @@ export default function ConstanciesTableClient({
             ? moment.utc(u.dateAndTimeOfTheEvents).format("HH:mm")
             : u.hourTheEvents ?? "-";
 
+    const capitalize = (text?: string) => {
+        if (!text) return "";
+
+        return text
+            .toLowerCase()
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+    };
+
+    const getEmployeeName = (u: Constancy) => {
+        return u.employee
+            ? `${capitalize(u.employee.name)} ${capitalize(u.employee.lastName)}`
+            : `${u.idEmployee}`;
+    };
+
     const columns: TableTemplateColumn<Constancy>[] = [
         {
-            key: "idEmployee",
-            label: "Nombre del empleado",
+            key: "employee",
+            label: "Empleado",
             accessor: getEmployeeName,
             filterable: true,
             type: "string",
-            render: (u) =>
+            render: (u) => (
                 <div className="text-uppercase">
                     {getEmployeeName(u)}
-                </div>,
+                </div>
+            ),
         },
         {
             key: "dateTheEvents",
@@ -121,16 +142,36 @@ export default function ConstanciesTableClient({
                     {u.sceneOfTheEvents || "-"}
                 </div>,
         },
-        // {
-        //     key: "backgroundIds",
-        //     label: "Antecedentes",
-        //     accessor: (u) => u.backgroundIds?.join(", ") ?? "",
-        //     filterable: true,
-        //     type: "string",
-        //     render: (u) => (
-        //         <div>{u.backgroundIds?.length ? u.backgroundIds.join(", ") : "-"}</div>
-        //     ),
-        // },
+        {
+            key: "backgrounds",
+            label: "Antecedentes",
+            accessor: (u) => {
+                const totalBackgrounds = (backgroundsByEmployee[Number(u.idEmployee)] ?? 0) - 1;
+
+                return totalBackgrounds > 0
+                    ? `Con antecedentes (${totalBackgrounds})`
+                    : "Sin antecedentes";
+            },
+            filterable: true,
+            type: "string",
+            render: (u) => {
+                const totalBackgrounds = (backgroundsByEmployee[Number(u.idEmployee)] ?? 0) - 1;
+                const hasBackgrounds = totalBackgrounds > 0;
+
+                return (
+                    <span
+                        className={`badge rounded-pill px-3 py-2 fw-semibold ${hasBackgrounds
+                                ? "bg-danger-subtle text-danger-emphasis border border-danger-subtle"
+                                : "bg-success-subtle text-success-emphasis border border-success-subtle"
+                            }`}
+                    >
+                        {hasBackgrounds
+                            ? `Con antecedentes (${totalBackgrounds})`
+                            : "Sin antecedentes "}
+                    </span>
+                );
+            },
+        },
         {
             key: "typeOfPenalty",
             label: "Tipo de penalización",
@@ -140,17 +181,7 @@ export default function ConstanciesTableClient({
             render: (u) =>
                 <div className="text-uppercase">
                     {u.typeOfPenalty?.map((p) => p.name).join(", ") || "-"}</div>,
-        },
-        {
-            key: "signatures",
-            label: "Firmas",
-            accessor: (u) => u.signatures?.map((p) => p.name).join(", ") ?? "",
-            filterable: true,
-            type: "string",
-            render: (u) =>
-                <div className="text-uppercase">
-                    {u.signatures?.map((p) => p.name).join(", ") || "-"}</div>,
-        },
+        }, 
     ];
 
     const handleCreate = () => {

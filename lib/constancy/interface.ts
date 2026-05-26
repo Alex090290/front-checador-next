@@ -1,14 +1,9 @@
-//Alias para valores predeterminados de backgroundIds
-type backgroundIdsPermitidos = 1 | 2 | 3 ;
+export type typeOfPenalty = {
+        id: number;
+        name: string;
+    }
 
-//Arreglo para penalizaciones
-export interface typeOfPenalty {
-    id: number;
-    name: string;
-}
-
-//Arreglo para firmas
-export interface signatures {
+export type signatures = {
     id: number;
     idSignatory: number;
     name: string;
@@ -20,21 +15,21 @@ export interface Constancy {
     _id?: string;
     id: number;
     idEmployee: number;
-
-    employee?: {
-    id: number;
-    name: string;
-    lastName: string;
-  };
-  
-    dateAndTimeOfTheEvents?: string,
     dateTheEvents: string;
     hourTheEvents: string;
-    sceneOfTheEvents: string;
-    backgroundIds: backgroundIdsPermitidos[];
-    typeOfPenalty: typeOfPenalty[];
-    signatures: signatures[];
+    dateAndTimeOfTheEvents?: string;
+    sceneOfTheEvents?: string;
+    typeOfPenalty?: typeOfPenalty[];
+    backgroundIds?: Constancy[];
+    signatures?: signatures[];
+
+    employee?: {
+        id: number;
+        name: string;
+        lastName: string;
+    };
+
+    backgrounds?: Constancy[];
+
+    witness: number;
 }
-
-
-

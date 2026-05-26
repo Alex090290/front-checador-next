@@ -115,9 +115,10 @@ export async function createConstancy({
                 dateTheEvents: data.dateTheEvents,
                 hourTheEvents: data.hourTheEvents,
                 sceneOfTheEvents: data.sceneOfTheEvents,
-                backgroundIds: data.backgroundIds,
+                // backgrounds: data.backgrounds,
+                backgroundIds: data.backgroundIds ?? [],
                 typeOfPenalty: data.typeOfPenalty,
-                signatures: data.signatures,
+                witness: data.witness,
             },
             {
                 headers: {
@@ -158,10 +159,9 @@ export async function findConstancyByIdEmployee({
     idEmployee,
 }: {
     idEmployee?: number | null;
-}): Promise<Constancy | null> {
-
+}): Promise<Constancy[]> {
     try {
-        if (!idEmployee || idEmployee <= 0) return null;
+        if (!idEmployee || idEmployee <= 0) return [];
 
         const { apiToken, API_URL } = await storeAction();
 
@@ -170,17 +170,14 @@ export async function findConstancyByIdEmployee({
                 params: {
                     idEmployee: Number(idEmployee),
                 },
-
                 headers: {
                     Authorization: `Bearer ${apiToken}`,
                 },
             })
-
             .then((res) => {
                 console.log("Respuesta correcta: ", res.data);
                 return res.data;
             })
-
             .catch((err) => {
                 console.log("Respuesta incorrecta: ", err);
 
@@ -191,12 +188,10 @@ export async function findConstancyByIdEmployee({
                 );
             });
 
-        return response.data?.[0] ?? null;
-
+        return response.data ?? [];
     } catch (error: any) {
-
         console.log(error);
-        return null;
+        return [];
     }
 }
 
@@ -235,7 +230,7 @@ export async function findConstancyById({
             });
 
         console.log("URL:", `${API_URL}/constancy/${id}`);
-        console.log("RESPUESTA CONSTANCY BY ID:", response.data);
+        console.log("RESPUESTA CONSTANCY BY ID:", response);
 
         return response.data?.data ?? response.data ?? null;
 
@@ -267,9 +262,9 @@ export async function updateConstancy({
                 dateTheEvents: constancy.dateTheEvents,
                 hourTheEvents: constancy.hourTheEvents,
                 sceneOfTheEvents: constancy.sceneOfTheEvents,
-                backgroundIds: constancy.backgroundIds,
+                backgrounds: constancy.backgrounds,
                 typeOfPenalty: constancy.typeOfPenalty,
-                signatures: constancy.signatures,
+                witness: constancy.witness
             },
             {
                 headers: {

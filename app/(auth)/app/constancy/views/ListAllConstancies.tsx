@@ -19,14 +19,10 @@ export default async function ListAllConstancies({
     const pageParse = Math.max(Number(page || "1") || 1, 1);
     const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
 
-    const [constancies, employeesResponse] = await Promise.all([
+    const [constancies] = await Promise.all([
         fetchConstanciesQueries({
             page: pageParse,
             limit: limitParse,
-        }),
-        fetchEmployees({
-            page: 1,
-            limit: 500,
         }),
     ]);
 
@@ -36,14 +32,6 @@ export default async function ListAllConstancies({
             page={pageParse}
             limit={limitParse}
             constancies={constancies.data}
-            employees={(employeesResponse.data ?? [])
-                .filter((e) => e.id !== undefined)
-                .map((e) => ({
-                    _id: e._id,
-                    id: e.id!,
-                    name: e.name ?? "",
-                    lastName: e.lastName ?? "",
-                }))}
         />
     );
 }

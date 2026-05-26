@@ -2,13 +2,13 @@
 
 import { useModals } from "@/context/ModalContext";
 import { Constancy } from "@/lib/constancy/interface";
-import { ActionResponse } from "@/lib/definitions";
+import { ActionResponse, Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Button } from "react-bootstrap";
+import { Button, Accordion } from "react-bootstrap";
 import ModalBlur from "../ModalBlur";
 import UpdateConstancy from "./UpdateConstancy";
 import { deleteConstancy, updateConstancy } from "@/app/actions/constancy-actions";
@@ -25,13 +25,12 @@ function InfoItem({
     value,
     className = "",
     uppercase = true,
-    employees = [],
 }: {
     label: string;
     value?: React.ReactNode;
     className?: string;
     uppercase?: boolean;
-    employees?: EmployeeLite[];
+    employee?: Employee[];
 }) {
     return (
         <div className={className}>
@@ -44,8 +43,7 @@ function InfoItem({
 }
 
 export function ConstancyOne({
-    constancy,
-    employees = [],
+    constancy
 }: {
     constancy: Constancy | null;
     employees?: EmployeeLite[];
@@ -57,336 +55,465 @@ export function ConstancyOne({
 
     const router = useRouter();
 
+    //Mis helpers jiji
+
     // Usar "capitalize para hacer la primer letra del nombre o apellido mayuscula"
     const capitalize = (text?: string) => {
-    if (!text) return "";
+        if (!text) return "";
 
-    return text
-        .toLowerCase()
-        .split(" ")
-        .map(
-            (word) =>
-                word.charAt(0).toUpperCase() + word.slice(1)
-        )
-        .join(" ");
-};
+        return text
+            .toLowerCase()
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+    };
 
     const getEmployeeName = (u: Constancy) => {
-        const employee = employees.find(
-            (e) => Number(e.id) === Number(u.idEmployee)
-        );
-
-        return employee
-        // Convertimos a MAYUSCULA 
-        ? `${capitalize(employee.name)} ${capitalize(employee.lastName)}`
+        return u.employee
+            ? `${capitalize(u.employee.name)} ${capitalize(u.employee.lastName)}`
             : `Empleado #${u.idEmployee}`;
     };
 
-if (!constancy) {
-    return (
-        // Mensaje de error al encontrar constancia (puede reutilizarse)
-        <div className="container py-5">
-            <div className="row justify-content-center">
-                <div className="col-12 col-md-8 col-lg-6">
-                    <div className="card border-0 shadow-sm">
-                        <div className="card-body text-center p-5">
+    const hasBackgrounds = Boolean(constancy?.backgrounds?.length);
 
-                            <div className="mb-4">
-                                <i
-                                    className="bi bi-file-earmark-x text-danger"
-                                    style={{ fontSize: "4rem" }}
-                                />
-                            </div>
+    if (!constancy) {
+        return (
+            // Mensaje de error al encontrar constancia (puede reutilizarse)
+            <div className="container py-5">
+                <div className="row justify-content-center">
+                    <div className="col-12 col-md-8 col-lg-6">
+                        <div className="card border-0 shadow-sm">
+                            <div className="card-body text-center p-5">
 
-                            <h2 className="fw-bold mb-3">
-                                Constancia no encontrada
-                            </h2>
+                                <div className="mb-4">
+                                    <i
+                                        className="bi bi-file-earmark-x text-danger"
+                                        style={{ fontSize: "4rem" }}
+                                    />
+                                </div>
 
-                            <p className="text-muted mb-4">
-                                La constancia que intentas consultar no existe,
-                                fue eliminada o no se encuentra disponible.
-                            </p>
+                                <h2 className="fw-bold mb-3">
+                                    Constancia no encontrada
+                                </h2>
 
-                            <div className="d-flex flex-column flex-sm-row justify-content-center gap-2">
-                                <Button
-                                    variant="primary"
-                                    onClick={() => router.push("/app/constancy")}
-                                >
-                                    <i className="bi bi-arrow-left me-2" />
-                                    Volver al listado
-                                </Button>
+                                <p className="text-muted mb-4">
+                                    La constancia que intentas consultar no existe,
+                                    fue eliminada o no se encuentra disponible.
+                                </p>
 
-                                <Button
-                                    variant="outline-primary"
-                                    onClick={() => router.push("/app/constancy/create")}
-                                >
-                                    <i className="bi bi-plus-lg me-2" />
-                                    Nueva constancia
-                                </Button>
+                                <div className="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => router.push("/app/constancy")}
+                                    >
+                                        <i className="bi bi-arrow-left me-2" />
+                                        Volver al listado
+                                    </Button>
+
+                                    <Button
+                                        variant="outline-primary"
+                                        onClick={() => router.push("/app/constancy/create")}
+                                    >
+                                        <i className="bi bi-plus-lg me-2" />
+                                        Nueva constancia
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
-}
-const handleUpdateConstancy = async (
-    data: Constancy
-): Promise<ActionResponse<boolean | null>> => {
-    if (!constancy?.id) {
-        return {
-            success: false,
-            message: "No se encontró la constancia",
-            data: null,
-        };
+        );
     }
-
-    const res = await updateConstancy({
-        id: Number(constancy.id),
-        constancy: data,
-    });
-
-    if (!res.success) {
-        modalError(res.message);
-        return {
-            success: false,
-            message: res.message,
-            data: null,
-        };
-    }
-
-    toast.success(res.message);
-
-    return {
-        success: true,
-        message: res.message,
-        data: true,
-    };
-};
-
-const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading('Cargando...');
-    router.push("/app/constancy/create");
-};
-
-const handleDeleteConstancy = async () => {
-    if (!constancy?.id) {
-        modalError("No se encontró la constancia");
-        return;
-    }
-
-    modalConfirm("¿Deseas eliminar esta constancia?", async () => {
-        try {
-            setLoading(true);
-            setMessageLoading("Eliminando constancias...");
-
-            const res = await deleteConstancy({ id: Number(constancy.id) });
-
-            if (!res.success) {
-                modalError(res.message);
-                return;
-            }
-
-            toast.success(res.message);
-            router.push("/app/constancy");
-        } finally {
-            setLoading(false);
-            setMessageLoading("");
+    const handleUpdateConstancy = async (
+        data: Constancy
+    ): Promise<ActionResponse<boolean | null>> => {
+        if (!constancy?.id) {
+            return {
+                success: false,
+                message: "No se encontró la constancia",
+                data: null,
+            };
         }
-    });
-};
 
-// Cuando se manda a llamar la fecha y la hora de la constancia hay que mandarla llamar asoi para separarla 
-const getDate = (u: Constancy) =>
-    u.dateAndTimeOfTheEvents
-        ? moment.utc(u.dateAndTimeOfTheEvents).format("DD/MM/YYYY")
-        : u.dateTheEvents ?? "-";
+        const res = await updateConstancy({
+            id: Number(constancy.id),
+            constancy: data,
+        });
 
-const getHour = (u: Constancy) =>
-    u.dateAndTimeOfTheEvents
-        ? moment.utc(u.dateAndTimeOfTheEvents).format("HH:mm")
-        : u.hourTheEvents ?? "-";
+        if (!res.success) {
+            modalError(res.message);
+            return {
+                success: false,
+                message: res.message,
+                data: null,
+            };
+        }
 
-return (
-    <>
-        <ConditionalRender cond={loading}>
-            <Loading message={messageLoading} />
-        </ConditionalRender>
+        toast.success(res.message);
 
-        {/* Botones principales */}
-        <div className="d-flex flex-wrap align-items-center gap-2 my-2">
-            <Button
-                size="sm"
-                variant="primary"
-                className="fw-semibold d-inline-flex align-items-center gap-2"
-                onClick={handleCreate}
-                disabled={loading}
-            >
-                <i className="bi bi-plus-lg" />
-                Crear Constancia
-            </Button>
+        return {
+            success: true,
+            message: res.message,
+            data: true,
+        };
+    };
 
-            <Button
-                size="sm"
-                variant="primary"
-                onClick={() => setShowUpdateConstancyModal(true)}
-                disabled={loading}
-            >
-                <i className="bi bi-pencil me-2" />
-                Actualizar Constancia
-            </Button>
+    const handleCreate = () => {
+        setLoading(true);
+        setMessageLoading('Cargando...');
+        router.push("/app/constancy/create");
+    };
 
-            <Button
-                size="sm"
-                variant="danger"
-                onClick={handleDeleteConstancy}
-                disabled={loading}
-            >
-                <i className="bi bi-trash me-2" />
-                Eliminar Constancia
-            </Button>
-        </div>
+    const handleDeleteConstancy = async () => {
+        if (!constancy?.id) {
+            modalError("No se encontró la constancia");
+            return;
+        }
 
-        {/* Aqui empieza el cuerpo, los datos generales de la constancia  */}
-        <div className="mb-4">
-            <h1 className="mb-0 text-white">
-                {getEmployeeName(constancy)}
-            </h1>
-        </div>
+        modalConfirm("¿Deseas eliminar esta constancia?", async () => {
+            try {
+                setLoading(true);
+                setMessageLoading("Eliminando constancias...");
 
-        <div className="d-grid gap-4">
-            {/* Datos del incidente */}
-            <section className="card border-0 shadow-sm">
-                <div className="card-body">
-                    <h5 className="mb-3 text-uppercase fw-bold">
-                        Datos del incidente
-                    </h5>
+                const res = await deleteConstancy({ id: Number(constancy.id) });
 
-                    <div className="row g-4">
-                        <div className="col-12 col-md-4">
-                            <InfoItem
-                                label="Fecha"
-                                value={getDate(constancy)}
-                            />
-                        </div>
+                if (!res.success) {
+                    modalError(res.message);
+                    return;
+                }
 
-                        <div className="col-12 col-md-4">
-                            <InfoItem
-                                label="Hora"
-                                value={getHour(constancy)}
-                                uppercase={false}
-                            />
-                        </div>
+                toast.success(res.message);
+                router.push("/app/constancy");
+            } finally {
+                setLoading(false);
+                setMessageLoading("");
+            }
+        });
+    };
 
-                        <div className="col-12 col-md-4">
-                            <InfoItem
-                                label="Lugar"
-                                value={formatText(constancy.sceneOfTheEvents)}
-                            />
+    // Cuando se manda a llamar la fecha y la hora de la constancia hay que mandarla llamar asoi para separarla 
+    const getDate = (u: Constancy) =>
+        u.dateAndTimeOfTheEvents
+            ? moment.utc(u.dateAndTimeOfTheEvents).format("DD/MM/YYYY")
+            : u.dateTheEvents ?? "-";
+
+    const getHour = (u: Constancy) =>
+        u.dateAndTimeOfTheEvents
+            ? moment.utc(u.dateAndTimeOfTheEvents).format("HH:mm")
+            : u.hourTheEvents ?? "-";
+
+    console.log("BACKGROUNDS:", constancy.backgrounds);
+
+    return (
+        <>
+            <ConditionalRender cond={loading}>
+                <Loading message={messageLoading} />
+            </ConditionalRender>
+
+            {/* Botones principales */}
+            <div className="d-flex flex-wrap align-items-center gap-2 my-2">
+                <Button
+                    size="sm"
+                    variant="primary"
+                    className="fw-semibold d-inline-flex align-items-center gap-2"
+                    onClick={handleCreate}
+                    disabled={loading}
+                >
+                    <i className="bi bi-plus-lg" />
+                    Crear Constancia
+                </Button>
+
+                <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => setShowUpdateConstancyModal(true)}
+                    disabled={loading}
+                >
+                    <i className="bi bi-pencil me-2" />
+                    Actualizar Constancia
+                </Button>
+
+                <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={handleDeleteConstancy}
+                    disabled={loading}
+                >
+                    <i className="bi bi-trash me-2" />
+                    Eliminar Constancia
+                </Button>
+            </div>
+
+            {/* Aqui empieza el cuerpo, los datos generales de la constancia  */}
+            <div className="mb-4">
+                <h1 className="mb-0 text-white">
+                    {getEmployeeName(constancy)}
+                </h1>
+            </div>
+
+            <div className="d-grid gap-4">
+
+                {/* Datos del incidente */}
+
+                <section className="card border-0 shadow-sm">
+                    <div className="card-body">
+                        <h5 className="mb-3 text-uppercase fw-bold">
+                            Datos del incidente
+                        </h5>
+
+                        <div className="row g-4">
+                            <div className="col-12 col-md-4">
+                                <InfoItem
+                                    label="Fecha"
+                                    value={getDate(constancy)}
+                                />
+                            </div>
+
+                            <div className="col-12 col-md-4">
+                                <InfoItem
+                                    label="Hora"
+                                    value={getHour(constancy)}
+                                    uppercase={false}
+                                />
+                            </div>
+
+                            <div className="col-12 col-md-4">
+                                <InfoItem
+                                    label="Lugar"
+                                    value={formatText(constancy.sceneOfTheEvents)}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            {/* Antecedentes */}
-            <section className="card border-0 shadow-sm">
-                <div className="card-body">
-                    <h5 className="mb-3 text-uppercase fw-bold">
-                        Antecedentes
-                    </h5>
+                {/* Antecedentes */}
+                <section className="card border-0 shadow-sm">
+                    <div className="card-body">
 
-                    <div className="d-flex flex-wrap gap-2">
-                        {constancy.backgroundIds?.length ? (
-                            constancy.backgroundIds.map((backgroundIds) => (
-                                <span key={backgroundIds} className="badge text-bg-secondary">
-                                    Antecedente #{backgroundIds}
-                                </span>
-                            ))
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="mb-0 text-uppercase fw-bold">
+                                Antecedentes
+                            </h5>
+
+                            <span
+                                className={`badge rounded-pill px-3 py-2 fw-semibold ${constancy.backgrounds?.length
+                                        ? "bg-danger-subtle text-danger-emphasis border border-danger-subtle"
+                                        : "bg-success-subtle text-success-emphasis border border-success-subtle"
+                                    }`}
+                            >
+                                {/* {constancy.backgrounds?.length
+                                    ? `${constancy.backgrounds.length} antecedente(s)`
+                                    : "Sin antecedentes"} */}
+                            </span>
+                        </div>
+
+                        {constancy.backgrounds?.length ? (
+
+                            <Accordion defaultActiveKey="0" alwaysOpen>
+
+                                {constancy.backgrounds.map((background, index) => (
+
+                                    <Accordion.Item
+                                        key={background.id}
+                                        eventKey={String(index)}
+                                        className="border rounded-3 mb-3 overflow-hidden"
+                                    >
+
+                                        <Accordion.Header>
+                                            <div className="d-flex flex-column text-start">
+                                                <span className="fw-semibold">
+                                                    Constancia #{background.id}
+                                                </span>
+
+                                                <small className="text-muted">
+                                                    {getDate(background)} · {getHour(background)}
+                                                </small>
+                                            </div>
+                                        </Accordion.Header>
+
+                                        <Accordion.Body>
+
+                                            <div className="row g-3">
+
+                                                {/* Fecha */}
+                                                <div className="col-12 col-md-4">
+                                                    <InfoItem
+                                                        label="Fecha"
+                                                        value={getDate(background)}
+                                                    />
+                                                </div>
+
+                                                {/* Hora */}
+                                                <div className="col-12 col-md-4">
+                                                    <InfoItem
+                                                        label="Hora"
+                                                        value={getHour(background)}
+                                                        uppercase={false}
+                                                    />
+                                                </div>
+
+                                                {/* Lugar */}
+                                                <div className="col-12 col-md-4">
+                                                    <InfoItem
+                                                        label="Lugar"
+                                                        value={formatText(background.sceneOfTheEvents)}
+                                                    />
+                                                </div>
+
+                                                {/* Penalizaciones */}
+                                                <div className="col-12">
+                                                    <div className="border rounded-3 p-3">
+
+                                                        <div className="text-secondary-emphasis fw-semibold mb-2">
+                                                            Penalización
+                                                        </div>
+
+                                                        <div className="d-flex flex-wrap gap-2">
+
+                                                            {background.typeOfPenalty?.length ? (
+
+                                                                background.typeOfPenalty.map((penalty) => (
+
+                                                                    <span
+                                                                        key={penalty.id}
+                                                                        className="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 fw-semibold"
+                                                                    >
+                                                                        {penalty.name}
+                                                                    </span>
+
+                                                                ))
+
+                                                            ) : (
+                                                                <span className="text-muted">
+                                                                    Sin penalización
+                                                                </span>
+                                                            )}
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Testigos */}
+                                                <div className="col-12">
+
+                                                    <div className="border rounded-3 p-3">
+
+                                                        <div className="text-secondary-emphasis fw-semibold mb-2">
+                                                            Testigos
+                                                        </div>
+
+                                                        <div className="d-flex flex-wrap gap-2">
+
+                                                            {background.signatures?.length ? (
+
+                                                                background.signatures.map((witness) => (
+
+                                                                    <span
+                                                                        key={witness.id}
+                                                                        className="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle px-3 py-2 fw-semibold"
+                                                                    >
+                                                                        {capitalize(witness.name)}
+                                                                    </span>
+
+                                                                ))
+
+                                                            ) : (
+
+                                                                <span className="text-muted">
+                                                                    Sin testigos
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                ))}
+                            </Accordion>
+
                         ) : (
-                            <span className="text-muted">Sin antecedentes</span>
+
+                            <div className="alert alert-success mb-0">
+                                Este empleado no cuenta con antecedentes registrados.
+                            </div>
+
                         )}
                     </div>
-                </div>
-            </section>
+                </section>
 
-            {/* Penalizaciones */}
-            <section className="card border-0 shadow-sm">
-                <div className="card-body">
-                    <h5 className="mb-3 text-uppercase fw-bold">
-                        Tipo de penalización
-                    </h5>
+                {/* Penalizaciones */}
+                <section className="card border-0 shadow-sm">
+                    <div className="card-body">
+                        <h5 className="mb-3 text-uppercase fw-bold">
+                            Tipo de penalización
+                        </h5>
 
-                    <div className="d-flex flex-wrap gap-2">
-                        {constancy.typeOfPenalty?.length ? (
-                            constancy.typeOfPenalty.map((penalty) => (
-                                <span key={penalty.id} className="badge rounded-pill bg-warning-subtle text-warning border border-warning px-5 py-2 fw-semibold fs-5">
-                                    {penalty.name}
-                                </span>
-                            ))
-                        ) : (
-                            <span className="text-muted">Sin penalización</span>
-                        )}
+                        <div className="d-flex flex-wrap gap-2">
+                            {constancy.typeOfPenalty?.length ? (
+                                constancy.typeOfPenalty.map((penalty) => (
+                                    <span key={penalty.id} className="badge rounded-pill bg-warning-subtle text-warning border border-warning px-5 py-2 fw-semibold fs-5">
+                                        {penalty.name}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-muted">Sin penalización</span>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            {/* Firmas */}
-            <section className="card border-0 shadow-sm">
-                <div className="card-body">
-                    <h5 className="mb-3 text-uppercase fw-bold">
-                        Firmas
-                    </h5>
+                {/* Testigos */}
+                <section className="card border-0 shadow-sm">
+                    <div className="card-body">
+                        <h5 className="mb-3 text-uppercase fw-bold">
+                            Testigos
+                        </h5>
 
-                    <div className="row g-3">
-                        {constancy.signatures?.length ? (
-                            constancy.signatures.map((signature) => (
-                                <div key={signature.id} className="col-12 col-md-6 col-lg-4">
-                                    <div className="border rounded-3 p-3 h-100">
-                                        <div className="fw-semibold text-uppercase fs-5">
-                                            {signature.name}
-                                        </div>
+                        <div className="row g-3">
+                            {constancy.signatures?.length ? (
+                                constancy.signatures.map((witness) => (
+                                    <div key={witness.id} className="col-12 col-md-6 col-lg-4">
+                                        <div className="border rounded-3 p-3 h-100 shadow-sm">
+                                            <div className="fw-semibold text-uppercase fs-5">
+                                                {capitalize(witness.name)}
+                                            </div>
 
-                                        <div className="small text-muted">
-                                            Firmante #{signature.idSignatory}
-                                        </div>
-
-                                        <div className="mt-2">
-                                            <span
-                                                className={`badge ${signature.sendNotify
-                                                    ? "text-bg-success"
-                                                    : "text-bg-secondary"
-                                                    }`}
-                                            >
-                                            </span>
+                                            <div className="small text-muted">
+                                                ID del testigo: {witness.idSignatory}
+                                            </div>
                                         </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="col-12">
+                                    <div className="alert alert-secondary mb-0">
+                                        Sin testigos registrados.
+                                    </div>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="col-12">
-                                <span className="text-muted">Sin firmas</span>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-        </div>
-        <ConditionalRender cond={showUpdateConstancyModal}>
-            <ModalBlur onClose={() => setShowUpdateConstancyModal(false)}>
-                <UpdateConstancy
-                    show={showUpdateConstancyModal}
-                    onHide={() => setShowUpdateConstancyModal(false)}
-                    sendData={handleUpdateConstancy}
-                    constancy={constancy}
-                />
-            </ModalBlur>
-        </ConditionalRender>
+            </div>
+            <ConditionalRender cond={showUpdateConstancyModal}>
+                <ModalBlur onClose={() => setShowUpdateConstancyModal(false)}>
+                    <UpdateConstancy
+                        show={showUpdateConstancyModal}
+                        onHide={() => setShowUpdateConstancyModal(false)}
+                        sendData={handleUpdateConstancy}
+                        constancy={constancy}
+                    />
+                </ModalBlur>
+            </ConditionalRender>
 
-    </>
-);
+        </>
+    );
 
 }
 
