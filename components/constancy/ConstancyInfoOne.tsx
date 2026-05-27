@@ -17,7 +17,7 @@ import { EmployeeLite } from "../configSystem/formUpdate";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewConstancy from "./SignaturesViewConstancy";
-import ConstancySignatureModal from "./ConstancySignatureModal" 
+import ConstancySignatureModal from "./ConstancySignatureModal"
 import { id } from "date-fns/locale";
 
 function formatText(value?: string | number | null) {
@@ -76,18 +76,18 @@ export function ConstancyOne({
         : [];
 
 
-    const currentUser = constancy?.signatures?.find (
+    const currentUser = constancy?.signatures?.find(
         (el: any) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)
     );
 
     useEffect(() => {
-        if(currentUser && !currentUser.url) {
+        if (currentUser && !currentUser.url) {
             setCurrentUser(true);
         } else {
             setCurrentUser(false);
         }
     }, [currentUser]);
-    
+
     //Mis helpers jiji
 
 
@@ -248,7 +248,7 @@ export function ConstancyOne({
                 <Loading message={messageLoading} />
             </ConditionalRender>
 
-            <Row className="g-3 align-items-center mb-3">
+            <Row className="g-3 align-items-center mb-3 mx-0">
 
                 {/* Botones principales */}
                 <Col xs={12} lg={6}>
@@ -291,19 +291,19 @@ export function ConstancyOne({
                 {/* ========================================================================= */}
                 {/* Botones de firmas */}
                 <Col xs={12} lg={6}>
-                        <div className="d-flex justify-content-lg-end justify-content-start flex-wrap gap-2">
+                    <div className="d-flex justify-content-lg-end justify-content-start flex-wrap gap-2">
 
-                            <ConditionalRender cond={showCurretUser}>
-                                <Button
-                                    size="sm"
-                                    variant="warning"
-                                    className="fw-bold fs-5 text-white px-3 py-2 shadow-sm rounded-2 mt-5 bg-warning border-0 me-1"
-                                    onClick={handleEmployeeSignature}
-                                >
-                                    Firmar
-                                </Button>
-                            </ConditionalRender>
-                        </div>
+                        <ConditionalRender cond={showCurretUser}>
+                            <Button
+                                size="sm"
+                                variant="warning"
+                                className="fw-bold fs-5 text-white px-3 py-2 shadow-sm rounded-2 mt-5 bg-warning border-0 me-1"
+                                onClick={handleEmployeeSignature}
+                            >
+                                Firmar
+                            </Button>
+                        </ConditionalRender>
+                    </div>
                 </Col>
                 {/* ======================================================================= */}
             </Row>
@@ -371,7 +371,7 @@ export function ConstancyOne({
 
                         {constancy.backgrounds?.length ? (
 
-                            <Accordion defaultActiveKey="0" alwaysOpen>
+                            <Accordion alwaysOpen>
 
                                 {constancy.backgrounds.map((background, index) => (
 
@@ -513,27 +513,33 @@ export function ConstancyOne({
                     </div>
                 </section>
 
-                {/* Testigos */}
-                <section className="card border-0 shadow-sm">
-                    {/* Firmas */}
-                    <FormBook dKey="signatures">
-                        {signatures.length > 0 && (
-                            <FormPage title="Firmantes" eventKey="signatures">
-                                <Container>
-                                    <Row className="g-2 py-2">
-                                        {signatures.map((sign) => (
-                                            <SignaturesViewConstancy
-                                                key={sign.id}
-                                                id={(constancy.id)}
-                                                idEmployee={String(sign.idSignatory)}
-                                                name={String(sign.name)}
-                                            />
-                                        ))}
-                                    </Row>
-                                </Container>
-                            </FormPage>
+                {/* Firmantes */}
+                <section className="card border-0 shadow-sm overflow-hidden">
+                    <div className="card-body">
+                        <h5 className="mb-3 text-uppercase fw-bold">
+                            Firmantes
+                        </h5>
+
+                        {signatures.length > 0 ? (
+                            <Container fluid className="px-0">
+                                <Row className="g-2 py-2 mx-0">
+                                    {signatures.map((sign) => (
+                                        <SignaturesViewConstancy
+                                            key={`${sign.id}-${sign.url}`} //si key cambia, React destruye e componente viejo y crea uno nuevo, entonces refrecara la pagina una vez cambie la url de la firma
+                                            id={constancy.id}
+                                            idEmployee={String(sign.idSignatory)}
+                                            name={String(sign.name)}
+                                            url={sign.url}
+                                        />
+                                    ))}
+                                </Row>
+                            </Container>
+                        ) : (
+                            <div className="alert alert-secondary mb-0">
+                                Sin firmantes registrados.
+                            </div>
                         )}
-                    </FormBook>
+                    </div>
                 </section>
 
             </div>
@@ -548,7 +554,7 @@ export function ConstancyOne({
                 </ModalBlur>
             </ConditionalRender>
 
-            
+
             {/* Modal para firmar  */}
 
             <ConstancySignatureModal

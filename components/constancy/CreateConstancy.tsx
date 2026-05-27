@@ -9,7 +9,7 @@ import { Employee } from "@/lib/definitions";
 import { useModals } from "@/context/ModalContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FieldGroup } from "../templates/FormView";
@@ -114,7 +114,7 @@ export default function CreateConstancyComponent({
                 }
 
                 toast.success(res.message);
-                router.back();
+                router.push("/app/constancy")
             } finally {
                 setLoading(false);
                 setMessageLoading("");
@@ -160,18 +160,50 @@ export default function CreateConstancyComponent({
                             {/* //Cada Entry registra un campo de datos  */}
 
                             {/* Campo Seleccion de empleados */}
-                            <RelationField
-                                register={register("idEmployee")}
-                                options={employees.map((e) => ({
-                                    id: e.id!,
-                                    displayName:
-                                        `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                                    name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                                }))}
-                                label="Empleado:"
-                                callBackMode="id"
-                                control={control}
-                            />
+                            <Row>
+                                <div className="d-flex align-items-center gap-2 mb-2">
+
+                                    <label className="fw-semibold mb-0">
+                                        Empleado:
+                                    </label>
+
+                                    <OverlayTrigger
+                                        placement="top"
+                                        overlay={
+                                            <Tooltip id="tooltip-info">
+                                                Selecciona el empleado al que se le asignará la constancia.
+                                            </Tooltip>
+                                        }
+                                    >
+                                        <Button
+                                            variant="light"
+                                            size="sm"
+                                            className="rounded-circle border shadow-sm d-flex align-items-center justify-content-center p-0"
+                                            style={{
+                                                width: "25px",
+                                                height: "25px",
+                                            }}
+                                        >
+                                            <i className="bi bi-info-circle-fill text-warning" />
+                                        </Button>
+                                    </OverlayTrigger>
+
+                                </div>
+
+                                <RelationField
+                                    register={register("idEmployee")}
+                                    options={employees.map((e) => ({
+                                        id: e.id!,
+                                        displayName:
+                                            `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                        name:
+                                            `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                                    }))}
+                                    label=""
+                                    callBackMode="id"
+                                    control={control}
+                                />
+                            </Row>
 
                             {/* Campo Fecha de los hechos  */}
                             <Entry

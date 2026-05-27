@@ -9,11 +9,12 @@ import Image from "next/image";
 function SignaturesViewConstancy({
     id,
     idEmployee,
-    name
+    name,
 }: {
     id: number | null;
     idEmployee: string | null;
     name: string;
+    url?: string;
 }){
     const [imgUrl, setImgUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
