@@ -13,7 +13,7 @@ import { Button, Form } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FieldGroup } from "../templates/FormView";
-import { Entry, RelationField } from "../fields";
+import { Entry, RelationField, SignatureInput } from "../fields";
 import { formatDate } from "date-fns";
 import moment from "moment-timezone";
 import { Constancy, typeOfPenalty } from "@/lib/constancy/interface";
@@ -31,6 +31,7 @@ const DEFAULT_VALUES: Constancy = {
     backgroundIds: [],
     typeOfPenalty: [],
     witness: 0,
+    signature: "",
 };
 
 export default function CreateConstancyComponent({
@@ -287,19 +288,18 @@ export default function CreateConstancyComponent({
                             {/* Campo Testigo  */}
                             <div className="mb-3">
                                 <RelationField
-                                register={register("witness", { required: true, valueAsNumber: true,})}
-                                options={employees.map((e) => ({
-                                    id: e.id!,
-                                    displayName:
-                                        `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                                    name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                                }))}
-                                label="Testigo:"
-                                callBackMode="id"
-                                control={control}
-                            />
+                                    register={register("witness", { required: true, valueAsNumber: true, })}
+                                    options={employees.map((e) => ({
+                                        id: e.id!,
+                                        displayName:
+                                            `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                        name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                                    }))}
+                                    label="Testigo:"
+                                    callBackMode="id"
+                                    control={control}
+                                />
                             </div>
-
                         </FieldGroup>
                     </div>
                 </fieldset>

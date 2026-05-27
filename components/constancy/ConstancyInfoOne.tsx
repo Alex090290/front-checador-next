@@ -4,16 +4,21 @@ import { useModals } from "@/context/ModalContext";
 import { Constancy } from "@/lib/constancy/interface";
 import { ActionResponse, Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Button, Accordion } from "react-bootstrap";
+import { Button, Accordion, Row, Col, Container } from "react-bootstrap";
 import ModalBlur from "../ModalBlur";
 import UpdateConstancy from "./UpdateConstancy";
 import { deleteConstancy, updateConstancy } from "@/app/actions/constancy-actions";
 import moment from "moment";
 import { EmployeeLite } from "../configSystem/formUpdate";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import { FormBook, FormPage } from "../templates/FormView";
+import SignaturesViewConstancy from "./SignaturesViewConstancy";
+import ConstancySignatureModal from "./ConstancySignatureModal" 
+import { id } from "date-fns/locale";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
@@ -31,6 +36,7 @@ function InfoItem({
     className?: string;
     uppercase?: boolean;
     employee?: Employee[];
+
 }) {
     return (
         <div className={className}>
@@ -42,20 +48,48 @@ function InfoItem({
     );
 }
 
+//En esta funcion colocaremos las sesiones para identificar quien firma 
 export function ConstancyOne({
     constancy
 }: {
     constancy: Constancy | null;
     employees?: EmployeeLite[];
 }) {
+
+    const session = useSessionSnapshot();
+
+    console.log("Sesion: ", session)
+
     const [showUpdateConstancyModal, setShowUpdateConstancyModal] = useState(false);
+    const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
+    const [showCurretUser, setCurrentUser] = useState(false);
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
 
     const router = useRouter();
 
+    //Funcion para detectar firmas (Quien va a firmar?, por token de sesion)
+
+    const signatures = Array.isArray(constancy?.signatures)
+        ? constancy!.signatures
+        : [];
+
+
+    const currentUser = constancy?.signatures?.find (
+        (el: any) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)
+    );
+
+    useEffect(() => {
+        if(currentUser && !currentUser.url) {
+            setCurrentUser(true);
+        } else {
+            setCurrentUser(false);
+        }
+    }, [currentUser]);
+    
     //Mis helpers jiji
+
 
     // Usar "capitalize para hacer la primer letra del nombre o apellido mayuscula"
     const capitalize = (text?: string) => {
@@ -75,6 +109,7 @@ export function ConstancyOne({
     };
 
     const hasBackgrounds = Boolean(constancy?.backgrounds?.length);
+
 
     if (!constancy) {
         return (
@@ -192,6 +227,8 @@ export function ConstancyOne({
         });
     };
 
+    const handleEmployeeSignature = () => setEmployeeSignatureModal(true);
+
     // Cuando se manda a llamar la fecha y la hora de la constancia hay que mandarla llamar asoi para separarla 
     const getDate = (u: Constancy) =>
         u.dateAndTimeOfTheEvents
@@ -211,39 +248,65 @@ export function ConstancyOne({
                 <Loading message={messageLoading} />
             </ConditionalRender>
 
-            {/* Botones principales */}
-            <div className="d-flex flex-wrap align-items-center gap-2 my-2">
-                <Button
-                    size="sm"
-                    variant="primary"
-                    className="fw-semibold d-inline-flex align-items-center gap-2"
-                    onClick={handleCreate}
-                    disabled={loading}
-                >
-                    <i className="bi bi-plus-lg" />
-                    Crear Constancia
-                </Button>
+            <Row className="g-3 align-items-center mb-3">
 
-                <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => setShowUpdateConstancyModal(true)}
-                    disabled={loading}
-                >
-                    <i className="bi bi-pencil me-2" />
-                    Actualizar Constancia
-                </Button>
+                {/* Botones principales */}
+                <Col xs={12} lg={6}>
+                    <div className="d-flex flex-wrap gap-2 mt-5">
 
-                <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={handleDeleteConstancy}
-                    disabled={loading}
-                >
-                    <i className="bi bi-trash me-2" />
-                    Eliminar Constancia
-                </Button>
-            </div>
+                        <Button
+                            size="sm"
+                            variant="primary"
+                            className="fw-semibold d-inline-flex align-items-center gap-2"
+                            onClick={handleCreate}
+                            disabled={loading}
+                        >
+                            <i className="bi bi-plus-lg" />
+                            Crear Constancia
+                        </Button>
+
+                        <Button
+                            size="sm"
+                            variant="primary"
+                            onClick={() => setShowUpdateConstancyModal(true)}
+                            disabled={loading}
+                        >
+                            <i className="bi bi-pencil me-2" />
+                            Actualizar Constancia
+                        </Button>
+
+                        <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={handleDeleteConstancy}
+                            disabled={loading}
+                        >
+                            <i className="bi bi-trash me-2" />
+                            Eliminar Constancia
+                        </Button>
+
+                    </div>
+                </Col>
+
+                {/* ========================================================================= */}
+                {/* Botones de firmas */}
+                <Col xs={12} lg={6}>
+                        <div className="d-flex justify-content-lg-end justify-content-start flex-wrap gap-2">
+
+                            <ConditionalRender cond={showCurretUser}>
+                                <Button
+                                    size="sm"
+                                    variant="warning"
+                                    className="fw-bold fs-5 text-white px-3 py-2 shadow-sm rounded-2 mt-5 bg-warning border-0 me-1"
+                                    onClick={handleEmployeeSignature}
+                                >
+                                    Firmar
+                                </Button>
+                            </ConditionalRender>
+                        </div>
+                </Col>
+                {/* ======================================================================= */}
+            </Row>
 
             {/* Aqui empieza el cuerpo, los datos generales de la constancia  */}
             <div className="mb-4">
@@ -299,13 +362,10 @@ export function ConstancyOne({
 
                             <span
                                 className={`badge rounded-pill px-3 py-2 fw-semibold ${constancy.backgrounds?.length
-                                        ? "bg-danger-subtle text-danger-emphasis border border-danger-subtle"
-                                        : "bg-success-subtle text-success-emphasis border border-success-subtle"
+                                    ? "bg-danger-subtle text-danger-emphasis border border-danger-subtle"
+                                    : "bg-success-subtle text-success-emphasis border border-success-subtle"
                                     }`}
                             >
-                                {/* {constancy.backgrounds?.length
-                                    ? `${constancy.backgrounds.length} antecedente(s)`
-                                    : "Sin antecedentes"} */}
                             </span>
                         </div>
 
@@ -395,38 +455,27 @@ export function ConstancyOne({
                                                     </div>
                                                 </div>
 
-                                                {/* Testigos */}
+                                                {/* Firmantes */}
                                                 <div className="col-12">
-
                                                     <div className="border rounded-3 p-3">
-
                                                         <div className="text-secondary-emphasis fw-semibold mb-2">
-                                                            Testigos
+                                                            Firmantes
                                                         </div>
-
                                                         <div className="d-flex flex-wrap gap-2">
-
                                                             {background.signatures?.length ? (
-
                                                                 background.signatures.map((witness) => (
-
                                                                     <span
                                                                         key={witness.id}
                                                                         className="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle px-3 py-2 fw-semibold"
                                                                     >
                                                                         {capitalize(witness.name)}
                                                                     </span>
-
                                                                 ))
-
                                                             ) : (
-
                                                                 <span className="text-muted">
                                                                     Sin testigos
                                                                 </span>
-
                                                             )}
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -435,13 +484,10 @@ export function ConstancyOne({
                                     </Accordion.Item>
                                 ))}
                             </Accordion>
-
                         ) : (
-
                             <div className="alert alert-success mb-0">
                                 Este empleado no cuenta con antecedentes registrados.
                             </div>
-
                         )}
                     </div>
                 </section>
@@ -469,35 +515,25 @@ export function ConstancyOne({
 
                 {/* Testigos */}
                 <section className="card border-0 shadow-sm">
-                    <div className="card-body">
-                        <h5 className="mb-3 text-uppercase fw-bold">
-                            Testigos
-                        </h5>
-
-                        <div className="row g-3">
-                            {constancy.signatures?.length ? (
-                                constancy.signatures.map((witness) => (
-                                    <div key={witness.id} className="col-12 col-md-6 col-lg-4">
-                                        <div className="border rounded-3 p-3 h-100 shadow-sm">
-                                            <div className="fw-semibold text-uppercase fs-5">
-                                                {capitalize(witness.name)}
-                                            </div>
-
-                                            <div className="small text-muted">
-                                                ID del testigo: {witness.idSignatory}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="col-12">
-                                    <div className="alert alert-secondary mb-0">
-                                        Sin testigos registrados.
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    {/* Firmas */}
+                    <FormBook dKey="signatures">
+                        {signatures.length > 0 && (
+                            <FormPage title="Firmantes" eventKey="signatures">
+                                <Container>
+                                    <Row className="g-2 py-2">
+                                        {signatures.map((sign) => (
+                                            <SignaturesViewConstancy
+                                                key={sign.id}
+                                                id={(constancy.id)}
+                                                idEmployee={String(sign.idSignatory)}
+                                                name={String(sign.name)}
+                                            />
+                                        ))}
+                                    </Row>
+                                </Container>
+                            </FormPage>
+                        )}
+                    </FormBook>
                 </section>
 
             </div>
@@ -512,6 +548,14 @@ export function ConstancyOne({
                 </ModalBlur>
             </ConditionalRender>
 
+            
+            {/* Modal para firmar  */}
+
+            <ConstancySignatureModal
+                show={employeeSignatureModal}
+                onHide={() => setEmployeeSignatureModal(false)}
+                id={String(constancy.id)}
+            />
         </>
     );
 

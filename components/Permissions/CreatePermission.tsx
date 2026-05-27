@@ -371,6 +371,7 @@ export default function CreatePermissionComponent({
               </FieldGroup.Stack>
             )}
 
+           {/* Apartado de firmas */}
             <SignatureInput
               name="signature"
               register={register}

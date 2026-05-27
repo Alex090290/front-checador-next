@@ -9,9 +9,11 @@ export type signatures = {
     name: string;
     url: string;
     sendNotify: boolean;
+    signature?: string;
 }
 
 export interface Constancy {
+    signature: string;
     _id?: string;
     id: number;
     idEmployee: number;
