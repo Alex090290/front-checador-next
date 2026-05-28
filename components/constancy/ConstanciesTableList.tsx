@@ -34,7 +34,7 @@ export default function ConstanciesTableClient({
     const tableResetKey = 0;
     const pathname = usePathname();
 
-    const [backgroundsByEmployee, setBackgroundsByEmployee] = useState<Record<number, number>>({});
+    const [backgroundsByEmployee, setBackgroundsByEmployee] = useState<Record<number, number>>([]);
 
     useEffect(() => {
         if (loading) {

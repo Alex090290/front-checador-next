@@ -253,17 +253,25 @@ export async function updateConstancy({
 
         const { apiToken, API_URL } = await storeAction();
 
+        /* console.log("DATA UPDATE:", {
+            idEmployee: constancy.idEmployee,
+            dateTheEvents: constancy.dateTheEvents,
+            hourTheEvents: constancy.hourTheEvents,
+            sceneOfTheEvents: constancy.sceneOfTheEvents,
+            backgroundIds: constancy.backgroundIds ?? [],
+            typeOfPenalty: constancy.typeOfPenalty ?? [],
+            witness: constancy.witness,
+        }); */
         await axios.put(
             `${API_URL}/constancy/${String(id)}`,
             {
-                id: constancy.id,
                 idEmployee: constancy.idEmployee,
                 dateTheEvents: constancy.dateTheEvents,
                 hourTheEvents: constancy.hourTheEvents,
                 sceneOfTheEvents: constancy.sceneOfTheEvents,
-                backgrounds: constancy.backgrounds,
-                typeOfPenalty: constancy.typeOfPenalty,
-                witness: constancy.witness
+                backgroundIds: constancy.backgroundIds ?? [],
+                typeOfPenalty: constancy.typeOfPenalty ?? [],
+                witness: constancy.witness,
             },
             {
                 headers: {

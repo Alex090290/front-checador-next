@@ -55,9 +55,8 @@ export default function CreateConstancyComponent({
     const idEmployeeSelected = watch("idEmployee"); //whatch para indicar que campo es el que nos dice cuando hay alguna constancia previa (se filtra por id empleado)
     const [previousConstancies, setPreviousConstancies] = useState<Constancy[]>([]); //Guarda y renderiza 
 
-
+    const [selectedBackgroundIds, setSelectedBackgroundIds] = useState<number[]>([]); //para la seleccion de antecedentes
     const existenConstancy = Number(idEmployeeSelected) > 0;
-    const [selectedConstancy, setSelectedConstancy] = useState<Constancy | null>(null);
 
     //Paraa hacer dinamico el campo de antecedentes y que aparezcan constancias previas 
     useEffect(() => {
@@ -65,7 +64,8 @@ export default function CreateConstancyComponent({
             //En caso de que no haya constancias previas, sale de la busqueda
             if (!existenConstancy) {
                 setPreviousConstancies([]);
-                setSelectedConstancy(null);
+                setSelectedBackgroundIds([]);
+                setValue("backgroundIds", []);
                 return;
             }
 
@@ -75,10 +75,8 @@ export default function CreateConstancyComponent({
             });
 
             setPreviousConstancies(result ?? []); //Para guardar los resultados en el estado 
-
-            if (!result || result.length === 0) {
-                setSelectedConstancy(null);
-            }
+            setSelectedBackgroundIds([]);
+            setValue('backgroundIds', []);
         };
 
         loadConstancies(); //Ejcuta la funcion 
@@ -120,6 +118,15 @@ export default function CreateConstancyComponent({
                 setMessageLoading("");
             }
         });
+    };
+
+    const handleToggleBackground = (id: number) => {
+        const updatedIds = selectedBackgroundIds.includes(id)
+            ? selectedBackgroundIds.filter((item) => item !== id)
+            : [...selectedBackgroundIds, id];
+
+        setSelectedBackgroundIds(updatedIds);
+        setValue("backgroundIds", updatedIds);
     };
 
     return (
@@ -171,21 +178,13 @@ export default function CreateConstancyComponent({
                                         placement="top"
                                         overlay={
                                             <Tooltip id="tooltip-info">
-                                                Selecciona el empleado al que se le asignará la constancia.
+                                                Escribe el nombre del empleado que deseas seleccionar.
                                             </Tooltip>
                                         }
                                     >
-                                        <Button
-                                            variant="light"
-                                            size="sm"
-                                            className="rounded-circle border shadow-sm d-flex align-items-center justify-content-center p-0"
-                                            style={{
-                                                width: "25px",
-                                                height: "25px",
-                                            }}
-                                        >
-                                            <i className="bi bi-info-circle-fill text-warning" />
-                                        </Button>
+                                        <span style={{ cursor: "pointer" }}>
+                                            <i className="bi bi-info-circle-fill text-primary" />
+                                        </span>
                                     </OverlayTrigger>
 
                                 </div>
@@ -246,33 +245,40 @@ export default function CreateConstancyComponent({
                                             <strong>Constancias previas encontradas:</strong>
 
                                             <ul className="list-group mt-2">
-                                                {previousConstancies.map((constancy) => (
-                                                    <li
-                                                        key={constancy.id}
-                                                        className="list-group-item list-group-item-action"
-                                                        style={{ cursor: "pointer" }}
-                                                        onClick={() => setSelectedConstancy(constancy)}
-                                                    >
-                                                        constancia: {constancy.id}
-                                                        {constancy.dateTheEvents}
-                                                    </li>
-                                                ))}
+                                                {previousConstancies.map((constancy) => {
+                                                    const isSelected = selectedBackgroundIds.includes(constancy.id);
+
+                                                    return (
+                                                        <li
+                                                            key={constancy.id}
+                                                            className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center ${isSelected ? "active" : ""
+                                                                }`}
+                                                            style={{ cursor: "pointer" }}
+                                                            onClick={() => handleToggleBackground(constancy.id)}
+                                                        >
+                                                            <div>
+                                                                <div className="fw-semibold">
+                                                                    Constancia #{constancy.id}
+                                                                </div>
+
+                                                                <small>
+                                                                    {constancy.dateAndTimeOfTheEvents
+                                                                        ? moment
+                                                                            .utc(constancy.dateAndTimeOfTheEvents)
+                                                                            .format("DD/MM/YYYY HH:mm")
+                                                                        : "Sin fecha"}
+                                                                </small>
+                                                            </div>
+
+                                                            <Form.Check
+                                                                type="checkbox"
+                                                                checked={isSelected}
+                                                                readOnly
+                                                            />
+                                                        </li>
+                                                    );
+                                                })}
                                             </ul>
-                                        </div>
-                                    )}
-
-                                    {selectedConstancy && (
-                                        <div className="card mt-3">
-                                            <div className="card-header ">
-                                                Detalles de la constancia
-                                            </div>
-
-                                            <div className="card-body">
-                                                <p><strong>ID:</strong> {selectedConstancy.id}</p>
-                                                <p><strong>Fecha: </strong> {moment.utc(selectedConstancy.dateAndTimeOfTheEvents).format("DD/MM/YYYY")}</p>
-                                                <p><strong>Hora: </strong> {moment.utc(selectedConstancy.dateAndTimeOfTheEvents).format("hh:mm")}</p>
-                                                <p><strong>Lugar:</strong> {selectedConstancy.sceneOfTheEvents}</p>
-                                            </div>
                                         </div>
                                     )}
                                 </div>

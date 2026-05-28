@@ -22,7 +22,7 @@ export interface Constancy {
     dateAndTimeOfTheEvents?: string;
     sceneOfTheEvents?: string;
     typeOfPenalty?: typeOfPenalty[];
-    backgroundIds?: Constancy[];
+    backgroundIds?: number[];
     signatures?: signatures[];
 
     employee?: {

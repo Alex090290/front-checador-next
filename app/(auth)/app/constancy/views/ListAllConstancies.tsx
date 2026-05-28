@@ -1,5 +1,4 @@
 import { fetchConstanciesQueries } from "@/app/actions/constancy-actions";
-import { fetchEmployees } from "@/app/actions/employee-actions";
 import ConstanciesTableClient from "@/components/constancy/ConstanciesTableList";
 import ConstancyInfoOne from "./constancyInfoOne";
 

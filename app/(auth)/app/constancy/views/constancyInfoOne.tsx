@@ -1,27 +1,23 @@
 import { fetchConstancies } from "@/app/actions/constancy-actions";
 import { findConstancyById } from "@/app/actions/constancy-actions";
+import { fetchEmployees } from "@/app/actions/employee-actions";
 import { ConstancyOne } from "@/components/constancy/ConstancyInfoOne";
 
 export default async function ConstancyInfoOne({ id }: { id: string }) {
-    const [constancy, allConstancies] = await Promise.all([
+    const [constancy, employeesResponse] = await Promise.all([
         findConstancyById({ id: Number(id) }),
-        fetchConstancies({ page: 1, limit: 500 }),
+        // fetchConstancies({ page: 1, limit: 500 }),
+        fetchEmployees({ page: 1, limit: 500 }),
     ]);
 
-    const backgrounds = constancy
-        ? allConstancies.filter(
-              (item) =>
-                  Number(item.idEmployee) === Number(constancy.idEmployee) &&
-                  Number(item.id) !== Number(constancy.id)
-          )
-        : [];
+    const employees = (employeesResponse.data ?? []).map((e) => ({
+        _id: e._id,
+        id: e.id!,
+        name: e.name ?? "",
+        lastName: e.lastName ?? "",
+    }));
 
-    const constancyWithBackgrounds = constancy
-        ? {
-              ...constancy,
-              backgrounds,
-          }
-        : null;
+    console.log("EMPLOYEESRES: ", employeesResponse)
 
-    return <ConstancyOne constancy={constancyWithBackgrounds} />;
+    return <ConstancyOne constancy={constancy} employees={employees} />;
 }

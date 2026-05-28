@@ -64,7 +64,7 @@ export default function ModalBlur({
     >
       <div className="w-100 px-3" style={{ maxWidth: 900, maxHeight: "90vh" }}>
         <div className="bg-body rounded-3 shadow position-relative"
-          style={{ maxHeight: "90vh", overflow: "auto" }}
+          style={{ maxHeight: "90vh", overflow: "auto", paddingTop: "2.5rem" }}
         >
           {showCloseButton && (
             <button

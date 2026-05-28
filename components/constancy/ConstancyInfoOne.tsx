@@ -15,10 +15,8 @@ import { deleteConstancy, updateConstancy } from "@/app/actions/constancy-action
 import moment from "moment";
 import { EmployeeLite } from "../configSystem/formUpdate";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewConstancy from "./SignaturesViewConstancy";
 import ConstancySignatureModal from "./ConstancySignatureModal"
-import { id } from "date-fns/locale";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
@@ -50,7 +48,8 @@ function InfoItem({
 
 //En esta funcion colocaremos las sesiones para identificar quien firma 
 export function ConstancyOne({
-    constancy
+    constancy,
+    employees = [],
 }: {
     constancy: Constancy | null;
     employees?: EmployeeLite[];
@@ -66,6 +65,7 @@ export function ConstancyOne({
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
+
 
     const router = useRouter();
 
@@ -108,7 +108,7 @@ export function ConstancyOne({
             : `Empleado #${u.idEmployee}`;
     };
 
-    const hasBackgrounds = Boolean(constancy?.backgrounds?.length);
+    const selectedBackgrounds = constancy?.backgrounds ?? [];
 
 
     if (!constancy) {
@@ -160,6 +160,13 @@ export function ConstancyOne({
             </div>
         );
     }
+
+    const handleCreate = () => {
+        setLoading(true);
+        setMessageLoading('Cargando...');
+        router.push("/app/constancy/create");
+    };
+
     const handleUpdateConstancy = async (
         data: Constancy
     ): Promise<ActionResponse<boolean | null>> => {
@@ -194,11 +201,6 @@ export function ConstancyOne({
         };
     };
 
-    const handleCreate = () => {
-        setLoading(true);
-        setMessageLoading('Cargando...');
-        router.push("/app/constancy/create");
-    };
 
     const handleDeleteConstancy = async () => {
         if (!constancy?.id) {
@@ -240,7 +242,8 @@ export function ConstancyOne({
             ? moment.utc(u.dateAndTimeOfTheEvents).format("HH:mm")
             : u.hourTheEvents ?? "-";
 
-    console.log("BACKGROUNDS:", constancy.backgrounds);
+    // console.log("backgroundIds:", constancy.backgroundIds);
+    // console.log("backgrounds:", constancy.backgrounds);
 
     return (
         <>
@@ -369,11 +372,11 @@ export function ConstancyOne({
                             </span>
                         </div>
 
-                        {constancy.backgrounds?.length ? (
+                        {selectedBackgrounds.length ? (
 
                             <Accordion alwaysOpen>
 
-                                {constancy.backgrounds.map((background, index) => (
+                                {selectedBackgrounds.map((background, index) => (
 
                                     <Accordion.Item
                                         key={background.id}
@@ -541,19 +544,7 @@ export function ConstancyOne({
                         )}
                     </div>
                 </section>
-
             </div>
-            <ConditionalRender cond={showUpdateConstancyModal}>
-                <ModalBlur onClose={() => setShowUpdateConstancyModal(false)}>
-                    <UpdateConstancy
-                        show={showUpdateConstancyModal}
-                        onHide={() => setShowUpdateConstancyModal(false)}
-                        sendData={handleUpdateConstancy}
-                        constancy={constancy}
-                    />
-                </ModalBlur>
-            </ConditionalRender>
-
 
             {/* Modal para firmar  */}
 
@@ -562,6 +553,18 @@ export function ConstancyOne({
                 onHide={() => setEmployeeSignatureModal(false)}
                 id={String(constancy.id)}
             />
+
+            <ConditionalRender cond={showUpdateConstancyModal}>
+                <ModalBlur onClose={() => setShowUpdateConstancyModal(false)} zIndex={3000}>
+                    <UpdateConstancy
+                        show={showUpdateConstancyModal}
+                        onHide={() => setShowUpdateConstancyModal(false)}
+                        sendData={handleUpdateConstancy}
+                        constancy={constancy}
+                        employees={employees}
+                    />
+                </ModalBlur>
+            </ConditionalRender>
         </>
     );
 
