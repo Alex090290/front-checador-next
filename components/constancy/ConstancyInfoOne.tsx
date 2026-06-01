@@ -211,7 +211,7 @@ export function ConstancyOne({
         modalConfirm("¿Deseas eliminar esta constancia?", async () => {
             try {
                 setLoading(true);
-                setMessageLoading("Eliminando constancias...");
+                setMessageLoading("Eliminando constancia...");
 
                 const res = await deleteConstancy({ id: Number(constancy.id) });
 
@@ -255,57 +255,62 @@ export function ConstancyOne({
 
                 {/* Botones principales */}
                 <Col xs={12} lg={6}>
-                    <div className="d-flex flex-wrap gap-2 mt-5">
+                    <Row>
+                        <div className="d-flex flex-wrap gap-2 mt-5">
 
-                        <Button
-                            size="sm"
-                            variant="primary"
-                            className="fw-semibold d-inline-flex align-items-center gap-2"
-                            onClick={handleCreate}
-                            disabled={loading}
-                        >
-                            <i className="bi bi-plus-lg" />
-                            Crear Constancia
-                        </Button>
+                            <Button
+                                variant="primary"
+                                className="fw-semibold d-inline-flex align-items-center gap-2"
+                                onClick={handleCreate}
+                                disabled={loading}
+                            >
+                                <i className="bi bi-plus-lg" />
+                                Crear Constancia
+                            </Button>
 
-                        <Button
-                            size="sm"
-                            variant="primary"
-                            onClick={() => setShowUpdateConstancyModal(true)}
-                            disabled={loading}
-                        >
-                            <i className="bi bi-pencil me-2" />
-                            Actualizar Constancia
-                        </Button>
+                            <Button
+                                variant="primary"
+                                onClick={() => setShowUpdateConstancyModal(true)}
+                                disabled={loading}
+                            >
+                                <i className="bi bi-pencil me-2" />
+                                Actualizar Constancia
+                            </Button>
 
-                        <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={handleDeleteConstancy}
-                            disabled={loading}
-                        >
-                            <i className="bi bi-trash me-2" />
-                            Eliminar Constancia
-                        </Button>
+                            <Button
+                                variant="danger"
+                                onClick={handleDeleteConstancy}
+                                disabled={loading}
+                            >
+                                <i className="bi bi-trash me-2" />
+                                Eliminar Constancia
+                            </Button>
 
-                    </div>
+                            <ConditionalRender cond={showCurretUser}>
+                                <Button
+                                    variant="secondary"
+                                    onClick={handleEmployeeSignature}
+                                >
+                                    Firmar
+                                </Button>
+                            </ConditionalRender>
+
+                        </div>
+                    </Row>
                 </Col>
 
                 {/* ========================================================================= */}
                 {/* Botones de firmas */}
                 <Col xs={12} lg={6}>
-                    <div className="d-flex justify-content-lg-end justify-content-start flex-wrap gap-2">
+                    <div className="d-flex justify-content-lg-end justify-content-start flex-wrap gap-2 mt-5">
 
-                        <ConditionalRender cond={showCurretUser}>
-                            <Button
-                                size="sm"
-                                variant="warning"
-                                className="fw-bold fs-5 text-white px-3 py-2 shadow-sm rounded-2 mt-5 bg-warning border-0 me-1"
-                                onClick={handleEmployeeSignature}
-                            >
-                                Firmar
-                            </Button>
-                        </ConditionalRender>
+                        <Button
+                            variant="primary"
+                            onClick={() => router.back()}
+                            className="bi bi-arrow-left me-2"
+                        >
+                            Regresar
+                        </Button>
                     </div>
                 </Col>
                 {/* ======================================================================= */}
@@ -488,7 +493,7 @@ export function ConstancyOne({
                                 ))}
                             </Accordion>
                         ) : (
-                            <div className="alert alert-success mb-0">
+                            <div className="alert alert-success mb-0 text-center fs-5">
                                 Este empleado no cuenta con antecedentes registrados.
                             </div>
                         )}

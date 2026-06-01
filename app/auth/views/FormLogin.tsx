@@ -52,14 +52,14 @@ function FormLogin() {
 
   return (
     <Container>
-      <Row className="justify-content-center">
-        <Col xs="11" sm="8" md="5" lg="4" xl="3" xxl="3">
+      <Row className="vh-110 d-flex justify-content-center align-items-center">
+        <Col xs="11" sm="8" md="5" lg="4" xl="5" xxl="4">
           <Form
             onSubmit={handleSubmit(onSubmit)}
             className="card shadow-md mt-5 bg-body-tertiary"
           >
             <fieldset className="card-body" disabled={isSubmitting}>
-              <legend className="card-title d-flex justify-content-between">
+              <legend className="card-shadow-lg d-flex justify-content-center text-uppercase">
                 Inicio de sesión
               </legend>
               <InputGroup className="mb-3">
@@ -76,6 +76,7 @@ function FormLogin() {
                   autoComplete="off"
                   autoFocus
                   isInvalid={!!errors.email}
+                  size="sm"
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.email?.message}
@@ -94,16 +95,17 @@ function FormLogin() {
                   type="password"
                   autoComplete="off"
                   isInvalid={!!errors.password}
+                  size="sm"
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.password?.message}
                 </Form.Control.Feedback>
               </InputGroup>
-              <Form.Group className="d-grid">
-                <Button type="submit">
+              <Form.Group className="text-center">
+                <Button type="submit" className="fs-6 text-center w-50" size="sm" >
                   {isSubmitting ? (
                     <>
-                      <Spinner size="sm" animation="border" />
+                      <Spinner animation="border" />
                       <span className="ms-2">Iniciando...</span>
                     </>
                   ) : (

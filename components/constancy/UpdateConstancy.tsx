@@ -21,12 +21,13 @@ type ModalAction = {
     penalty?: typeOfPenalty[];
 };
 
+
 function getDefaultValues(constancy?: Constancy | null): Constancy {
     return {
         id: constancy?.id ?? 0,
         idEmployee: constancy?.idEmployee ?? 0,
-        dateTheEvents: constancy?.dateAndTimeOfTheEvents? moment.utc(constancy.dateAndTimeOfTheEvents).format("YYYY-MM-DD"): "",
-        hourTheEvents: constancy?.dateAndTimeOfTheEvents? moment.utc(constancy.dateAndTimeOfTheEvents).format("HH:mm"): "",
+        dateTheEvents: constancy?.dateAndTimeOfTheEvents ? moment.utc(constancy.dateAndTimeOfTheEvents).format("YYYY-MM-DD") : "",
+        hourTheEvents: constancy?.dateAndTimeOfTheEvents ? moment.utc(constancy.dateAndTimeOfTheEvents).format("HH:mm") : "",
         sceneOfTheEvents: constancy?.sceneOfTheEvents ?? "",
         backgrounds: constancy?.backgrounds ?? [],
         typeOfPenalty: constancy?.typeOfPenalty ?? [],
@@ -38,16 +39,13 @@ function getDefaultValues(constancy?: Constancy | null): Constancy {
 
 export default function FormUpdateConstancy({
     onHide,
-    sendData,
     constancy,
-    employees = [],
 }: ModalBasicProps & ModalAction) {
     const {
         reset,
         register,
         handleSubmit,
         watch,
-        control,
         setValue,
         formState: { errors, isSubmitting },
     } = useForm<Constancy>({
@@ -72,7 +70,7 @@ export default function FormUpdateConstancy({
 
     //Cargar constancias por empleado 
     const idEmployeeSelected = watch("idEmployee"); //whatch para indicar que campo es el que nos dice cuando hay alguna constancia previa (se filtra por id empleado)
-    const [previousConstancies, setPreviousConstancies] = useState<Constancy[]>([]); //Guarda y renderiza 
+    const [previousConstancies, setPreviousConstancies] = useState<Constancy[] | null>(null); //Guarda y renderiza 
 
     const [selectedBackgroundIds, setSelectedBackgroundIds] = useState<number[]>([]); //para la seleccion de antecedentes
     const existenConstancy = Number(idEmployeeSelected) > 0;
@@ -91,7 +89,8 @@ export default function FormUpdateConstancy({
                 idEmployee: Number(idEmployeeSelected),
             });
 
-            const currentBackgrounds = constancy?.backgroundIds ?? [];
+            const currentBackgrounds =
+                constancy?.backgrounds?.map((background) => Number(background.id)) ?? [];
 
             setPreviousConstancies(
                 (result ?? []).filter(
@@ -104,10 +103,10 @@ export default function FormUpdateConstancy({
         };
 
         loadConstancies();
-    }, [existenConstancy, idEmployeeSelected, constancy?.id]);
+    }, [existenConstancy, idEmployeeSelected, constancy?.id, constancy?.backgrounds, setValue]);
 
     const penalties: typeOfPenalty[] = [{ id: 1, name: "Descuento" },];
-
+    const selectedPenaltyId = watch("typeOfPenalty")?.[0]?.id ?? "";
 
     const handleToggleBackground = (id: number) => {
         const updatedIds = selectedBackgroundIds.includes(id)
@@ -136,7 +135,6 @@ export default function FormUpdateConstancy({
         });
     };
 
-    const dateTest = moment
 
     return (
         <>
@@ -156,8 +154,9 @@ export default function FormUpdateConstancy({
                     <div className="p-2">
                         <FieldGroupFluid>
 
+
                             {/* Empleadoooo */}
-                            <div className="mb-3">
+                            {/* <div className="mb-3">
                                 <RelationField
                                     register={register("idEmployee")}
                                     options={employees.map((e) => ({
@@ -171,7 +170,7 @@ export default function FormUpdateConstancy({
                                     callBackMode="id"
                                     control={control}
                                 />
-                            </div>
+                            </div> */}
 
                             {/* Fecha de los hechos */}
                             <div className="mb-3">
@@ -206,13 +205,16 @@ export default function FormUpdateConstancy({
                             </div>
 
                             {/* Antecedentes de constancias previas */}
+
                             <ConditionalRender cond={existenConstancy}>
                                 <div className="mt-3">
                                     <label className="form-label">Antecedentes</label>
 
-                                    {previousConstancies.length === 0 ? (
-                                        <div className="alert alert-success">
-                                            El empleado no tiene constancias previas.
+                                    {previousConstancies === null ? (
+                                        <Loading message="Cargando..." />
+                                    ) : previousConstancies.length === 0 ? (
+                                        <div className="alert alert-info"> 
+                                        No se encontraron antecedentes 
                                         </div>
                                     ) : (
                                         <div className="alert alert-warning">
@@ -258,7 +260,6 @@ export default function FormUpdateConstancy({
                                 </div>
                             </ConditionalRender>
 
-
                             {/* Campo penalizaciones  */}
                             <div className="mb-3">
                                 <label className="form-label">
@@ -267,8 +268,7 @@ export default function FormUpdateConstancy({
 
                                 <select
                                     className="form-select"
-
-                                    defaultValue=""
+                                    value={selectedPenaltyId}
                                     onChange={(e) => {
                                         if (!e.target.value) {
                                             setValue("typeOfPenalty", []);
@@ -298,7 +298,7 @@ export default function FormUpdateConstancy({
                             </div>
 
                             {/* Campo Testigo  */}
-                            <div className="mb-3">
+                            {/* <div className="mb-3">
                                 <RelationField
                                     register={register("witness", { required: true, valueAsNumber: true, })}
                                     options={employees.map((e) => ({
@@ -311,7 +311,7 @@ export default function FormUpdateConstancy({
                                     callBackMode="id"
                                     control={control}
                                 />
-                            </div>
+                            </div> */}
 
                             <div className="d-flex justify-content-between align-items-center pt-2">
                                 <Button type="submit" disabled={loading || isSubmitting}>

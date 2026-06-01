@@ -11,18 +11,22 @@ import { Button } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import moment from "moment";
 import { usePathname } from "next/navigation";
+import { findConstancyById } from "@/app/actions/constancy-actions";
+import ConstancyInfoOne from "@/app/(auth)/app/constancy/views/constancyInfoOne";
+import { findBranchById } from "@/app/actions/branches-actionst";
 
 export default function ConstanciesTableClient({
     total,
     page,
     limit,
-    constancies = [],
+    constancies,
 }: {
     total: number;
     page: number;
     limit: number;
     constancies?: Constancy[];
 }) {
+
     const router = useRouter();
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
@@ -34,7 +38,30 @@ export default function ConstanciesTableClient({
     const tableResetKey = 0;
     const pathname = usePathname();
 
-    const [backgroundsByEmployee, setBackgroundsByEmployee] = useState<Record<number, number>>([]);
+    const [backgroundIdsCount, setBackgroundIdsCount] = useState<Record<number, number>>({});
+
+    useEffect(() => {
+        const loadBackgrounds = async () => {
+            if (!constancies?.length) return;
+
+            const entries = await Promise.all(
+                constancies.map(async (constancy) => {
+                    const detail = await findConstancyById({id: Number(constancy.id)});
+
+                    console.log("DETAIL:", detail);
+
+                    return [
+                        Number(constancy.id),
+                        detail?.backgrounds?.length ?? 0,
+                    ] as const;
+                }) 
+            );
+
+            setBackgroundIdsCount(Object.fromEntries(entries));
+        };
+        loadBackgrounds();
+    }, [constancies]);
+    
 
     useEffect(() => {
         if (loading) {
@@ -52,21 +79,6 @@ export default function ConstanciesTableClient({
         params.set("limit", String(limit));
         router.push(`/app/constancy?${params.toString()}`);
     };
-
-    useEffect(() => {
-        const counts: Record<number, number> = {};
-
-        constancies.forEach((item) => {
-            const employeeId = Number(item.idEmployee);
-
-            if (!employeeId) return;
-
-            counts[employeeId] = (counts[employeeId] ?? 0) + 1;
-        });
-
-        setBackgroundsByEmployee(counts);
-    }, [constancies]);
-
 
     const getDate = (u: Constancy) =>
         u.dateAndTimeOfTheEvents
@@ -146,7 +158,8 @@ export default function ConstanciesTableClient({
             key: "backgrounds",
             label: "Antecedentes",
             accessor: (u) => {
-                const totalBackgrounds = (backgroundsByEmployee[Number(u.idEmployee)] ?? 0) - 1;
+                const totalBackgrounds = backgroundIdsCount[Number(u.id) ?? 0];
+
 
                 return totalBackgrounds > 0
                     ? `Con antecedentes (${totalBackgrounds})`
@@ -155,14 +168,14 @@ export default function ConstanciesTableClient({
             filterable: true,
             type: "string",
             render: (u) => {
-                const totalBackgrounds = (backgroundsByEmployee[Number(u.idEmployee)] ?? 0) - 1;
+                const totalBackgrounds = backgroundIdsCount[Number(u.id) ?? 0];
                 const hasBackgrounds = totalBackgrounds > 0;
 
                 return (
                     <span
                         className={`badge rounded-pill px-3 py-2 fw-semibold ${hasBackgrounds
-                                ? "bg-danger-subtle text-danger-emphasis border border-danger-subtle"
-                                : "bg-success-subtle text-success-emphasis border border-success-subtle"
+                            ? "bg-danger-subtle text-danger-emphasis border border-danger-subtle"
+                            : "bg-success-subtle text-success-emphasis border border-success-subtle"
                             }`}
                     >
                         {hasBackgrounds
@@ -181,7 +194,7 @@ export default function ConstanciesTableClient({
             render: (u) =>
                 <div className="text-uppercase">
                     {u.typeOfPenalty?.map((p) => p.name).join(", ") || "-"}</div>,
-        }, 
+        },
     ];
 
     const handleCreate = () => {
@@ -195,6 +208,7 @@ export default function ConstanciesTableClient({
         setSelectedIds(ids);
     };
 
+
     return (
         <>
             <ConditionalRender cond={loading}>
@@ -203,7 +217,6 @@ export default function ConstanciesTableClient({
 
             <div className="flex-shrink-0 d-flex justify-content-between ms-2 mb-2 mt-4">
                 <Button
-                    size="sm"
                     variant="primary"
                     className="fw-semibold d-inline-flex align-items-center gap-2"
                     onClick={handleCreate}
@@ -229,7 +242,7 @@ export default function ConstanciesTableClient({
                             ref={tableRef}
                             key={tableResetKey}
                             columns={columns}
-                            data={constancies}
+                            data={constancies ?? []}
                             total={total}
                             page={page}
                             limit={limit}
