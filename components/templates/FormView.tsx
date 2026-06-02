@@ -245,7 +245,7 @@ export const FieldGroup = ({
   if (invisible) return null;
   return (
     <Col
-      className={`${className} my-1`}
+      className={`${className} my-2 d-flex`}
       xs="12"
       sm="6"
       md="6"
@@ -253,7 +253,7 @@ export const FieldGroup = ({
       xl="6"
       xxl="6"
     >
-      <fieldset disabled={readonly} className="rounded bg-body-tertiary p-2">
+      <fieldset disabled={readonly} className="rounded bg-body-tertiary p-2 w-100 h-100">
         {children}
       </fieldset>
     </Col>

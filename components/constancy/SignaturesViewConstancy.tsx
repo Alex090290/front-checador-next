@@ -35,9 +35,6 @@ useEffect(() => {
     <Col md="4">
       <Card>
         <Card.Body className="p-1 text-center">
-          {loading ? (
-            <Spinner size="sm" animation="border" />
-          ) : (
             <Image
               unoptimized
               src={imgUrl ?? "/image/avatar_default.svg"}
@@ -45,7 +42,7 @@ useEffect(() => {
               width={300}
               height={100}
             />
-          )}
+          
         </Card.Body>
         <Card.Footer className="text-center text-capitalize fw-semibold">
           {name}

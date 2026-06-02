@@ -1,4 +1,4 @@
-import { Department, UserRole } from "@/lib/definitions";
+import { Department, IFoodBaucher, UserRole } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 
 export type TInputsEmployee = {
@@ -67,4 +67,5 @@ export type TInputsEmployee = {
   typeOfDischarge: string;
   role: UserRole[];
   dailyWage: number;
+  foodBaucher?: IFoodBaucher; 
 };

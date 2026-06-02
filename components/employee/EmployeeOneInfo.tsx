@@ -44,6 +44,7 @@ import Loading from "../LoadingSpinner";
 import RegisterBiometricModal from "./rekognition";
 import UnsubscribeEmployeeComponent from "./Unsubscribe";
 import NewDocumentEmployeeComponent from "./NewDocument";
+import { format } from "path";
 
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
@@ -215,7 +216,6 @@ const handleReEntry = async () => {
 
       <div className="mb-4 d-flex flex-wrap gap-2">
         <Button
-          size="sm"
           variant="primary"
           onClick={() => setShowUpdateEmployeeModal(true)}
         >
@@ -225,7 +225,6 @@ const handleReEntry = async () => {
 
         {employee?.status === 1 && (
           <Button
-            size="sm"
             variant="danger"
             onClick={() => setShowUnsubscribeEmployeeModal(true)}
           >
@@ -241,7 +240,6 @@ const handleReEntry = async () => {
           </Button>
         )}
         <Button
-          size="sm"
           variant="warning"
           onClick={() => setShowRegisterBiometricModal(true)}
         >
@@ -251,6 +249,9 @@ const handleReEntry = async () => {
       </div>
 
       <FormBook dKey="personalInfo">
+
+      {/* =============== Informacion Personal ===================*/}
+
         <FormPage title="Información Personal" eventKey="personalInfo">
           <PageSheet>
             <FieldGroup>
@@ -431,6 +432,8 @@ const handleReEntry = async () => {
           </PageSheet>
         </FormPage>
 
+      {/* =============== Informacion Laboral ===================*/}
+
         <FormPage title="Información Laboral" eventKey="jobInfo">
           <PageSheet>
             <FieldGroup>
@@ -590,8 +593,29 @@ const handleReEntry = async () => {
                 uppercase={false}
               />
             </FieldGroup>
+
+            <FieldGroup>
+
+              <FieldGroup.Stack>
+                <InfoItem
+                label="UID: "
+                value={formatText(employee?.foodBaucher?.uiid)}
+                uppercase={false}/>
+              </FieldGroup.Stack>
+
+              <FieldGroup.Stack>
+                <InfoItem
+                label="Número de tarjeta: "
+                value={formatText(employee?.foodBaucher?.cardNumber)}
+                uppercase={false}/>
+              </FieldGroup.Stack>
+
+            </FieldGroup>
           </PageSheet>
         </FormPage>
+
+
+      {/* =============== Informacion Contactos ===================*/}
 
         <FormPage title="Contactos" eventKey="contacts">
           <FormSheet>
@@ -631,6 +655,8 @@ const handleReEntry = async () => {
             </Col>
           </FormSheet>
         </FormPage>
+
+      {/* =============== Informacion Ingresos y bajas ===================*/}
 
         <FormPage title="Ingresos y Bajas" eventKey="historical">
           <Container>
@@ -717,6 +743,8 @@ const handleReEntry = async () => {
             </Row>
           </Container>
         </FormPage>
+
+{/* =============== Documentos ===================*/}
 
         <FormPage title="Documentos" eventKey="documents">
           <Container className="mt-1">

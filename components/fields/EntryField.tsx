@@ -43,7 +43,7 @@ export const Entry = ({
     <Form.Group controlId={label} className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>
       <Form.Control
-        className={`text-uppercase ${className}`}
+        className={`text-uppercase w-100 ${className}`}
         size="sm"
         {...register}
         type={type}

@@ -101,6 +101,11 @@ type BranchAddress = {
   };
 };
 
+export interface IFoodBaucher {
+  uiid: string;
+  cardNumber: string;
+}
+
 export interface Employee {
   _id?: string;
   id?: number;
@@ -180,6 +185,7 @@ export interface Employee {
   dailyWage: number;
   isLeader: number;
   isDoh: number;
+  foodBaucher?: IFoodBaucher;
 }
 
 type EmergencyContact = {

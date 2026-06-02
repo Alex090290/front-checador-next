@@ -400,6 +400,7 @@ export async function createEmployee({
           anniversaryLetter: data.anniversaryLetter,
           nationality: data.nationality,
           dailyWage: Number(data.dailyWage),
+          foodBaucher: data.foodBaucher,
         },
         {
           headers: {
@@ -528,6 +529,7 @@ export async function updateEmploye({
           role: data.role,
           visibleRecords: true,
           dailyWage: Number(data.dailyWage),
+          foodBaucher: data.foodBaucher, 
         },
         {
           headers: {

@@ -104,6 +104,10 @@ function formatEmployeeValues(employee?: Employee | null): TInputsEmployee {
     typeOfDischarge: employee?.typeOfDischarge || "",
     role: employee?.role || [],
     dailyWage: employee?.dailyWage || 0,
+    foodBaucher: employee?.foodBaucher ?? {
+      uiid: "",
+      cardNumber: "",
+    },
   };
 }
 
@@ -228,6 +232,8 @@ export default function FormUpdateEmployee({
             <fieldset disabled={loading || isSubmitting}>
             <FormBook dKey="personalInfo">
                 <FormPage title="Información Personal" eventKey="personalInfo">
+
+                  {/* =============== Informacion Personal ===================*/}
                 <FieldGroupFluid>
                     <Entry
                     register={register("name", { required: "Nombre requerido" })}
@@ -424,6 +430,8 @@ export default function FormUpdateEmployee({
                 </FieldGroupFluid>
                 </FormPage>
 
+                  {/* =============== Informacion Laboral ===================*/}
+
                 <FormPage title="Información Laboral" eventKey="jobInfo">
                 <FieldGroupFluid>
                     <Entry
@@ -526,6 +534,7 @@ export default function FormUpdateEmployee({
                     invalid={!!errors.entryLunch}
                     feedBack={errors.entryLunch?.message}
                     />
+
                     <Entry
                     register={register("exitLunch", {
                         required: "Salida comedor requerida",
@@ -534,8 +543,6 @@ export default function FormUpdateEmployee({
                     invalid={!!errors.exitLunch}
                     feedBack={errors.exitLunch?.message}
                     />
-
-
 
                     <Entry
                     register={register("entrySaturdayOffice", {
@@ -597,8 +604,19 @@ export default function FormUpdateEmployee({
                     register={register("dischargeReason")}
                     label="Motivo de la baja:"
                     />
+
+                    <Entry 
+                    register={register("foodBaucher.uiid")}
+                    label="UIID: "
+                    />
+                    <Entry 
+                    register={register("foodBaucher.cardNumber")}
+                    label="Número de tarjeta: "
+                    />
                 </FieldGroupFluid>
                 </FormPage>
+
+                  {/* =============== Informacion Contactos ===================*/}
 
                 <FormPage title="Contactos" eventKey="contacts">
                 <Col xs={12}>
@@ -679,6 +697,8 @@ export default function FormUpdateEmployee({
                     </Table>
                 </Col>
                 </FormPage>
+
+                  {/* =============== Informacion Ingresos y Bajas ===================*/}
 
                 <FormPage title="Ingresos y Bajas" eventKey="historical">
                 <FieldGroupFluid>

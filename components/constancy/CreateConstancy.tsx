@@ -96,7 +96,6 @@ export default function CreateConstancyComponent({
 
     //Alerta para antes de guardar 
     const onSubmit: SubmitHandler<Constancy> = async (data) => {
-        console.log("DATA A ENVIAR: ", data);
         modalConfirm("¿Seguro que quieres guardar la constancia?", async () => {
             try {
                 setLoading(true);
@@ -241,7 +240,7 @@ export default function CreateConstancyComponent({
                                             El empleado no tiene constancias previas.
                                         </div>
                                     ) : (
-                                        <div className="alert alert-warning">
+                                        <div className="alert alert-danger">
                                             <strong>Constancias previas encontradas:</strong>
 
                                             <ul className="list-group mt-2">

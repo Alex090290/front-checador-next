@@ -57,7 +57,6 @@ export function ConstancyOne({
 
     const session = useSessionSnapshot();
 
-    console.log("Sesion: ", session)
 
     const [showUpdateConstancyModal, setShowUpdateConstancyModal] = useState(false);
     const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
@@ -65,8 +64,6 @@ export function ConstancyOne({
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
-
-
     const router = useRouter();
 
     //Funcion para detectar firmas (Quien va a firmar?, por token de sesion)
@@ -88,24 +85,27 @@ export function ConstancyOne({
         }
     }, [currentUser]);
 
+    //Para el boton de regresar
+    const handleBack = () => {
+        setLoading(true);
+        setMessageLoading("Cargando datos...");
+
+        setTimeout(() => {
+            router.back();
+        }, 100);
+    }
+
+
     //Mis helpers jiji
-
-
     // Usar "capitalize para hacer la primer letra del nombre o apellido mayuscula"
-    const capitalize = (text?: string) => {
-        if (!text) return "";
-
-        return text
-            .toLowerCase()
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
+    const upperCase = (text?: string) => {
+        return text?.toUpperCase() || "";
     };
 
     const getEmployeeName = (u: Constancy) => {
         return u.employee
-            ? `${capitalize(u.employee.name)} ${capitalize(u.employee.lastName)}`
-            : `Empleado #${u.idEmployee}`;
+            ? `${upperCase(u.employee.name)} ${upperCase(u.employee.lastName)}`
+            : `EMPLEADO #${u.idEmployee}`;
     };
 
     const selectedBackgrounds = constancy?.backgrounds ?? [];
@@ -239,7 +239,7 @@ export function ConstancyOne({
 
     const getHour = (u: Constancy) =>
         u.dateAndTimeOfTheEvents
-            ? moment.utc(u.dateAndTimeOfTheEvents).format("HH:mm")
+            ? moment.utc(u.dateAndTimeOfTheEvents).format("HH:mm A")
             : u.hourTheEvents ?? "-";
 
     // console.log("backgroundIds:", constancy.backgroundIds);
@@ -256,11 +256,12 @@ export function ConstancyOne({
                 {/* Botones principales */}
                 <Col xs={12} lg={6}>
                     <Row>
-                        <div className="d-flex flex-wrap gap-2 mt-5">
+                        <div className="d-flex flex-wrap gap-1 mt-3">
 
                             <Button
+                                size="sm"
                                 variant="primary"
-                                className="fw-semibold d-inline-flex align-items-center gap-2"
+                                className="align-items-center gap-2"
                                 onClick={handleCreate}
                                 disabled={loading}
                             >
@@ -269,6 +270,7 @@ export function ConstancyOne({
                             </Button>
 
                             <Button
+                            size="sm"
                                 variant="primary"
                                 onClick={() => setShowUpdateConstancyModal(true)}
                                 disabled={loading}
@@ -278,6 +280,7 @@ export function ConstancyOne({
                             </Button>
 
                             <Button
+                                size="sm"
                                 variant="danger"
                                 onClick={handleDeleteConstancy}
                                 disabled={loading}
@@ -288,6 +291,7 @@ export function ConstancyOne({
 
                             <ConditionalRender cond={showCurretUser}>
                                 <Button
+                                    size="sm"
                                     variant="secondary"
                                     onClick={handleEmployeeSignature}
                                 >
@@ -300,16 +304,20 @@ export function ConstancyOne({
                 </Col>
 
                 {/* ========================================================================= */}
-                {/* Botones de firmas */}
+                {/* Boton de regresar */}
                 <Col xs={12} lg={6}>
-                    <div className="d-flex justify-content-lg-end justify-content-start flex-wrap gap-2 mt-5">
+                    <div className="d-flex justify-content-lg-end justify-content-start flex-wrap mt-3">
+
 
                         <Button
+                            size="sm"
                             variant="primary"
-                            onClick={() => router.back()}
-                            className="bi bi-arrow-left me-2"
+                            onClick={handleBack}
+                            disabled={loading}
+                            className="bi bi-arrow-left "
                         >
-                            Regresar
+                            {loading ? 'Cargando Datos...' : 'Regresar'}
+
                         </Button>
                     </div>
                 </Col>
@@ -476,7 +484,7 @@ export function ConstancyOne({
                                                                         key={witness.id}
                                                                         className="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle px-3 py-2 fw-semibold"
                                                                     >
-                                                                        {capitalize(witness.name)}
+                                                                        {upperCase(witness.name)}
                                                                     </span>
                                                                 ))
                                                             ) : (

@@ -217,7 +217,7 @@ export default function FormUpdateConstancy({
                                         No se encontraron antecedentes 
                                         </div>
                                     ) : (
-                                        <div className="alert alert-warning">
+                                        <div className="alert alert-secondary">
                                             <strong>Constancias previas encontradas:</strong>
 
                                             <ul className="list-group mt-2">
@@ -227,8 +227,7 @@ export default function FormUpdateConstancy({
                                                     return (
                                                         <li
                                                             key={constancy.id}
-                                                            className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center ${isSelected ? "active" : ""
-                                                                }`}
+                                                            className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center `}
                                                             style={{ cursor: "pointer" }}
                                                             onClick={() => handleToggleBackground(constancy.id)}
                                                         >

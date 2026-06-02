@@ -203,54 +203,56 @@ export default function EmployeeTableClient({
   ];
 
   return (
-    <div className="d-flex flex-column h-100 overflow-hidden">
+    <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
+      
+      <div className="d-flex flex-column h-100 overflow-hidden">
+        <div className="flex-shrink-0 mb-2 mt-2">
+          <Row className="g-2 align-items-center">
+            <Col xs={12} md="auto">
+              <Button
+                variant="primary"
+                className="fw-semibold d-inline-flex align-items-center gap-2"
+                onClick={handleCreate}
+                disabled={loading}
+              >
+                <i className="bi bi-plus-lg" />
+                Crear Empleado
+              </Button>
+            </Col>
 
-      <div className="flex-shrink-0 mb-2 mt-2">
-        <Row className="g-2 align-items-center">
-          <Col xs={12} md="auto">
-            <Button
-              size="sm"
-              variant="primary"
-              className="fw-semibold d-inline-flex align-items-center gap-2"
-              onClick={handleCreate}
-            >
-              <i className="bi bi-plus-lg" />
-              Crear Empleado
-            </Button>
-          </Col>
+            <Col xs={12} md={5} lg={4}>
+              <EmployeeSearchInput
+                initialValue={search}
+                onSearch={handleSearch}
+                placeholder="Buscar por nombre, apellido, departamento..."
+              />
+            </Col>
+          </Row>
+        </div>
 
-          <Col xs={12} md={5} lg={4}>
-            <EmployeeSearchInput
-              initialValue={search}
-              onSearch={handleSearch}
-              placeholder="Buscar por nombre, apellido, departamento..."
-            />
-          </Col>
-        </Row>
+        <div className="flex-grow-1 overflow-hidden">
+          <ListView>
+            <ListView.Body>
+              <TableTemplateServer
+                ref={tableRef}
+                key={tableResetKey}
+                columns={columns}
+                data={employees || []}
+                total={total}
+                page={page}
+                limit={limit}
+                onPageChange={(p) => goToPage(p)}
+                getRowId={(row) => Number(row.id)}
+                viewForm="/app/employee"
+                onSelectionChange={handleSelectionChange}
+              />
+            </ListView.Body>
+          </ListView>
+        </div>
       </div>
-
-      <div className="flex-grow-1 overflow-hidden">
-        <ListView>
-          <ListView.Body>
-            <TableTemplateServer
-              ref={tableRef}
-              key={tableResetKey}
-              columns={columns}
-              data={employees || []}
-              total={total}
-              page={page}
-              limit={limit}
-              onPageChange={(p) => goToPage(p)}
-              getRowId={(row) => Number(row.id)}
-              viewForm="/app/employee"
-              onSelectionChange={handleSelectionChange}
-            />
-          </ListView.Body>
-        </ListView>
-      </div>
-    </div>
+    </>
   );
 }
