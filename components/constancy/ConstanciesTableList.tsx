@@ -46,7 +46,7 @@ export default function ConstanciesTableClient({
 
             const entries = await Promise.all(
                 constancies.map(async (constancy) => {
-                    const detail = await findConstancyById({id: Number(constancy.id)});
+                    const detail = await findConstancyById({ id: Number(constancy.id) });
 
                     console.log("DETAIL:", detail);
 
@@ -54,14 +54,14 @@ export default function ConstanciesTableClient({
                         Number(constancy.id),
                         detail?.backgrounds?.length ?? 0,
                     ] as const;
-                }) 
+                })
             );
 
             setBackgroundIdsCount(Object.fromEntries(entries));
         };
         loadBackgrounds();
     }, [constancies]);
-    
+
 
     useEffect(() => {
         if (loading) {
@@ -217,6 +217,7 @@ export default function ConstanciesTableClient({
 
             <div className="flex-shrink-0 d-flex justify-content-between ms-2 mb-2 mt-4">
                 <Button
+                    size="sm"
                     variant="primary"
                     className="fw-semibold d-inline-flex align-items-center gap-2"
                     onClick={handleCreate}

@@ -23,6 +23,7 @@ export type ConfigExtra = {
 export type ConfigBlock = {
   approvalDoh: ConfigApproval;
   approvalLeaders: ConfigApproval;
+  approvalManager: ConfigApproval;
   extra?: ConfigExtra;
 };
 
@@ -34,6 +35,7 @@ export type IConfigSystem = {
   penaltyForUnjustifiedAbsence: ConfigBlock;
   overTime: ConfigBlock;
   constancy: ConfigBlock;
+  penalties: ConfigBlock;
 };
 
 

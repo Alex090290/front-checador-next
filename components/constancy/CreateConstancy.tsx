@@ -130,8 +130,14 @@ export default function CreateConstancyComponent({
 
     return (
         <>
+        {/* Condicional para cargar la pagina */}
             <ConditionalRender cond={loading}>
                 <Loading message={messageLoading || "Guardando constancia..."} />
+            </ConditionalRender>
+
+            {/* Condicional para guardar cambios  */}
+            <ConditionalRender cond={isSubmitting}>
+                <Loading message="Guardando..." />
             </ConditionalRender>
 
             <Form onSubmit={handleSubmit(onSubmit)}>

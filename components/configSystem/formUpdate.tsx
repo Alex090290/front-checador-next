@@ -1,6 +1,6 @@
 "use client";
 
-import { IConfigSystem, updateConfigSystem } from "@/app/actions/configSystem-actions";
+import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { ActionResponse } from "@/lib/definitions";
 import { Button, Card, Form, Badge } from "react-bootstrap";
 import { Control, Controller, useForm } from "react-hook-form";
@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useModals } from "@/context/ModalContext";
-import router, { useRouter } from "next/router";
+import router from "next/router";
 
 //Imports para loading de guardar 
 import ConditionalRender from "@/components/ConditionalRender";
@@ -24,23 +24,34 @@ import Loading from "@/components/LoadingSpinner";
 type TInputs = {
   permissions_approvalDoh_idPerson: number;
   permissions_approvalLeaders_idPerson: number;
+  permissions_managementPerson_idPerson: null;
   permissions_extra_ids: number[];
 
   vacations_approvalDoh_idPerson: number;
   vacations_approvalLeaders_idPerson: number;
+  vacations_managementPerson_idPerson: null;
   vacations_extra_ids: number[];
 
   penalty_approvalDoh_idPerson: number;
   penalty_approvalLeaders_idPerson: number;
+  penalty_managementPerson_idPerson: null;
   penalty_extra_ids: number[];
 
   overTime_approvalDoh_idPerson: number;
   overTime_approvalLeaders_idPerson: number;
+  overTime_managementPerson_idPerson: null;
   overTime_extra_ids: number[];
 
   constancy_approvalDoh_idPerson: number;
   constancy_approvalLeaders_idPerson: number;
+  constancy_managementPerson_idPerson: null;
   constancy_extra_ids: number[];
+
+  penalties_approvalDoh_idPerson: number;
+  penalties_approvalLeaders_idPerson: number;
+  penalties_managementPerson_idPerson: number;
+  penalties_extra_ids: number[];
+
 };
 
 
@@ -90,7 +101,7 @@ export function EmployeeAutocomplete({
   isEmployeesLoading?: boolean;
   inputSize?: "sm" | "lg";
   inputClassName?: string;
-  clearOnSelect?: boolean; 
+  clearOnSelect?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -319,30 +330,23 @@ function EmployeeField({
   | "overTime_approvalLeaders_idPerson"
   | "constancy_approvalDoh_idPerson"
   | "constancy_approvalLeaders_idPerson"
+  | "penalties_approvalDoh_idPerson"
+  | "penalties_approvalLeaders_idPerson"
+  | "penalties_managementPerson_idPerson"
   ;
   placeholder?: string;
   initialLabel?: string;
 }) {
   const { data, isLoading } = useSWR("/api/employees", fetcher);
 
-  console.log("DATA EMPLOYEES:", data);
-
 
   const employees: EmployeeLite[] = Array.isArray(data?.data?.data)
     ? data.data.data
-  : Array.isArray(data?.data)
-  ? data.data
-  : Array.isArray(data)
-  ? data
-  : [];
-
-  console.log(data?.data?.data);
-
-  console.log("employees length:", employees.length);
-
-
-  console.log("EMPLOYEES ARRAY:", employees);
-  console.log("CANTIDAD:", employees.length);
+    : Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data)
+        ? data
+        : [];
 
   return (
     <Controller
@@ -375,23 +379,19 @@ function EmployeeExtraField({
   | "penalty_extra_ids"
   | "overTime_extra_ids"
   | "constancy_extra_ids"
+  | "penalties_extra_ids"
   ;
   placeholder?: string;
 }) {
   const { data, isLoading } = useSWR("/api/employees", fetcher);
 
-  console.log("DATA /api/employees:", data);
-
   const employees: EmployeeLite[] = Array.isArray(data?.data?.data)
     ? data.data.data
-  : Array.isArray(data?.data)
-  ? data.data
-  : Array.isArray(data)
-  ? data
-  : [];
-
-  console.log("employees array:", employees);
-  console.log("cantidad empleados:", employees.length);
+    : Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data)
+        ? data
+        : [];
 
   return (
     <Controller
@@ -421,11 +421,12 @@ export default function ConfigSystemUpdate({
   initialData: IConfigSystem;
   onCancel: () => void;
   onSave: (payload: {
-    permissions: { idPersonApproveDoh: number; idPersonApproveLeaders: number; idsExtra: number[] };
-    vacations: { idPersonApproveDoh: number; idPersonApproveLeaders: number; idsExtra: number[] };
-    penaltyForUnjustifiedAbsence: { idPersonApproveDoh: number; idPersonApproveLeaders: number; idsExtra: number[] };
-    overTime: { idPersonApproveDoh: number; idPersonApproveLeaders: number; idsExtra: number[] };
-    constancy: { idPersonApproveDoh: number; idPersonApproveLeaders: number; idsExtra: number[] };
+    permissions: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
+    vacations: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
+    penaltyForUnjustifiedAbsence: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
+    overTime: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
+    constancy: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
+    penalties: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: number; idsExtra: number[] };
   }) => Promise<ActionResponse<IConfigSystem>>;
 }) {
   const {
@@ -454,6 +455,11 @@ export default function ConfigSystemUpdate({
       constancy_approvalDoh_idPerson: toNum(initialData.constancy?.approvalDoh?.idPerson),
       constancy_approvalLeaders_idPerson: toNum(initialData.constancy?.approvalLeaders?.idPerson),
       constancy_extra_ids: initialData.constancy?.extra?.ids ?? [],
+
+      penalties_approvalDoh_idPerson: toNum(initialData.penalties?.approvalDoh?.idPerson),
+      penalties_approvalLeaders_idPerson: toNum(initialData.penalties?.approvalLeaders?.idPerson),
+      penalties_managementPerson_idPerson: toNum(initialData.penalties?.approvalManager?.idPerson),
+      penalties_extra_ids: initialData.penalties?.extra?.ids ?? [],
     },
   });
 
@@ -478,6 +484,11 @@ export default function ConfigSystemUpdate({
       constancy_approvalDoh_idPerson: toNum(initialData.constancy?.approvalDoh?.idPerson),
       constancy_approvalLeaders_idPerson: toNum(initialData.constancy?.approvalLeaders?.idPerson),
       constancy_extra_ids: initialData.constancy?.extra?.ids ?? [],
+
+      penalties_approvalDoh_idPerson: toNum(initialData.penalties?.approvalDoh?.idPerson),
+      penalties_approvalLeaders_idPerson: toNum(initialData.penalties?.approvalLeaders?.idPerson),
+      penalties_managementPerson_idPerson: toNum(initialData.penalties?.approvalManager?.idPerson),
+      penalties_extra_ids: initialData.penalties?.extra?.ids ?? [],
     });
   }, [initialData, reset]);
 
@@ -491,27 +502,39 @@ export default function ConfigSystemUpdate({
       permissions: {
         idPersonApproveDoh: toNum(formData.permissions_approvalDoh_idPerson),
         idPersonApproveLeaders: toNum(formData.permissions_approvalLeaders_idPerson),
+        managementPersonId: null,
         idsExtra: formData.permissions_extra_ids ?? [],
       },
       vacations: {
         idPersonApproveDoh: toNum(formData.vacations_approvalDoh_idPerson),
         idPersonApproveLeaders: toNum(formData.vacations_approvalLeaders_idPerson),
+        managementPersonId: null,
         idsExtra: formData.vacations_extra_ids ?? [],
       },
       penaltyForUnjustifiedAbsence: {
         idPersonApproveDoh: toNum(formData.penalty_approvalDoh_idPerson),
         idPersonApproveLeaders: toNum(formData.penalty_approvalLeaders_idPerson),
+        managementPersonId: null,
         idsExtra: formData.penalty_extra_ids ?? [],
       },
       overTime: {
         idPersonApproveDoh: toNum(formData.overTime_approvalDoh_idPerson),
         idPersonApproveLeaders: toNum(formData.overTime_approvalLeaders_idPerson),
+        managementPersonId: null,
         idsExtra: formData.overTime_extra_ids ?? [],
       },
       constancy: {
         idPersonApproveDoh: toNum(formData.constancy_approvalDoh_idPerson),
         idPersonApproveLeaders: toNum(formData.constancy_approvalLeaders_idPerson),
+        managementPersonId: null,
         idsExtra: formData.constancy_extra_ids ?? [],
+      },
+
+      penalties: {
+        idPersonApproveDoh: toNum(formData.penalties_approvalDoh_idPerson),
+        idPersonApproveLeaders: toNum(formData.penalties_approvalLeaders_idPerson),
+        managementPersonId: toNum(formData.penalties_managementPerson_idPerson),
+        idsExtra: formData.penalties_extra_ids ?? [],
       },
     };
 
@@ -534,6 +557,8 @@ export default function ConfigSystemUpdate({
         setMessageLoading("");
       }
     });
+
+    console.log("PRUEBA:", payload);
   };
 
   return (
@@ -596,17 +621,17 @@ export default function ConfigSystemUpdate({
 
                       <Form.Group>
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
-                        <EmployeeExtraField 
-                        control={control} 
-                        name="permissions_extra_ids"
-                        placeholder="Buscar empleado..."
-                         />
+                        <EmployeeExtraField
+                          control={control}
+                          name="permissions_extra_ids"
+                          placeholder="Buscar empleado..."
+                        />
                       </Form.Group>
                     </Card.Body>
                   </Card>
                 </div>
 
-                {/* VACACIONES */}  
+                {/* VACACIONES */}
                 <div className="col-12 col-md-6">
                   <Card className="bg-body-tertiary border-0">
                     <Card.Body>
@@ -737,6 +762,51 @@ export default function ConfigSystemUpdate({
                       <Form.Group>
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
                         <EmployeeExtraField control={control} name="constancy_extra_ids" />
+                      </Form.Group>
+                    </Card.Body>
+                  </Card>
+                </div>
+
+                {/* Penalizaciones */}
+                <div className="col-12 col-md-6">
+                  <Card className="bg-body-tertiary border-0">
+                    <Card.Body>
+                      <h6 className="mb-3">Penalizaciones</h6>
+
+                      <Form.Group className="mb-3">
+                        <Form.Label className="small text-muted">Revisión DOH</Form.Label>
+                        <EmployeeField
+                          control={control}
+                          name="penalties_approvalDoh_idPerson"
+                          placeholder="Buscar empleado..."
+                          initialLabel={fullNameFromConfig(initialData.penalties?.approvalDoh?.employee)}
+                        />
+                      </Form.Group>
+
+                      <Form.Group className="mb-3">
+                        <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
+                        <EmployeeField
+                          control={control}
+                          name="penalties_approvalLeaders_idPerson"
+                          placeholder="Buscar empleado..."
+                          initialLabel={fullNameFromConfig(initialData.penalties?.approvalLeaders?.employee)}
+                        />
+                      </Form.Group>
+
+                      <Form.Group className="mb-3">
+                        <Form.Label className="small text-muted">Dirección</Form.Label>
+                        <EmployeeField
+                          control={control}
+                          name="penalties_managementPerson_idPerson"
+                          placeholder="Buscar empleado..."
+                          initialLabel={fullNameFromConfig(initialData.penalties?.approvalManager?.employee)}
+                        />
+                      </Form.Group>
+
+
+                      <Form.Group>
+                        <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
+                        <EmployeeExtraField control={control} name="penalties_extra_ids" />
                       </Form.Group>
                     </Card.Body>
                   </Card>

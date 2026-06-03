@@ -20,12 +20,13 @@ function BlockView({
   doh,
   leaders,
   extras,
+  management
 }: {
   title: string;
   doh?: { employee?: { name: string; lastName: string } };
   leaders?: { employee?: { name: string; lastName: string } };
+  management?: { employee?: { name: string; lastName: string } };
   extras?: { employees?: { name: string; lastName: string }[] };
-
 }) {
   return (
     <Card className="bg-body-tertiary border-0">
@@ -41,6 +42,13 @@ function BlockView({
           <span className="text-muted">Revisión Dirección A Lideres</span>
           <span className="fw-semibold">{fullName(leaders?.employee)}</span>
         </div>
+
+        <ConditionalRender cond={!!management}>
+          <div className="d-flex justify-content-between mt-2">
+            <span className="text-muted">Dirección</span>
+            <span className="fw-semibold">{fullName(management?.employee)}</span>
+          </div>
+        </ConditionalRender>
 
         <div className="d-flex justify-content-between mt-2">
           <span className="text-muted">Revisión Dirección A Lideres Extras</span>
@@ -136,7 +144,17 @@ export default function ConfigSystemView({
               <BlockView
                 title="Constancias"
                 doh={data.constancy?.approvalDoh}
-                leaders={data.constancy?.approvalLeaders}
+                leaders={data.constancy?.approvalLeaders} 
+                extras={data.constancy?.extra}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <BlockView
+                title="Penalizaciones"
+                doh={data.penalties?.approvalDoh}
+                leaders={data.penalties?.approvalLeaders}
+                management={data.penalties?.approvalManager}
                 extras={data.constancy?.extra}
               />
             </div>
@@ -146,3 +164,4 @@ export default function ConfigSystemView({
     </>
   );
 }
+
