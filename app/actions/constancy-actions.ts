@@ -16,7 +16,7 @@ type FetchUsersArgs = {
 };
 
 //Listar contancias 
-export async function fetchConstancies(p0: { page: number; limit: number; }): Promise<Constancy[]> {
+export async function fetchConstancies(): Promise<Constancy[]> {
     try {
         const { apiToken, API_URL } = await storeAction();
 
@@ -40,7 +40,7 @@ export async function fetchConstancies(p0: { page: number; limit: number; }): Pr
             });
         return response.data || [];
 
-    } catch (error: any) {
+    } catch (error) {
         console.log(error);
         return [];
     }
@@ -93,7 +93,7 @@ export async function fetchConstanciesQueries(args: FetchUsersArgs = {}): Promis
             pages,
         };
 
-    } catch (error: any) {
+    } catch (error) {
         console.log(error);
         return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
     }
@@ -144,11 +144,12 @@ export async function createConstancy({
             success: true,
             message: "Constancia creada correctamente "
         };
-    } catch (error: any) {
-        console.log(error);
+    } catch (error: unknown) {
+        const err = error as Error;
+
         return {
             success: false,
-            message: error.message,
+            message: err.message,
         };
     }
 }
@@ -188,7 +189,7 @@ export async function findConstancyByIdEmployee({
             });
 
         return response.data ?? [];
-    } catch (error: any) {
+    } catch (error) {
         console.log(error);
         return [];
     }
@@ -233,7 +234,7 @@ export async function findConstancyById({
 
         return response.data?.data ?? response.data ?? null;
 
-    } catch (error: any) {
+    } catch (error) {
 
         console.log(error);
         return null;
@@ -378,12 +379,12 @@ export async function sendSignature({
             message: "Firma enviada correctamente",
             data: true,
         };
-    } catch (error: any) {
-        console.log("ERROR FIRMA:", error?.response?.data || error);
+    } catch (error: unknown) {
+        const err = error as Error;
 
         return {
             success: false,
-            message: error?.response?.data?.message || error.message,
+            message: err.message? err.message: "Error al obtener información",
             data: false,
         };
     }

@@ -185,7 +185,7 @@ export interface Employee {
   dailyWage: number;
   isLeader: number;
   isDoh: number;
-  foodBaucher?: IFoodBaucher;
+  foodBaucher?: IFoodBaucher | undefined;
 }
 
 type EmergencyContact = {

@@ -4,7 +4,7 @@ import { useModals } from "@/context/ModalContext";
 import { Constancy } from "@/lib/constancy/interface";
 import { ActionResponse, Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
@@ -23,6 +23,9 @@ function formatText(value?: string | number | null) {
     return String(value);
 }
 
+interface IFiltercUrl {
+    idSignatory: number;
+}
 function InfoItem({
     label,
     value,
@@ -73,9 +76,7 @@ export function ConstancyOne({
         : [];
 
 
-    const currentUser = constancy?.signatures?.find(
-        (el: any) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)
-    );
+    const currentUser = constancy?.signatures?.filter((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee))[0];
 
     useEffect(() => {
         if (currentUser && !currentUser.url) {

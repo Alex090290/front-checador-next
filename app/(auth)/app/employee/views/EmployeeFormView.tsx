@@ -191,7 +191,10 @@ function EmployeeFormView({
         typeOfDischarge: "",
         role: [],
         dailyWage: 0,
-        foodBaucher: [],
+        foodBaucher: {
+          uiid: "",
+          cardNumber: ""
+        },
       };
       setPuestos([]);
       reset(values);
@@ -260,7 +263,7 @@ function EmployeeFormView({
         typeOfDischarge: employee.typeOfDischarge,
         role: employee.role || [],
         dailyWage: employee.dailyWage,
-        foodBaucher: employee.foodBaucher || [],
+        foodBaucher: employee?.foodBaucher,
       };
       reset(values);
       originalValuesRef.current = values;

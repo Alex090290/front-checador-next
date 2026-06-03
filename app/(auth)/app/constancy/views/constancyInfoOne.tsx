@@ -1,4 +1,3 @@
-import { fetchConstancies } from "@/app/actions/constancy-actions";
 import { findConstancyById } from "@/app/actions/constancy-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
 import { ConstancyOne } from "@/components/constancy/ConstancyInfoOne";
