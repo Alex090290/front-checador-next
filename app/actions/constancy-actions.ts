@@ -142,6 +142,7 @@ export async function createConstancy({
                     backgroundIds: data.backgroundIds ?? [],
                     typeOfPenalty: data.typeOfPenalty,
                     witness: data.witness,
+                    daysWithoutPay: data.daysWithoutPay ?? [],
                 },
                 {
                     headers: {
@@ -297,6 +298,7 @@ export async function updateConstancy({
                 backgroundIds: constancy.backgroundIds ?? [],
                 typeOfPenalty: constancy.typeOfPenalty ?? [],
                 witness: constancy.witness,
+                daysWithoutPay: constancy.daysWithoutPay ?? [],
             },
             {
                 headers: {

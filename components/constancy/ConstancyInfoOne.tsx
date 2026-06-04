@@ -67,6 +67,8 @@ export function ConstancyOne({
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
+    const [involvedShow, setInvolvedShow] = useState(false);
+
     const router = useRouter();
 
     //Funcion para detectar firmas (Quien va a firmar?, por token de sesion)
@@ -253,8 +255,18 @@ export function ConstancyOne({
             moment.utc(date).format("DD/MM/YYYY")
         ) ?? [];
 
-    const involvedEmployees =
-        constancy.involved?.flatMap((item) => item.employees ?? []) ?? [];
+    const datainvolved = constancy.involved?.[0]?.employees ?? [];
+    
+    useEffect(()=>{
+        if (datainvolved.length >= 1) {
+            setInvolvedShow(true)
+        }else{
+            setInvolvedShow(false)
+        }
+    },[datainvolved])
+
+    // const involvedEmployees = constancy.involved?.flatMap((item) => item.employees ?? []);
+
 
     return (
         <>
@@ -596,16 +608,17 @@ export function ConstancyOne({
                     </section>
                 </ConditionalRender>
 
+
+
                 {/* Involucrados */}
                 <section className="card border-0 shadow-sm">
                     <div className="card-body">
                         <h5 className="mb-3 text-uppercase fw-bold">
                             Involucrados
                         </h5>
-
-                        {involvedEmployees.length ? (
+            <ConditionalRender cond={involvedShow}>
                             <div className="d-flex flex-wrap gap-2">
-                                {involvedEmployees.map((employee) => (
+                                {datainvolved.map((employee) => (
                                     <span
                                         key={employee.id}
                                         className="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2 fw-semibold"
@@ -614,11 +627,13 @@ export function ConstancyOne({
                                     </span>
                                 ))}
                             </div>
-                        ) : (
-                            <div className="alert alert-secondary mb-0">
+            </ConditionalRender>
+                        <ConditionalRender cond={!involvedShow}>
+                     <div className="alert alert-secondary mb-0">
                                 Sin involucrados registrados.
                             </div>
-                        )}
+            </ConditionalRender>
+              
                     </div>
                 </section>
 

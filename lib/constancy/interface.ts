@@ -14,13 +14,14 @@ export type signatures = {
     signature?: string;
 }
 
-export type involveds = {
-  ids: number[];
-  employees: {
-    id: number;
+export interface IInvolvedsEmployes {
+     id: number;
     name: string;
     lastName: string;
-  }[];
+}
+export interface involveds {
+  ids: number[];
+  employees: IInvolvedsEmployes[];
 };
 
 export interface Constancy {
