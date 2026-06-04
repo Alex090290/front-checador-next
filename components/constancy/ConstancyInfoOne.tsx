@@ -629,7 +629,7 @@ export function ConstancyOne({
                             </div>
             </ConditionalRender>
                         <ConditionalRender cond={!involvedShow}>
-                     <div className="alert alert-secondary mb-0">
+                     <div className="alert alert-success mb-0 text-center">
                                 Sin involucrados registrados.
                             </div>
             </ConditionalRender>
