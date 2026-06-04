@@ -243,8 +243,18 @@ export function ConstancyOne({
             ? moment.utc(u.dateAndTimeOfTheEvents).format("HH:mm A")
             : u.hourTheEvents ?? "-";
 
-    // console.log("backgroundIds:", constancy.backgroundIds);
-    // console.log("backgrounds:", constancy.backgrounds);
+    const penaltyIds = constancy.typeOfPenalty?.map((p) => p.id) ?? [];
+
+    const hasDiscount = penaltyIds.includes(1);
+    const hasDaysWithoutPay = penaltyIds.includes(2);
+
+    const formattedDaysWithoutPay =
+        constancy.daysWithoutPay?.map((date) =>
+            moment.utc(date).format("DD/MM/YYYY")
+        ) ?? [];
+
+    const involvedEmployees =
+        constancy.involved?.flatMap((item) => item.employees ?? []) ?? [];
 
     return (
         <>
@@ -271,7 +281,7 @@ export function ConstancyOne({
                             </Button>
 
                             <Button
-                            size="sm"
+                                size="sm"
                                 variant="primary"
                                 onClick={() => setShowUpdateConstancyModal(true)}
                                 disabled={loading}
@@ -502,7 +512,7 @@ export function ConstancyOne({
                                 ))}
                             </Accordion>
                         ) : (
-                            <div className="alert alert-success mb-0 text-center fs-5">
+                            <div className="alert alert-success mb-0 text-center">
                                 Este empleado no cuenta con antecedentes registrados.
                             </div>
                         )}
@@ -527,6 +537,107 @@ export function ConstancyOne({
                                 <span className="text-muted">Sin penalización</span>
                             )}
                         </div>
+                    </div>
+                </section>
+
+                <ConditionalRender cond={hasDiscount || hasDaysWithoutPay}>
+                    <section className="card border-0 shadow-sm">
+                        <div className="card-body">
+                            <h5 className="mb-3 text-uppercase fw-bold">
+                                Detalles de la penalización
+                            </h5>
+
+                            <div className="row g-4">
+                                <ConditionalRender cond={hasDiscount}>
+                                    <div className="col-12 col-md-6">
+                                        <InfoItem
+                                            label="Monto de descuento"
+                                            value={
+                                                constancy.discountData?.amount
+                                                    ? `$${constancy.discountData.amount}`
+                                                    : "-"
+                                            }
+                                            uppercase={false}
+                                        />
+                                    </div>
+
+                                    <div className="col-12 col-md-6">
+                                        <InfoItem
+                                            label="Tipo de descuento"
+                                            value={formatText(constancy.discountData?.typeDiscount)}
+                                        />
+                                    </div>
+                                </ConditionalRender>
+
+                                <ConditionalRender cond={hasDaysWithoutPay}>
+                                    <div className="col-12">
+                                        <div className="text-secondary-emphasis fw-semibold mb-2">
+                                            Fecha(s) seleccionada(s):
+                                        </div>
+
+                                        {formattedDaysWithoutPay.length ? (
+                                            <div className="d-flex flex-wrap gap-2">
+                                                {formattedDaysWithoutPay.map((day) => (
+                                                    <span
+                                                        key={day}
+                                                        className="badge rounded-pill bg-danger-subtle text-danger-emphasis border border-danger-subtle px-3 py-2 fw-semibold"
+                                                    >
+                                                        {day}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted">Sin días registrados</span>
+                                        )}
+                                    </div>
+                                </ConditionalRender>
+                            </div>
+                        </div>
+                    </section>
+                </ConditionalRender>
+
+                {/* Involucrados */}
+                <section className="card border-0 shadow-sm">
+                    <div className="card-body">
+                        <h5 className="mb-3 text-uppercase fw-bold">
+                            Involucrados
+                        </h5>
+
+                        {involvedEmployees.length ? (
+                            <div className="d-flex flex-wrap gap-2">
+                                {involvedEmployees.map((employee) => (
+                                    <span
+                                        key={employee.id}
+                                        className="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2 fw-semibold"
+                                    >
+                                        {`${upperCase(employee.name)} ${upperCase(employee.lastName)}`}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="alert alert-secondary mb-0">
+                                Sin involucrados registrados.
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Índice del reglamento */}
+                <section className="card border-0 shadow-sm">
+                    <div className="card-body">
+                        <h5 className="mb-3 text-uppercase fw-bold">
+                            Índice del reglamento
+                        </h5>
+
+                        {constancy.tableOfContents ? (
+                            <div className="fw-medium" style={{ whiteSpace: "pre-wrap" }}>
+                                {constancy.tableOfContents}
+                            </div>
+                        ) : (
+                            <div className="alert alert-success text-center mb-0">
+                                Sin índice del reglamento registrado.
+                            </div>
+                        )}
                     </div>
                 </section>
 

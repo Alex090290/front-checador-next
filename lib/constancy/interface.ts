@@ -1,3 +1,5 @@
+import { Employee } from "../definitions";
+
 export type typeOfPenalty = {
         id: number;
         name: string;
@@ -12,8 +14,16 @@ export type signatures = {
     signature?: string;
 }
 
+export type involveds = {
+  ids: number[];
+  employees: {
+    id: number;
+    name: string;
+    lastName: string;
+  }[];
+};
+
 export interface Constancy {
-    signature: string;
     _id?: string;
     id: number;
     idEmployee: number;
@@ -34,4 +44,13 @@ export interface Constancy {
     backgrounds?: Constancy[];
 
     witness: number;
+    involved?: involveds[];
+    tableOfContents?: string;
+
+    discountData?: {
+    amount?: number;
+    typeDiscount?: string;
+    };
+
+    daysWithoutPay?: string[]; 
 }

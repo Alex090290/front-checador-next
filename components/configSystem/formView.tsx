@@ -4,6 +4,7 @@ import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { Button, Card } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
+import { useState } from "react";
 
 function fullName(emp?: { name: string; lastName: string }) {
   if (!emp) return "-";
@@ -73,10 +74,6 @@ export default function ConfigSystemView({
   return (
     //Bloque para bloquear pagina y mostrar mensaje cargando
     <>
-      <ConditionalRender cond={isLoading}>
-        <Loading message="Cargando actualización..." />
-      </ConditionalRender>
-
       <Card className="border-0 shadow-sm">
 
         <Card.Body>
@@ -144,7 +141,7 @@ export default function ConfigSystemView({
               <BlockView
                 title="Constancias"
                 doh={data.constancy?.approvalDoh}
-                leaders={data.constancy?.approvalLeaders} 
+                leaders={data.constancy?.approvalLeaders}
                 extras={data.constancy?.extra}
               />
             </div>

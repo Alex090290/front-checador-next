@@ -1,7 +1,7 @@
 "use server";
 
 import { ActionResponse } from "@/lib/definitions";
-import { Constancy } from "@/lib/constancy/interface";
+import { Constancy, typeOfPenalty } from "@/lib/constancy/interface";
 import axios from "axios";
 import { storeAction } from "./storeActions";
 import { revalidatePath } from "next/cache";
@@ -34,7 +34,7 @@ export async function fetchConstancies(): Promise<Constancy[]> {
 
                 throw new Error(
                     err.response.message
-                        ? err.respone.data.message
+                        ? err.response?.data?.message
                         : "Error en la respuesta"
                 );
             });
@@ -42,6 +42,30 @@ export async function fetchConstancies(): Promise<Constancy[]> {
 
     } catch (error) {
         console.log(error);
+        return [];
+    }
+}
+
+//Listar tipo de penalizacion 
+export async function fetchPenalties(): Promise<typeOfPenalty[]> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const response = await axios.get(`${API_URL}/constancy/typePenalty`, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+        });
+
+        console.log("Respuesta correcta: ", response.data);
+
+        return response.data?.data || [];
+
+    } catch (error: any) {
+        const apiMessage = error.response?.data?.message || "Error en la respuesta de la API";
+
+        console.error("Respuesta incorrecta: ", apiMessage, error);
+
         return [];
     }
 }
@@ -384,7 +408,7 @@ export async function sendSignature({
 
         return {
             success: false,
-            message: err.message? err.message: "Error al obtener información",
+            message: err.message ? err.message : "Error al obtener información",
             data: false,
         };
     }

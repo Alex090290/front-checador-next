@@ -4,7 +4,7 @@
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 
-import { createConstancy, findConstancyByIdEmployee } from "@/app/actions/constancy-actions";
+import { createConstancy, fetchPenalties, findConstancyByIdEmployee } from "@/app/actions/constancy-actions";
 import { Employee } from "@/lib/definitions";
 import { useModals } from "@/context/ModalContext";
 import { useRouter } from "next/navigation";
@@ -31,7 +31,11 @@ const DEFAULT_VALUES: Constancy = {
     backgroundIds: [],
     typeOfPenalty: [],
     witness: 0,
-    signature: "",
+    tableOfContents: "",
+    discountData: {
+        amount: 0,
+        typeDiscount: "",
+    },
 };
 
 export default function CreateConstancyComponent({
@@ -58,6 +62,28 @@ export default function CreateConstancyComponent({
     const [selectedBackgroundIds, setSelectedBackgroundIds] = useState<number[]>([]); //para la seleccion de antecedentes
     const existenConstancy = Number(idEmployeeSelected) > 0;
 
+
+    const { modalError, modalConfirm } = useModals();
+    const router = useRouter();
+
+    const [loading, setLoading] = useState(false);
+    const [messageLoading, setMessageLoading] = useState("");
+
+    const [availablePenalties, setAvailablePenalties] = useState<typeOfPenalty[]>([]);
+    const selectedPenalties = watch("typeOfPenalty");
+
+    //Para los condicionales de Penalties
+    const penaltiesSelected = selectedPenalties?.[0]?.id;
+
+    const esDescuento = penaltiesSelected === 1;
+    const esDiasSinGoce = penaltiesSelected === 2;
+
+    //Condicional para dias sin goce
+    const [fechasSancion, setFechasSancion] = useState<string[]>([""]);
+
+    //Seleccion de involucrados
+    const [selectedInvolvedIds, setSelectedInvolvedIds] = useState<number[]>([]);
+
     //Paraa hacer dinamico el campo de antecedentes y que aparezcan constancias previas 
     useEffect(() => {
         const loadConstancies = async () => {
@@ -82,20 +108,49 @@ export default function CreateConstancyComponent({
         loadConstancies(); //Ejcuta la funcion 
     }, [existenConstancy, idEmployeeSelected]); //Dependencias 
 
+
     //Para el arreglo de penalizaciones, las que tenemos de cajon
-    const penalties: typeOfPenalty[] = [{ id: 1, name: "Descuento" },];
+    useEffect(() => {
+        const loadPenalties = async () => {
+            try {
+                const result = await fetchPenalties();
+                setAvailablePenalties(result ?? []);
 
-    //Para el arreglo de firmas, las preestablecidas
-    // const signatures: signatures[] = [{ id: 1, idSignatory: 10, name: " Juan Perez", url: "", sendNotify: true }]
+            } catch (error) {
+                console.log("Error al cargar penalizasciones:", error);
+                toast.error("No se pudieron cargar las penalizaciones")
+            }
+        }; loadPenalties();
+    }, [])
 
-    const { modalError, modalConfirm } = useModals();
-    const router = useRouter();
+    //Nos deja saber si son una o varias fechas sin goce
+    useEffect(() => {
+        setValue("daysWithoutPay", fechasSancion.filter(f => f !== ""));
+    }, [fechasSancion, setValue]);
 
-    const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
+    //Varios involucrados
+    useEffect(() => {
+        const involvedData = selectedInvolvedIds.map((id) => {
+            const empleado = employees.find((e) => e.id === id);
+
+            return {
+                ids: [id],
+                employees: empleado
+                    ? [{
+                        id: empleado.id!,
+                        name: empleado.name ?? "",
+                        lastName: empleado.lastName ?? "",
+                    }]
+                    : [],
+            };
+        });
+
+        setValue("involved", involvedData);
+    }, [selectedInvolvedIds, employees, setValue]);
 
     //Alerta para antes de guardar 
     const onSubmit: SubmitHandler<Constancy> = async (data) => {
+        console.log("DATA:", data)
         modalConfirm("¿Seguro que quieres guardar la constancia?", async () => {
             try {
                 setLoading(true);
@@ -130,7 +185,7 @@ export default function CreateConstancyComponent({
 
     return (
         <>
-        {/* Condicional para cargar la pagina */}
+            {/* Condicional para cargar la pagina */}
             <ConditionalRender cond={loading}>
                 <Loading message={messageLoading || "Guardando constancia..."} />
             </ConditionalRender>
@@ -147,11 +202,13 @@ export default function CreateConstancyComponent({
 
                         {/* Botones esquina superior derecha  */}
                         <div className="d-flex gap-2 ">
-                            <Button
-                                className="btn-success"
-                                type="submit" disabled={isSubmitting || loading}>
-                                {isSubmitting || loading ? "Guardando..." : "Guardar"}
-                            </Button>
+                            <ConditionalRender cond={isDirty}>
+                                <Button
+                                    className="btn-success"
+                                    type="submit" disabled={isSubmitting || loading || !isDirty}>
+                                    {isSubmitting || loading ? "Guardando..." : "Guardar"}
+                                </Button>
+                            </ConditionalRender>
 
                             <Button
                                 type="button"
@@ -232,7 +289,7 @@ export default function CreateConstancyComponent({
                                 rows={5}
                                 className="w-full"
                                 register={register("sceneOfTheEvents", { required: true })}
-                                label="Lugar de los hechos"
+                                label="Lugar de los hechos:"
                                 invalid={!!errors.sceneOfTheEvents}
                             />
 
@@ -293,7 +350,7 @@ export default function CreateConstancyComponent({
                             {/* Campo penalizaciones  */}
                             <div className="mb-3">
                                 <label className="form-label">
-                                    Tipo de penalización
+                                    Tipo de penalización:
                                 </label>
 
                                 <select
@@ -305,7 +362,7 @@ export default function CreateConstancyComponent({
                                             setValue("typeOfPenalty", []);
                                             return;
                                         }
-                                        const selectedPenalty = penalties.find(
+                                        const selectedPenalty = availablePenalties.find(
                                             (p) => p.id === Number(e.target.value)
                                         );
                                         setValue(
@@ -317,7 +374,7 @@ export default function CreateConstancyComponent({
                                     <option value="">
                                         -- Selecciona --
                                     </option>
-                                    {penalties.map((penalty) => (
+                                    {availablePenalties.map((penalty) => (
                                         <option
                                             key={penalty.id}
                                             value={penalty.id}
@@ -326,6 +383,94 @@ export default function CreateConstancyComponent({
                                         </option>
                                     ))}
                                 </select>
+
+                                {/* En caso de que la penalizacion sea descuento */}
+                                <ConditionalRender cond={esDescuento}>
+                                    <div className="card p-3 mb-3 mt-2 border-light animate__animated animate__fadeIn">
+                                        <Entry
+                                            register={register("discountData.amount", { required: esDescuento })}
+                                            type="number"
+                                            label="Monto a descontar ($):"
+                                            invalid={!!errors.discountData?.amount}
+                                            className="border-light form-control"
+                                        />
+
+                                        <div className="mb-3">
+                                            <label className="form-label fw-semibold">Tipo de descuento:</label>
+                                            <select
+                                                {...register("discountData.typeDiscount", { required: esDescuento })}
+                                                className="form-select date-hover-effect"
+                                            >
+                                                <option value="">-- Selecciona el tipo --</option>
+                                                <option value="bono">Bono</option>
+                                                <option value="sueldo">Sueldo</option>
+                                            </select>
+
+                                            {/* Mensaje de error en caso de que no seleccionen uno */}
+                                            {errors.discountData?.typeDiscount && (
+                                                <span className="text-danger small mt-1 d-block">
+                                                    Por favor, selecciona un tipo de descuento.
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </ConditionalRender>
+
+                                {/* En caso de que la penalizacion sean dias sin goce de sueldo */}
+                                <ConditionalRender cond={esDiasSinGoce}>
+                                    <div className="card p-3 mb-3 mt-2 border-light animate__animated animate__fadeIn">
+                                        <div className="d-flex justify-content-between align-items-center mb-3">
+
+                                            {/* Botón para meter un string vacío al arreglo (lo que creará un nuevo input) */}
+                                            <Button
+                                                className="text-secondary"
+                                                size="sm"
+                                                variant="outline-info"
+                                                type="button"
+                                                onClick={() => setFechasSancion([...fechasSancion, ""])}
+                                            >
+                                                <i className="bi bi-plus-lg me-1 text-light"></i> Agregar otro día
+                                            </Button>
+                                        </div>
+
+                                        <div className="d-flex flex-column gap-2">
+                                            {fechasSancion.map((fecha, index) => (
+                                                <div key={index} className="d-flex gap-2 align-items-center animate__animated animate__fadeInUp">
+                                                    <div className="flex-grow-1">
+                                                        <label className="form-label mb-1 small text-">Fecha del día #{index + 1}:</label>
+                                                        <input
+                                                            type="date"
+                                                            className="form-control border-light form-control"
+                                                            value={fecha}
+                                                            required={esDiasSinGoce}
+                                                            onChange={(e) => {
+                                                                const nuevasFechas = [...fechasSancion];
+                                                                nuevasFechas[index] = e.target.value;
+                                                                setFechasSancion(nuevasFechas);
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    {/* Botón para remover este campo específico si hay más de uno */}
+                                                    {fechasSancion.length > 1 && (
+                                                        <Button
+                                                            variant="outline-danger"
+                                                            type="button"
+                                                            className="align-self-end"
+                                                            style={{ height: "38px" }}
+                                                            onClick={() => {
+                                                                const filtradas = fechasSancion.filter((_, i) => i !== index);
+                                                                setFechasSancion(filtradas);
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-trash-fill"></i>
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </ConditionalRender>
                             </div>
 
                             {/* Campo Testigo  */}
@@ -343,6 +488,72 @@ export default function CreateConstancyComponent({
                                     control={control}
                                 />
                             </div>
+
+                            {/* Campo Involucrados con Selección Múltiple y Remoción */}
+                            <div className="mb-3">
+                                <label className="form-label fw-semibold">Involucrados:</label>
+
+                                <select
+                                    className="form-select date-hover-effect mb-2"
+                                    defaultValue=""
+                                    onChange={(e) => {
+                                        const selectedId = Number(e.target.value);
+                                        if (!selectedId) return;
+
+                                        if (!selectedInvolvedIds.includes(selectedId)) {
+                                            setSelectedInvolvedIds([...selectedInvolvedIds, selectedId]);
+                                        }
+                                        e.target.value = "";
+                                    }}
+                                >
+                                    <option value="">-- Selecciona uno o más empleados --</option>
+                                    {employees.map((e) => (
+                                        <option key={e.id} value={e.id}>
+                                            {`${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {/* Renderizado de los empleados seleccionados */}
+                                <div className="d-flex flex-wrap gap-2 mt-2">
+                                    {selectedInvolvedIds.map((id) => {
+                                        const empleado = employees.find((e) => e.id === id);
+                                        if (!empleado) return null;
+
+                                        return (
+                                            <span
+                                                key={id}
+                                                className="badge bg-secondary-subtle text-secondary-emphasis border border-secondary d-inline-flex align-items-center gap-2 p-2 animate__animated animate__fadeIn"
+                                                style={{ fontSize: "0.9rem" }}
+                                            >
+                                                {`${empleado.lastName?.toUpperCase()} ${empleado.name?.toUpperCase()}`}
+
+                                                {/* Botón X para eliminar al empleado si se equivocan */}
+                                                <button
+                                                    type="button"
+                                                    className="btn-close"
+                                                    style={{ width: "0.5em", height: "0.5em", fontSize: "0.75rem" }}
+                                                    aria-label="Remove"
+                                                    onClick={() => {
+                                                        const actualizados = selectedInvolvedIds.filter((item) => item !== id);
+                                                        setSelectedInvolvedIds(actualizados);
+                                                    }}
+                                                />
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Indice del reglamento */}
+                            <Entry
+                                as={"textarea"}
+                                rows={5}
+                                className="w-full"
+                                register={register("tableOfContents")}
+                                label="Índice del reglamento:"
+                                invalid={!!errors.tableOfContents}
+                            />
                         </FieldGroup>
                     </div>
                 </fieldset>

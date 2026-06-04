@@ -66,8 +66,8 @@ function formatPhone(
   value?:
     | string
     | {
-        internationalNumber?: string | null;
-      }
+      internationalNumber?: string | null;
+    }
     | null
 ) {
   if (!value) return "-";
@@ -120,7 +120,7 @@ function InfoTextArea({
 }
 
 type Props = {
-  employee: Employee | null;
+  employee: Employee;
   id: string;
   departments: Department[];
   branches: Branch[];
@@ -178,44 +178,55 @@ export default function EmployeeDetailsView({
   };
 
 
-const handleReEntry = async () => {
-  if (!employee?.id) {
-    modalError("No se encontró el empleado");
-    return;
-  }
-
-  modalConfirm("Confirma el reingreso del empleado", async () => {
-    try {
-      setLoading(true);
-
-      const res = await reEntry({ id: Number(employee.id) });
-
-      if (!res.success) {
-        modalError(res.message);
-        return;
-      }
-
-      toast.success(res.message);
-    } finally {
-      setLoading(false);
+  const handleReEntry = async () => {
+    if (!employee?.id) {
+      modalError("No se encontró el empleado");
+      return;
     }
-  });
-};
+
+    modalConfirm("Confirma el reingreso del empleado", async () => {
+      try {
+        setLoading(true);
+
+        const res = await reEntry({ id: Number(employee.id) });
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
+        }
+
+        toast.success(res.message);
+      } finally {
+        setLoading(false);
+      }
+    });
+  };
+
+  const upperCase = (text?: string) => {
+        return text?.toUpperCase() || "";
+    };
+
+  const getEmployeeName = (u: Employee) => {
+    return u.id
+      ? `${upperCase(u.name)} ${upperCase(u.lastName)}`
+      : `EMPLEADO #${u.id}`;
+  };
 
   return (
     <>
-        <ConditionalRender cond={loading}>
-            <Loading message="Cargando..." />
-        </ConditionalRender>
+      <ConditionalRender cond={loading}>
+        <Loading message="Cargando..." />
+      </ConditionalRender>
+
       <div className="mb-4">
         <h1 className="mb-0 text-white">
-          {`${employee?.name || ""} ${employee?.lastName || ""}`.trim() ||
-            "Empleado"}
+          {getEmployeeName(employee)}
         </h1>
       </div>
 
       <div className="mb-4 d-flex flex-wrap gap-2">
         <Button
+          size="sm"
           variant="primary"
           onClick={() => setShowUpdateEmployeeModal(true)}
         >
@@ -225,6 +236,7 @@ const handleReEntry = async () => {
 
         {employee?.status === 1 && (
           <Button
+            size="sm"
             variant="danger"
             onClick={() => setShowUnsubscribeEmployeeModal(true)}
           >
@@ -240,6 +252,7 @@ const handleReEntry = async () => {
           </Button>
         )}
         <Button
+          size="sm"
           variant="warning"
           onClick={() => setShowRegisterBiometricModal(true)}
         >
@@ -250,7 +263,7 @@ const handleReEntry = async () => {
 
       <FormBook dKey="personalInfo">
 
-      {/* =============== Informacion Personal ===================*/}
+        {/* =============== Informacion Personal ===================*/}
 
         <FormPage title="Información Personal" eventKey="personalInfo">
           <PageSheet>
@@ -432,7 +445,7 @@ const handleReEntry = async () => {
           </PageSheet>
         </FormPage>
 
-      {/* =============== Informacion Laboral ===================*/}
+        {/* =============== Informacion Laboral ===================*/}
 
         <FormPage title="Información Laboral" eventKey="jobInfo">
           <PageSheet>
@@ -473,8 +486,8 @@ const handleReEntry = async () => {
                   leader
                     ? `${leader.name} ${leader.lastName}`
                     : departmentLeader
-                    ? `${departmentLeader.name} ${departmentLeader.lastName}`
-                    : "-"
+                      ? `${departmentLeader.name} ${departmentLeader.lastName}`
+                      : "-"
                 }
               />
 
@@ -546,14 +559,14 @@ const handleReEntry = async () => {
               {session?.user?.permissions.some(
                 (p) => p.text === "visualizar_salario"
               ) && (
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Salario diario:"
-                    value={formatText(employee?.dailyWage)}
-                    uppercase={false}
-                  />
-                </FieldGroup.Stack>
-              )}
+                  <FieldGroup.Stack>
+                    <InfoItem
+                      label="Salario diario:"
+                      value={formatText(employee?.dailyWage)}
+                      uppercase={false}
+                    />
+                  </FieldGroup.Stack>
+                )}
             </FieldGroup>
 
             <FieldGroup>
@@ -568,8 +581,8 @@ const handleReEntry = async () => {
                     employee?.status === 1
                       ? "Activo"
                       : employee?.status === 2
-                      ? "Baja"
-                      : "-"
+                        ? "Baja"
+                        : "-"
                   }
                 />
               </FieldGroup.Stack>
@@ -598,16 +611,16 @@ const handleReEntry = async () => {
 
               <FieldGroup.Stack>
                 <InfoItem
-                label="UID: "
-                value={formatText(employee?.foodBaucher?.uiid)}
-                uppercase={false}/>
+                  label="UID: "
+                  value={formatText(employee?.foodBaucher?.uiid)}
+                  uppercase={false} />
               </FieldGroup.Stack>
 
               <FieldGroup.Stack>
                 <InfoItem
-                label="Número de tarjeta: "
-                value={formatText(employee?.foodBaucher?.cardNumber)}
-                uppercase={false}/>
+                  label="Número de tarjeta: "
+                  value={formatText(employee?.foodBaucher?.cardNumber)}
+                  uppercase={false} />
               </FieldGroup.Stack>
 
             </FieldGroup>
@@ -615,7 +628,7 @@ const handleReEntry = async () => {
         </FormPage>
 
 
-      {/* =============== Informacion Contactos ===================*/}
+        {/* =============== Informacion Contactos ===================*/}
 
         <FormPage title="Contactos" eventKey="contacts">
           <FormSheet>
@@ -656,7 +669,7 @@ const handleReEntry = async () => {
           </FormSheet>
         </FormPage>
 
-      {/* =============== Informacion Ingresos y bajas ===================*/}
+        {/* =============== Informacion Ingresos y bajas ===================*/}
 
         <FormPage title="Ingresos y Bajas" eventKey="historical">
           <Container>
@@ -744,7 +757,7 @@ const handleReEntry = async () => {
           </Container>
         </FormPage>
 
-{/* =============== Documentos ===================*/}
+        {/* =============== Documentos ===================*/}
 
         <FormPage title="Documentos" eventKey="documents">
           <Container className="mt-1">
@@ -754,15 +767,15 @@ const handleReEntry = async () => {
                   {session?.user?.permissions.some(
                     (p) => p.text === "crear_plantilla_de_documento"
                   ) && (
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={() => setShowNewDocumentEmployeeModal(true)}
-                    >
-                      <i className="bi bi-file-earmark-plus me-2 mt-2" />
-                      Nueva plantilla
-                    </Button>
-                  )}
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={() => setShowNewDocumentEmployeeModal(true)}
+                      >
+                        <i className="bi bi-file-earmark-plus me-2 mt-2" />
+                        Nueva plantilla
+                      </Button>
+                    )}
                 </Nav>
               </Col>
             </Row>
@@ -791,7 +804,7 @@ const handleReEntry = async () => {
           </Container>
         </FormPage>
 
-       {/* Pestaña de vacaciones (A reciclar) */}
+        {/* Pestaña de vacaciones (A reciclar) */}
         <FormPage title="Vacaciones" eventKey="vacations">
           <Container className="mt-1">
             <Row>
@@ -848,8 +861,8 @@ const handleReEntry = async () => {
                                       {vr.leaderApproval === "APPROVED"
                                         ? "APROBADO"
                                         : vr.leaderApproval === "REJECTED"
-                                        ? "RECHAZADO"
-                                        : "PENDIENTE"}
+                                          ? "RECHAZADO"
+                                          : "PENDIENTE"}
                                     </div>
                                     <div>
                                       <strong>Status D.O.H. </strong>
@@ -900,27 +913,27 @@ const handleReEntry = async () => {
         </ModalBlur>
       )}
       {showUnsubscribeEmployeeModal && employee?.id && (
-      <ModalBlur onClose={() => setShowUnsubscribeEmployeeModal(false)}>
-        <UnsubscribeEmployeeComponent
-          employeeId={Number(employee.id)}
-          employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
-          onClose={() => setShowUnsubscribeEmployeeModal(false)}
-          onSuccess={() => {
-            setShowUnsubscribeEmployeeModal(false);
-          }}
-        />
-      </ModalBlur>
-    )}
-    {showNewDocumentEmployeeModal && (
-      <ModalBlur onClose={() => setShowNewDocumentEmployeeModal(false)}>
-        <NewDocumentEmployeeComponent
-          onClose={() => setShowNewDocumentEmployeeModal(false)}
-          onSuccess={() => {
-            setShowNewDocumentEmployeeModal(false);
-          }}
-        />
-      </ModalBlur>
-    )}
+        <ModalBlur onClose={() => setShowUnsubscribeEmployeeModal(false)}>
+          <UnsubscribeEmployeeComponent
+            employeeId={Number(employee.id)}
+            employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
+            onClose={() => setShowUnsubscribeEmployeeModal(false)}
+            onSuccess={() => {
+              setShowUnsubscribeEmployeeModal(false);
+            }}
+          />
+        </ModalBlur>
+      )}
+      {showNewDocumentEmployeeModal && (
+        <ModalBlur onClose={() => setShowNewDocumentEmployeeModal(false)}>
+          <NewDocumentEmployeeComponent
+            onClose={() => setShowNewDocumentEmployeeModal(false)}
+            onSuccess={() => {
+              setShowNewDocumentEmployeeModal(false);
+            }}
+          />
+        </ModalBlur>
+      )}
     </>
   );
 }
