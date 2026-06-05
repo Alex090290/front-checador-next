@@ -1,19 +1,13 @@
 "use server";
 
 import { ActionResponse } from "@/lib/definitions";
-import { Constancy, typeOfPenalty } from "@/lib/constancy/interface";
+import { Constancy, FetchUsersArgs, typeOfPenalty } from "@/lib/constancy/interface";
 import axios from "axios";
 import { storeAction } from "./storeActions";
 import { revalidatePath } from "next/cache";
 import { base64ToBlob } from "@/lib/helpers";
 import { storeToken } from "@/lib/useToken";
 
-
-type FetchUsersArgs = {
-    page?: number;
-    limit?: number;
-    //   status?: string;
-};
 
 //Listar contancias 
 export async function fetchConstancies(): Promise<Constancy[]> {
@@ -278,16 +272,6 @@ export async function updateConstancy({
         if (!id) throw new Error("ID NO ESPECIFICADO");
 
         const { apiToken, API_URL } = await storeAction();
-
-        /* console.log("DATA UPDATE:", {
-            idEmployee: constancy.idEmployee,
-            dateTheEvents: constancy.dateTheEvents,
-            hourTheEvents: constancy.hourTheEvents,
-            sceneOfTheEvents: constancy.sceneOfTheEvents,
-            backgroundIds: constancy.backgroundIds ?? [],
-            typeOfPenalty: constancy.typeOfPenalty ?? [],
-            witness: constancy.witness,
-        }); */
         await axios.put(
             `${API_URL}/constancy/${String(id)}`,
             {

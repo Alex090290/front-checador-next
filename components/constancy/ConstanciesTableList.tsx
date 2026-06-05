@@ -12,8 +12,6 @@ import ListView from "../templates/ListView";
 import moment from "moment";
 import { usePathname } from "next/navigation";
 import { findConstancyById } from "@/app/actions/constancy-actions";
-import ConstancyInfoOne from "@/app/(auth)/app/constancy/views/constancyInfoOne";
-import { findBranchById } from "@/app/actions/branches-actionst";
 
 export default function ConstanciesTableClient({
     total,

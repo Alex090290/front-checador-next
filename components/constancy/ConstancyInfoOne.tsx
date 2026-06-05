@@ -1,7 +1,7 @@
 "use client";
 
 import { useModals } from "@/context/ModalContext";
-import { Constancy } from "@/lib/constancy/interface";
+import { Constancy, IFiltercUrl } from "@/lib/constancy/interface";
 import { ActionResponse, Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,9 +23,6 @@ function formatText(value?: string | number | null) {
     return String(value);
 }
 
-interface IFiltercUrl {
-    idSignatory: number;
-}
 function InfoItem({
     label,
     value,
@@ -59,8 +56,6 @@ export function ConstancyOne({
 }) {
 
     const session = useSessionSnapshot();
-
-
     const [showUpdateConstancyModal, setShowUpdateConstancyModal] = useState(false);
     const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
     const [showCurretUser, setCurrentUser] = useState(false);

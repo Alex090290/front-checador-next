@@ -1,9 +1,18 @@
-import { Employee } from "../definitions";
 
 export type typeOfPenalty = {
-        id: number;
-        name: string;
-    }
+    id: number;
+    name: string;
+}
+
+export type FetchUsersArgs = {
+    page?: number;
+    limit?: number;
+    //   status?: string;
+};
+
+export interface IFiltercUrl {
+    idSignatory: number;
+}
 
 export type signatures = {
     id: number;
@@ -15,13 +24,13 @@ export type signatures = {
 }
 
 export interface IInvolvedsEmployes {
-     id: number;
+    id: number;
     name: string;
     lastName: string;
 }
 export interface involveds {
-  ids: number[];
-  employees: IInvolvedsEmployes[];
+    ids: number[];
+    employees: IInvolvedsEmployes[];
 };
 
 export interface Constancy {
@@ -49,9 +58,9 @@ export interface Constancy {
     tableOfContents?: string;
 
     discountData?: {
-    amount?: number;
-    typeDiscount?: string;
+        amount?: number;
+        typeDiscount?: string;
     };
 
-    daysWithoutPay?: string[]; 
+    daysWithoutPay?: string[];
 }

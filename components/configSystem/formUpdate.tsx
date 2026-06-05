@@ -291,11 +291,11 @@ function EmployeeMultiSelect({
           <div className="text-muted small">Sin empleados extra</div>
         ) : (
           selectedEmployees.map((e) => (
-            <Badge key={e._id ?? String(e.id)} bg="secondary" className="d-inline-flex align-items-center gap-2">
+            <Badge key={e._id ?? String(e.id)} bg="primary" className="d-inline-flex align-items-center gap-2">
               <span className="text-uppercase">{empName(e)}</span>
               <button
                 type="button"
-                className="btn btn-sm btn-link text-black p-0"
+                className="btn btn-sm btn-link text-light p-0"
                 onClick={() => removeOne(Number(e.id))}
                 aria-label="Quitar"
               >

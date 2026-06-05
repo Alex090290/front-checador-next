@@ -13,7 +13,7 @@ import { Button, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FieldGroup } from "../templates/FormView";
-import { Entry, RelationField, SignatureInput } from "../fields";
+import { Entry, RelationField } from "../fields";
 import { formatDate } from "date-fns";
 import moment from "moment-timezone";
 import { Constancy, typeOfPenalty } from "@/lib/constancy/interface";

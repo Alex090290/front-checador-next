@@ -3,12 +3,14 @@
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { Button, Card } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
-import Loading from "../LoadingSpinner";
-import { useState } from "react";
+
+const upperCase = (text?: string) => {
+  return text?.toUpperCase() || "";
+};
 
 function fullName(emp?: { name: string; lastName: string }) {
   if (!emp) return "-";
-  return `${emp.name ?? ""} ${emp.lastName ?? ""}`.trim();
+  return ` ${upperCase(emp.lastName ?? "")} ${upperCase(emp.name ?? "")}`.trim();
 }
 
 function fullNames(list?: { name: string; lastName: string }[]) {
@@ -30,32 +32,71 @@ function BlockView({
   extras?: { employees?: { name: string; lastName: string }[] };
 }) {
   return (
-    <Card className="bg-body-tertiary border-0">
-      <Card.Body>
-        <h6 className="mb-3">{title}</h6>
+    <Card className="border shadow-sm rounded-4">
+      <Card.Body className="p-4">
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <h6 className="mb-0 fw-bold">{title}</h6>
 
-        <div className="d-flex justify-content-between">
-          <span className="text-muted">Revisión DOH</span>
-          <span className="fw-semibold">{fullName(doh?.employee)}</span>
-        </div>
-
-        <div className="d-flex justify-content-between mt-2">
-          <span className="text-muted">Revisión Dirección A Lideres</span>
-          <span className="fw-semibold">{fullName(leaders?.employee)}</span>
-        </div>
-
-        <ConditionalRender cond={!!management}>
-          <div className="d-flex justify-content-between mt-2">
-            <span className="text-muted">Dirección</span>
-            <span className="fw-semibold">{fullName(management?.employee)}</span>
-          </div>
-        </ConditionalRender>
-
-        <div className="d-flex justify-content-between mt-2">
-          <span className="text-muted">Revisión Dirección A Lideres Extras</span>
-          <span className="fw-semibold text-end" style={{ maxWidth: 280 }}>
-            {fullNames(extras?.employees)}
+          <span className="badge bg-info">
+            Revisiones
           </span>
+        </div>
+
+        <div className="d-flex flex-column gap-3">
+
+          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-person-check text-success" />
+              <span className="text-muted">Revisión DOH</span>
+            </div>
+
+            <span className="fw-semibold">
+              {fullName(doh?.employee)}
+            </span>
+          </div>
+
+          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-diagram-3 text-primary" />
+              <span className="text-muted">
+                Revisión Dirección a Líderes
+              </span>
+            </div>
+
+            <span className="fw-semibold">
+              {fullName(leaders?.employee)}
+            </span>
+          </div>
+
+          <ConditionalRender cond={!!management}>
+            <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-building text-warning" />
+                <span className="text-muted">Dirección</span>
+              </div>
+
+              <span className="fw-semibold">
+                {fullName(management?.employee)}
+              </span>
+            </div>
+          </ConditionalRender>
+
+          <div className="d-flex align-items-start justify-content-between">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-people text-info" />
+              <span className="text-muted">
+                Líderes Extras
+              </span>
+            </div>
+
+            <span
+              className="fw-semibold text-end"
+              style={{ maxWidth: "250px" }}
+            >
+              {fullNames(extras?.employees)}
+            </span>
+          </div>
+
         </div>
       </Card.Body>
     </Card>
@@ -79,17 +120,12 @@ export default function ConfigSystemView({
         <Card.Body>
           <div className="d-flex align-items-start justify-content-between gap-3">
             <div>
-              <Card.Title className="mb-1">Configuración del sistema</Card.Title>
+              <Card.Title className="mb-1 fs-2">Configuración del sistema</Card.Title>
             </div>
 
-            <Button variant="primary" onClick={onEdit} disabled={isLoading}>
+            <Button variant="success" onClick={onEdit} disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  />
                   Cargando...
                 </>
               ) : (

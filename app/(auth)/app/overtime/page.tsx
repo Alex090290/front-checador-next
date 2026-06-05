@@ -1,20 +1,30 @@
-import LoadingPage from "@/app/LoadingPage";
-import React, { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import Loading from "@/components/templates/Loaging";
+import ListAllOverTime from "./views/ListAllOverTime";
 
-const OvertimeMainView = lazy(() => import("./views/OvertimeMainView"));
+type SearchParams = {
+  view_type?: string;
+  id?: string;
+  page?: string;
+  limit?: string;
+};
 
-async function page({
+async function PageOverTime({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string }>;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const { view_type: viewType, id } = await searchParams;
+  const params = await searchParams;
+
+  const id = params?.id ?? "null";
+  const page = params?.page ?? "1";
+  const limit = params?.limit ?? "20";
 
   return (
-    <Suspense fallback={<LoadingPage />}>
-      <OvertimeMainView id={id} viewType={viewType} />
+    <Suspense fallback={<Loading />}>
+      <ListAllOverTime id={id} limit={limit} page={page} />
     </Suspense>
   );
 }
 
-export default page;
+export default PageOverTime;

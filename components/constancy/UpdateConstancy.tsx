@@ -63,9 +63,9 @@ export default function FormUpdateConstancy({
 
     const watchedInvolved = watch("involved") ?? [];
 
-    const currentInvolvedEmployees = watchedInvolved.flatMap(
-        (inv) => inv.employees ?? []
-    );
+    const currentInvolvedEmployees = Array.isArray(watchedInvolved)
+  ? watchedInvolved.flatMap((inv) => inv.employees ?? [])
+  : [];
 
     const [loading, setLoading] = useState(false);
     const { modalError, modalConfirm } = useModals();

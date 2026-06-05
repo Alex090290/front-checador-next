@@ -7,7 +7,7 @@ export default function EmployeeSearchInput({
   initialValue = "",
   onSearch,
   placeholder = "Buscar empleado...",
-  delay = 400,
+  delay = 700,
 }: {
   initialValue?: string;
   onSearch: (value: string) => void;
