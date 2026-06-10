@@ -1,13 +1,16 @@
 "use client"
 
 import { OverTime } from "@/lib/overTime/interface";
-import TableTemplateServer, { TableTemplateColumn } from "../templates/TablePage";
+import { TableTemplateColumn } from "../templates/TablePage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Button, Col, Container, Form, InputGroup } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
-import { usePathname, useSearchParams,useRouter } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import moment from "moment";
+import GenericSearchInput from "../employee/GenericSearchInput";
+import { Span } from "next/dist/trace";
 
 export default function OverTimeTableClient({
     total,
@@ -34,7 +37,7 @@ export default function OverTimeTableClient({
     const pathname = usePathname();
     const currentSearch = sp.get("search") ?? "";
     const [tableResetKey, setTableResetKey] = useState(0);
-      const router = useRouter();
+    const router = useRouter();
 
 
     useEffect(() => {
@@ -42,12 +45,10 @@ export default function OverTimeTableClient({
             setLoading(false);
             setMessageLoading("");
         }
-    }, [searchParamsString, loading]);
+    }, [pathname, searchParamsString]);
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {
-        console.log("Cargando sitio");
-
         setLoading(true);
         setMessageLoading("Cargando...");
         router.push("/app/overtime/create");
@@ -57,13 +58,22 @@ export default function OverTimeTableClient({
 
     const goToPage = (nextPage: number) => {
         setLoading(true);
-        setMessageLoading("Cargando");
+        setMessageLoading("Cargando...");
         const params = new URLSearchParams(searchParamsString);
         params.set("id", "null");
+        params.set("view_type", "list");
         params.set("page", String(nextPage));
         params.set("limit", String(limit));
+
+        if (search?.trim()) {
+            params.set("search", search.trim());
+        } else {
+            params.delete("search");
+        }
+
         router.push(`/app/overtime?${params.toString()}`);
     };
+
 
     const capitalize = (text?: string) => {
         if (!text) return "";
@@ -77,9 +87,27 @@ export default function OverTimeTableClient({
 
     const getEmployeeName = (e: OverTime) => {
         return e.employee
-            ? `${capitalize(e.employee.name)} ${capitalize(e.employee.lastName)}`
+            ? `${capitalize(e.employee.lastName)} ${capitalize(e.employee.name)}`
             : `${e.idEmployee}`;
     };
+
+    const getDate = (e: OverTime) => {
+        return e.informationDate
+            ? moment.utc(e.informationDate.dateInit).format("DD/MM/YYYY")
+            : `${e.idEmployee}`
+    }
+
+    const getHourInit = (e: OverTime) => {
+        return e.informationDate
+            ? moment.utc(e.informationDate.hourInit, "HH:mm").format("HH:mm")
+            : `${e.idEmployee}`
+    }
+
+    const getHourEnd = (e: OverTime) => {
+        return e.informationDate
+            ? moment.utc(e.informationDate.hourEnd, "HH:mm").format("HH:mm")
+            : `${e.idEmployee}`
+    }
 
     const clearSelectedIds = useCallback(() => {
         isClearingSelectionRef.current = true;
@@ -101,8 +129,8 @@ export default function OverTimeTableClient({
         (value: string) => {
             if (value === currentSearch) return;
 
-            setLoading(true);
-            setMessageLoading("Buscando...");
+            // setLoading(true);
+            // setMessageLoading("Buscando...");
 
             const params = new URLSearchParams(searchParamsString);
             params.set("id", "null");
@@ -115,12 +143,24 @@ export default function OverTimeTableClient({
             } else {
                 params.delete("search");
             }
-
             clearSelectedIds();
-            router.push(`/app/employee?${params.toString()}`);
+            router.push(`/app/overtime?${params.toString()}`);
         },
         [currentSearch, searchParamsString, limit, router, clearSelectedIds]
     );
+
+
+    const renderCell = (row: OverTime, column: TableTemplateColumn<OverTime>) => {
+        if (column.render) {
+            return column.render(row);
+        }
+
+        if (column.accessor) {
+            return String(column.accessor(row) ?? "-");
+        }
+
+        return String(row[column.key as keyof OverTime] ?? "-");
+    };
 
     const columns: TableTemplateColumn<OverTime>[] = [
         {
@@ -149,37 +189,67 @@ export default function OverTimeTableClient({
         {
             key: "date",
             label: "Fecha",
-            accessor: (e) => e.date,
+            accessor: getDate,
             filterable: true,
             type: "date",
             render: (e) => (
                 <div className="text-uppercase">
-                    {e.date || "-"}
+                    {getDate(e) || "-"}
                 </div>
             )
         },
         {
             key: "hourInit",
             label: "Hora inicio",
-            accessor: (e) => e.hourInit,
+            accessor: getHourInit,
             filterable: true,
             type: "string",
             render: (e) => (
                 <div className="text-uppercase">
-                    {e.hourInit || "-"}
+                    {getHourInit(e) || "-"}
                 </div>
             )
         },
         {
             key: "hourEnd",
             label: "Hora fin",
-            accessor: (e) => e.hourEnd,
+            accessor: getHourEnd,
             filterable: true,
             type: "string",
             render: (e) =>
                 <div className="text-uppercase">
-                    {e.hourEnd}
+                    {getHourEnd(e) || "-"}
                 </div>
+        },
+        {
+            key: "status",
+            label: "Estatus",
+            accessor: (e) => e.status,
+            filterable: true,
+            type: "string",
+            render: (e) => {
+                const estado = e.status
+                switch (estado) {
+                    case "APPROVED":
+                        return (
+                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                                APROBADO
+                            </span>
+                        );
+                    case "PENDING":
+                        return (
+                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                PENDIENTE
+                            </span>
+                        );
+                    case "REFUSED":
+                        return (
+                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                RECHAZADO
+                            </span>
+                        );
+                }
+            },
         }
     ];
 
@@ -189,76 +259,122 @@ export default function OverTimeTableClient({
                 <Loading message={messageLoading} />
             </ConditionalRender>
 
-            <Container fluid className="py-4">
+            <Container className="py-3" style={{ maxWidth: "1600px" }}>
+                <Button
+                    variant="primary"
+                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+                    onClick={handleCreate}
+                    disabled={loading}
+                >
+                    <i className="bi bi-plus-lg" />
+                    Crear registro
+                </Button>
 
-                {/* Acciones */}
-                <div className="mb-4">
-                    <Button
-                        variant="primary"
-                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-                        onClick={handleCreate}
-                    // disabled={loading}
-                    >
-                        <i className="bi bi-plus-lg" />
-                        Crear registro
-                    </Button>
+                <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+                    <div>
+                        <h1 className="mb-0">Registro de horas extra</h1>
+
+                        <span className="text-muted">
+                            {total} registro{total !== 1 ? "s" : ""}
+                        </span>
+                    </div>
                 </div>
 
-                {/* Contenido */}
-                <ListView>
-                    <ListView.Header
-                        title={
-                            <div>
-                                <h2 className="mb-1 fw-bold">
-                                    Registro de horas extra
-                                </h2>
+                <Row className="justify-content-center">
+                    <Col xs={12} xl={12} xxl={12}>
+                        <Card className="rounded-4 shadow-sm border">
+                            <Card.Body className="p-4 p-md-5">
+                                <div className="mb-4">
+                                    <Col xs={12} md={6} lg={4}>
+                                        <InputGroup>
+                                            <InputGroup.Text
+                                                className="bg-gray"
+                                                style={{ color: "#6c757d" }}
+                                            >
+                                                <i className="bi bi-search" />
+                                            </InputGroup.Text>
+                                            <GenericSearchInput
+                                                initialValue={search}
+                                                onSearch={handleSearch}
+                                                placeholder="Buscar por nombre o apellido..."
+                                            />
+                                        </InputGroup>
+                                    </Col>
+                                </div>
 
-                                <span className="text-muted">
-                                    {total} registro{total !== 1 ? "s" : ""}
-                                </span>
-                            </div>
-                        }
-                    />
+                                <ListView>
+                                    <ListView.Body>
+                                        <div className="table-responsive rounded-3 border overflow-hidden">
+                                            <table className="table table-hover align-middle mb-0">
+                                                <thead className="table-dark border-secondary">
+                                                    <tr>
+                                                        {columns.map((column) => (
+                                                            <th
+                                                                key={String(column.key)}
+                                                                className=" fw-bold text-left"
+                                                            >
+                                                                {column.label}
+                                                            </th>
+                                                        ))}
+                                                        <th className=" fw-bold">
+                                                            Detalles
+                                                        </th>
+                                                    </tr>
+                                                </thead>
 
-                    <div className="mt-2 mb-2">
-                        <Col xs={12} md={5} lg={4}>
-                            <InputGroup>
-                                <InputGroup.Text className="bg-white" style={{ color: "#6c757d" }}>
-                                    <i className="bi bi-search" />
-                                </InputGroup.Text>
+                                                <tbody>
+                                                    {(overtime ?? []).map((row) => (
+                                                        <tr key={row.id}>
+                                                            {columns.map((column) => (
+                                                                <td key={String(column.key)}>
+                                                                    {renderCell(row, column)}
+                                                                </td>
+                                                            ))}
+                                                            <td>
+                                                                <a
+                                                                    href={`/app/overtime?view_type=form&id=${row.id}`}
+                                                                    className="btn btn-sm btn-outline-info ms-3"
+                                                                >
+                                                                    Ver
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-                                <Form.Control
-                                    className="shadow-sm border-1 border-secondary"
-                                    type="text"
-                                    placeholder="Buscar por nombre, apellido, departamento..."
-                                    defaultValue={search}
-                                    onChange={(e) => handleSearch(e.target.value)}
-                                />
-                            </InputGroup>
-                        </Col>
-                    </div>
+                                        <div className="d-flex justify-content-between align-items-center mt-4">
+                                            <small className="text-muted">
+                                                Página {page} de {Math.ceil(total / limit)}
+                                            </small>
 
-                    <ListView.Body>
-                        <div className=" rounded-4 shadow-sm border mt-3">
-                            <div className="p-3">
-                                <TableTemplateServer
-                                    ref={tableRef}
-                                    key={tableResetKey}
-                                    columns={columns}
-                                    data={overtime ?? []}
-                                    total={total}
-                                    page={page}
-                                    limit={limit}
-                                    onPageChange={goToPage}
-                                    getRowId={(row) => Number(row.id)}
-                                    viewForm="/app/overtime?view_type=form"
-                                    onSelectionChange={handleSelectionChange}
-                                />
-                            </div>
-                        </div>
-                    </ListView.Body>
-                </ListView>
+                                            <div className="d-flex gap-2">
+                                                <Button
+                                                    variant="outline-secondary"
+                                                    size="sm"
+                                                    disabled={page <= 1}
+                                                    onClick={() => goToPage(page - 1)}
+                                                >
+                                                    Anterior
+                                                </Button>
 
+                                                <Button
+                                                    variant="outline-secondary"
+                                                    size="sm"
+                                                    disabled={page >= Math.ceil(total / limit)}
+                                                    onClick={() => goToPage(page + 1)}
+                                                >
+                                                    Siguiente
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </ListView.Body>
+                                </ListView>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
             </Container>
         </>
     );

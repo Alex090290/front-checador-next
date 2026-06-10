@@ -17,8 +17,8 @@ async function PageInahibility({
   searchParams?: Promise<SearchParams>;
 }) {
   const params = await searchParams;
+  
   const id = params?.id ?? "null";
-
   const page = params?.page ?? "1";
   const limit = params?.limit ?? "20";
 

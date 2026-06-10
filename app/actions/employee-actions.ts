@@ -45,8 +45,7 @@ export interface EmployeeBiometricPhoto {
   active?: boolean;
 }
 export async function fetchEmployees(
-  args: FetchVacationsArgs & { search?: string } = {}
-): Promise<{
+  args: FetchVacationsArgs & { search?: string } = {} ): Promise<{
   data: Employee[];
   total: number;
   page: number;

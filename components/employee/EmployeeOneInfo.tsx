@@ -120,7 +120,7 @@ function InfoTextArea({
 }
 
 type Props = {
-  employee: Employee;
+  employee: Employee | null;
   id: string;
   departments: Department[];
   branches: Branch[];
@@ -206,10 +206,14 @@ export default function EmployeeDetailsView({
         return text?.toUpperCase() || "";
     };
 
-  const getEmployeeName = (u: Employee) => {
+  const getEmployeeName = (u: Employee | null) => {
+    if(!u) return "No se puede dejar vacío este campo"
+
+    
     return u.id
       ? `${upperCase(u.name)} ${upperCase(u.lastName)}`
       : `EMPLEADO #${u.id}`;
+
   };
 
   return (

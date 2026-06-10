@@ -1,16 +1,25 @@
 "use server"
 
 import { FetchUsersArgs } from "@/lib/constancy/interface";
-import { OverTime } from "@/lib/overTime/interface";
+import { OverTime, OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { storeAction } from "./storeActions";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { storeToken } from "@/lib/useToken";
 import { base64ToBlob } from "@/lib/helpers";
+import { auth } from "@/lib/auth";
 
+interface IResAxios {
+  	"message": string,
+    "status": number,
+    "data": {
+      "_id:": string,
+      "id:": number
+    }
+}
 //Funcion para paginar tiempo extra  
-export async function fetchOverTimeQueries(args: FetchUsersArgs = {}): Promise<{
+export async function fetchOverTimeQueries(args: FetchUsersArgs & { search?: string } = {}): Promise<{
   data: OverTime[];
   total: number;
   page: number;
@@ -23,10 +32,14 @@ export async function fetchOverTimeQueries(args: FetchUsersArgs = {}): Promise<{
     const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
     const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
 
+
+ 
     const params = new URLSearchParams();
     params.set("page", String(pageNum));
     params.set("limit", String(limitNum));
-
+      if (args.search?.trim()) {
+      params.set("search", args.search.trim());
+    }
     const response = await axios
       .get(`${API_URL}/overtime?${params.toString()}`, {
         headers: {
@@ -140,51 +153,53 @@ export async function findOvertimeById({
 export async function createOverTime({
   data,
 }: {
-  data: OverTime;
-}): Promise<ActionResponse<OverTime>> {
+  data: TInputsOvertime;
+}): Promise<ActionResponse<OverTimeAxios>> {
 
   try {
-    const { apiToken, API_URL } = await storeAction();
-    await axios.post
-      (`${API_URL}/overtime`,
-        {
+    const { API_URL } = await storeAction();
+    const session = await auth();
+    const apiToken = session?.user?.apiToken;
+
+    const dataSave = {
           idEmployee: data.idEmployee,
           motive: data.motive,
           date: data.date,
           hourInit: data.hourInit,
           hourEnd: data.hourEnd,
-        },
-        {
+        }
+
+    const headers = {
           headers: {
             Authorization: `Bearer ${apiToken}`,
           },
         }
-      ).then((res) => {
-        console.log("Respuesta correcta: ", res.data);
+          
+    const response = await axios.post(`${API_URL}/overtime`,dataSave,headers).then((res)=>{
 
-        return res.data;
-      }).catch((err) => {
-        console.log("Respuesta incorrecta: ", err);
-
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
-
-    revalidatePath("/app/overtime");
-
+      console.log("res: ",res);
+      
+    })
+      
+      const dataResponse = {
+       _id: "1",
+        id: 1
+      }
+    
     return {
       success: true,
-      message: "Constancia creada correctamente "
+      message: "Registro creado correctamente",
+      data: dataResponse
     };
   } catch (error: unknown) {
+    console.log("Error Axios: ", error);
+    
     const err = error as Error;
 
     return {
       success: false,
-      message: err.message,
+      message: err.message
+      
     };
   }
 }
@@ -286,32 +301,34 @@ export async function deleteOverTime({
 }
 
 //Post de firmas
-export async function sendSignature({
-  data,
+export async function sendSignatureOverTime({
+  id,
+  signature
 }: {
-  data: {
-    id: string | null;
+  
+    id: number | null;
     signature: string;
-  };
+  
 }): Promise<ActionResponse<boolean>> {
   try {
-    if (!data.id) throw new Error("ID NOT DEFINED");
-    if (!data.signature) throw new Error("No se recibió la firma");
+    if (!id) throw new Error("ID NOT DEFINED");
+    if (!signature) throw new Error("No se recibió la firma");
 
     const { apiToken, apiUrl } = await storeToken();
 
     const formData = new FormData();
 
-    const blob = base64ToBlob(data.signature, "image/png");
+    const blob = base64ToBlob(signature, "image/png");
 
     formData.append("img", blob, "signature.png");
 
-    await axios.post(`${apiUrl}/overtime/signature/${data.id}`, formData, {
+    const firma = await axios.post(`${apiUrl}/overtime/signature/${id}`, formData, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
     });
-
+    console.log("firma: ",firma);
+    
     return {
       success: true,
       message: "Firma enviada correctamente",

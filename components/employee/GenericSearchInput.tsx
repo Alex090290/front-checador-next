@@ -3,11 +3,11 @@
 import { Form } from "react-bootstrap";
 import { useEffect, useState } from "react";
 
-export default function EmployeeSearchInput({
+export default function GenericSearchInput({
   initialValue = "",
   onSearch,
-  placeholder = "Buscar empleado...",
-  delay = 700,
+  placeholder = "",
+  delay = 500,
 }: {
   initialValue?: string;
   onSearch: (value: string) => void;
@@ -30,12 +30,11 @@ export default function EmployeeSearchInput({
 
   return (
     <Form.Control
+      className="shadow-sm border-1 border-secondary"
       type="text"
-      size="sm"
-      placeholder={placeholder}
+       placeholder={placeholder}
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      className="w-100"
-    />
+      />
   );
 }

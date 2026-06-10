@@ -6,7 +6,7 @@ import Image from "next/image";
 import { fetchSignatureOverTime } from "@/app/actions/overtime-actions";
 
 
-function SignaturesViewConstancy({
+function SignaturesViewOvertime({
     id,
     idEmployee,
     name,
@@ -52,4 +52,4 @@ useEffect(() => {
   );
 }
 
-export default SignaturesViewConstancy;
+export default SignaturesViewOvertime;

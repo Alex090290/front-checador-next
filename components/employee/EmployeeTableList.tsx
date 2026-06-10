@@ -8,7 +8,7 @@ import TableTemplateServer, { TableTemplateColumn } from "../templates/TablePage
 import { Badge, Button, Col, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import EmployeeSearchInput from "./EmployeeSearchInput";
+import GenericSearchInput from "./GenericSearchInput";
 
 const employeeStatus = {
   1: "activo",
@@ -207,7 +207,7 @@ export default function EmployeeTableClient({
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
-      
+
       <div className="d-flex flex-column h-100 overflow-hidden">
         <div className="flex-shrink-0 mb-2 mt-2">
           <Row className="g-2 align-items-center">
@@ -224,7 +224,7 @@ export default function EmployeeTableClient({
             </Col>
 
             <Col xs={12} md={5} lg={4}>
-              <EmployeeSearchInput
+              <GenericSearchInput
                 initialValue={search}
                 onSearch={handleSearch}
                 placeholder="Buscar por nombre, apellido, departamento..."

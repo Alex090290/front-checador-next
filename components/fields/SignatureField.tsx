@@ -90,8 +90,7 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
                 <div className="flex items-center gap-1">
                   <Button
                     type="button"
-                    size="sm"
-                    variant="warning"
+                    variant="info"
                     onClick={() => {
                       sigCanvasRef.current?.clear();
                       onChange("");

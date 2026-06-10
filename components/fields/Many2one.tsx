@@ -170,7 +170,7 @@ export function Many2one<T extends Many2OneOption>({
         disabled={disabled}
         size={size}
         required={required}
-        className={`${className} shadow-none border-0`}
+        className={`${className} shadow-none border`}
       />
       <Form.Control.Feedback type="invalid">
         {error?.message}

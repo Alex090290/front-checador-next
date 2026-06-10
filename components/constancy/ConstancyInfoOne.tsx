@@ -72,7 +72,6 @@ export function ConstancyOne({
         ? constancy!.signatures
         : [];
 
-
     const currentUser = constancy?.signatures?.filter((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee))[0];
 
     useEffect(() => {

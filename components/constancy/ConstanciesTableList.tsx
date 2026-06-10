@@ -169,7 +169,7 @@ export default function ConstanciesTableClient({
                 const totalBackgrounds = backgroundIdsCount[Number(u.id) ?? 0];
                 const hasBackgrounds = totalBackgrounds > 0;
 
-                return (
+                return ( 
                     <span
                         className={`badge rounded-pill px-3 py-2 fw-semibold ${hasBackgrounds
                             ? "bg-danger-subtle text-danger-emphasis border border-danger-subtle"
