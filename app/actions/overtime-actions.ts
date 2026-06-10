@@ -167,7 +167,7 @@ export async function createOverTime({
           date: data.date,
           hourInit: data.hourInit,
           hourEnd: data.hourEnd,
-        }
+        }        
 
     const headers = {
           headers: {
@@ -175,16 +175,23 @@ export async function createOverTime({
           },
         }
           
-    const response = await axios.post(`${API_URL}/overtime`,dataSave,headers).then((res)=>{
+    const response:any = await axios.post(`${API_URL}/overtime`,dataSave,headers).then((res)=>{
+      return res.data.data;
+    }).catch((err)=>{
+      console.log("Error axios: ", err);
+      
+      throw new Error(
+        err.response.data.message
+          ? err.response.data.message
+          : "Error en la respuesta"
+      );
+    })        
 
-      console.log("res: ",res);
-      
-    })
-      
-      const dataResponse = {
-       _id: "1",
-        id: 1
+      const dataResponse:OverTimeAxios = {
+          _id: response._id,
+          id: response.id
       }
+      
     
     return {
       success: true,

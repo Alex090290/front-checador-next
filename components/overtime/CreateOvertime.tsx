@@ -7,7 +7,6 @@ import { OverTime, TInputsOvertime } from "@/lib/overTime/interface";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
-import toast from "react-hot-toast";
 import { Entry, RelationField, SignatureInput } from "../fields";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -57,33 +56,18 @@ export default function CreateOvertimeComponent({
                 setLoading(true);
                 setMessageLoading("Guardando registro...");
 
-                console.log("DATA: ", data);
-
-                await createOverTime({ data }).then(async(rescrate:any)=>{
-                    console.log("rescrateData: ",rescrate);
-                    
-                    console.log("rescrate: ",rescrate?.data?.id);
-                    
-         
-                        
+                await createOverTime({ data }).then(async(rescrate:any)=>{                        
                         await sendSignatureOverTime({
                             id: Number(rescrate?.data?.id), 
                             signature: String(data.signature) 
                         })
-
+                        router.push("/app/overtime")
                 }).catch((errData)=>{
                     console.log("errData: ",errData);
+                    modalError(errData.message);
+                router.push("/app/overtime")
                     
                 })
-
-
-                // if (!res.success) {
-                //     modalError(res.message);
-                //     return;
-                // }
-
-                // toast.success(res.message);
-                router.push("/app/overtime")
             } finally {
                 setLoading(false);
                 setMessageLoading("");
