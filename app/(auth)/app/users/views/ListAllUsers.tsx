@@ -8,18 +8,24 @@ export default async function ListAllUsers({
   id,
   page = "1",
   limit = "20",
+  search = "",
 }: {
   id: string;
   page?: string;
   limit?: string;
+  search?: string;
 }) {
-  if (id && id !== "null") return <UserInfoOne id={id} />;
+  if (id && id !== "null") {
+    return (
+      <UserInfoOne id={id} />
+    );
+  }
 
   const pageParse = Math.max(Number(page || "1") || 1, 1);
   const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
 
   const [getUsers, permissions, employees] = await Promise.all([
-    fetchUsersPages({ page: pageParse, limit: limitParse }),
+    fetchUsersPages({ page: pageParse, limit: limitParse, search }),
     fetchPermissions(),
     fetchEmployees(),
   ]);

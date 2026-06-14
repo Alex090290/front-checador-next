@@ -8,6 +8,7 @@ import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 
 // ✅ ajusta el import a donde dejaste la interface
 // ejemplo: import { AttendanceReportRow } from "@/lib/definitions";
@@ -151,35 +152,98 @@ export default function AttendanceTable({
         render: (row) => (
           <div className="text-center fw-semibold">{row.lunchExcessTimes}</div>
         ),
-      },  
+      },
     ],
     []
   );
 
   return (
-    <div className="d-flex flex-column h-100 overflow-hidden">
+    <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-      <div className="flex-grow-1 overflow-hidden">
-        <ListView>
-          <ListView.Body>
-            <TableTemplateServer
-              ref={tableRef}
-              columns={columns}
-              data={data}
-              total={total}
-              page={page}
-              limit={limit}
-              onPageChange={(p) => goToPage(p)}
-              getRowId={(row) => row.idEmployee}
-              // si quieres click a detalle por empleado:
-              // viewForm="/app/attendanceReport?view_type=form"
-            />
-          </ListView.Body>
-        </ListView>
-      </div>
-    </div>
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {columns.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(data ?? []).map((row) => (
+                            <tr key={row.idEmployee}>
+                              {columns.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/attendanceReport?view_type=form&idEmployee=${row.idEmployee}&id=${id}&year=${year}`}
+                                  className="btn btn-sm btn-outline-info"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <small className="text-muted">
+                        Página {page} de {Math.ceil(total / limit)}
+                      </small>
+
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => goToPage(page - 1)}
+                        >
+                          Anterior
+                        </Button>
+
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page >= Math.ceil(total / limit)}
+                          onClick={() => goToPage(page + 1)}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 }

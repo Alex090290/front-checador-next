@@ -37,6 +37,7 @@ export async function fetchOverTimeQueries(args: FetchUsersArgs & { search?: str
     const params = new URLSearchParams();
     params.set("page", String(pageNum));
     params.set("limit", String(limitNum));
+    
       if (args.search?.trim()) {
       params.set("search", args.search.trim());
     }
@@ -174,6 +175,7 @@ export async function createOverTime({
             Authorization: `Bearer ${apiToken}`,
           },
         }
+        
           
     const response:any = await axios.post(`${API_URL}/overtime`,dataSave,headers).then((res)=>{
       return res.data.data;

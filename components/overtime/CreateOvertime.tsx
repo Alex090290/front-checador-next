@@ -12,6 +12,7 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { SubmitHandler, useForm } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
+import toast from "react-hot-toast";
 
 const DEFAULT_VALUES: TInputsOvertime = {
     idEmployee: 0,
@@ -23,10 +24,9 @@ const DEFAULT_VALUES: TInputsOvertime = {
 
 
 export default function CreateOvertimeComponent({
-    overtime = [],
     employees = [],
 }: {
-    overtime: OverTime[];
+    overtime?: OverTime[];
     employees?: Employee[];
 }) {
     const {
@@ -47,33 +47,48 @@ export default function CreateOvertimeComponent({
     const { modalError, modalConfirm } = useModals();
     const router = useRouter();
 
+    console.log("SESION:", session);
+    
 
     //Helpers
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
 
+        console.log("SE MANDA:", data);
+        
         modalConfirm("¿Seguro que quieres guardar el registro?", async () => {
             try {
                 setLoading(true);
                 setMessageLoading("Guardando registro...");
 
-                await createOverTime({ data }).then(async(rescrate:any)=>{                        
+                await createOverTime({ data })
+                    .then(async (rescrate: any) => {
+                        if (!rescrate.success || !rescrate.data?.id) {
+                            modalError(rescrate.message || "No se pudo crear el registro");
+                            return;
+                        }
+
                         await sendSignatureOverTime({
-                            id: Number(rescrate?.data?.id), 
-                            signature: String(data.signature) 
-                        })
-                        router.push("/app/overtime")
-                }).catch((errData)=>{
-                    console.log("errData: ",errData);
-                    modalError(errData.message);
-                router.push("/app/overtime")
-                    
-                })
+                            id: Number(rescrate.data.id),
+                            signature: String(data.signature),
+                        });
+
+                        toast.success(rescrate.message || "Registro creado correctamente");
+
+                        setTimeout(() => {
+                            router.push("/app/overtime");
+                        }, 1200);
+                    })
+                    .catch((errData) => {
+                        console.log("errData:", errData);
+                        modalError(errData.message || "Error al crear el registro");
+                    });
             } finally {
                 setLoading(false);
                 setMessageLoading("");
             }
         });
     };
+
     useEffect(() => {
         if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
 

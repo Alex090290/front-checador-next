@@ -40,6 +40,7 @@ export const authOptions = {
           status: userData.status,
           idEmployee: userData.idEmployee,
           isDoh: userData.isDoh,
+          isLeader: userData.isLeader
         };
       },
     }),
@@ -66,6 +67,7 @@ export const authOptions = {
         token.status = user.status;
         token.idEmployee = user.idEmployee;
         token.isDoh = user.isDoh;
+        token.isLeader = user.isLeader;
       }
       return token;
     },
@@ -80,6 +82,7 @@ export const authOptions = {
         session.user.status = token.status as 1 | 2 | 3;
         session.user.idEmployee = token.idEmployee as number;
         session.user.isDoh = token.isDoh as boolean;
+        session.user.isLeader = token.isLeader as boolean;
       }
       return session;
     },

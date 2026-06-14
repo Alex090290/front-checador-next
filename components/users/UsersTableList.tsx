@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
 import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { Badge, Button, Form } from "react-bootstrap";
+import { Badge, Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
 
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
@@ -22,6 +22,7 @@ import ModalBlur from "../ModalBlur";
 import FormUpdateUser from "@/app/(auth)/app/users/views/UpdateUser";
 import { updateUser } from "@/app/actions/user-actions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
+import GenericSearchInput from "../employee/GenericSearchInput";
 
 const userStatus = {
   1: "activo",
@@ -51,6 +52,8 @@ export default function UserTableClient({
   limit,
   perms = [],
   employees = [],
+  search = "",
+
 }: {
   users: User[];
   total: number;
@@ -58,10 +61,13 @@ export default function UserTableClient({
   limit: number;
   perms?: Permission[];
   employees?: Employee[];
+  search?: string;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
+  const currentSearch = sp.get("search") ?? "";
+
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
@@ -77,20 +83,39 @@ export default function UserTableClient({
   const isClearingSelectionRef = useRef(false);
   const [tableResetKey, setTableResetKey] = useState(0);
 
+
+
   useEffect(() => {
     if (loading) {
       setLoading(false);
       setMessageLoading("");
     }
-  }, [searchParamsString,loading]);
+  }, [searchParamsString, loading]);
 
+  // const goToPage = (nextPage: number) => {
+  //   setLoading(true);
+  //   setMessageLoading("Cargando");
+  //   const params = new URLSearchParams(searchParamsString);
+  //   params.set("id", "null");
+  //   params.set("page", String(nextPage));
+  //   params.set("limit", String(limit));
+  //   router.push(`/app/users?${params.toString()}`);
+  // };
   const goToPage = (nextPage: number) => {
     setLoading(true);
-    setMessageLoading("Cargando");
+    setMessageLoading("Cargando...");
     const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
+    params.set("view_type", "list");
     params.set("page", String(nextPage));
     params.set("limit", String(limit));
+
+    if (currentSearch.trim()) {
+      params.set("search", currentSearch.trim());
+    } else {
+      params.delete("search");
+    }
+
     router.push(`/app/users?${params.toString()}`);
   };
 
@@ -191,6 +216,39 @@ export default function UserTableClient({
     setSelectedIds(ids);
   };
 
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/users/create");
+  };
+
+  const handleSearch = useCallback(
+    (value: string) => {
+      const cleanValue = value.trim();
+
+      if (cleanValue === currentSearch.trim()) return;
+
+      setLoading(true);
+      setMessageLoading("Buscando...");
+
+      const params = new URLSearchParams(searchParamsString);
+      params.set("id", "null");
+      params.set("view_type", "list");
+      params.set("page", "1");
+      params.set("limit", String(limit));
+
+      if (cleanValue) {
+        params.set("search", cleanValue);
+      } else {
+        params.delete("search");
+      }
+
+      clearSelectedIds();
+      router.push(`/app/users?${params.toString()}`);
+    },
+    [currentSearch, searchParamsString, limit, router]
+  );
+
   const columns: TableTemplateColumn<User>[] = [
     {
       key: "name",
@@ -214,21 +272,29 @@ export default function UserTableClient({
       accessor: (u) => userStatus[u.status as keyof typeof userStatus] ?? "",
       filterable: true,
       type: "string",
-      render: (u) => (
-        <div className="text-capitalize text-center">
-          <Badge
-            pill
-            bg={
-              userStatus[u.status as keyof typeof userStatus] === "activo"
-                ? "success"
-                : "warning"
-            }
-            className="bg-brand-primary"
-          >
-            {userStatus[u.status as keyof typeof userStatus]}
-          </Badge>
-        </div>
-      ),
+      render: (u) => {
+        const estado = u.status
+        switch (estado) {
+          case 1:
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                ACTIVO
+              </span>
+            );
+          case 2:
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                SUSPENDIDO
+              </span>
+            );
+          case 3:
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                ELIMINADO
+              </span>
+            );
+        }
+      },
     },
     {
       key: "email",
@@ -252,30 +318,26 @@ export default function UserTableClient({
       type: "number",
       render: (u) => (
         <div onClick={(e) => e.stopPropagation()}>
-          <Form.Select size="sm" className="text-uppercase shadow-none border-0">
+          <Form className="text-uppercase shadow-none border-0">
             <option>{u.permissions.length}</option>
-            {u.permissions.map((p) => (
+            {/* {u.permissions.map((p) => (
               <option key={`${p.id}-${p.text}`}>
                 {p.text.replaceAll("_", " ").replaceAll("-", " ")}
               </option>
-            ))}
-          </Form.Select>
+            ))} */}
+          </Form>
         </div>
       ),
     },
   ];
-  const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading('Cargando...');
-    router.push("/app/users/create");
-  };
+
 
   return (
-    <div className="d-flex flex-column h-100 overflow-hidden">
+    <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
-  
+
       <ConditionalRender cond={showUpdateUserModal && !!selectedUser}>
         <ModalBlur onClose={handleCloseUserFormModal}>
           <FormUpdateUser
@@ -288,68 +350,132 @@ export default function UserTableClient({
           />
         </ModalBlur>
       </ConditionalRender>
-  
+
       <ChangePasswordModal
         show={showPasswordModal}
         userId={passwordModalUserId}
         onHide={handleClosePasswordModal}
       />
-  
-      <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
         <Button
-          size="sm"
           variant="primary"
-          className="fw-semibold d-inline-flex align-items-center gap-2"
+          className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
+          disabled={loading}
         >
           <i className="bi bi-plus-lg" />
-          Crear Usuario
+          Crear usuario
         </Button>
-      </div>
-  
-      <div className="flex-grow-1 overflow-hidden">
-        <ListView>
-          <ListView.Header
-            title={`Usuarios (${total})`}
-            actions={[
-              {
-                action: openModifyModal,
-                string: (
-                  <>
-                    <i className="bi bi-pencil me-1"></i>
-                    <span>Actualizar usuario</span>
-                  </>
-                ),
-              },
-              {
-                action: openChangePasswordModal,
-                string: (
-                  <>
-                    <i className="bi bi-key-fill me-1"></i>
-                    <span>Actualizar contraseña</span>
-                  </>
-                ),
-              },
-            ]}
-          />
-  
-          <ListView.Body>
-            <TableTemplateServer
-              ref={tableRef}
-              key={tableResetKey}
-              columns={columns}
-              data={users}
-              total={total}
-              page={page}
-              limit={limit}
-              onPageChange={(p) => goToPage(p)}
-              getRowId={(row) => row.id}
-              viewForm="/app/users?view_type=form"
-              onSelectionChange={handleSelectionChange}
-            />
-          </ListView.Body>
-        </ListView>
-      </div>
-    </div>
+
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <div>
+            <h1 className="mb-0">Usuarios</h1>
+
+            <span className="text-muted">
+              {total} usuario{total !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </div>
+
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                <div className="mb-4">
+                  <Col xs={12} md={6} lg={4}>
+                    <InputGroup>
+                      <InputGroup.Text
+                        className="bg-gray"
+                        style={{ color: "#6c757d" }}
+                      >
+                        <i className="bi bi-search" />
+                      </InputGroup.Text>
+
+                      <GenericSearchInput
+                        initialValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Buscar por nombre, apellido o correo..."
+                      />
+                    </InputGroup>
+                  </Col>
+                </div>
+
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {columns.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(users ?? []).map((row) => (
+                            <tr key={row.id}>
+                              {columns.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/users?view_type=form&id=${row.id}`}
+                                  className="btn btn-sm btn-outline-info ms-3"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <small className="text-muted">
+                        Página {page} de {Math.ceil(total / limit)}
+                      </small>
+
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => goToPage(page - 1)}
+                        >
+                          Anterior
+                        </Button>
+
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page >= Math.ceil(total / limit)}
+                          onClick={() => goToPage(page + 1)}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 }

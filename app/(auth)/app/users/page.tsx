@@ -8,6 +8,7 @@ type SearchParams = {
   id?: string;
   page?: string;
   limit?: string;
+  search?: string;
 };
 
 async function PageUsers({
@@ -20,7 +21,9 @@ async function PageUsers({
   const id = params?.id ?? "null";
   const page = params?.page ?? "1";
   const limit = params?.limit ?? "20";
-  
+  const search = params?.search ?? "";
+
+
 
   return (
     <Suspense fallback={<Loading message="Cargando datos..." />}>

@@ -4,32 +4,38 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { Branch } from "@/lib/definitions";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Button } from "react-bootstrap";
+import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import TableTemplateServer from "../templates/TablePage";
+import GenericSearchInput from "../employee/GenericSearchInput";
 
 export default function BranchesTableClient({
   branches,
   total,
   page,
   limit,
+  search
 }: {
   branches: Branch[];
   total: number;
   page: number;
   limit: number;
+  search?: string;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
-  const searchParamsString = sp.toString();
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const isClearingSelectionRef = useRef(false);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const tableResetKey = 0;
+
+  const searchParamsString = sp.toString();
+  const currentSearch = sp.get("search") ?? "";
+  const [tableResetKey, setTableResetKey] = useState(0);
+
 
   useEffect(() => {
     if (loading) {
@@ -37,6 +43,18 @@ export default function BranchesTableClient({
       setMessageLoading("");
     }
   }, [searchParamsString, loading]);
+  
+  const clearSelectedIds = useCallback(() => {
+    isClearingSelectionRef.current = true;
+
+    tableRef.current?.clearSelection();
+    setSelectedIds([]);
+    setTableResetKey((k) => k + 1);
+
+    setTimeout(() => {
+      isClearingSelectionRef.current = false;
+    }, 0);
+  }, []);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
@@ -47,6 +65,31 @@ export default function BranchesTableClient({
     params.set("limit", String(limit));
     router.push(`/app/branches?${params.toString()}`);
   };
+
+  const handleSearch = useCallback(
+    (value: string) => {
+      if (value === currentSearch) return;
+
+      setLoading(true);
+      setMessageLoading("Buscando...");
+
+      const params = new URLSearchParams(searchParamsString);
+      params.set("id", "null");
+      params.set("view_type", "list");
+      params.set("page", "1");
+      params.set("limit", String(limit));
+
+      if (value) {
+        params.set("search", value);
+      } else {
+        params.delete("search");
+      }
+
+      clearSelectedIds();
+      router.push(`/app/employee?${params.toString()}`);
+    },
+    [currentSearch, searchParamsString, limit, router, clearSelectedIds]
+  );
 
   const columns: TableTemplateColumn<Branch>[] = [
     {
@@ -124,39 +167,126 @@ export default function BranchesTableClient({
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-      <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
         <Button
-          size="sm"
           variant="primary"
-          className="fw-semibold d-inline-flex align-items-center gap-2"
+          className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
+          disabled={loading}
         >
           <i className="bi bi-plus-lg" />
-          Crear Sucursal
+          Crear sucursal
         </Button>
-      </div>
 
-      <div className="flex-grow-1 overflow-hidden">
-        <ListView>
-          <ListView.Header title={`Sucursales (${total})`} />
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <div>
+            <h1 className="mb-0">Sucursales</h1>
 
-          <ListView.Body>
-            <TableTemplateServer
-              ref={tableRef}
-              key={tableResetKey}
-              columns={columns}
-              data={branches}
-              total={total}
-              page={page}
-              limit={limit}
-              onPageChange={(p) => goToPage(p)}
-              getRowId={(row) => Number(row.id)}
-              viewForm="/app/branches?view_type=form"
-              onSelectionChange={handleSelectionChange}
-            />
-          </ListView.Body>
-        </ListView>
-      </div>
+            <span className="text-muted">
+              {total} sucursal{total !== 1 ? "es" : ""}
+            </span>
+          </div>
+        </div>
+
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                {/* <div className="mb-4">
+                  <Col xs={12} md={6} lg={4}>
+                    <InputGroup>
+                      <InputGroup.Text
+                        className="bg-gray"
+                        style={{ color: "#6c757d" }}
+                      >
+                        <i className="bi bi-search" />
+                      </InputGroup.Text>
+
+                      <GenericSearchInput
+                        initialValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Buscar sucursal..."
+                      />
+                    </InputGroup>
+                  </Col>
+                </div> */}
+
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {columns.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(branches ?? []).map((row) => (
+                            <tr key={row.id}>
+                              {columns.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/branches?view_type=form&id=${row.id}`}
+                                  className="btn btn-sm btn-outline-info ms-3"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <small className="text-muted">
+                        Página {page} de {Math.ceil(total / limit)}
+                      </small>
+
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => goToPage(page - 1)}
+                        >
+                          Anterior
+                        </Button>
+
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page >= Math.ceil(total / limit)}
+                          onClick={() => goToPage(page + 1)}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 }

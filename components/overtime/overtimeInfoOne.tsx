@@ -1,10 +1,10 @@
 "use client"
 
-import { Employee } from "@/lib/definitions";
+import { Department, Employee } from "@/lib/definitions";
 import { OverTime } from "@/lib/overTime/interface";
 import { EmployeeLite } from "../configSystem/formUpdate";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import OvertimeOneError from "./overtimeMessageError";
 import ConditionalRender from "../ConditionalRender";
@@ -18,6 +18,7 @@ import moment from "moment";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewOvertime from "./signaturesOvertime";
 import { IFiltercUrl } from "@/lib/constancy/interface";
+import DepartmentInfoOnePage from "@/app/(auth)/app/departments/views/DepartmentInfoOne";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -84,10 +85,10 @@ function InfoItem({
 //En esta funcion colocaremos las sesiones para identificar quien firma 
 export function OvertimeOne({
     overtime,
-    employees = [],
+    departments = []
 }: {
     overtime: OverTime | null;
-    employees?: EmployeeLite[];
+    departments: Department[];
 }) {
 
     // Aqui los const 
@@ -100,24 +101,44 @@ export function OvertimeOne({
     const { modalError, modalConfirm } = useModals();
     const [involvedShow, setInvolvedShow] = useState(false);
     const router = useRouter();
+    const [newArray, setNewArray] = useState<any[]>([]);
+
+
+
+    useEffect(() => {
+        if (!overtime) return;
+
+        const signatures = Array.isArray(overtime.signatures)
+            ? overtime.signatures
+            : [];
+
+        const employeeId = Number(overtime.idEmployee ?? overtime.employee?.id);
+
+        const isLeader = departments.some(
+            (dep) => Number(dep.idLeader) === employeeId
+        );
+
+        const tempArray: any[] = [];
+
+        if (!isLeader) {
+            for (const el of signatures) {
+                if (Number(overtime.employee?.id) === Number(el.idSignatory)) {
+                    tempArray.push({ ...el, label: "Empleado" });
+                } else if (Number(overtime.leader?.id) === Number(el.idSignatory)) {
+                    tempArray.push({ ...el, label: "Jefe Inmediato" });
+                } else if (Number(overtime.personDoh?.id) === Number(el.idSignatory)) {
+                    tempArray.push({ ...el, label: "Director DOH" });
+                }
+            }
+        }
+
+        setNewArray(tempArray);
+    }, [overtime, departments]);
+
+
 
     const overallStatus = overtime?.status ?? "PENDING";
     const createdAt = safeDate(overtime?.createdAt ?? "dd/MM/yyyy HH:mm");
-
-    const signatures = Array.isArray(overtime?.signatures)
-        ? overtime!.signatures
-        : [];
-
-
-    const currentUser = overtime?.signatures?.filter((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee))[0];
-
-    useEffect(() => {
-        if (currentUser && !currentUser.url) {
-            setCurrentUser(true);
-        } else {
-            setCurrentUser(false);
-        }
-    }, [currentUser]);
 
 
     // ============ Aqui los helpers ===============
@@ -204,6 +225,8 @@ export function OvertimeOne({
             <OvertimeOneError />
         )
     }
+
+
 
     return (
         <>
@@ -386,42 +409,23 @@ export function OvertimeOne({
                         </div>
 
                         {/* Firmas */}
-                        {signatures.length > 0 && (
-                            <>
-                                <hr className="my-4" />
+                        <FormBook dKey="newArray">
+                            <FormPage title="" eventKey="newArray">
+                                <Row className="g-3">
+                                    {newArray.map((sign: any) => (
+                                        <SignaturesViewOvertime
+                                            id={Number(overtime?.id)}
+                                            idEmployee={String(sign.idSignatory)}
+                                            name={sign.name}
+                                            url={sign.url}
+                                            label={sign.label}
 
-                                <div>
-                                    <h5 className="fw-bold mb-1">
-                                        Firmas
-                                    </h5>
-                                    <p className="text-muted mb-3">
-                                        Personas involucradas en la aprobación de la solicitud.
-                                    </p>
+                                        />
+                                    ))}
+                                </Row>
+                            </FormPage>
+                        </FormBook>
 
-                                    {signatures.length > 0 ? (
-                                        <FormBook dKey="signatures">
-                                            <FormPage title="" eventKey="signatures">
-                                                <Row className="g-3">
-                                                    {signatures.map((sign) => (
-                                                        <SignaturesViewOvertime
-                                                            key={`${sign.id}-${sign.url}`}
-                                                            id={Number(overtime.id)}
-                                                            idEmployee={String(sign.idSignatory)}
-                                                            name={sign.name}
-                                                            url={sign.url}
-                                                        />
-                                                    ))}
-                                                </Row>
-                                            </FormPage>
-                                        </FormBook>
-                                    ) : (
-                                        <div className="alert alert-secondary mb-0">
-                                            Sin firmantes registrados.
-                                        </div>
-                                    )}
-                                </div>
-                            </>
-                        )}
                     </Card.Body>
                 </Card>
             </Container>

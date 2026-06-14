@@ -159,7 +159,7 @@ export async function getUserData({
   }
 }
 
-export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
+export async function fetchUsersPages(args: FetchUsersArgs & { search?: string } = {}): Promise<{
   data: User[];
   total: number;
   page: number;
@@ -175,6 +175,10 @@ export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
     const params = new URLSearchParams();
     params.set("page", String(pageNum));
     params.set("limit", String(limitNum));
+
+    if (args.search?.trim()) {
+      params.set("search", args.search.trim());
+    }
     
     const response = await axios.get(`${apiUrl}/allUsers?${params.toString()}`, {
         headers: {

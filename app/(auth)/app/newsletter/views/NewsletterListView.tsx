@@ -9,6 +9,7 @@ import { useModals } from "@/context/ModalContext";
 import { Newsletter } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useState } from "react";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import toast from "react-hot-toast";
 
 function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
@@ -65,8 +66,7 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
       return modalError("Selecciona un registro para continuar");
 
     modalConfirm(
-      `Se eliminarán ${
-        selectedIds.length ?? 0
+      `Se eliminarán ${selectedIds.length ?? 0
       } registros. Confirma la acción para continuar`,
       async () => {
         const toastId = toast.loading("Eliminando registros");
@@ -80,32 +80,114 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
   };
 
   return (
-    <ListView>
-      <ListView.Header
-        title={`Anuncios (${newsletters.length ?? 0})`}
-        formView="/app/newsletter?view_type=form&id=null"
-        actions={[
-          {
-            action: actionDeleteRecord,
-            string: (
-              <>
-                <i className="bi bi-trash me-2"></i>
-                <span>Eliminar</span>
-              </>
-            ),
-          },
-        ]}
-      ></ListView.Header>
-      <ListView.Body>
-        <TableTemplate
-          columns={colums}
-          data={newsletters}
-          getRowId={(row) => row.id}
-          viewForm="/app/newsletter?view_type=form"
-          onSelectionChange={setSelectedIds}
-        />
-      </ListView.Body>
-    </ListView>
+    <>
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
+        <div className="d-flex gap-2">
+          <Button
+            variant="primary"
+            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+            href="/app/newsletter?view_type=form&id=null"
+          >
+            <i className="bi bi-plus-lg" />
+            Crear anuncio
+          </Button>
+
+          <Button
+            variant="danger"
+            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+            onClick={actionDeleteRecord}
+            disabled={selectedIds.length === 0}
+          >
+            <i className="bi bi-trash" />
+            Eliminar
+          </Button>
+        </div>
+
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <div>
+            <h1 className="mb-0">Anuncios</h1>
+
+            <span className="text-muted">
+              {newsletters.length} anuncio
+              {newsletters.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </div>
+
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                {/* <div className="mb-4">
+                  <Col xs={12} md={6} lg={4}>
+                    <InputGroup>
+                      <InputGroup.Text
+                        className="bg-gray"
+                        style={{ color: "#6c757d" }}
+                      >
+                        <i className="bi bi-search" />
+                      </InputGroup.Text>
+
+                      <GenericSearchInput
+                        initialValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Buscar anuncio..."
+                      />
+                    </InputGroup>
+                  </Col>
+                </div> */}
+
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {colums.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(newsletters ?? []).map((row) => (
+                            <tr key={row.id}>
+                              {colums.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/newsletter?view_type=form&id=${row.id}`}
+                                  className="btn btn-sm btn-outline-info"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 }
 

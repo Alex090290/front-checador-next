@@ -129,8 +129,8 @@ export default function OverTimeTableClient({
         (value: string) => {
             if (value === currentSearch) return;
 
-            // setLoading(true);
-            // setMessageLoading("Buscando...");
+            setLoading(true);
+            setMessageLoading("Buscando...");
 
             const params = new URLSearchParams(searchParamsString);
             params.set("id", "null");
@@ -140,6 +140,9 @@ export default function OverTimeTableClient({
 
             if (value) {
                 params.set("search", value);
+
+                console.log("Busca:", search);
+                
             } else {
                 params.delete("search");
             }

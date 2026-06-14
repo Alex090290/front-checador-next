@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button } from "react-bootstrap";
+import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
 import moment from "moment-timezone";
 
 import ConditionalRender from "@/components/ConditionalRender";
@@ -14,11 +14,11 @@ import TableTemplateServer, {
 import { IInability } from "@/lib/definitions";
 
 const statusVariantMap: Record<string, string> = {
-  APROBADA: "success",
-  APROBADO: "success",
-  PENDIENTE: "warning",
-  RECHAZADA: "danger",
-  RECHAZADO: "danger",
+  APROBADA: "badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle",
+  // APROBADO: "success",
+  PENDIENTE: "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle",
+  RECHAZADA: "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle",
+  RECHAZADO: "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle",
 };
 
 export default function TableInabilityComponent({
@@ -42,7 +42,7 @@ export default function TableInabilityComponent({
   const isClearingSelectionRef = useRef(false);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
   const tableResetKey = 0;
-  
+
   useEffect(() => {
     if (loading) {
       setLoading(false);
@@ -116,7 +116,7 @@ export default function TableInabilityComponent({
       type: "string",
       render: (r) => {
         const status = String(r.status ?? "").toUpperCase();
-        const variant = statusVariantMap[status] ?? "secondary";
+        const variant = statusVariantMap[status] ?? "info";
 
         return (
           <div className="text-center">
@@ -155,44 +155,131 @@ export default function TableInabilityComponent({
   ];
 
   return (
-    <div className="d-flex flex-column h-100 overflow-hidden">
+    <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-      <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
         <Button
-          size="sm"
           variant="primary"
-          className="fw-semibold d-inline-flex align-items-center gap-2"
+          className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
+          disabled={loading}
         >
           <i className="bi bi-plus-lg" />
-          Crear Incapacidad
+          Crear incapacidad
         </Button>
-      </div>
 
-      <div className="flex-grow-1 overflow-hidden">
-        <ListView>
-          <ListView.Header title={`Incapacidades (${total})`} />
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <div>
+            <h1 className="mb-0">Incapacidades</h1>
 
-          <ListView.Body>
-            <TableTemplateServer
-              ref={tableRef}
-              key={tableResetKey}
-              columns={columns}
-              data={inhabilities || []}
-              total={total}
-              page={page}
-              limit={limit}
-              onPageChange={(p) => goToPage(p)}
-              getRowId={(row) => Number(row.id)}
-              viewForm="/app/inability"
-              onSelectionChange={handleSelectionChange}
-            />
-          </ListView.Body>
-        </ListView>
-      </div>
-    </div>
+            <span className="text-muted">
+              {total} incapacidad{total !== 1 ? "es" : ""}
+            </span>
+          </div>
+        </div>
+
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                <div className="mb-4">
+                  {/* <Col xs={12} md={6} lg={4}>
+                    <InputGroup>
+                      <InputGroup.Text
+                        className="bg-gray"
+                        style={{ color: "#6c757d" }}
+                      >
+                        <i className="bi bi-search" />
+                      </InputGroup.Text>
+
+                      <GenericSearchInput
+                        initialValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Buscar incapacidad..."
+                      />
+                    </InputGroup>
+                  </Col> */}
+                </div>
+
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {columns.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(inhabilities ?? []).map((row) => (
+                            <tr key={row.id}>
+                              {columns.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/inability?view_type=form&id=${row.id}`}
+                                  className="btn btn-sm btn-outline-info"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <small className="text-muted">
+                        Página {page} de {Math.ceil(total / limit)}
+                      </small>
+
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => goToPage(page - 1)}
+                        >
+                          Anterior
+                        </Button>
+
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page >= Math.ceil(total / limit)}
+                          onClick={() => goToPage(page + 1)}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 }

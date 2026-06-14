@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button } from "react-bootstrap";
+import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import ListView from "../templates/ListView";
@@ -26,7 +26,7 @@ export default function VacationsTableClient({
   page: number;
   limit: number;
 }) {
-  
+
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
@@ -35,7 +35,7 @@ export default function VacationsTableClient({
   const [messageLoading, setMessageLoading] = useState('');
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
-  
+
   useEffect(() => {
     if (loading) {
       setLoading(false);
@@ -55,76 +55,86 @@ export default function VacationsTableClient({
     router.push(`/app/vacationList?${params.toString()}`);
   };
 
-  const columns: TableTemplateColumn<Vacations>[] = useMemo( () => [
-      {
-        key: "employee",
-        label: "Empleado",
-        accessor: (row) =>
-          `${row.employee.lastName} ${row.employee.name}`.toUpperCase(),
-        filterable: true,
-        type: "string",
-      },
-      {
-        key: "holidayName",
-        label: "Día festivo",
-        accessor: (row) => row.holidayName,
-        filterable: true,
-        type: "string",
-        render: (row) => (
-          <div className="text-center fs-6 fw-semibold">{row.holidayName}</div>
-        ),
-      },
-      {
-        key: "period",
-        label: "Periodo Vacacional",
-        accessor: (row) => row.period.periodDescription,
-        filterable: true,
-        type: "string",
-        render: (row) => (
-          <div className="text-center fs-6 fw-semibold">
-            {row.period.periodDescription}
+  const columns: TableTemplateColumn<Vacations>[] = useMemo(() => [
+    {
+      key: "employee",
+      label: "Empleado",
+      accessor: (row) =>
+        `${row.employee.lastName} ${row.employee.name}`.toUpperCase(),
+      filterable: true,
+      type: "string",
+    },
+    {
+      key: "holidayName",
+      label: "Día festivo",
+      accessor: (row) => row.holidayName,
+      filterable: true,
+      type: "string",
+      render: (row) => (
+        <div className="text-center fs-6 fw-semibold">{row.holidayName}</div>
+      ),
+    },
+    {
+      key: "period",
+      label: "Periodo Vacacional",
+      accessor: (row) => row.period.periodDescription,
+      filterable: true,
+      type: "string",
+      render: (row) => (
+        <div className="text-center fs-6 fw-semibold">
+          {row.period.periodDescription}
+        </div>
+      ),
+    },
+    {
+      key: "dateInit",
+      label: "Fecha Inicio",
+      accessor: (row) => row.dateInit,
+      filterable: true,
+      type: "string",
+      render: (row) => (
+        <div className="text-center fs-6 fw-semibold">
+          {formatDate(row.dateInit, "dd/MM/yyyy")}
+        </div>
+      ),
+    },
+    {
+      key: "dateEnd",
+      label: "Fecha Fin",
+      accessor: (row) => row.dateEnd,
+      filterable: true,
+      type: "string",
+      render: (row) => (
+        <div className="text-center fs-6 fw-semibold">
+          {formatDate(row.dateEnd, "dd/MM/yyyy")}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: "Estado",
+      accessor: (row) => vacationStatus[row.status],
+      type: "string",
+      render: (row) => {
+        const status = vacationStatus[row.status];
+        return (
+          <div className="text-center">
+            <Badge
+              bg={
+                status === "APROBADO"
+                  ? "badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle"
+                  : status === "PENDIENTE"
+                    ? "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle"
+                    : "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle"
+              }
+            >
+              {vacationStatus[row.status]}
+            </Badge>
           </div>
-        ),
+        );
       },
-      {
-        key: "dateInit",
-        label: "Fecha Inicio",
-        accessor: (row) => row.dateInit,
-        filterable: true,
-        type: "string",
-        render: (row) => (
-          <div className="text-center fs-6 fw-semibold">
-            {formatDate(row.dateInit, "dd/MM/yyyy")}
-          </div>
-        ),
-      },
-      {
-        key: "dateEnd",
-        label: "Fecha Fin",
-        accessor: (row) => row.dateEnd,
-        filterable: true,
-        type: "string",
-        render: (row) => (
-          <div className="text-center fs-6 fw-semibold">
-            {formatDate(row.dateEnd, "dd/MM/yyyy")}
-          </div>
-        ),
-      },
-      {
-        key: "status",
-        label: "Estado",
-        accessor: (row) => vacationStatus[row.status],
-        type: "string",
-        render: (row) => {
-          let bg: "success" | "warning" | "danger" | "secondary" = "secondary";
-          const status = vacationStatus[row.status];
-          if (status === "Aprobado") bg = "success";
-          if (status === "Pendiente") bg = "warning";
-          if (status === "Rechazado") bg = "danger";
-          return <Badge bg={bg}>{vacationStatus[row.status]}</Badge>;
-        },
-      },
-    ],
+    },
+  ],
     []
   );
 
@@ -135,38 +145,132 @@ export default function VacationsTableClient({
   };
 
 
-  return <>
-    <ConditionalRender cond={loading}>
-      <Loading message={messageLoading} />
-    </ConditionalRender>    
+  return (
+    <>
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
 
-    <ListView>
-
-    <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
         <Button
-          size="sm"
           variant="primary"
-          className="fw-semibold d-inline-flex align-items-center gap-2"
+          className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
+          disabled={loading}
         >
           <i className="bi bi-plus-lg" />
-          Crear Registro
+          Crear registro
         </Button>
-      </div>
 
-      <ListView.Body>
-        <TableTemplateServer
-          ref={tableRef}
-          columns={columns}
-          data={vacations}
-          total={total}
-          page={page}
-          limit={limit}
-          onPageChange={(p) => goToPage(p)}
-          getRowId={(row) => row.id}
-          viewForm="/app/vacationList?view_type=form"
-        />
-      </ListView.Body>
-    </ListView>
-  </>
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <div>
+            <h1 className="mb-0">Vacaciones</h1>
+
+            <span className="text-muted">
+              {total} registro{total !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </div>
+
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                <div className="mb-4">
+                  {/* <Col xs={12} md={6} lg={4}>
+                    <InputGroup>
+                      <InputGroup.Text
+                        className="bg-gray"
+                        style={{ color: "#6c757d" }}
+                      >
+                        <i className="bi bi-search" />
+                      </InputGroup.Text>
+
+                      <GenericSearchInput
+                        initialValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Buscar vacaciones..."
+                      />
+                    </InputGroup>
+                  </Col> */}
+                </div>
+
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {columns.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(vacations ?? []).map((row) => (
+                            <tr key={row.id}>
+                              {columns.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/vacationList?view_type=form&id=${row.id}`}
+                                  className="btn btn-sm btn-outline-info"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <small className="text-muted">
+                        Página {page} de {Math.ceil(total / limit)}
+                      </small>
+
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => goToPage(page - 1)}
+                        >
+                          Anterior
+                        </Button>
+
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page >= Math.ceil(total / limit)}
+                          onClick={() => goToPage(page + 1)}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
+  );
 }

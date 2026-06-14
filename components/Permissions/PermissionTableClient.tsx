@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button } from "react-bootstrap";
+import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import ListView from "../templates/ListView";
@@ -33,7 +33,7 @@ export default function PermissionsTableClient({
   page: number;
   limit: number;
 }) {
-  
+
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
@@ -42,7 +42,7 @@ export default function PermissionsTableClient({
   const [messageLoading, setMessageLoading] = useState('');
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
-  
+
   useEffect(() => {
     if (loading) {
       setLoading(false);
@@ -132,10 +132,10 @@ export default function PermissionsTableClient({
             <Badge
               bg={
                 status === "APROBADO"
-                  ? "success"
-                  : status === "PENDIENTE" 
-                  ? "warning"
-                  : "danger"
+                  ? "badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle"
+                  : status === "PENDIENTE"
+                    ? "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle"
+                    : "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle"
               }
             >
               {leaderApproval[row.status]}
@@ -152,40 +152,132 @@ export default function PermissionsTableClient({
     router.push("/app/permissions/create");
   };
 
-  return <>
-    <div className="d-flex flex-column h-100 overflow-hidden">
+  return (
+    <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-
-      <div className="flex-shrink-0 d-flex justify-content-between mb-2 mt-2">
-          <Button
-          size="sm"
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
+        <Button
           variant="primary"
-          className="fw-semibold d-inline-flex align-items-center gap-2"
+          className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
-          >
+          disabled={loading}
+        >
           <i className="bi bi-plus-lg" />
-          Registrar Permiso
-          </Button>
-      </div>
+          Registrar permiso
+        </Button>
 
-      <ListView>
-        <ListView.Body>
-          <TableTemplateServer
-            ref={tableRef}
-            columns={columns}
-            data={permissions}
-            total={total}
-            page={page}
-            limit={limit}
-            onPageChange={(p) => goToPage(p)}
-            getRowId={(row) => row.id}
-            viewForm="/app/permissions"
-          />
-        </ListView.Body>
-      </ListView>
-    </div>
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <div>
+            <h1 className="mb-0">Permisos</h1>
+
+            <span className="text-muted">
+              {total} permiso{total !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </div>
+
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                {/* <div className="mb-4">
+                  <Col xs={12} md={6} lg={4}>
+                    <InputGroup>
+                      <InputGroup.Text
+                        className="bg-gray"
+                        style={{ color: "#6c757d" }}
+                      >
+                        <i className="bi bi-search" />
+                      </InputGroup.Text>
+
+                      <GenericSearchInput
+                        initialValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Buscar permiso..."
+                      />
+                    </InputGroup>
+                  </Col>
+                </div> */}
+
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {columns.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(permissions ?? []).map((row) => (
+                            <tr key={row.id}>
+                              {columns.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/permissions?view_type=form&id=${row.id}`}
+                                  className="btn btn-sm btn-outline-info ms-3"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <small className="text-muted">
+                        Página {page} de {Math.ceil(total / limit)}
+                      </small>
+
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => goToPage(page - 1)}
+                        >
+                          Anterior
+                        </Button>
+
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page >= Math.ceil(total / limit)}
+                          onClick={() => goToPage(page + 1)}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </>
+  );
 }

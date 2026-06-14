@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Employee } from "@/lib/definitions";
 import ListView from "../templates/ListView";
 import TableTemplateServer, { TableTemplateColumn } from "../templates/TablePage";
-import { Badge, Button, Col, Row } from "react-bootstrap";
+import { Badge, Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "./GenericSearchInput";
@@ -136,20 +136,23 @@ export default function EmployeeTableClient({
       accessor: (u) => employeeStatus[u.status as keyof typeof employeeStatus] ?? "",
       filterable: false,
       type: "string",
-      render: (u) => (
-        <div className="text-capitalize text-center">
-          <Badge
-            pill
-            bg={
-              employeeStatus[u.status as keyof typeof employeeStatus] === "activo"
-                ? "success"
-                : "danger"
-            }
-          >
-            {employeeStatus[u.status as keyof typeof employeeStatus]}
-          </Badge>
-        </div>
-      ),
+      render: (u) => {
+        const estado = u.status
+        switch (estado) {
+          case 1:
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                ACTIVO
+              </span>
+            );
+          case 2:
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                BAJA
+              </span>
+            );
+        }
+      }
     },
     {
       key: "phonePersonal.internationalNumber",
@@ -208,51 +211,126 @@ export default function EmployeeTableClient({
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-      <div className="d-flex flex-column h-100 overflow-hidden">
-        <div className="flex-shrink-0 mb-2 mt-2">
-          <Row className="g-2 align-items-center">
-            <Col xs={12} md="auto">
-              <Button
-                variant="primary"
-                className="fw-semibold d-inline-flex align-items-center gap-2"
-                onClick={handleCreate}
-                disabled={loading}
-              >
-                <i className="bi bi-plus-lg" />
-                Crear Empleado
-              </Button>
-            </Col>
+      <Container className="py-3" style={{ maxWidth: "1600px" }}>
+        <Button
+          variant="primary"
+          className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+          onClick={handleCreate}
+          disabled={loading}
+        >
+          <i className="bi bi-plus-lg" />
+          Crear empleado
+        </Button>
 
-            <Col xs={12} md={5} lg={4}>
-              <GenericSearchInput
-                initialValue={search}
-                onSearch={handleSearch}
-                placeholder="Buscar por nombre, apellido, departamento..."
-              />
-            </Col>
-          </Row>
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <div>
+            <h1 className="mb-0">Empleados</h1>
+
+            <span className="text-muted">
+              {total} empleado{total !== 1 ? "s" : ""}
+            </span>
+          </div>
         </div>
 
-        <div className="flex-grow-1 overflow-hidden">
-          <ListView>
-            <ListView.Body>
-              <TableTemplateServer
-                ref={tableRef}
-                key={tableResetKey}
-                columns={columns}
-                data={employees || []}
-                total={total}
-                page={page}
-                limit={limit}
-                onPageChange={(p) => goToPage(p)}
-                getRowId={(row) => Number(row.id)}
-                viewForm="/app/employee"
-                onSelectionChange={handleSelectionChange}
-              />
-            </ListView.Body>
-          </ListView>
-        </div>
-      </div>
+        <Row className="justify-content-center">
+          <Col xs={12} xl={12} xxl={12}>
+            <Card className="rounded-4 shadow-sm border">
+              <Card.Body className="p-4 p-md-5">
+                <div className="mb-4">
+                  <Col xs={12} md={6} lg={4}>
+                    <InputGroup>
+                      <InputGroup.Text
+                        className="bg-gray"
+                        style={{ color: "#6c757d" }}
+                      >
+                        <i className="bi bi-search" />
+                      </InputGroup.Text>
+
+                      <GenericSearchInput
+                        initialValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Buscar por nombre, apellido, departamento..."
+                      />
+                    </InputGroup>
+                  </Col>
+                </div>
+
+                <ListView>
+                  <ListView.Body>
+                    <div className="table-responsive rounded-3 border overflow-hidden">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead className="table-dark border-secondary">
+                          <tr>
+                            {columns.map((column) => (
+                              <th
+                                key={String(column.key)}
+                                className="fw-bold text-left"
+                              >
+                                {column.label}
+                              </th>
+                            ))}
+
+                            <th className="fw-bold">Detalles</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {(employees ?? []).map((row) => (
+                            <tr key={row.id}>
+                              {columns.map((column) => (
+                                <td key={String(column.key)}>
+                                  {column.render
+                                    ? column.render(row)
+                                    : column.accessor(row)}
+                                </td>
+                              ))}
+
+                              <td>
+                                <a
+                                  href={`/app/employee?view_type=form&id=${row.id}`}
+                                  className="btn btn-sm btn-outline-info ms-3"
+                                >
+                                  Ver
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                      <small className="text-muted">
+                        Página {page} de {Math.ceil(total / limit)}
+                      </small>
+
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => goToPage(page - 1)}
+                        >
+                          Anterior
+                        </Button>
+
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          disabled={page >= Math.ceil(total / limit)}
+                          onClick={() => goToPage(page + 1)}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </ListView.Body>
+                </ListView>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 }

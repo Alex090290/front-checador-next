@@ -26,6 +26,7 @@ export interface User {
   createdAt: string;
   idEmployee: number | null;
   isDoh: boolean;
+  isLeader?: boolean;
 }
 
 export type DisplayType = {
@@ -183,8 +184,8 @@ export interface Employee {
     typeOfDischarge: string;
   }[];
   dailyWage: number;
-  isLeader: number;
-  isDoh: number;
+  isDoh: boolean;
+  isLeader?: boolean;
   foodBaucher?: IFoodBaucher | undefined;
 }
 

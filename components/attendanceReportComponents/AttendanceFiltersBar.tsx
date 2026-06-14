@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Period = {
@@ -75,43 +75,68 @@ export default function AttendanceFiltersBar({
   };
 
   return (
-    <div className="d-flex flex-wrap gap-2 align-items-end">
-      <Form.Group>
-        <Form.Label className="small text-muted m-0">Año</Form.Label>
-        <Form.Select value={year} onChange={(e) => handleYearChange(e.target.value)}>
-          {years.map((y) => (
-            <option key={y} value={String(y)}>
-              {y}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
+    <Row className="g-3 mt-2 ms-2 mb-4 ">
+      <Col xs={12} md={4} lg={3}>
+        <Form.Label className="fw-semibold">Año</Form.Label>
 
-      <Form.Group>
-        <Form.Label className="small text-muted m-0">Periodo</Form.Label>
-        <Form.Select
-          value={periodId}
-          onChange={(e) => setPeriodId(e.target.value)}
-          disabled={!periods || periods.length === 0}
+        <InputGroup>
+          <InputGroup.Text
+            className="bg-gray"
+            style={{ color: "#6c757d" }}
+          >
+            <i className="bi bi-calendar3" />
+          </InputGroup.Text>
+
+          <Form.Select
+            value={year}
+            onChange={(e) => handleYearChange(e.target.value)}
+          >
+            {years.map((y) => (
+              <option key={y} value={String(y)}>
+                {y}
+              </option>
+            ))}
+          </Form.Select>
+        </InputGroup>
+      </Col>
+
+      <Col xs={12} md={5} lg={4}>
+        <Form.Label className="fw-semibold">Periodo</Form.Label>
+
+        <InputGroup>
+          <InputGroup.Text
+            className="bg-gray"
+            style={{ color: "#6c757d" }}
+          >
+            <i className="bi bi-calendar-week" />
+          </InputGroup.Text>
+
+          <Form.Select
+            value={periodId}
+            onChange={(e) => setPeriodId(e.target.value)}
+            disabled={!periods?.length}
+          >
+            <option value="null">Selecciona un periodo</option>
+
+            {periods.map((p) => (
+              <option key={p.id} value={String(p.id)}>
+                {p.description} (#{p.numberPeriod})
+              </option>
+            ))}
+          </Form.Select>
+        </InputGroup>
+      </Col>
+
+      <Col xs={12} md="auto" className="d-flex align-items-end">
+        <Button
+          onClick={handleSearch}
+          disabled={periodId === "null"}
+          className="d-inline-flex align-items-center gap-2 fw-semibold"
         >
-          <option value="null">Selecciona un periodo</option>
-          {periods.map((p) => (
-            <option key={p.id} value={String(p.id)}>
-              {p.description} (#{p.numberPeriod})
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
-
-      <Button
-        type="button"
-        className="fw-semibold d-inline-flex align-items-center gap-2"
-        onClick={handleSearch}
-        disabled={periodId === "null"}
-      >
-        <i className="bi bi-search" />
-        Buscar
-      </Button>
-    </div>
+          <i className="bi bi-search" />
+          Buscar
+        </Button>
+      </Col>
+    </Row>
   );
 }
