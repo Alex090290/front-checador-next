@@ -1,10 +1,10 @@
 "use client"
 
 import { Department, Employee } from "@/lib/definitions";
-import { OverTime } from "@/lib/overTime/interface";
+import { ISignatures, OverTime } from "@/lib/overTime/interface";
 import { EmployeeLite } from "../configSystem/formUpdate";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import OvertimeOneError from "./overtimeMessageError";
 import ConditionalRender from "../ConditionalRender";
@@ -15,9 +15,9 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { formatDate } from "date-fns";
 import moment from "moment";
+import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewOvertime from "./signaturesOvertime";
-import { IFiltercUrl } from "@/lib/constancy/interface";
 import DepartmentInfoOnePage from "@/app/(auth)/app/departments/views/DepartmentInfoOne";
 
 
@@ -59,36 +59,17 @@ function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
     }
 }
 
-function InfoItem({
-    label,
-    value,
-    className = "",
-    uppercase = true,
-}: {
-    label: string;
-    value?: React.ReactNode;
-    className?: string;
-    uppercase?: boolean;
-    employee?: Employee[];
 
-}) {
-    return (
-        <div className={className}>
-            <div className="text-secondary-emphasis fw-semibold mb-1">{label}</div>
-            <div className={uppercase ? "fw-medium text-uppercase" : "fw-medium"}>
-                {value ?? "-"}
-            </div>
-        </div>
-    );
-}
 
 //En esta funcion colocaremos las sesiones para identificar quien firma 
 export function OvertimeOne({
     overtime,
-    departments = []
+    departments = [],
+    connfigSystem
 }: {
     overtime: OverTime | null;
     departments: Department[];
+    connfigSystem: IConfigSystem[]
 }) {
 
     // Aqui los const 
@@ -104,7 +85,6 @@ export function OvertimeOne({
     const [newArray, setNewArray] = useState<any[]>([]);
 
 
-
     useEffect(() => {
         if (!overtime) return;
 
@@ -112,28 +92,68 @@ export function OvertimeOne({
             ? overtime.signatures
             : [];
 
-        const employeeId = Number(overtime.idEmployee ?? overtime.employee?.id);
-
-        const isLeader = departments.some(
-            (dep) => Number(dep.idLeader) === employeeId
+        const isLeaderRequestPerson = departments.some(
+            (dep) => Number(dep.idLeader) === Number(overtime.employee?.id)
         );
 
-        const tempArray: any[] = [];
+        const overTimeConfig = connfigSystem[0].overTime;
 
-        if (!isLeader) {
-            for (const el of signatures) {
-                if (Number(overtime.employee?.id) === Number(el.idSignatory)) {
-                    tempArray.push({ ...el, label: "Empleado" });
-                } else if (Number(overtime.leader?.id) === Number(el.idSignatory)) {
-                    tempArray.push({ ...el, label: "Jefe Inmediato" });
-                } else if (Number(overtime.personDoh?.id) === Number(el.idSignatory)) {
-                    tempArray.push({ ...el, label: "Director DOH" });
-                }
-            }
+        const isDohRequesPerson = overTimeConfig.approvalDoh.idPerson === overtime.employee?.id;
+
+
+        if (isLeaderRequestPerson) {
+            // el documento pertenece a un empleado que es lider
+
+            let newData: any[] = signatures.filter((f: ISignatures) => ["Empleado", "Dirección", "DOH"].includes(f.label));
+            setNewArray(newData);
+
+        } else if (isDohRequesPerson) {
+            // el documento pertenece a un empleado que es DOH  
+            let newData: any[] = signatures.filter((f: ISignatures) => ["Empleado", "Líder", "DOH"].includes(f.label));
+            setNewArray(newData);
+
+        } else {
+
+            // el documento pertenece a un empleado
+            let newData: any[] = signatures.filter((f: ISignatures) => ["Empleado", "Líder", "DOH"].includes(f.label))
+            console.log("Empleado: ", newData);
+
+            setNewArray(newData);
         }
 
-        setNewArray(tempArray);
-    }, [overtime, departments]);
+    }, [overtime]);
+
+    console.log("newArray: ", newArray);
+
+    // const newArray = useMemo(() => {
+    //     if (!overtime) return [];
+
+    //     const signatures = Array.isArray(overtime.signatures)
+    //         ? overtime.signatures
+    //         : [];
+
+    //     const employeeId = Number(overtime.idEmployee ?? overtime.employee?.id);
+
+    //     const isLeader = departments.some(
+    //         (dep) => Number(dep.idLeader) === employeeId
+    //     );
+
+    //     const tempArray: any[] = [];
+
+    //     if (!isLeader) {
+    //         for (const el of signatures) {
+    //             if (Number(overtime.employee?.id) === Number(el.idSignatory)) {
+    //                 tempArray.push({ ...el, label: "Empleado" });
+    //             } else if (Number(overtime.leader?.id) === Number(el.idSignatory)) {
+    //                 tempArray.push({ ...el, label: "Jefe Inmediato" });
+    //             } else if (Number(overtime.personDoh?.id) === Number(el.idSignatory)) {
+    //                 tempArray.push({ ...el, label: "Director DOH" });
+    //             }
+    //         }
+    //     }
+
+    //     return tempArray;
+    // }, [overtime, departments]);
 
 
 
@@ -234,7 +254,7 @@ export function OvertimeOne({
                 <Loading message={messageLoading} />
             </ConditionalRender>
 
-            <Container className="py-3" style={{ maxWidth: "1600px" }}>
+            <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
                     {/* Izquierda */}
@@ -414,6 +434,7 @@ export function OvertimeOne({
                                 <Row className="g-3">
                                     {newArray.map((sign: any) => (
                                         <SignaturesViewOvertime
+                                            key={sign.key}
                                             id={Number(overtime?.id)}
                                             idEmployee={String(sign.idSignatory)}
                                             name={sign.name}
@@ -425,7 +446,6 @@ export function OvertimeOne({
                                 </Row>
                             </FormPage>
                         </FormBook>
-
                     </Card.Body>
                 </Card>
             </Container>

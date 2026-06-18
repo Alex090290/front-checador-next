@@ -5,7 +5,7 @@ import { Entry } from "@/components/fields";
 import { ImageField } from "@/components/fields/ImageField";
 import FormView, { FieldGroup } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
-import { Newsletter } from "@/lib/definitions";
+import { INewsletter } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -27,7 +27,7 @@ function NewsletterFormView({
   newsletter,
 }: {
   id: string;
-  newsletter: Newsletter | null;
+  newsletter: INewsletter | null;
 }) {
   const {
     handleSubmit,
@@ -47,6 +47,8 @@ function NewsletterFormView({
   const originalValuesRef = useRef<TInputs | null>(null);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
+    
+    
     if (id && id === "null") {
       const res = await createNewsletter({ data });
 

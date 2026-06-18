@@ -10,7 +10,7 @@ export interface OverTime {
     informationDate?: informationDate; 
     createdAt?: string;
     incidence?: string;
-    signatures?: signatures[];
+    signatures?: ISignatures[];
 
 
     createForPerson?: {
@@ -76,11 +76,15 @@ type informationDate = {
     hourEnd: string; 
 }
 
-export interface signatures {
+export interface ISignatures {
     id: number;
+    _id: string;
     idSignatory: number;
     name: string;
     url: string;
+    label: string;
     sendNotify: boolean;
+    status: "APPROVED" | "REFUSED" | "PENDING";
+    key: string;
     signature?: string;
 }

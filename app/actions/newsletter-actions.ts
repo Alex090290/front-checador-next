@@ -1,12 +1,12 @@
 "use server";
 
-import { ActionResponse, Newsletter } from "@/lib/definitions";
+import { ActionResponse, INewsletter } from "@/lib/definitions";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { storeToken } from "@/lib/useToken";
 import { revalidatePath } from "next/cache";
 
-export async function fetchNewsletters(): Promise<Newsletter[]> {
+export async function fetchNewsletters(): Promise<INewsletter[]> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
@@ -40,7 +40,7 @@ export async function findNewslettersById({
   id,
 }: {
   id: string | null;
-}): Promise<Newsletter | null> {
+}): Promise<INewsletter | null> {
   try {
     if (!id) throw new Error("ID NOT DEFINED");
 
@@ -63,8 +63,8 @@ export async function findNewslettersById({
         );
       });
 
-    const newsletter: Newsletter = response.data.find(
-      (n: Newsletter) => n.id === Number(id)
+    const newsletter: INewsletter = response.data.find(
+      (n: INewsletter) => n.id === Number(id)
     );
 
     const getImg = await axios
@@ -95,49 +95,52 @@ export async function findNewslettersById({
   }
 }
 
-export async function getActiveNotice(): Promise<Newsletter | null> {
+export async function getActiveNotice(): Promise<INewsletter | null> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
-    const response = await axios
-      .get(`${API_URL}/notice/listActive`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+    let newsletter: any = {};
+    let getImg: string = '';
 
-    const newsletter = response.data;
+    await axios.get(`${API_URL}/notice/listActive`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    }).then(async (res) => {
+      // Este then se resuelve cuendo el endpoint /notice/listActive devuelve respuesta correcta
 
-    const getImg = await axios
-      .get(`${API_URL}/notice/img/${newsletter.id}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-        responseType: "arraybuffer",
-      })
-      .then((res) => {
-        return res.data;
-      });
+        await axios.get(`${API_URL}/notice/img/${res.data.data.id}`, {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+          responseType: "arraybuffer",
+        }).then((resImg) => {
+          // Este then se resuelve cuendo el endpoint notice/img/${id} devuelve respuesta correcta
+          getImg = resImg.data;
+          return resImg.data;
+        })        
 
-    const base64 = Buffer.from(getImg, "binary").toString("base64");
-    const imageBase64Url = `data:image/jpeg;base64,${base64}`;
+      newsletter = res.data.data
+      
+      return res.data;
+      
+    }).catch((err) => {
+      // Este es el catch del endpoint /notice/listActive
+      return null;
+    });
 
-    const newResponse = {
-      ...newsletter,
-      img: imageBase64Url,
-    };
+    let imageBase64Url = '';
 
-    return newResponse || null;
+    if (getImg !== '') {
+      const base64 = Buffer.from(getImg, "binary").toString("base64");
+      imageBase64Url = `data:image/jpeg;base64,${base64}`;
+    }
+        
+    const resData:INewsletter = {
+            ...newsletter,
+            img: imageBase64Url,
+    }
+    return resData; 
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -158,7 +161,7 @@ export async function createNewsletter({
     dateEndPublish: string;
     hourEndPublish: string;
   };
-}): Promise<ActionResponse<Newsletter | null>> {
+}): Promise<ActionResponse<INewsletter | null>> {
   try {
     const { apiToken, apiUrl } = await storeToken();
 

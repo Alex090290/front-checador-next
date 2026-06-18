@@ -246,7 +246,7 @@ export default function UserTableClient({
       clearSelectedIds();
       router.push(`/app/users?${params.toString()}`);
     },
-    [currentSearch, searchParamsString, limit, router]
+    [currentSearch, searchParamsString, limit, router, clearSelectedIds]
   );
 
   const columns: TableTemplateColumn<User>[] = [
@@ -395,7 +395,7 @@ export default function UserTableClient({
                       <GenericSearchInput
                         initialValue={search}
                         onSearch={handleSearch}
-                        placeholder="Buscar por nombre, apellido o correo..."
+                        placeholder="Buscar por nombre o apellido"
                       />
                     </InputGroup>
                   </Col>
@@ -403,7 +403,7 @@ export default function UserTableClient({
 
                 <ListView>
                   <ListView.Body>
-                    <div className="table-responsive rounded-3 border overflow-hidden">
+                    <div className="table-responsive rounded-3 border overflow-auto">
                       <table className="table table-hover align-middle mb-0">
                         <thead className="table-dark border-secondary">
                           <tr>

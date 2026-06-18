@@ -1,3 +1,4 @@
+import { ISignatures } from "../overTime/interface";
 
 export type typeOfPenalty = {
     id: number;
@@ -7,6 +8,7 @@ export type typeOfPenalty = {
 export type FetchUsersArgs = {
     page?: number;
     limit?: number;
+    total?: number;
     //   status?: string;
 };
 
@@ -14,14 +16,6 @@ export interface IFiltercUrl {
     idSignatory: number;
 }
 
-export type signatures = {
-    id: number;
-    idSignatory: number;
-    name: string;
-    url: string;
-    sendNotify: boolean;
-    signature?: string;
-}
 
 export interface IInvolvedsEmployes {
     id: number;
@@ -43,7 +37,7 @@ export interface Constancy {
     sceneOfTheEvents?: string;
     typeOfPenalty?: typeOfPenalty[];
     backgroundIds?: number[];
-    signatures?: signatures[];
+    signatures?: ISignatures[];
 
     employee?: {
         id: number;

@@ -83,10 +83,10 @@ export default function EmployeeTableClient({
     router.push(`/app/employee?${params.toString()}`);
   };
 
-  const handleSelectionChange = (ids: Array<string | number>) => {
-    if (isClearingSelectionRef.current) return;
-    setSelectedIds(ids);
-  };
+  // const handleSelectionChange = (ids: Array<string | number>) => {
+  //   if (isClearingSelectionRef.current) return;
+  //   setSelectedIds(ids);
+  // };
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -249,7 +249,7 @@ export default function EmployeeTableClient({
                       <GenericSearchInput
                         initialValue={search}
                         onSearch={handleSearch}
-                        placeholder="Buscar por nombre, apellido, departamento..."
+                        placeholder="Buscar por nombre o apellido"
                       />
                     </InputGroup>
                   </Col>
@@ -257,7 +257,7 @@ export default function EmployeeTableClient({
 
                 <ListView>
                   <ListView.Body>
-                    <div className="table-responsive rounded-3 border overflow-hidden">
+                    <div className="table-responsive rounded-3 border overflow-auto">
                       <table className="table table-hover align-middle mb-0">
                         <thead className="table-dark border-secondary">
                           <tr>

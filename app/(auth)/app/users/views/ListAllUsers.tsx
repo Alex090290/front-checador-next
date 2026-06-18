@@ -38,6 +38,7 @@ export default async function ListAllUsers({
       limit={limitParse}
       perms={permissions ?? []}
       employees={employees.data ?? []}
+      search={search}
     />
   );
 }

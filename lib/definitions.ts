@@ -1,3 +1,4 @@
+import { ISignatures } from "./overTime/interface";
 import { PhoneNumberFormat } from "./sinitizePhone";
 
 export interface ActionResponse<T> {
@@ -250,7 +251,7 @@ export interface IPermissionRequest {
   type: string;
   forHours: boolean;
   forDays: boolean;
-  signatures: TSignatures[];
+  signatures: ISignatures[];
   informationDate: TInformationDate;
   createdAt?: string;
   updatedAt?: string;
@@ -266,17 +267,6 @@ export interface IPermissionRequest {
   dateApprove?: string;
   dateApproveDoh?: string;
 }
-
-export type TSignatures = {
-  _id: string;
-  id: number;
-  idSignatory: number;
-  url: string;
-  name: string;
-  sendNotify: boolean;
-  dateApproved?: string;
-  status: PermissionRequestStatus;
-};
 
 export type PermissionRequestStatus =
   | "APPROVED"
@@ -295,7 +285,7 @@ export type TInformationDate = {
   hourEnd: string;
 };
 
-export type Newsletter = {
+export interface INewsletter {
   _id: string;
   id: number;
   title: string;
@@ -325,7 +315,7 @@ export interface Vacations {
   idPeriod: number | null;
   leaderApproval: string;
   daysRequest: number;
-  signatures: TSignatures[];
+  signatures: ISignatures[];
   dateInit: string;
   dateEnd: string;
   isAutomatic: boolean;
@@ -509,7 +499,7 @@ export interface IOvertime {
   dohApproval: "APPROVED" | "REFUSED" | "PENDING";
   motive: string;
   incidence: string;
-  signatures: TSignatures[];
+  signatures: ISignatures[];
   informationDate: {
     _id: string;
     id: number;

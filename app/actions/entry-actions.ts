@@ -1,5 +1,6 @@
 "use server";
 
+import { FetchUsersArgs } from "@/lib/constancy/interface";
 import { ActionResponse, ICheckInFeedback } from "@/lib/definitions";
 import { storeToken } from "@/lib/useToken";
 import axios, { AxiosResponse } from "axios";
@@ -112,18 +113,22 @@ export async function checkIn({
   }
 }
 
-export async function fetchCheckInFeedback(): Promise<
+export async function fetchCheckInFeedback(args: FetchUsersArgs): Promise<
   ActionResponse<ICheckInFeedback[]>
 > {
   try {
     const { apiToken, apiUrl, user } = await storeToken();
 
-    let url = `${apiUrl}/checador/view`;
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 500) || 500, 1), 500);
+    
+    const params = new URLSearchParams();
+    params.set("limit", String(limitNum));
+    
+    if (user?.role === "CHECADOR") params.set("idUser", String(user.id));
 
-    if (user?.role === "CHECADOR") url += `?idUser=${user.id}`;
+    let url = `${apiUrl}/checador/view?${params.toString()}`;
 
-    const response = await axios
-      .get(url, {
+    const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },

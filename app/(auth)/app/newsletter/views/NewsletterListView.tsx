@@ -6,18 +6,18 @@ import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
 import { useModals } from "@/context/ModalContext";
-import { Newsletter } from "@/lib/definitions";
+import { INewsletter } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useState } from "react";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import toast from "react-hot-toast";
 
-function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
+function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
   const { modalError, modalConfirm } = useModals();
 
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
 
-  const colums: TableTemplateColumn<Newsletter>[] = [
+  const colums: TableTemplateColumn<INewsletter>[] = [
     {
       key: "title",
       label: "Título",
@@ -38,7 +38,7 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
       type: "date",
       groupFormat: "yyyy-MM",
       render: (row) => (
-        <div className="text-end">
+        <div className="text">
           {row.dateInitiPublish
             ? formatDate(row.dateInitiPublish, "dd-MM-yyyy HH:mm")
             : null}
@@ -52,7 +52,7 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
       type: "date",
       groupFormat: "yyyy-MM",
       render: (row) => (
-        <div className="text-end">
+        <div className="text">
           {row.dateEndPublish
             ? formatDate(row.dateEndPublish, "dd-MM-yyyy HH:mm")
             : null}
@@ -139,7 +139,7 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
 
                 <ListView>
                   <ListView.Body>
-                    <div className="table-responsive rounded-3 border overflow-hidden">
+                    <div className="table-responsive rounded-3 border overflow-auto">
                       <table className="table table-hover align-middle mb-0">
                         <thead className="table-dark border-secondary">
                           <tr>
@@ -158,7 +158,8 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
 
                         <tbody>
                           {(newsletters ?? []).map((row) => (
-                            <tr key={row.id}>
+                            <tr key={row.id}
+                              className={selectedIds.includes(String(row.id)) ? "table-primary" : ""}>
                               {colums.map((column) => (
                                 <td key={String(column.key)}>
                                   {column.render
@@ -168,12 +169,18 @@ function NewsletterListView({ newsletters }: { newsletters: Newsletter[] }) {
                               ))}
 
                               <td>
-                                <a
-                                  href={`/app/newsletter?view_type=form&id=${row.id}`}
+                                <button
                                   className="btn btn-sm btn-outline-info"
+                                  onClick={() => {
+                                    setSelectedIds((prev) =>
+                                      prev.includes(String(row.id))
+                                        ? prev.filter((id) => id !== String(row.id))
+                                        : [...prev, String(row.id)]
+                                    );
+                                  }}
                                 >
-                                  Ver
-                                </a>
+                                  seleccionar
+                                </button>
                               </td>
                             </tr>
                           ))}

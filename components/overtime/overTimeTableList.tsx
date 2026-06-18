@@ -121,10 +121,10 @@ export default function OverTimeTableClient({
         }, 0);
     }, []);
 
-    const handleSelectionChange = (ids: Array<string | number>) => {
-        if (isClearingSelectionRef.current) return;
-        setSelectedIds(ids);
-    };
+    // const handleSelectionChange = (ids: Array<string | number>) => {
+    //     if (isClearingSelectionRef.current) return;
+    //     setSelectedIds(ids);
+    // };
     const handleSearch = useCallback(
         (value: string) => {
             if (value === currentSearch) return;
@@ -262,7 +262,7 @@ export default function OverTimeTableClient({
                 <Loading message={messageLoading} />
             </ConditionalRender>
 
-            <Container className="py-3" style={{ maxWidth: "1600px" }}>
+            <Container className="py-3 " style={{ maxWidth: "1600px" }}>
                 <Button
                     variant="primary"
                     className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
@@ -307,7 +307,7 @@ export default function OverTimeTableClient({
 
                                 <ListView>
                                     <ListView.Body>
-                                        <div className="table-responsive rounded-3 border overflow-hidden">
+                                        <div className="table-responsive rounded-3 border overflow-auto">
                                             <table className="table table-hover align-middle mb-0">
                                                 <thead className="table-dark border-secondary">
                                                     <tr>

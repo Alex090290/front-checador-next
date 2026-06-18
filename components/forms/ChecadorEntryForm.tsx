@@ -2,9 +2,12 @@
 
 import { TCheckData } from "@/app/(auth)/app/checador/views/ChecadorFormView";
 import { ActionResponse } from "@/lib/definitions";
-import { useEffect, useRef } from "react";
-import { Form } from "react-bootstrap";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
 
 type TInputs = {
   idCheck: string;
@@ -28,7 +31,7 @@ function ChecadorEntryForm({
     reset,
     setFocus,
     setError,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting, errors, isDirty },
   } = useForm<TInputs>({
     defaultValues: {
       idCheck: "",
@@ -51,6 +54,7 @@ function ChecadorEntryForm({
     setTimeout(() => setFocus("idCheck"), 100);
   };
 
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "/" && !disabled) {
@@ -64,57 +68,70 @@ function ChecadorEntryForm({
   }, [setFocus, disabled]);
 
   return (
-    <div className="col-md-5">
-      <Form
-        className="card bg-body-tertiary border-0"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <fieldset className="card-body" disabled={isSubmitting || disabled}>
-          <Form.Group className="mb-2">
-            <Form.Control
-              type="text"
-              placeholder="Código"
-              className="text-center fw-bold"
-              size="lg"
-              autoComplete="off"
-              autoFocus={!disabled}
-              {...register("idCheck")}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  passwordRef.current?.focus();
-                }
-              }}
-            />
-          </Form.Group>
+    <>
+      <Row className="m-0" style={{ minWidth: '40%' }}>
+        <Col md="12" className="px-0">
+          <Form className="card bg-body-tertiary border-0 mt-2 w-100" onSubmit={handleSubmit(onSubmit)}>
+            <fieldset className="card-body" disabled={isSubmitting || disabled}>
 
-          <Form.Group>
-            <Form.Control
-              type="password"
-              placeholder="Contraseña"
-              className="text-center fw-bold"
-              size="lg"
-              autoComplete="off"
-              {...register("passwordCheck")}
-              ref={(e) => {
-                register("passwordCheck").ref(e);
-                passwordRef.current = e;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSubmit(onSubmit)();
-                }
-              }}
-              isInvalid={!!errors.passwordCheck}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.passwordCheck?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </fieldset>
-      </Form>
-    </div>
+              {/* Apartao de codido */}
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="text"
+                  placeholder="Código"
+                  className="text-center fw-bold"
+                  size="lg"
+                  autoComplete="off"
+                  autoFocus={!disabled}
+                  {...register("idCheck")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      passwordRef.current?.focus();
+                    }
+                  }}
+                />
+              </Form.Group>
+
+              {/* Apartado de contrasena */}
+              <Form.Group>
+                <Form.Control
+                  type="password"
+                  placeholder="Contraseña"
+                  className="text-center fw-bold"
+                  size="lg"
+                  autoComplete="off"
+                  {...register("passwordCheck")}
+                  ref={(e) => {
+                    register("passwordCheck").ref(e);
+                    passwordRef.current = e;
+                  }}
+                  isInvalid={!!errors.passwordCheck}
+                />
+              </Form.Group>
+
+              <div>
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="info"
+                  disabled={isSubmitting || disabled || !isDirty}>
+                  {isSubmitting ? "Registrando..." : "Completar registro"}
+                </Button>
+              </div>
+            </fieldset>
+          </Form>
+        </Col>
+      </Row>
+
+      <Row className="my-6">
+        <Col lg="12">
+          <Form.Control.Feedback type="invalid">
+            {errors.passwordCheck?.message}
+          </Form.Control.Feedback>
+        </Col>
+      </Row>
+    </>
   );
 }
 

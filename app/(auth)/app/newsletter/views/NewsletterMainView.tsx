@@ -1,7 +1,7 @@
 import NotFound from "@/app/not-found";
 import NewsletterListView from "./NewsletterListView";
 import NewsletterFormView from "./NewsletterFormView";
-import { Newsletter } from "@/lib/definitions";
+import { INewsletter } from "@/lib/definitions";
 import {
   fetchNewsletters,
   findNewslettersById,
@@ -14,8 +14,8 @@ async function NewsletterMainView({
   viewType: string;
   id: string;
 }) {
-  let newsletter: Newsletter | null = null;
-  let newsletters: Newsletter[] = [];
+  let newsletter: INewsletter | null = null;
+  let newsletters: INewsletter[] = [];
 
   if (id && id !== "null") {
     newsletter = await findNewslettersById({ id });

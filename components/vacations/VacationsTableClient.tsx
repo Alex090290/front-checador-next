@@ -197,7 +197,7 @@ export default function VacationsTableClient({
 
                 <ListView>
                   <ListView.Body>
-                    <div className="table-responsive rounded-3 border overflow-hidden">
+                    <div className="table-responsive rounded-3 border overflow-auto">
                       <table className="table table-hover align-middle mb-0">
                         <thead className="table-dark border-secondary">
                           <tr>

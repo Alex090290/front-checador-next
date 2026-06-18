@@ -2,8 +2,9 @@
 
 import { identifyEmployeeByFace } from "@/app/actions/employee-actions";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Button, Spinner } from "react-bootstrap";
+import { Alert, Button, Col, Row, Spinner } from "react-bootstrap";
 import toast from "react-hot-toast";
+import ConditionalRender from "../ConditionalRender";
 
 type Props = {
   lat?: number;
@@ -56,7 +57,7 @@ export default function FaceCheckPanel({
       setTimeout(() => {
         if (videoRef.current && streamRef.current) {
           videoRef.current.srcObject = streamRef.current;
-          videoRef.current.play().catch(() => {});
+          videoRef.current.play().catch(() => { });
         }
       }, 50);
 
@@ -170,85 +171,104 @@ export default function FaceCheckPanel({
   };
 
   return (
-    <div className="p-3 border rounded bg-body-tertiary h-100">
-      <h5 className="mb-3">Checado por rostro</h5>
+    <>
+      <Row className="g-2">
 
-      <Alert
-        variant={processing || startingCamera ? "warning" : "info"}
-        className="mb-3"
-      >
-        <div className="d-flex align-items-center gap-2">
-          {(processing || startingCamera) && (
-            <Spinner animation="border" size="sm" />
-          )}
-          <span>{message}</span>
-        </div>
-      </Alert>
+        <Col md="6">
+          <div className="p-3 border rounded bg-body-tertiary">
+            <h5 className="mb-3 text-uppercase fw-bold">Checado por rostro</h5>
 
-      {cameraOpen ? (
-        <div className="text-center">
-          <video
-            ref={videoRef}
-            className="w-100 rounded"
-            style={{ maxHeight: 300, objectFit: "cover" }}
-            autoPlay
-            playsInline
-            muted
-          />
-
-          <div className="d-flex justify-content-center gap-2 mt-3">
-            <Button
-              variant="primary"
-              onClick={handleFaceCheck}
-              disabled={processing || startingCamera}
+            <Alert
+              variant={processing || startingCamera ? "warning" : "info"}
+              className="mb-3"
             >
-              {processing ? (
-                <>
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  Validando...
-                </>
-              ) : (
-                "Validar rostro"
-              )}
-            </Button>
+              <div className="d-flex align-items-center gap-2">
 
-            <Button
-              variant="outline-secondary"
-              onClick={onEnableManual}
-              disabled={processing || startingCamera}
-            >
-              Usar código y contraseña
-            </Button>
+                <ConditionalRender cond={processing || startingCamera}>
+                  <Spinner animation="border" size="sm" />
+                </ConditionalRender>
+
+                <span>{message}</span>
+              </div>
+            </Alert>
           </div>
-        </div>
-      ) : (
-        <div className="d-flex flex-column gap-2">
-          <Button
-            variant="primary"
-            onClick={handleOpenCamera}
-            disabled={startingCamera || processing}
-          >
-            {startingCamera ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Abriendo cámara...
-              </>
-            ) : (
-              "Abrir cámara"
-            )}
-          </Button>
+        </Col>
 
-          <Button
-            variant="outline-secondary"
-            onClick={onEnableManual}
-            disabled={startingCamera || processing}
-          >
-            Usar código y contraseña
-          </Button>
-        </div>
-      )}
+        <Col md="6">
+          <ConditionalRender cond={cameraOpen}>
+            <div className="text-center">
+              <video
+                ref={videoRef}
+                className="w-100 rounded"
+                style={{ maxHeight: 310, objectFit: "contain" }}
+                autoPlay
+                playsInline
+                muted
+              />
 
-      <canvas ref={canvasRef} className="d-none" />
-    </div>
+              <div className="d-flex justify-content-center gap-2 mb-1">
+                <Button
+                  variant="primary"
+                  onClick={handleFaceCheck}
+                  disabled={processing || startingCamera}
+                >
+                  <ConditionalRender cond={processing}>
+                    <>
+                      <Spinner animation="border" size="sm" className="me-2" />
+                      Validando...
+                    </>
+                  </ConditionalRender>
+
+                  <ConditionalRender cond={!processing}>
+                    "Validar rostro"
+                  </ConditionalRender>
+                </Button>
+
+                <Button
+                  variant="outline-secondary"
+                  onClick={onEnableManual}
+                  disabled={processing || startingCamera}
+                >
+                  Usar código y contraseña
+                </Button>
+              </div>
+            </div>
+          </ConditionalRender>
+
+          <ConditionalRender cond={!cameraOpen}>
+            <div className="d-flex flex-column gap-2">
+              <Button
+                variant="primary"
+                onClick={handleOpenCamera}
+                disabled={startingCamera || processing}
+              >
+                <ConditionalRender cond={startingCamera}>
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Abriendo cámara...
+                  </>
+                </ConditionalRender>
+
+                <ConditionalRender cond={!startingCamera}>
+                  "Abrir cámara"
+                </ConditionalRender>
+
+              </Button>
+
+              <Button
+                variant="outline-secondary"
+                onClick={onEnableManual}
+                disabled={startingCamera || processing}
+              >
+                Usar código y contraseña
+              </Button>
+            </div>
+          </ConditionalRender>
+
+
+          <canvas ref={canvasRef} className="d-none" />
+        </Col>
+      </Row>
+    </>
   );
 }

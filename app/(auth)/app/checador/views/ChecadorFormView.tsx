@@ -10,12 +10,14 @@ import Clock from "@/components/top-nav/Clock";
 import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatDate } from "date-fns";
-import { Button, Card, Col, Container, Row, Table } from "react-bootstrap";
+import { Alert, Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { formatDatelocal } from "@/lib/helpers";
 import toast from "react-hot-toast";
-import { ActionResponse } from "@/lib/definitions";
+import { ActionResponse, INewsletter } from "@/lib/definitions";
 import useSWR from "swr";
 import Image from "next/image";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -33,10 +35,12 @@ interface IFeedbackDisplay {
   type: string;
 }
 
-function ChecadorFormView() {
-  const { data: activeNotice } = useSWR("/api/notice", fetcher, {
-    refreshInterval: 60000,
-  });
+export default function ChecadorFormView({
+  limit = "500"
+}) {
+  const { data: activeNotice } = useSWR("/api/notice", fetcher);
+  const { data: checkData, mutate } = useSWR(`/api/checador?limit=${limit}`, fetcher);
+
 
   const toastIdRef = useRef<string>("");
 
@@ -48,7 +52,33 @@ function ChecadorFormView() {
 
   const [manualEnabled, setManualEnabled] = useState(false);
 
-  const feedbackContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showImg, setShowImg] = useState(false)
+  const [showTitleNotice, setTitleNotice] = useState(false);
+  const [showTextNotice, setShowTextNotice] = useState(false);
+  const [dataNotice, setDataNotice] = useState<INewsletter>({
+    _id: "",
+    id: 0,
+    title: "",
+    text: "",
+    img: "",
+    programing: false,
+    dateInitiPublish: "",
+    dateEndPublish: "",
+    hourEndPublish: "",
+    hourInitiPublish: "",
+    createAt: "",
+    updateAt: "",
+  });
+  const pageLoading = !activeNotice || !checkData;
+
+  useEffect(() => {
+
+    if (!checkData) return;
+
+    const newData = checkData?.data?.data ?? [];
+
+    setFeedbackDisplay(newData);
+  }, [checkData]);
 
   const receiveCheckData = async (
     data: TCheckData
@@ -70,10 +100,11 @@ function ChecadorFormView() {
       return res;
     }
 
+    setManualEnabled(false); // Este es para activar la camara
     setMessage(res?.data || "");
     await handleFetchFeedback();
     toast.success(res.message, { id: toastIdRef.current });
-
+    mutate()
     return res;
   };
 
@@ -86,27 +117,6 @@ function ChecadorFormView() {
       toastLoading = toast.loading("Cargando registros...");
     }
 
-    const res = await fetchCheckInFeedback();
-
-    if (!res.success) {
-      toast.error(res.message, {
-        id: toastIdRef.current || toastLoading,
-      });
-      return;
-    }
-
-    const newFeedback: IFeedbackDisplay[] =
-      res.data?.map((feed) => ({
-        id: feed.checks.id,
-        name: `${feed.employee.lastName} ${feed.employee.name}`,
-        timestamp: formatDate(feed.checks.timestamp, "HH:mm"),
-        department: feed.departmentEmployee.nameDepartment,
-        position: feed.positionEmployee.namePosition,
-        type: feed.checks.type,
-      })) || [];
-
-    setFeedbackDisplay(newFeedback);
-
     if (toastIdRef.current !== "") {
       toast.success("Registro completado...", { id: toastIdRef.current });
     } else {
@@ -115,8 +125,14 @@ function ChecadorFormView() {
   }, []);
 
   useEffect(() => {
-    handleFetchFeedback();
-  }, [handleFetchFeedback]);
+    if (!activeNotice) return;
+
+    setDataNotice(activeNotice);
+
+    setShowImg(activeNotice.img !== "");
+    setTitleNotice(activeNotice.title !== "");
+    setShowTextNotice(activeNotice.text !== "");
+  }, [activeNotice]);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -139,20 +155,9 @@ function ChecadorFormView() {
     );
   }, []);
 
-  useEffect(() => {
-    if (feedbackContainerRef.current) {
-      feedbackContainerRef.current.scrollTo({
-        top: feedbackContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [feedbackDisplay]);
-
   const handleEnableManual = () => {
     setManualEnabled(true);
-    setMessage(
-      "No fue posible validar por rostro. Puedes continuar con código y contraseña."
-    );
+    setMessage("No fue posible validar por rostro. Puedes continuar con código y contraseña.");
   };
 
   const handleFaceSuccess = async (faceMessage: string) => {
@@ -161,130 +166,175 @@ function ChecadorFormView() {
     await handleFetchFeedback();
   };
 
+
   return (
-    <Row className="h-100 overflow-auto">
-      <Col md="12" className="h-100">
-        <Card className="d-flex flex-column shadow h-100 border-0">
-          <Card.Header className="border-0">
-            <div className="d-flex justify-content-between fw-bolder">
-              <Button onClick={() => signOut()} variant="link">
-                Salir
-              </Button>
-              <span className="shadow-sm px-2 rounded fs-3">
-                {formatDatelocal(new Date())}
-              </span>
-            </div>
+    <>
+      <ConditionalRender cond={pageLoading}>
+        <Loading message="Cargando..." />
+      </ConditionalRender>
 
-            <Row>
-              <Col md="6">
-                <div className="mb-3">
-                  <FaceCheckPanel
-                    lat={location?.lat}
-                    lng={location?.lon}
-                    onEnableManual={handleEnableManual}
-                    onFaceSuccess={handleFaceSuccess}
-                  />
-                </div>
+      <ConditionalRender cond={!pageLoading}>
+        <Container fluid className="px-0 min-vh-100 overflow-x-hidden">
+          <Row className="g-2">
+            <Col md="12">
+              <Card className="d-flex flex-column border-0 w-100">
 
-                <div className="row align-items-stretch">
-                  {manualEnabled && (
-                    <ChecadorEntryForm
-                      receiveCheckData={receiveCheckData}
-                      disabled={false}
-                    />
-                  )}
+                <Card.Header className="border-0 me-3 w-100">
+                  <div className="d-flex justify-content-between fw-bolder">
+                    <Button
+                      onClick={() => signOut()}
+                      variant="outline-info"
+                      className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+                    >
+                      <i className="bi bi-arrow-left" />
+                      Salir
+                    </Button>
 
-                  <div className={manualEnabled ? "col-md-7 bg-body-tertiary" : "col-md-12 bg-body-tertiary"}>
-                    <div>
-                      <h2 className="text-center">{message}</h2>
+                    <div className="shadow-sm px-2 rounded fs-3 text-right">
+                      {formatDatelocal(new Date())}
+                    </div>
+
+                    <div
+                      className="text-right text-uppercase fw-bold"
+                      style={{ fontSize: "2rem" }}
+                    >
+                      <Clock />
                     </div>
                   </div>
-                </div>
-              </Col>
+                </Card.Header>
 
-              <Col md="6" className="text-center text-uppercase fw-semibold">
-                <div style={{ fontSize: "4rem" }}>
-                  <Clock />
-                </div>
-              </Col>
-            </Row>
-          </Card.Header>
+                <Card.Body className="p-0 overflow-x-hidden flex-grow-1 m-2 h-100">
+                  <Row className="g-2">
 
-          <Card.Body className="flex-fill overflow-auto p-1">
-            <Container fluid className="h-100">
-              <Row className="h-100">
-                <Col
-                  md="6"
-                  className="overflow-auto h-100 bg-body-tertiary px-0"
-                  id="feedback-container"
-                  ref={feedbackContainerRef}
-                >
-                  <Table
-                    size="sm"
-                    borderless
-                    hover
-                    striped
-                    className="text-uppercase"
-                    style={{ fontSize: "0.9rem" }}
-                  >
-                    <thead>
-                      <tr className="border-end border-bottom table-active sticky-top">
-                        <th className="border-end">Nombre</th>
-                        <th className="border-end">Hora</th>
-                        <th className="border-end">Evento</th>
-                        <th className="border-end">Departamento</th>
-                        <th className="border-end">Puesto</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {feedbackDisplay.map((feed) => (
-                        <tr key={feed.id} className="border-bottom">
-                          <td className="text-nowrap">{feed.name}</td>
-                          <td className="text-nowrap text-center fw-semibold">
-                            {feed.timestamp}
-                          </td>
-                          <td className="text-nowrap">
-                            {feed.type.replace(/_/g, " ").toUpperCase()}
-                          </td>
-                          <td className="text-nowrap">{feed.department}</td>
-                          <td className="text-nowrap">{feed.position}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </Col>
+                    <Col md="6" className="d-flex flex-fill flex-column overflow-auto">
+                      <div
+                        className="table-responsive p-1 border rounded shadow"
+                        style={{ maxHeight: "100vh", overflowY: "hidden" }}
+                      >
+                        <Table
+                          size="sm"
+                          borderless
+                          hover
+                          striped
+                          className="text-uppercase"
+                          style={{ fontSize: "0.9rem" }}
+                        >
+                          <thead>
+                            <tr className="table-active table-dark border-secondary rounded">
+                              <th className="border-end">Nombre</th>
+                              <th className="border-end">Hora</th>
+                              <th className="border-end">Evento</th>
+                              <th className="border-end">Departamento</th>
+                              <th className="border-end">Puesto</th>
+                            </tr>
+                          </thead>
 
-                <Col md="6" className="h-100 px-1">
-                  <Card className="h-100">
-                    <Card.Body className="d-flex flex-column p-3 gap-3">
-                      {activeNotice?.text && (
-                        <Card.Title className="text-uppercase text-center fs-5 mb-0">
-                          {activeNotice.text}
-                        </Card.Title>
-                      )}
+                          <tbody>
+                            {feedbackDisplay?.map((feed: any) => (
+                              <tr
+                                key={feed?.checks?.id}
+                                className="border-bottom"
+                              >
+                                <td className="text-nowrap">
+                                  {`${feed.employee.lastName} ${feed.employee.name}`}
+                                </td>
 
-                      {activeNotice?.img && (
-                        <div className="flex-fill d-flex justify-content-center align-items-center">
-                          <Image
-                            src={activeNotice.img}
-                            height={800}
-                            width={850}
-                            alt="NOTICE_img"
-                            className="img-fluid h-100 w-auto object-fit-contain"
-                            unoptimized
+                                <td className="text-nowrap text-center fw-semibold">
+                                  {formatDate(feed.checks.timestamp, "HH:mm")}
+                                </td>
+
+                                <td className="text-nowrap">
+                                  {feed.checks.type.replace(/_/g, " ").toUpperCase()}
+                                </td>
+
+                                <td className="text-nowrap">
+                                  {feed.departmentEmployee.nameDepartment}
+                                </td>
+
+                                <td className="text-nowrap">
+                                  {feed.positionEmployee.namePosition}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
+                    </Col>
+
+                  {/* Segunda columna */}
+                    <Col md="6" className="d-flex flex-column gap-3" style={{height: "calc(100vh - 120px)"}}>
+
+                      <div
+                        className="border rounded shadow p-3 overflow-y-auto" style={{height: "calc(100vh - 150px)"}}
+                      >
+                        <ConditionalRender cond={!manualEnabled}>
+                          <FaceCheckPanel
+                            lat={location?.lat}
+                            lng={location?.lon}
+                            onEnableManual={handleEnableManual}
+                            onFaceSuccess={handleFaceSuccess}
                           />
-                        </div>
-                      )}
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </Container>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+                        </ConditionalRender>
+
+                        <ConditionalRender cond={manualEnabled}>
+                          <Alert
+                            variant="none"
+                            className="rounded-pill py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle text-center fs-6"
+                          >
+                            {message}
+                          </Alert>
+
+                          <div className="d-flex justify-content-center">
+                            <ChecadorEntryForm
+                              receiveCheckData={receiveCheckData}
+                              disabled={false}
+                            />
+                          </div>
+                        </ConditionalRender>
+                      </div>
+
+                      <div
+                        className="border rounded shadow p-3 d-flex flex-column overflow-auto"
+                        style={{height: "calc(100vh - 150px)"}}
+                      >
+                        <ConditionalRender cond={showTitleNotice}>
+                          <Card className="border-0">
+                            <Card.Title className="text-uppercase text-center fs-3 mb-0">
+                              {dataNotice.title}
+                            </Card.Title>
+
+                            <ConditionalRender cond={showTextNotice}>
+                              <div className="text-uppercase text-center mt-2">
+                                {dataNotice.text}
+                              </div>
+                            </ConditionalRender>
+                          </Card>
+                        </ConditionalRender>
+
+                        <ConditionalRender cond={showImg}>
+                          <div className="flex-fill d-flex justify-content-center align-items-center overflow-auto">
+                            <Image
+                              src={dataNotice.img}
+                              height={100}
+                              width={100}
+                              alt="NOTICE_img"
+                              className="img-fluid h-100 w-auto object-fit-contain rounded-3"
+                              unoptimized
+                            />
+                          </div>
+                        </ConditionalRender>
+                      </div>
+
+                    </Col>
+                  </Row>
+                </Card.Body>
+
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </ConditionalRender>
+    </>
   );
 }
 
-export default ChecadorFormView;

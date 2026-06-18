@@ -27,7 +27,7 @@ async function PageUsers({
 
   return (
     <Suspense fallback={<Loading message="Cargando datos..." />}>
-      <ListAllUsers id={id} limit={limit} page={page} />
+      <ListAllUsers id={id} limit={limit} page={page} search={search} />
     </Suspense>
   );
 }

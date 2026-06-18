@@ -7,7 +7,7 @@ export default function GenericSearchInput({
   initialValue = "",
   onSearch,
   placeholder = "",
-  delay = 500,
+  delay = 1000,
 }: {
   initialValue?: string;
   onSearch: (value: string) => void;
@@ -32,7 +32,7 @@ export default function GenericSearchInput({
     <Form.Control
       className="shadow-sm border-1 border-secondary"
       type="text"
-       placeholder={placeholder}
+      placeholder={placeholder}
       value={value}
       onChange={(e) => setValue(e.target.value)}
       />
