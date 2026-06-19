@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Button, Dropdown, Stack } from "react-bootstrap";
+import { Button, Card, Collapse, Dropdown, Stack } from "react-bootstrap";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { loadAvatar } from "@/app/actions/user-actions";
@@ -14,10 +14,11 @@ import moment from "moment-timezone";
 function NavUserInfo() {
   const { data: session } = useSession();
   const [darkMode, setDarkMode] = useState(false);
-  const [currentPeriod, setCurrentPeriod] = useState<ICurrentPeriod | null> (null)
+  const [currentPeriod, setCurrentPeriod] = useState<ICurrentPeriod | null>(null)
   const [imgAvatar, setImgAvatar] = useState<string | null>(null);
   const params = useSearchParams();
   const profile = params.get("profile") || null;
+  const [showPeriodInfo, setShowPeriodInfo] = useState(false);
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -55,108 +56,196 @@ function NavUserInfo() {
   }, [session, profile]);
 
   const modalDelete = async () => {
-    await getCurrentPeriod().then((value: ICurrentPeriod | null)=>{
-        setCurrentPeriod(value)
+    await getCurrentPeriod().then((value: ICurrentPeriod | null) => {
+      setCurrentPeriod(value)
     })
-  }  
-   
- return (
-  <Stack direction="horizontal" gap={2} className="align-items-center">
-    <Dropdown>
-      <Dropdown.Toggle
-        id="nav-user-dropdown-toggle"
-        variant={darkMode ? "dark" : "light"}
-        className="border-0 d-flex align-items-center"
+  }
+
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const periodText = `${currentPeriod?.description ?? "—"} · ${currentPeriod?.dateInit
+    ? moment.utc(currentPeriod.dateInit).format("DD/MM/YYYY")
+    : "—"
+    } - ${currentPeriod?.dateEnd
+      ? moment.utc(currentPeriod.dateEnd).format("DD/MM/YYYY")
+      : "—"
+    }`;
+
+  return (
+    <> <style>{` #nav-user-dropdown-toggle::after { display: none; }`}</style>
+
+      <Stack
+        direction="horizontal"
+        gap={2}
+        className="align-items-center flex-nowrap"
+        style={{ maxWidth: "100%", minWidth: 0 }}
       >
-        <Image
-          width={26}
-          height={26}
-          unoptimized
-          src={imgAvatar ?? "/image/avatar_default.svg"}
-          alt=""
-          className="me-2 rounded"
-        />
-        <span className="text-uppercase">{session?.user?.name}</span>
-      </Dropdown.Toggle>
-
-      <Dropdown.Menu>
-        <Dropdown.Item
-          as={Link}
-          href={`/app/users/profile?id=${session?.user?.id}`}
+        <Dropdown
+          show={profileOpen}
+          onToggle={(isOpen) => setProfileOpen(isOpen)}
+          className="position-relative flex-shrink-0"
         >
-          <i className="bi bi-person-circle me-2"></i>
-          <span>Perfil</span>
-        </Dropdown.Item>
-        <Dropdown.Item onClick={() => signOut()}>
-          <i className="bi bi-box-arrow-right me-2"></i>
-          <span>Cerrar sesión</span>
-        </Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
+          <Dropdown.Toggle
+            id="nav-user-dropdown-toggle"
+            variant={darkMode ? "dark" : "light"}
+            className="border-0 d-flex align-items-center"
+          >
+            <Image
+              width={26}
+              height={26}
+              unoptimized
+              src={imgAvatar ?? "/image/avatar_default.svg"}
+              alt=""
+              className="me-2 rounded flex-shrink-0"
+            />
 
-    <div className="vr" />
+            <span
+              className="text-uppercase text-truncate d-inline-block"
+              style={{ maxWidth: "85px" }}
+            >
+              {session?.user?.name}
+            </span>
 
-    <Button
-      className="border-0"
-      variant={darkMode ? "dark" : "light"}
-      onClick={toggleDarkMode}
-    >
-      {darkMode ? (
-        <i className="bi bi-sun-fill"></i>
-      ) : (
-        <i className="bi bi-moon-stars-fill"></i>
-      )}
-    </Button>
+            <i
+              className={`bi ms-1 ${profileOpen ? "bi-chevron-up" : "bi-chevron-down"
+                }`}
+            />
+          </Dropdown.Toggle>
 
-{/* ✅ Periodo/Año/Fechas compactos */}
-<div className="d-none d-md-flex align-items-center gap-2 ms-1">
-  <span className="text-muted small text-uppercase">Periodo:</span>
-  <span className="fw-semibold small text-uppercase">
-    {currentPeriod?.description ?? "—"}
-  </span>
+          <Dropdown.Menu
+            align="end"
+            style={{
+              position: "absolute",
+              top: "100%",
+              right: 0,
+              left: "auto",
+              zIndex: 2000,
+            }}
+          >
+            <Dropdown.Item
+              as={Link}
+              href={`/app/users/profile?id=${session?.user?.id}`}
+            >
+              <i className="bi bi-person-circle me-2"></i>
+              <span>Perfil</span>
+            </Dropdown.Item>
 
-  <span className="text-muted small">·</span>
+            <Dropdown.Item onClick={() => signOut()}>
+              <i className="bi bi-box-arrow-right me-2"></i>
+              <span>Cerrar sesión</span>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
 
-  {/* <span className="text-muted small text-uppercase">Año:</span>
-  <span className="fw-semibold small">{currentPeriod?.year ?? "—"}</span>
+        <div className="vr flex-shrink-0 mx-1" />
 
-  <span className="text-muted small">·</span> */}
+        <Button
+          className="border-0 flex-shrink-0"
+          variant={darkMode ? "dark" : "light"}
+          onClick={toggleDarkMode}
+        >
+          {darkMode ? (
+            <i className="bi bi-sun-fill"></i>
+          ) : (
+            <i className="bi bi-moon-stars-fill"></i>
+          )}
+        </Button>
 
-  <span className="text-muted small text-uppercase">Inicio:</span>
-  <span className="fw-semibold small">
-    {currentPeriod?.dateInit
-      ? moment.utc(currentPeriod.dateInit).format("DD/MM/YYYY")
-      : "—"}
-  </span>
+        {/* Desktop / tablet */}
+        <div
+          className="d-none d-md-flex align-items-center gap-2 ms-1 overflow-hidden"
+          style={{ minWidth: 0 }}
+          title={periodText}
+        >
+          <span className="text-muted small text-uppercase flex-shrink-0">
+            Periodo:
+          </span>
 
-  <span className="text-muted small">·</span>
+          <span className="fw-semibold small text-uppercase text-truncate">
+            {currentPeriod?.description ?? "—"}
+          </span>
 
-  <span className="text-muted small text-uppercase">Fin:</span>
-  <span className="fw-semibold small">
-    {currentPeriod?.dateEnd
-      ? moment.utc(currentPeriod.dateEnd).format("DD/MM/YYYY")
-      : "—"}
-  </span>
-</div>
+          <span className="text-muted small flex-shrink-0">·</span>
 
-{/* ✅ En móvil: un solo renglón compactado */}
-<div className="d-flex d-md-none align-items-center ms-1">
-  <span className="badge bg-secondary text-uppercase">
-    {currentPeriod?.description ?? "—"} · {currentPeriod?.year ?? "—"}
-    {" · "}
-    {currentPeriod?.dateInit
-      ? moment.utc(currentPeriod.dateInit).format("DD/MM/YYYY")
-      : "—"}
-    {" - "}
-    {currentPeriod?.dateEnd
-      ? moment.utc(currentPeriod.dateEnd).format("DD/MM/YYYY")
-      : "—"}
-  </span>
-</div>
+          <span className="text-muted small text-uppercase flex-shrink-0">
+            Inicio:
+          </span>
 
-  </Stack>
-);
+          <span className="fw-semibold small flex-shrink-0">
+            {currentPeriod?.dateInit
+              ? moment.utc(currentPeriod.dateInit).format("DD/MM/YYYY")
+              : "—"}
+          </span>
 
+          <span className="text-muted small flex-shrink-0">·</span>
+
+          <span className="text-muted small text-uppercase flex-shrink-0">
+            Fin:
+          </span>
+
+          <span className="fw-semibold small flex-shrink-0">
+            {currentPeriod?.dateEnd
+              ? moment.utc(currentPeriod.dateEnd).format("DD/MM/YYYY")
+              : "—"}
+          </span>
+        </div>
+
+        {/* Mobile */}
+        <div className="d-md-none position-relative flex-shrink-0">
+          <span
+            role="button"
+            className="badge bg-secondary text-uppercase text-truncate"
+            style={{
+              maxWidth: "105px",
+              cursor: "pointer",
+            }}
+            onClick={() => setShowPeriodInfo(!showPeriodInfo)}
+          >
+            {currentPeriod?.description ?? "—"}
+
+            <i
+              className={`bi ms-1 ${showPeriodInfo ? "bi-chevron-up" : "bi-chevron-down"
+                }`}
+            />
+          </span>
+
+          <Collapse in={showPeriodInfo}>
+            <div>
+              <Card
+                className="position-absolute mt-2 shadow-sm"
+                style={{
+                  right: 0,
+                  minWidth: "250px",
+                  zIndex: 2000,
+                }}
+              >
+                <Card.Body className="p-2 small">
+                  <div>
+                    <strong>Periodo:</strong>{" "}
+                    {currentPeriod?.description ?? "—"}
+                  </div>
+
+                  <div>
+                    <strong>Inicio:</strong>{" "}
+                    {currentPeriod?.dateInit
+                      ? moment.utc(currentPeriod.dateInit).format("DD/MM/YYYY")
+                      : "—"}
+                  </div>
+
+                  <div>
+                    <strong>Fin:</strong>{" "}
+                    {currentPeriod?.dateEnd
+                      ? moment.utc(currentPeriod.dateEnd).format("DD/MM/YYYY")
+                      : "—"}
+                  </div>
+                </Card.Body>
+              </Card>
+            </div>
+          </Collapse>
+        </div>
+      </Stack>
+    </>
+  );
 }
 
 export default NavUserInfo;

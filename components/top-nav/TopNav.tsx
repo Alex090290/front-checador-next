@@ -13,16 +13,25 @@ function TopNav() {
   const userRole = session?.user?.role;
 
   return (
-    <Navbar expand="lg" className="bg-body-tertiary shadow-sm" sticky="top">
-      <Container>
-        {userRole === "EMPLOYEE" ? null : (
-          <Navbar.Brand as={Link} href="/app/checador?view_type=form">
+    <Navbar
+      expand="lg"
+      className="bg-body-tertiary shadow-sm w-100"
+      sticky="top"
+    >
+      <Container fluid className="px-2 px-md-3">
+        {userRole !== "EMPLOYEE" && (
+          <Navbar.Brand
+            as={Link}
+            href="/app/checador?view_type=form"
+            className="me-2 flex-shrink-0"
+          >
             <OverLay string="Checador">
               <i className="bi bi-clock"></i>
             </OverLay>
           </Navbar.Brand>
         )}
-        <Nav className="ms-auto">
+
+        <Nav className="ms-auto flex-row align-items-center min-w-0">
           <Suspense fallback={<div>Loading user info...</div>}>
             <NavUserInfo />
           </Suspense>

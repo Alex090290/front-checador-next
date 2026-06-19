@@ -4,9 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
-import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { Badge, Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
 
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
@@ -378,12 +377,12 @@ export default function UserTableClient({
           </div>
         </div>
 
-        <Row className="justify-content-center">
-          <Col xs={12} xl={12} xxl={12}>
+        <Row className="justify-content-center" style={{height: "100%"}}>
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">
                 <div className="mb-4">
-                  <Col xs={12} md={6} lg={4}>
+                  <Col xs={12} sm={12} md={6} lg={6} >
                     <InputGroup>
                       <InputGroup.Text
                         className="bg-gray"

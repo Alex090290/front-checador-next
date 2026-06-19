@@ -28,9 +28,8 @@ export default function NavGroup({ eventKey, iconClass, label }: Props) {
         <i className={iconClass}></i>
         <span>{label}</span>
       </span>
-
       <i
-        className={`bi bi-chevron-down ms-2 chevron ${isOpen ? "open" : ""}`}
+        className={`bi ms-1 ${isOpen ? "bi-chevron-up" : "bi-chevron-down"}`}
       />
     </Nav.Link>
   );
