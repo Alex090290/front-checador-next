@@ -142,7 +142,7 @@ export default function ChecadorFormView({
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition( 
       (position) => {
         const { latitude, longitude } = position.coords;
         setLocation({ lat: latitude, lon: longitude });
