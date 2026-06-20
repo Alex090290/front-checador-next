@@ -152,6 +152,7 @@ export default function ChecadorFormView({
 
   const handleFaceSuccess = async (faceMessage: string) => {
     setManualEnabled(false);
+    mutate()
     setMessage(faceMessage);
     await handleFetchFeedback();
   };
