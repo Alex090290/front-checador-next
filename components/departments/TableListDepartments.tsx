@@ -5,20 +5,17 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { useModals } from "@/context/ModalContext";
 import { Department } from "@/lib/definitions";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import TableTemplateServer from "../templates/TablePage";
 import { useRouter, useSearchParams } from "next/navigation";
-import GenericSearchInput from "../employee/GenericSearchInput";
 
 export default function DepartmentsTableList({
   departments,
   total,
   page,
   limit,
-  search = "",
 }: {
   departments: Department[];
   total: number;
@@ -29,15 +26,11 @@ export default function DepartmentsTableList({
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
-  const currentSearch = sp.get("search") ?? "";
 
   const { modalError, modalConfirm } = useModals();
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
+  const [selectedIds] = useState<Array<string | number>>([]);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
-  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const isClearingSelectionRef = useRef(false);
-  const [tableResetKey, setTableResetKey] = useState(0);
 
 
   useEffect(() => {
@@ -105,48 +98,6 @@ export default function DepartmentsTableList({
     setMessageLoading("Cargando...");
     router.push("/app/departments/create");
   };
-
-  const clearSelectedIds = useCallback(() => {
-    isClearingSelectionRef.current = true;
-
-    tableRef.current?.clearSelection();
-    setSelectedIds([]);
-    setTableResetKey((k) => k + 1);
-
-    setTimeout(() => {
-      isClearingSelectionRef.current = false;
-    }, 0);
-  }, []);
-
-  const handleSelectionChange = (ids: Array<string | number>) => {
-    if (isClearingSelectionRef.current) return;
-    setSelectedIds(ids);
-  };
-
-  const handleSearch = useCallback(
-    (value: string) => {
-      if (value === currentSearch) return;
-
-      setLoading(true);
-      setMessageLoading("Buscando...");
-
-      const params = new URLSearchParams(searchParamsString);
-      params.set("id", "null");
-      params.set("view_type", "list");
-      params.set("page", "1");
-      params.set("limit", String(limit));
-
-      if (value) {
-        params.set("search", value);
-      } else {
-        params.delete("search");
-      }
-
-      clearSelectedIds();
-      router.push(`/app/employee?${params.toString()}`);
-    },
-    [currentSearch, searchParamsString, limit, router, clearSelectedIds]
-  );
 
   const deleteIds = async () => {
     for (const id of selectedIds) {

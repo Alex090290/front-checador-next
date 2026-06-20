@@ -4,19 +4,16 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { Branch } from "@/lib/definitions";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
-import TableTemplateServer from "../templates/TablePage";
-import GenericSearchInput from "../employee/GenericSearchInput";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 
 export default function BranchesTableClient({
   branches,
   total,
   page,
   limit,
-  search
 }: {
   branches: Branch[];
   total: number;
@@ -28,13 +25,8 @@ export default function BranchesTableClient({
   const sp = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
-  const isClearingSelectionRef = useRef(false);
-  const [, setSelectedIds] = useState<Array<string | number>>([]);
-  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
   const searchParamsString = sp.toString();
-  const currentSearch = sp.get("search") ?? "";
-  const [tableResetKey, setTableResetKey] = useState(0);
 
 
   useEffect(() => {
@@ -43,18 +35,6 @@ export default function BranchesTableClient({
       setMessageLoading("");
     }
   }, [searchParamsString, loading]);
-  
-  const clearSelectedIds = useCallback(() => {
-    isClearingSelectionRef.current = true;
-
-    tableRef.current?.clearSelection();
-    setSelectedIds([]);
-    setTableResetKey((k) => k + 1);
-
-    setTimeout(() => {
-      isClearingSelectionRef.current = false;
-    }, 0);
-  }, []);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
@@ -65,31 +45,6 @@ export default function BranchesTableClient({
     params.set("limit", String(limit));
     router.push(`/app/branches?${params.toString()}`);
   };
-
-  const handleSearch = useCallback(
-    (value: string) => {
-      if (value === currentSearch) return;
-
-      setLoading(true);
-      setMessageLoading("Buscando...");
-
-      const params = new URLSearchParams(searchParamsString);
-      params.set("id", "null");
-      params.set("view_type", "list");
-      params.set("page", "1");
-      params.set("limit", String(limit));
-
-      if (value) {
-        params.set("search", value);
-      } else {
-        params.delete("search");
-      }
-
-      clearSelectedIds();
-      router.push(`/app/employee?${params.toString()}`);
-    },
-    [currentSearch, searchParamsString, limit, router, clearSelectedIds]
-  );
 
   const columns: TableTemplateColumn<Branch>[] = [
     {
@@ -154,11 +109,6 @@ export default function BranchesTableClient({
     setLoading(true);
     setMessageLoading("Cargando...");
     router.push("/app/branches/create");
-  };
-
-  const handleSelectionChange = (ids: Array<string | number>) => {
-    if (isClearingSelectionRef.current) return;
-    setSelectedIds(ids);
   };
 
   return (

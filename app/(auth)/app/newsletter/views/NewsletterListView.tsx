@@ -2,9 +2,7 @@
 
 import { deleteNotice } from "@/app/actions/newsletter-actions";
 import ListView from "@/components/templates/ListView";
-import TableTemplate, {
-  TableTemplateColumn,
-} from "@/components/templates/TableTemplate";
+import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { useModals } from "@/context/ModalContext";
 import { INewsletter } from "@/lib/definitions";
 import { formatDate } from "date-fns";

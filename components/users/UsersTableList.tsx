@@ -15,7 +15,6 @@ import {
   Permission,
   User,
 } from "@/lib/definitions";
-import { useModals } from "@/context/ModalContext";
 import ChangePasswordModal from "@/app/(auth)/app/users/views/ModalChangePassword";
 import ModalBlur from "../ModalBlur";
 import FormUpdateUser from "@/app/(auth)/app/users/views/UpdateUser";
@@ -72,7 +71,6 @@ export default function UserTableClient({
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-  const { modalError } = useModals();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showUpdateUserModal, setShowUpdateUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -80,9 +78,7 @@ export default function UserTableClient({
     null
   );
   const isClearingSelectionRef = useRef(false);
-  const [tableResetKey, setTableResetKey] = useState(0);
-
-
+  const [, setTableResetKey] = useState(0);
 
   useEffect(() => {
     if (loading) {
@@ -118,50 +114,7 @@ export default function UserTableClient({
     router.push(`/app/users?${params.toString()}`);
   };
 
-  const openModifyModal = () => {
-    if (selectedIds.length === 0) {
-      return modalError("No hay usuarios seleccionados");
-    }
-
-    if (selectedIds.length > 1) {
-      return modalError("Sólo puedes modificar un usuario a la vez");
-    }
-
-    const idSel = Number(selectedIds[0]);
-
-    const findUser = users?.find((item) => item.id === idSel);
-    if (!findUser) return modalError("No se encontró el usuario seleccionado");
-
-    setSelectedUser(findUser);
-    setShowUpdateUserModal(true);
-  };
-
-  const openChangePasswordModal = () => {
-    if (selectedIds.length === 0) {
-      return modalError("No hay usuarios seleccionados");
-    }
-
-    if (selectedIds.length > 1) {
-      return modalError("Sólo puedes cambiar la contraseña de un usuario a la vez");
-    }
-
-    const idSel = Number(selectedIds[0]);
-    const findUser = users?.find((item) => item.id === idSel);
-
-    if (!findUser?.id) {
-      return modalError("No se encontró el usuario seleccionado");
-    }
-
-    setPasswordModalUserId(findUser.id);
-    setShowPasswordModal(true);
-  };
-
-  const handleClosePasswordModal = () => {
-    setShowPasswordModal(false);
-    setPasswordModalUserId(null);
-  };
-
-  const clearSelectedIds = () => {
+  const clearSelectedIds = useCallback(() => {
     isClearingSelectionRef.current = true;
 
     tableRef.current?.clearSelection();
@@ -171,6 +124,11 @@ export default function UserTableClient({
     setTimeout(() => {
       isClearingSelectionRef.current = false;
     }, 0);
+  }, []);
+
+  const handleClosePasswordModal = () => {
+    setShowPasswordModal(false);
+    setPasswordModalUserId(null);
   };
 
   const handleCloseUserFormModal = () => {
@@ -208,11 +166,6 @@ export default function UserTableClient({
       message: "Usuario actualizado correctamente",
       data: true,
     };
-  };
-
-  const handleSelectionChange = (ids: Array<string | number>) => {
-    if (isClearingSelectionRef.current) return;
-    setSelectedIds(ids);
   };
 
   const handleCreate = () => {

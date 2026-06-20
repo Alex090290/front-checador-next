@@ -99,7 +99,19 @@ export async function getActiveNotice(): Promise<INewsletter | null> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
-    let newsletter: any = {};
+    let newsletter: INewsletter = {
+        _id: "",
+        id: 0,
+        title: "",
+        text: "",
+        img: "",
+        programing: false,
+        dateInitiPublish: "",
+        dateEndPublish: "",
+        hourEndPublish: "",
+        hourInitiPublish: ""
+    };
+
     let getImg: string = '';
 
     await axios.get(`${API_URL}/notice/listActive`, {
@@ -124,7 +136,7 @@ export async function getActiveNotice(): Promise<INewsletter | null> {
       
       return res.data;
       
-    }).catch((err) => {
+    }).catch(() => {
       // Este es el catch del endpoint /notice/listActive
       return null;
     });

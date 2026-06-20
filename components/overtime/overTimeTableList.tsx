@@ -5,12 +5,11 @@ import { TableTemplateColumn } from "../templates/TablePage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import moment from "moment";
 import GenericSearchInput from "../employee/GenericSearchInput";
-import { Span } from "next/dist/trace";
 
 export default function OverTimeTableClient({
     total,
@@ -36,7 +35,7 @@ export default function OverTimeTableClient({
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const pathname = usePathname();
     const currentSearch = sp.get("search") ?? "";
-    const [tableResetKey, setTableResetKey] = useState(0);
+    const [, setTableResetKey] = useState(0);
     const router = useRouter();
 
 
@@ -45,7 +44,7 @@ export default function OverTimeTableClient({
             setLoading(false);
             setMessageLoading("");
         }
-    }, [pathname, searchParamsString]);
+    }, [pathname, searchParamsString, loading]);
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {
@@ -149,7 +148,7 @@ export default function OverTimeTableClient({
             clearSelectedIds();
             router.push(`/app/overtime?${params.toString()}`);
         },
-        [currentSearch, searchParamsString, limit, router, clearSelectedIds]
+        [currentSearch, searchParamsString, limit, router, clearSelectedIds, search]
     );
 
 

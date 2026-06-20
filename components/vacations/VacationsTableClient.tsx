@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import ListView from "../templates/ListView";
-import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 
 import { Vacations } from "@/lib/definitions";
@@ -33,7 +32,6 @@ export default function VacationsTableClient({
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState('');
-  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
 
 
   useEffect(() => {

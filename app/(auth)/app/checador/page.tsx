@@ -1,5 +1,5 @@
 import LoadingPage from "@/app/LoadingPage";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import ChecadorFormView from "./views/ChecadorFormView";
 
 type SearchParams = {

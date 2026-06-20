@@ -1,15 +1,13 @@
 "use client"
 
-import { Department, Employee } from "@/lib/definitions";
+import { Department } from "@/lib/definitions";
 import { ISignatures, OverTime } from "@/lib/overTime/interface";
-import { EmployeeLite } from "../configSystem/formUpdate";
-import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import OvertimeOneError from "./overtimeMessageError";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { deleteOverTime } from "@/app/actions/overtime-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -18,7 +16,6 @@ import moment from "moment";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewOvertime from "./signaturesOvertime";
-import DepartmentInfoOnePage from "@/app/(auth)/app/departments/views/DepartmentInfoOne";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -73,16 +70,13 @@ export function OvertimeOne({
 }) {
 
     // Aqui los const 
-    const session = useSessionSnapshot();
-    const [showUpdateConstancyModal, setShowUpdateConstancyModal] = useState(false);
-    const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
-    const [showCurretUser, setCurrentUser] = useState(false);
+    const [showCurretUser] = useState(false);
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
-    const [involvedShow, setInvolvedShow] = useState(false);
+    const [, setEmployeeSignatureModal] = useState(false);
     const router = useRouter();
-    const [newArray, setNewArray] = useState<any[]>([]);
+    const [newArray, setNewArray] = useState<ISignatures[]>([]);
 
 
     useEffect(() => {
@@ -104,24 +98,24 @@ export function OvertimeOne({
         if (isLeaderRequestPerson) {
             // el documento pertenece a un empleado que es lider
 
-            let newData: any[] = signatures.filter((f: ISignatures) => ["Empleado", "Dirección", "DOH"].includes(f.label));
+            const newData = signatures.filter((f) => ["Empleado", "Dirección", "DOH"].includes(f.label));
             setNewArray(newData);
 
         } else if (isDohRequesPerson) {
             // el documento pertenece a un empleado que es DOH  
-            let newData: any[] = signatures.filter((f: ISignatures) => ["Empleado", "Líder", "DOH"].includes(f.label));
+            const newData = signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label));
             setNewArray(newData);
 
         } else {
 
             // el documento pertenece a un empleado
-            let newData: any[] = signatures.filter((f: ISignatures) => ["Empleado", "Líder", "DOH"].includes(f.label))
+            const newData = signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label))
             console.log("Empleado: ", newData);
 
             setNewArray(newData);
         }
 
-    }, [overtime]);
+    }, [overtime, departments, connfigSystem]);
 
     console.log("newArray: ", newArray);
 
@@ -432,7 +426,7 @@ export function OvertimeOne({
                         <FormBook dKey="newArray">
                             <FormPage title="" eventKey="newArray">
                                 <Row className="g-3">
-                                    {newArray.map((sign: any) => (
+                                    {newArray.map((sign) => (
                                         <SignaturesViewOvertime
                                             key={sign.key}
                                             id={Number(overtime?.id)}

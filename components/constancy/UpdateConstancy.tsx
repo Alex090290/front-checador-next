@@ -2,13 +2,13 @@
 
 import { useModals } from "@/context/ModalContext";
 import { Constancy, typeOfPenalty } from "@/lib/constancy/interface"
-import { ActionResponse, Employee, ModalBasicProps } from "@/lib/definitions";
+import { ActionResponse, ModalBasicProps } from "@/lib/definitions";
 import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { FieldGroupFluid } from "../templates/FormView";
-import { Entry, RelationField } from "../fields";
+import { Entry } from "../fields";
 import { Button, Form } from "react-bootstrap";
 import moment from "moment-timezone";
 import { EmployeeLite } from "../configSystem/formUpdate";
@@ -131,7 +131,7 @@ export default function FormUpdateConstancy({
         };
 
         loadConstancies();
-    }, [existenConstancy, idEmployeeSelected]);
+    }, [existenConstancy, idEmployeeSelected, constancy?.backgrounds, constancy?.id, setValue]);
 
     //Para el arreglo de penalizaciones, las que tenemos de cajon
     useEffect(() => {

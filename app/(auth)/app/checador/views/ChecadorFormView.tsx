@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  checkIn,
-  fetchCheckInFeedback,
-} from "@/app/actions/entry-actions";
+import { checkIn } from "@/app/actions/entry-actions";
 import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
 import FaceCheckPanel from "@/components/checador/FaceCheckPanel";
 import Clock from "@/components/top-nav/Clock";
@@ -13,7 +10,7 @@ import { formatDate } from "date-fns";
 import { Alert, Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { formatDatelocal } from "@/lib/helpers";
 import toast from "react-hot-toast";
-import { ActionResponse, INewsletter } from "@/lib/definitions";
+import { ActionResponse, ICheckInFeedback, INewsletter } from "@/lib/definitions";
 import useSWR from "swr";
 import Image from "next/image";
 import ConditionalRender from "@/components/ConditionalRender";
@@ -25,15 +22,6 @@ export type TCheckData = {
   idCheck: string;
   passwordCheck: string;
 };
-
-interface IFeedbackDisplay {
-  id: number;
-  name: string;
-  timestamp: string;
-  department: string;
-  position: string;
-  type: string;
-}
 
 export default function ChecadorFormView({
   limit = "500"
@@ -48,7 +36,7 @@ export default function ChecadorFormView({
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
     null
   );
-  const [feedbackDisplay, setFeedbackDisplay] = useState<IFeedbackDisplay[]>([]);
+  const [feedbackDisplay, setFeedbackDisplay] = useState<ICheckInFeedback[]>([]);
   const [message, setMessage] = useState<string>("");
 
   const [manualEnabled, setManualEnabled] = useState(false);
@@ -298,22 +286,22 @@ export default function ChecadorFormView({
                             </tr>
                           </thead>
                           <tbody>
-                            {feedbackDisplay?.map((feed: any) => (
+                            {feedbackDisplay?.map((feed) => (
                               <tr key={feed?.checks?.id} className="border-bottom">
                                 <td className="text-nowrap">
-                                  {`${feed.employee.lastName} ${feed.employee.name}`}
+                                  {`${feed?.employee?.lastName} ${feed?.employee?.name}`}
                                 </td>
                                 <td className="text-nowrap text-center fw-semibold">
-                                  {formatDate(feed.checks.timestamp, "HH:mm")}
+                                  {formatDate(feed?.checks?.timestamp, "HH:mm")}
                                 </td>
                                 <td className="text-nowrap">
-                                  {feed.checks.type.replace(/_/g, " ").toUpperCase()}
+                                  {feed?.checks?.type.replace(/_/g, " ").toUpperCase()}
                                 </td>
                                 <td className="text-nowrap">
-                                  {feed.departmentEmployee.nameDepartment}
+                                  {feed?.departmentEmployee?.nameDepartment}
                                 </td>
                                 <td className="text-nowrap">
-                                  {feed.positionEmployee.namePosition}
+                                  {feed?.positionEmployee?.namePosition}
                                 </td>
                               </tr>
                             ))}

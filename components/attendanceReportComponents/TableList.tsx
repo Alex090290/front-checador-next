@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
-import TableTemplateServer from "../templates/TablePage";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
@@ -51,7 +50,6 @@ export default function AttendanceTable({
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
 
-  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
 

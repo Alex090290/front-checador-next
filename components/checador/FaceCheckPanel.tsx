@@ -220,7 +220,7 @@ export default function FaceCheckPanel({
                   </ConditionalRender>
 
                   <ConditionalRender cond={!processing}>
-                    "Validar rostro"
+                    Validar rostro
                   </ConditionalRender>
                 </Button>
 
@@ -250,7 +250,7 @@ export default function FaceCheckPanel({
                 </ConditionalRender>
 
                 <ConditionalRender cond={!startingCamera}>
-                  "Abrir cámara"
+                  Abrir cámara
                 </ConditionalRender>
 
               </Button>

@@ -114,7 +114,7 @@ export function EmployeeAutocomplete({
 
   const selected = useMemo(
     () => employeesArray.find((e) => Number(e.id) === Number(value)),
-    [employees, value]
+    [employeesArray, value]
   );
 
   useEffect(() => {
@@ -169,7 +169,7 @@ export function EmployeeAutocomplete({
         return name.includes(term) || idStr.includes(term);
       })
       .slice(0, 15);
-  }, [employees, q]);
+  }, [employeesArray, q]);
 
   const commitSelection = (e: EmployeeLite) => {
     const id = Number(e.id);
@@ -260,7 +260,7 @@ function EmployeeMultiSelect({
   const selectedEmployees = useMemo(() => {
     const set = new Set(value.map(Number));
     return employeesArray.filter((e) => set.has(Number(e.id)));
-  }, [employees, value]);
+  }, [employeesArray, value]);
 
   const addOne = (id: number) => {
     if (!id) return;
@@ -495,7 +495,7 @@ export default function ConfigSystemUpdate({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
 
-  const { modalConfirm, modalError } = useModals();
+  const { modalConfirm } = useModals();
 
   const onSubmit: SubmitHandler<TInputs> = async (formData) => {
     const payload = {

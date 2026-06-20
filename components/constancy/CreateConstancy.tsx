@@ -106,7 +106,7 @@ export default function CreateConstancyComponent({
         };
 
         loadConstancies(); //Ejcuta la funcion 
-    }, [existenConstancy, idEmployeeSelected]); //Dependencias 
+    }, [existenConstancy, idEmployeeSelected, setValue]);
 
 
     //Para el arreglo de penalizaciones, las que tenemos de cajon

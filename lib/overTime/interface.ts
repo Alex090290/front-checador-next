@@ -87,4 +87,5 @@ export interface ISignatures {
     status: "APPROVED" | "REFUSED" | "PENDING";
     key: string;
     signature?: string;
+    dateApproved?: string;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
 import moment from "moment-timezone";
@@ -8,9 +8,7 @@ import moment from "moment-timezone";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import ListView from "@/components/templates/ListView";
-import TableTemplateServer, {
-  TableTemplateColumn,
-} from "@/components/templates/TablePage";
+import { TableTemplateColumn } from "@/components/templates/TablePage";
 import { IInability } from "@/lib/definitions";
 
 const statusVariantMap: Record<string, string> = {
@@ -38,10 +36,6 @@ export default function TableInabilityComponent({
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
-  const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const isClearingSelectionRef = useRef(false);
-  const [, setSelectedIds] = useState<Array<string | number>>([]);
-  const tableResetKey = 0;
 
   useEffect(() => {
     if (loading) {
@@ -67,11 +61,6 @@ export default function TableInabilityComponent({
     params.set("limit", String(limit));
 
     router.push(`/app/inability?${params.toString()}`);
-  };
-
-  const handleSelectionChange = (ids: Array<string | number>) => {
-    if (isClearingSelectionRef.current) return;
-    setSelectedIds(ids);
   };
 
   const columns: TableTemplateColumn<IInability>[] = [

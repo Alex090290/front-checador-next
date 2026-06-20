@@ -82,6 +82,11 @@ export function ConstancyOne({
         }
     }, [currentUser]);
 
+    useEffect(() => {
+        const involved = constancy?.involved?.[0]?.employees ?? [];
+        setInvolvedShow(involved.length >= 1);
+    }, [constancy?.involved]);
+
     //Para el boton de regresar
     const handleBack = () => {
         setLoading(true);
@@ -250,14 +255,6 @@ export function ConstancyOne({
         ) ?? [];
 
     const datainvolved = constancy.involved?.[0]?.employees ?? [];
-    
-    useEffect(()=>{
-        if (datainvolved.length >= 1) {
-            setInvolvedShow(true)
-        }else{
-            setInvolvedShow(false)
-        }
-    },[datainvolved])
 
     // const involvedEmployees = constancy.involved?.flatMap((item) => item.employees ?? []);
 

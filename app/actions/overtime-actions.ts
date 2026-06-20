@@ -3,21 +3,13 @@
 import { FetchUsersArgs } from "@/lib/constancy/interface";
 import { OverTime, OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { storeAction } from "./storeActions";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { storeToken } from "@/lib/useToken";
 import { base64ToBlob } from "@/lib/helpers";
 import { auth } from "@/lib/auth";
 
-interface IResAxios {
-  	"message": string,
-    "status": number,
-    "data": {
-      "_id:": string,
-      "id:": number
-    }
-}
 //Funcion para paginar tiempo extra  
 export async function fetchOverTimeQueries(args: FetchUsersArgs & { search?: string } = {}): Promise<{
   data: OverTime[];
@@ -177,29 +169,30 @@ export async function createOverTime({
         }
         
           
-    const response:any = await axios.post(`${API_URL}/overtime`,dataSave,headers).then((res)=>{
-      return res.data.data;
-    }).catch((err)=>{
-      console.log("Error axios: ", err);
-      
-      throw new Error(
-        err.response.data.message
-          ? err.response.data.message
-          : "Error en la respuesta"
+    try {
+      const res = await axios.post<{ data: OverTimeAxios }>(
+        `${API_URL}/overtime`,
+        dataSave,
+        headers
       );
-    })        
 
-      const dataResponse:OverTimeAxios = {
-          _id: response._id,
-          id: response.id
-      }
-      
-    
-    return {
-      success: true,
-      message: "Registro creado correctamente",
-      data: dataResponse
-    };
+      const dataResponse: OverTimeAxios = {
+        _id: res.data.data._id,
+        id: res.data.data.id,
+      };
+
+      return {
+        success: true,
+        message: "Registro creado correctamente",
+        data: dataResponse,
+      };
+    } catch (err) {
+      const error = err as Error;
+      return {
+        success: false,
+        message: error.message ? error.message : "Error en endpoint",
+      };
+    }
   } catch (error: unknown) {
     console.log("Error Axios: ", error);
     

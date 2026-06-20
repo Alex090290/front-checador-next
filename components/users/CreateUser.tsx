@@ -14,7 +14,6 @@ import { useRouter } from "next/navigation";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import toast from "react-hot-toast";
-import { useState } from "react";
 
 type TInputs = {
   name: string;
@@ -64,8 +63,6 @@ export default function CreateUserComponent({
 
   const { modalError } = useModals();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
 
   const permisosSeleccionados = watch("permissions") || [];
 
@@ -82,8 +79,6 @@ export default function CreateUserComponent({
   };
 
   const handleBack = () => {
-    setLoading(true);
-    setMessageLoading("Cargando...");
     router.push("/app/users");
   };
 

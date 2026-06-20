@@ -20,17 +20,14 @@ function SignaturesViewOvertime({
 
 }) {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
 
   useEffect(() => {
     const handleFetchSignature = async () => {
       if (!id || !idEmployee) return;
-      setLoading(true);
       const res = await fetchSignatureOverTime({ id, idEmployee });
-      if (!res.success) return setLoading(false);
+      if (!res.success) return;
       setImgUrl(res.data || null);
-      setLoading(false);
     };
     handleFetchSignature();
   }, [id, idEmployee]);

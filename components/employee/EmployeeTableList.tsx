@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Employee } from "@/lib/definitions";
 import ListView from "../templates/ListView";
-import TableTemplateServer, { TableTemplateColumn } from "../templates/TablePage";
-import { Badge, Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
+import { TableTemplateColumn } from "../templates/TablePage";
+import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "./GenericSearchInput";
@@ -36,7 +36,7 @@ export default function EmployeeTableClient({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const [tableResetKey, setTableResetKey] = useState(0);
+  const [, setTableResetKey] = useState(0);
   const isClearingSelectionRef = useRef(false);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
 

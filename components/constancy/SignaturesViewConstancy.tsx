@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { Badge, Card, Col, Spinner } from "react-bootstrap";
+import { Card, Col } from "react-bootstrap";
 import Image from "next/image";
 import { fetchSignatureOverTime } from "@/app/actions/overtime-actions";
 
@@ -17,16 +17,13 @@ function SignaturesViewConstancy({
     url?: string;
 }){
     const [imgUrl, setImgUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
 
 useEffect(() => {
     const handleFetchSignature = async () => {
       if (!id || !idEmployee) return;
-      setLoading(true);
       const res = await fetchSignatureOverTime({ id, idEmployee});
-      if (!res.success) return setLoading(false);
+      if (!res.success) return;
       setImgUrl(res.data || null);
-      setLoading(false);
     };
     handleFetchSignature();
   }, [id, idEmployee]);

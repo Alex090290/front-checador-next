@@ -2,8 +2,8 @@
 
 import { createOverTime, sendSignatureOverTime } from "@/app/actions/overtime-actions";
 import { useModals } from "@/context/ModalContext";
-import { Employee } from "@/lib/definitions"
-import { OverTime, TInputsOvertime } from "@/lib/overTime/interface";
+import { ActionResponse, Employee } from "@/lib/definitions"
+import { OverTime, OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
@@ -61,7 +61,7 @@ export default function CreateOvertimeComponent({
                 setMessageLoading("Guardando registro...");
 
                 await createOverTime({ data })
-                    .then(async (rescrate: any) => {
+                    .then(async (rescrate: ActionResponse<OverTimeAxios>) => {
                         if (!rescrate.success || !rescrate.data?.id) {
                             modalError(rescrate.message || "No se pudo crear el registro");
                             return;
@@ -92,7 +92,7 @@ export default function CreateOvertimeComponent({
     useEffect(() => {
         if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
 
-    }, [session]);
+    }, [session, setValue]);
 
     const handleBack = () => {
         setLoading(true);

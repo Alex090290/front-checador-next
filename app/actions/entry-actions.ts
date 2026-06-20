@@ -126,7 +126,7 @@ export async function fetchCheckInFeedback(args: FetchUsersArgs): Promise<
     
     if (user?.role === "CHECADOR") params.set("idUser", String(user.id));
 
-    let url = `${apiUrl}/checador/view?${params.toString()}`;
+    const url:string = `${apiUrl}/checador/view?${params.toString()}`;
 
     const response = await axios.get(url, {
         headers: {

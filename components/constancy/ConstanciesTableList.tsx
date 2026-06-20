@@ -66,7 +66,7 @@ export default function ConstanciesTableClient({
             setLoading(false);
             setMessageLoading("");
         }
-    }, [pathname, searchParamsString]);
+    }, [pathname, searchParamsString, loading]);
 
     const goToPage = (nextPage: number) => {
         setLoading(true);

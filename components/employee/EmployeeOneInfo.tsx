@@ -33,7 +33,6 @@ import ModalBlur from "../ModalBlur";
 import FormUpdateEmployee from "@/app/(auth)/app/employee/views/updateEmplyee/update";
 import { TInputsEmployee } from "@/app/(auth)/app/employee/definition";
 import {
-  deleteEmployee,
   reEntry,
   updateEmploye,
 } from "@/app/actions/employee-actions";
@@ -44,8 +43,6 @@ import Loading from "../LoadingSpinner";
 import RegisterBiometricModal from "./rekognition";
 import UnsubscribeEmployeeComponent from "./Unsubscribe";
 import NewDocumentEmployeeComponent from "./NewDocument";
-import { format } from "path";
-
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
   if (!value) return "-";

@@ -55,13 +55,12 @@ export async function fetchPenalties(): Promise<typeOfPenalty[]> {
 
         return response.data?.data || [];
 
-    } catch (error: any) {
-        const apiMessage = error.response?.data?.message || "Error en la respuesta de la API";
-
-        console.error("Respuesta incorrecta: ", apiMessage, error);
-
-        return [];
-    }
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.log(err);
+    
+        return []
+      }
 }
 
 //Funcion para paginar constancias 
@@ -126,8 +125,7 @@ export async function createConstancy({
 
     try {
         const { apiToken, API_URL } = await storeAction();
-        const response = await axios
-            .post(`${API_URL}/constancy`,
+        await axios.post(`${API_URL}/constancy`,
                 {
                     idEmployee: data.idEmployee,
                     dateTheEvents: data.dateTheEvents,

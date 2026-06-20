@@ -2,12 +2,9 @@
 
 import { TCheckData } from "@/app/(auth)/app/checador/views/ChecadorFormView";
 import { ActionResponse } from "@/lib/definitions";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
-import ConditionalRender from "../ConditionalRender";
-import Loading from "../LoadingSpinner";
 
 type TInputs = {
   idCheck: string;
