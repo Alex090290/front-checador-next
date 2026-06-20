@@ -84,7 +84,7 @@ export default function ChecadorFormView({
     };
 
     const res = await checkIn(newObj);
-
+    mutate()
     if (!res.success) {
       toast.error(res.message, { id: toastIdRef.current });
       return res;
@@ -94,7 +94,7 @@ export default function ChecadorFormView({
     setMessage(res?.data || "");
     await handleFetchFeedback();
     toast.success(res.message, { id: toastIdRef.current });
-    mutate()
+    
     return res;
   };
 
