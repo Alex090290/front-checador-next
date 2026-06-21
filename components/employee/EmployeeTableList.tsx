@@ -45,7 +45,7 @@ export default function EmployeeTableClient({
       setLoading(false);
       setMessageLoading("");
     }
-  }, [searchParamsString, loading]);
+  }, [searchParamsString]);
 
   const handleCreate = () => {
     setLoading(true);

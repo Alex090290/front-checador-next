@@ -48,13 +48,11 @@ export default function CreateOvertimeComponent({
     const router = useRouter();
 
     console.log("SESION:", session);
-    
+
 
     //Helpers
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
 
-        console.log("SE MANDA:", data);
-        
         modalConfirm("¿Seguro que quieres guardar el registro?", async () => {
             try {
                 setLoading(true);
@@ -110,175 +108,180 @@ export default function CreateOvertimeComponent({
                 <Loading message="Guardando..." />
             </ConditionalRender>
 
-            <Container className="py-3" style={{ maxWidth: "1200px" }}>
-                <Form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h1 className="mb-1">Horas extra</h1>
-                            <p className="text-muted mb-0">
-                                Registra la información de la solicitud.
-                            </p>
-                        </div>
+            <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
+                <Row className="m-2">
+                    <Col xs={12} md={12} lg={12}>
 
-                        <div className="d-flex gap-2">
-                            <Button
-                                variant="outline-secondary"
-                                type="button"
-                                disabled={isSubmitting}
-                                onClick={handleBack}
-                            >
-                                Cancelar
-                            </Button>
+                        <Form onSubmit={handleSubmit(onSubmit)}>
+                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+                                <div>
+                                    <h1 className="mb-1">Horas extra</h1>
+                                    <p className="text-muted mb-0">
+                                        Registra la información de la solicitud.
+                                    </p>
+                                </div>
 
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                disabled={isSubmitting || loading || !isDirty}
-                                onClick={() => reset(DEFAULT_VALUES)}
-                            >
-                                Limpiar
-                            </Button>
+                                <div className="d-flex flex-wrap gap-2">
+                                    <Button
+                                        variant="outline-secondary"
+                                        type="button"
+                                        disabled={isSubmitting}
+                                        onClick={handleBack}
+                                    >
+                                        Cancelar
+                                    </Button>
 
-                            <Button
-                                className="bg-success border-success"
-                                type="submit"
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? "Guardando..." : "Guardar"}
-                            </Button>
-                        </div>
-                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        disabled={isSubmitting || loading || !isDirty}
+                                        onClick={() => reset(DEFAULT_VALUES)}
+                                    >
+                                        Limpiar
+                                    </Button>
 
-                    <Card className="rounded-4 shadow-sm border">
-                        <Card.Body className="p-4 p-md-5">
-                            <div className="mb-4">
-                                <h5 className="fw-semibold mb-1">Datos del empleado</h5>
-                                <p className="text-muted mb-3">
-                                    Selecciona el empleado y describe el motivo.
-                                </p>
+                                    <Button
+                                        className="bg-success border-success"
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? "Guardando..." : "Guardar"}
+                                    </Button>
+                                </div>
+                            </div>
 
-                                <div className="mb-4">
-                                    <div className="d-flex align-items-center gap-2 mb-2">
-                                        <label className="fw-semibold">Empleado</label>
+                            <Card className="rounded-4 shadow-sm border">
+                                <Card.Body className="p-4 p-md-5">
+                                    <div className="mb-4">
+                                        <h5 className="fw-semibold mb-1">Datos del empleado</h5>
+                                        <p className="text-muted mb-3">
+                                            Selecciona el empleado y describe el motivo.
+                                        </p>
 
-                                        <OverlayTrigger
-                                            placement="top"
-                                            overlay={
-                                                <Tooltip id="tooltip-info">
-                                                    Escribe el nombre del empleado que deseas seleccionar.
-                                                </Tooltip>
-                                            }
-                                        >
-                                            <span style={{ cursor: "pointer" }}>
-                                                <i className="bi bi-info-circle-fill text-primary" />
-                                            </span>
-                                        </OverlayTrigger>
+                                        <div className="mb-4">
+                                            <div className="d-flex align-items-center gap-2 mb-2">
+                                                <label className="fw-semibold">Empleado</label>
+
+                                                <OverlayTrigger
+                                                    placement="top"
+                                                    overlay={
+                                                        <Tooltip id="tooltip-info">
+                                                            Escribe el nombre del empleado que deseas seleccionar.
+                                                        </Tooltip>
+                                                    }
+                                                >
+                                                    <span style={{ cursor: "pointer" }}>
+                                                        <i className="bi bi-info-circle-fill text-primary" />
+                                                    </span>
+                                                </OverlayTrigger>
+                                            </div>
+
+                                            <RelationField
+                                                readonly={session?.uid?.role === "EMPLOYEE"}
+                                                register={register("idEmployee", {
+                                                    required: "El empleado es requerido",
+                                                    validate: (value) =>
+                                                        Number(value) > 0 || "El empleado es requerido",
+                                                })}
+                                                options={employees.map((e) => ({
+                                                    id: e.id!,
+                                                    displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                                    name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                                                }))}
+                                                label=""
+                                                callBackMode="id"
+                                                control={control}
+                                                invalid={!!errors.idEmployee}
+                                                feedBack={errors.idEmployee?.message}
+                                            />
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <Entry
+                                                register={register("motive",
+                                                    { required: "El motivo es requerido" }
+                                                )}
+                                                label="Motivo"
+                                                type="text"
+                                                invalid={!!errors.motive}
+                                                feedBack={errors.motive?.message}
+                                                className="text-uppercase border"
+                                            />
+                                        </div>
                                     </div>
 
-                                    <RelationField
-                                        readonly={session?.uid?.role === "EMPLOYEE"}
-                                        register={register("idEmployee", {
-                                            required: "El empleado es requerido",
-                                            validate: (value) =>
-                                                Number(value) > 0 || "El empleado es requerido",
-                                        })}
-                                        options={employees.map((e) => ({
-                                            id: e.id!,
-                                            displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                                            name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                                        }))}
-                                        label=""
-                                        callBackMode="id"
-                                        control={control}
-                                        invalid={!!errors.idEmployee}
-                                        feedBack={errors.idEmployee?.message}
-                                    />
-                                </div>
+                                    <hr className="my-4" />
 
-                                <div className="mb-4">
-                                    <Entry
-                                        register={register("motive",
-                                            { required: "El motivo es requerido" }
-                                        )}
-                                        label="Motivo"
-                                        type="text"
-                                        invalid={!!errors.motive}
-                                        feedBack={errors.motive?.message}
-                                        className="text-uppercase border"
-                                    />
-                                </div>
-                            </div>
+                                    <div className="mb-4">
+                                        <h5 className="fw-semibold mb-1">Fecha y horario</h5>
+                                        <p className="text-muted mb-3">
+                                            Indica cuándo inició y terminó la hora extra.
+                                        </p>
 
-                            <hr className="my-4" />
+                                        <Row className="g-4">
+                                            <Col xs={12} md={4}>
+                                                <Entry
+                                                    register={register("date", {
+                                                        required: "La fecha del evento es requerida",
+                                                    })}
+                                                    type="date"
+                                                    label="Fecha del evento"
+                                                    invalid={!!errors.date}
+                                                    feedBack={errors.date?.message}
+                                                    className="border"
+                                                />
+                                            </Col>
 
-                            <div className="mb-4">
-                                <h5 className="fw-semibold mb-1">Fecha y horario</h5>
-                                <p className="text-muted mb-3">
-                                    Indica cuándo inició y terminó la hora extra.
-                                </p>
+                                            <Col xs={12} md={4}>
+                                                <Entry
+                                                    register={register("hourInit", {
+                                                        required: "La hora de inicio es requerida",
+                                                    })}
+                                                    type="time"
+                                                    label="Hora de inicio"
+                                                    invalid={!!errors.hourInit}
+                                                    feedBack={errors.hourInit?.message}
+                                                    className="border"
+                                                />
+                                            </Col>
 
-                                <Row className="g-4">
-                                    <Col xs={12} md={4}>
-                                        <Entry
-                                            register={register("date", {
-                                                required: "La fecha del evento es requerida",
-                                            })}
-                                            type="date"
-                                            label="Fecha del evento"
-                                            invalid={!!errors.date}
-                                            feedBack={errors.date?.message}
-                                            className="border"
-                                        />
-                                    </Col>
+                                            <Col xs={12} md={4}>
+                                                <Entry
+                                                    register={register("hourEnd", {
+                                                        required: "La hora de fin es requerida",
+                                                    })}
+                                                    type="time"
+                                                    label="Hora de fin"
+                                                    invalid={!!errors.hourEnd}
+                                                    feedBack={errors.hourEnd?.message}
+                                                    className="border"
+                                                />
+                                            </Col>
+                                        </Row>
+                                    </div>
 
-                                    <Col xs={12} md={4}>
-                                        <Entry
-                                            register={register("hourInit", {
-                                                required: "La hora de inicio es requerida",
-                                            })}
-                                            type="time"
-                                            label="Hora de inicio"
-                                            invalid={!!errors.hourInit}
-                                            feedBack={errors.hourInit?.message}
-                                            className="border"
-                                        />
-                                    </Col>
+                                    <hr className="my-4" />
 
-                                    <Col xs={12} md={4}>
-                                        <Entry
-                                            register={register("hourEnd", {
-                                                required: "La hora de fin es requerida",
-                                            })}
-                                            type="time"
-                                            label="Hora de fin"
-                                            invalid={!!errors.hourEnd}
-                                            feedBack={errors.hourEnd?.message}
-                                            className="border"
-                                        />
-                                    </Col>
-                                </Row>
-                            </div>
+                                    <div>
+                                        <h5 className="fw-semibold mb-1">Firma</h5>
+                                        <p className="text-muted mb-3">
+                                            Agrega la firma para confirmar el registro.
+                                        </p>
 
-                            <hr className="my-4" />
-
-                            <div>
-                                <h5 className="fw-semibold mb-1">Firma</h5>
-                                <p className="text-muted mb-3">
-                                    Agrega la firma para confirmar el registro.
-                                </p>
-
-                                <div className="w-100 overflow-hidden">
-                                    <SignatureInput
-                                        name="signature"
-                                        register={register}
-                                        control={control}
-                                    />
-                                </div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Form>
-            </Container>
+                                        <div className="w-100 overflow-hidden">
+                                            <SignatureInput
+                                                name="signature"
+                                                register={register}
+                                                control={control}
+                                            />
+                                        </div>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Form>
+                    </Col>
+                </Row>
+            </Container >
         </>
     );
 }

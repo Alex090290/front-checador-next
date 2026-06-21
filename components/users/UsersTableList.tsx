@@ -85,7 +85,7 @@ export default function UserTableClient({
       setLoading(false);
       setMessageLoading("");
     }
-  }, [searchParamsString, loading]);
+  }, [searchParamsString]);
 
   // const goToPage = (nextPage: number) => {
   //   setLoading(true);

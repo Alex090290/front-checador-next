@@ -34,7 +34,7 @@ export default function BranchesTableClient({
       setLoading(false);
       setMessageLoading("");
     }
-  }, [searchParamsString, loading]);
+  }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);

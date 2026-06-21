@@ -194,7 +194,6 @@ export async function createOverTime({
       };
     }
   } catch (error: unknown) {
-    console.log("Error Axios: ", error);
     
     const err = error as Error;
 

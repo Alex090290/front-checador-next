@@ -44,7 +44,7 @@ export default function OverTimeTableClient({
             setLoading(false);
             setMessageLoading("");
         }
-    }, [pathname, searchParamsString, loading]);
+    }, [pathname, searchParamsString]);
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {
@@ -141,7 +141,7 @@ export default function OverTimeTableClient({
                 params.set("search", value);
 
                 console.log("Busca:", search);
-                
+
             } else {
                 params.delete("search");
             }
@@ -266,7 +266,6 @@ export default function OverTimeTableClient({
                     variant="primary"
                     className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
                     onClick={handleCreate}
-                    disabled={loading}
                 >
                     <i className="bi bi-plus-lg" />
                     Crear registro
