@@ -9,9 +9,6 @@ import {
   RelationField,
   SignatureInput,
 } from "@/components/fields";
-import FormView, {
-  FieldGroup,
-} from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import { Employee, PeriodVacation, Vacations } from "@/lib/definitions";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
@@ -52,7 +49,6 @@ function CreateVacationComponent({
     watch,
     control,
     setValue,
-    getValues,
     formState: { isDirty, isSubmitting },
   } = useForm<TInputs>();
   const [loading, setLoading] = useState(false);

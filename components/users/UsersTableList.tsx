@@ -70,7 +70,6 @@ export default function UserTableClient({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showUpdateUserModal, setShowUpdateUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -85,6 +84,7 @@ export default function UserTableClient({
       setLoading(false);
       setMessageLoading("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsString]);
 
   // const goToPage = (nextPage: number) => {
@@ -118,7 +118,6 @@ export default function UserTableClient({
     isClearingSelectionRef.current = true;
 
     tableRef.current?.clearSelection();
-    setSelectedIds([]);
     setTableResetKey((k) => k + 1);
 
     setTimeout(() => {

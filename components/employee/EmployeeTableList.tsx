@@ -45,6 +45,7 @@ export default function EmployeeTableClient({
       setLoading(false);
       setMessageLoading("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsString]);
 
   const handleCreate = () => {

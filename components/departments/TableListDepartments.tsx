@@ -1,9 +1,7 @@
 "use client";
 
-import { deleteDepartment } from "@/app/actions/departments-actions";
 import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
-import { useModals } from "@/context/ModalContext";
 import { Department } from "@/lib/definitions";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
@@ -27,8 +25,6 @@ export default function DepartmentsTableList({
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
 
-  const { modalError, modalConfirm } = useModals();
-  const [selectedIds] = useState<Array<string | number>>([]);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
 
@@ -38,6 +34,7 @@ export default function DepartmentsTableList({
       setLoading(false);
       setMessageLoading("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
@@ -99,19 +96,16 @@ export default function DepartmentsTableList({
     router.push("/app/departments/create");
   };
 
-  const deleteIds = async () => {
-    for (const id of selectedIds) {
-      const res = await deleteDepartment({ id: Number(id) });
-      if (!res.success) {
-        modalError(res.message);
-        return;
-      }
-    }
-  };
+  // const deleteIds = async () => {
+  //   for (const id of selectedIds) {
+  //     const res = await deleteDepartment({ id: Number(id) });
+  //     if (!res.success) {
+  //       modalError(res.message);
+  //       return;
+  //     }
+  //   }
+  // };
 
-  const handleDelete = () => {
-    modalConfirm("Confirmar Acción", deleteIds);
-  };
 
   return (
     <>

@@ -34,6 +34,7 @@ export default function BranchesTableClient({
       setLoading(false);
       setMessageLoading("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {

@@ -44,6 +44,7 @@ export default function OverTimeTableClient({
             setLoading(false);
             setMessageLoading("");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname, searchParamsString]);
 
     // Para redirigir a la pagina de crear

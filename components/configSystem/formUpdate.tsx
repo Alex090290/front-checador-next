@@ -110,13 +110,15 @@ export function EmployeeAutocomplete({
   const userTypingRef = useRef(false);
   const pendingClearRef = useRef(false);
 
-  const employeesArray = Array.isArray(employees) ? employees : [];
-
+  const employeesArray = useMemo(
+    () => Array.isArray(employees) ? employees : [],
+    [employees]
+  );
+  
   const selected = useMemo(
     () => employeesArray.find((e) => Number(e.id) === Number(value)),
     [employeesArray, value]
   );
-
   useEffect(() => {
     if (userTypingRef.current) return;
 
@@ -255,7 +257,7 @@ function EmployeeMultiSelect({
   placeholder?: string;
   isEmployeesLoading?: boolean;
 }) {
-  const employeesArray = Array.isArray(employees) ? employees : [];
+  const employeesArray = useMemo(()=> Array.isArray(employees) ? employees : [],[employees]);
 
   const selectedEmployees = useMemo(() => {
     const set = new Set(value.map(Number));

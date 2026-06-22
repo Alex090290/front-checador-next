@@ -4,7 +4,6 @@ import { createInability } from "@/app/actions/inability-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
-import { FieldGroup } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import { Employee } from "@/lib/definitions";
 import { formatDate } from "date-fns";
