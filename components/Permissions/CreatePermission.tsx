@@ -18,7 +18,7 @@ import { Employee } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import useSWR from "swr";
@@ -156,8 +156,8 @@ export default function CreatePermissionComponent({
         if (!employeeId || Number.isNaN(employeeId)) return;
 
         const emp = await findEmployeeById({ id: employeeId });
-        console.log("emp: ",emp);
-        
+        console.log("emp: ", emp);
+
         if (cancelled || !emp) return;
 
         const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
@@ -174,8 +174,8 @@ export default function CreatePermissionComponent({
 
         const leaderId = emp?.leader?.id ?? null;
 
-        console.log("leaderId: ",leaderId);
-        
+        console.log("leaderId: ", leaderId);
+
         setValue("idLeader", leaderId ? Number(leaderId) : null, {
           shouldDirty: true,
           shouldValidate: true,
@@ -203,183 +203,277 @@ export default function CreatePermissionComponent({
     });
   }, [config, currentDoh, setValue]);
 
+  const handleBack = () => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
+    router.push("/app/permissions");
+  };
 
-//   console.log("employees: ",employees);
-  
+  //   console.log("employees: ",employees);
+
   return (
     <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading || "Guardando permiso..."} />
       </ConditionalRender>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={isSubmitting || loading}>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Crear permiso</h1>
+      <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
+        <Row className="m-2">
+          <Col xs={12}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
+              <fieldset disabled={isSubmitting || loading}>
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                  <div>
+                    <h1 className="mb-1">Crear permiso</h1>
+                    <p className="text-muted mb-0">
+                      Registra la información de la solicitud de permiso.
+                    </p>
+                  </div>
 
-            <div className="d-flex gap-2">
-              <Button type="submit" disabled={isSubmitting || loading}>
-                {isSubmitting || loading ? "Guardando..." : "Guardar"}
-              </Button>
+                  <div className="d-flex flex-wrap gap-2">
+                    <Button
+                      variant="outline-secondary"
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleBack}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={isSubmitting || loading || !isDirty}
+                      onClick={() => reset(DEFAULT_VALUES)}
+                    >
+                      Limpiar
+                    </Button>
 
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={isSubmitting || loading || !isDirty}
-                onClick={() => reset(DEFAULT_VALUES)}
-              >
-                Limpiar
-              </Button>
-            </div>
-          </div>
+                    <Button
+                      className="bg-success border-success"
+                      type="submit"
+                      disabled={isSubmitting || loading}
+                    >
+                      {isSubmitting || loading ? "Guardando..." : "Guardar"}
+                    </Button>
+                  </div>
+                </div>
 
-          <FieldGroup>
-            <RelationField
-              register={register("idEmployee")}
-              options={employees.map((e) => ({
-                id: e.id ?? 0,
-                displayName:
-                  `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-              }))}
-              label="Empleado:"
-              callBackMode="id"
-              control={control}
-              readonly={
-                session?.uid?.role === "EMPLOYEE" && session.uid.isDoh === false
-              }
-            />
+                <Card className="rounded-4 shadow-sm border">
+                  <Card.Body className="p-3 p-md-5">
+                    <div className="mb-4">
+                      <h5 className="fw-semibold mb-1">Datos del empleado</h5>
+                      <p className="text-muted mb-3">
+                        Selecciona el empleado, líder y responsable D.O.H.
+                      </p>
 
-            <FieldGroup.Stack>
-              <RelationField
-                register={register("idLeader")}
-                options={employees.map((e) => ({
-                  id: e.id ?? 0,
-                  displayName:
-                    `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                  name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                }))}
-                label="Líder:"
-                callBackMode="id"
-                control={control}
-                readonly={
-                  session?.uid?.role === "EMPLOYEE" &&
-                  session.uid.isDoh === false
-                }
-              />
+                      <Row className="g-4">
+                        <Col xs={12}>
+                          <RelationField
+                            register={register("idEmployee")}
+                            options={employees.map((e) => ({
+                              id: e.id ?? 0,
+                              displayName:
+                                `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                              name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                            }))}
+                            label="Empleado:"
+                            callBackMode="id"
+                            control={control}
+                            readonly={
+                              session?.uid?.role === "EMPLOYEE" &&
+                              session.uid.isDoh === false
+                            }
+                          />
+                        </Col>
 
-              <RelationField
-                register={register("idPersonDoh")}
-                options={employees.map((e) => ({
-                  id: e.id ?? 0,
-                  displayName:
-                    `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                  name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                }))}
-                label="D.O.H."
-                callBackMode="id"
-                control={control}
-              />
-            </FieldGroup.Stack>
+                        <Col xs={12} md={6}>
+                          <RelationField
+                            register={register("idLeader")}
+                            options={employees.map((e) => ({
+                              id: e.id ?? 0,
+                              displayName:
+                                `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                              name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                            }))}
+                            label="Líder:"
+                            callBackMode="id"
+                            control={control}
+                            readonly={
+                              session?.uid?.role === "EMPLOYEE" &&
+                              session.uid.isDoh === false
+                            }
+                          />
+                        </Col>
 
-            <FieldSelect
-              options={[
-                {
-                  label: "TRÁMITE PERSONAL",
-                  value: "PERMISO POR TRÁMITE PERSONAL",
-                },
-                {
-                  label: "SITUACIÓN VIAL",
-                  value: "PERMISO POR SITUACIÓN VIAL",
-                },
-                {
-                  label: "POR SALUD (PROPIA O DE FAMILIAR)",
-                  value: "PERMISO POR SALUD",
-                },
-                {
-                  label: "ASUNTOS ESCOLARES",
-                  value: "PERMISO POR ASUSNTOS ESCOLARES",
-                },
-                {
-                  label: "PERMISO POR PATERNIDAD",
-                  value: "PERMISO PATERNIDAD",
-                },
-                {
-                  label: "OTROS",
-                  value: "PERMISO OTROS",
-                },
-              ]}
-              register={register("type", { required: true })}
-              label="Tipo:"
-              invalid={!!errors.type}
-            />
+                        <Col xs={12} md={6}>
+                          <RelationField
+                            register={register("idPersonDoh")}
+                            options={employees.map((e) => ({
+                              id: e.id ?? 0,
+                              displayName:
+                                `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                              name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                            }))}
+                            label="D.O.H."
+                            callBackMode="id"
+                            control={control}
+                          />
+                        </Col>
+                      </Row>
+                    </div>
 
-            <Entry
-              label="Descripción del motivo:"
-              register={register("motive", { required: true })}
-              invalid={!!errors.motive}
-            />
+                    <hr className="my-4" />
 
-            <FieldGroup.Stack>
-              <Form.Check
-                {...register("modeSelect")}
-                value="forHours"
-                type="radio"
-                label="Horas"
-                id="forHours"
-              />
-              <Form.Check
-                {...register("modeSelect")}
-                value="forDays"
-                type="radio"
-                label="Días"
-                id="forDays"
-              />
-            </FieldGroup.Stack>
+                    <div className="mb-4">
+                      <h5 className="fw-semibold mb-1">Motivo del permiso</h5>
+                      <p className="text-muted mb-3">
+                        Indica el tipo de permiso y describe el motivo.
+                      </p>
 
-            <FieldGroup.Stack>
-              <Entry
-                label="Fecha inicio:"
-                type="date"
-                register={register("dateInit")}
-                min={formatDate(new Date(), "yyyy-MM-dd")}
-              />
-              <Entry
-                label="Fecha final:"
-                type="date"
-                register={register("dateEnd")}
-                invalid={!!errors.dateEnd}
-                readonly={modeSelect === "forHours"}
-                min={dateInit}
-              />
-            </FieldGroup.Stack>
+                      <Row className="g-4">
+                        <Col xs={12}>
+                          <FieldSelect
+                            options={[
+                              {
+                                label: "TRÁMITE PERSONAL",
+                                value: "PERMISO POR TRÁMITE PERSONAL",
+                              },
+                              {
+                                label: "SITUACIÓN VIAL",
+                                value: "PERMISO POR SITUACIÓN VIAL",
+                              },
+                              {
+                                label: "POR SALUD (PROPIA O DE FAMILIAR)",
+                                value: "PERMISO POR SALUD",
+                              },
+                              {
+                                label: "ASUNTOS ESCOLARES",
+                                value: "PERMISO POR ASUSNTOS ESCOLARES",
+                              },
+                              {
+                                label: "PERMISO POR PATERNIDAD",
+                                value: "PERMISO PATERNIDAD",
+                              },
+                              {
+                                label: "OTROS",
+                                value: "PERMISO OTROS",
+                              },
+                            ]}
+                            register={register("type", { required: true })}
+                            label="Tipo:"
+                            invalid={!!errors.type}
+                            className="border"
+                          />
+                        </Col>
 
-            {modeSelect === "forHours" && (
-              <FieldGroup.Stack>
-                <Entry
-                  register={register("hourInit")}
-                  label="Hora inicial:"
-                  className="text-center"
-                  type="time"
-                />
-                <Entry
-                  label="Hora final:"
-                  register={register("hourEnd")}
-                  className="text-center"
-                  type="time"
-                />
-              </FieldGroup.Stack>
-            )}
+                        <Col xs={12}>
+                          <Entry
+                            label="Descripción del motivo:"
+                            register={register("motive", { required: true })}
+                            invalid={!!errors.motive}
+                            className="border"
+                          />
+                        </Col>
+                      </Row>
+                    </div>
 
-           {/* Apartado de firmas */}
-            <SignatureInput
-              name="signature"
-              register={register}
-              control={control}
-            />
-          </FieldGroup>
-        </fieldset>
-      </Form>
+                    <hr className="my-4" />
+
+                    <div className="mb-4">
+                      <h5 className="fw-semibold mb-1">Fecha y horario</h5>
+                      <p className="text-muted mb-3">
+                        Define si el permiso será por horas o por días.
+                      </p>
+
+                      <Row className="g-4">
+                        <Col xs={12}>
+                          <div className="d-flex flex-wrap gap-4">
+                            <Form.Check
+                              {...register("modeSelect")}
+                              value="forHours"
+                              type="radio"
+                              label="Horas"
+                              id="forHours"
+                            />
+                            <Form.Check
+                              {...register("modeSelect")}
+                              value="forDays"
+                              type="radio"
+                              label="Días"
+                              id="forDays"
+                            />
+                          </div>
+                        </Col>
+
+                        <Col xs={12} md={6}>
+                          <Entry
+                            label="Fecha inicio:"
+                            type="date"
+                            register={register("dateInit")}
+                            min={formatDate(new Date(), "yyyy-MM-dd")}
+                            className="border"
+                          />
+                        </Col>
+
+                        <Col xs={12} md={6}>
+                          <Entry
+                            label="Fecha final:"
+                            type="date"
+                            register={register("dateEnd")}
+                            invalid={!!errors.dateEnd}
+                            readonly={modeSelect === "forHours"}
+                            min={dateInit}
+                            className="border"
+                          />
+                        </Col>
+
+                        {modeSelect === "forHours" && (
+                          <>
+                            <Col xs={12} md={6}>
+                              <Entry
+                                register={register("hourInit")}
+                                label="Hora inicial:"
+                                className="text-center"
+                                type="time"
+                              />
+                            </Col>
+
+                            <Col xs={12} md={6}>
+                              <Entry
+                                label="Hora final:"
+                                register={register("hourEnd")}
+                                className="text-center"
+                                type="time"
+                              />
+                            </Col>
+                          </>
+                        )}
+                      </Row>
+                    </div>
+
+                    <hr className="my-4" />
+
+                    <div>
+                      <h5 className="fw-semibold mb-1">Firma</h5>
+                      <p className="text-muted mb-3">
+                        Agrega la firma para confirmar la solicitud.
+                      </p>
+
+                      <div className="w-100 overflow-hidden">
+                        <SignatureInput
+                          name="signature"
+                          register={register}
+                          control={control}
+                        />
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </fieldset>
+            </Form>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 }

@@ -38,7 +38,7 @@ export default function DepartmentsTableList({
       setLoading(false);
       setMessageLoading("");
     }
-  }, [searchParamsString, loading]);
+  }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);
@@ -131,7 +131,7 @@ export default function DepartmentsTableList({
             Crear departamento
           </Button>
 
-          <Button
+          {/* <Button
             variant="danger"
             className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
             onClick={handleDelete}
@@ -139,7 +139,7 @@ export default function DepartmentsTableList({
           >
             <i className="bi bi-trash" />
             Eliminar
-          </Button>
+          </Button> */}
         </div>
 
         <div className="d-flex justify-content-between align-items-center mb-4 mt-4">

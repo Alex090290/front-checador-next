@@ -19,8 +19,10 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
-import { Form } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import useSWR from "swr";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
 
 type TInputs = Pick<
   Vacations,
@@ -53,7 +55,9 @@ function CreateVacationComponent({
     getValues,
     formState: { isDirty, isSubmitting },
   } = useForm<TInputs>();
-  
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+
   const dateInit = watch("dateInit");
   const idEmployeeSelected = watch("idEmployee");
   const idPeriodSelected = watch("idPeriod");
@@ -91,6 +95,12 @@ function CreateVacationComponent({
     if (originalValuesRef.current) {
       reset(originalValuesRef.current);
     }
+  };
+
+  const handleBack = () => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
+    router.push("/app/vacationList?view_type=list&id=null");
   };
 
   useEffect(() => {
@@ -192,105 +202,211 @@ function CreateVacationComponent({
 
   return (
     <>
-      <FormView
-        cleanUrl="/app/vacations?view_type=form&id=null"
-        disabled={isSubmitting}
-        id={0}
-        isDirty={isDirty}
-        name={getValues().incidence}
-        onSubmit={handleSubmit(onSubmit)}
-        reverse={handleReverse}
-        actions={[]}
-      >
-        <FieldGroup>
-          <RelationField
-            register={register("idEmployee")}
-            options={employees.map((e) => ({
-              id: Number(e.id),
-              displayName: `${e.lastName} ${e.name}`.toUpperCase(),
-              name: `${e.lastName} ${e.name}`.toUpperCase(),
-            }))}
-            label="Empleado"
-            callBackMode="id"
-            control={control}
-          />
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading || "Guardando permiso..."} />
+      </ConditionalRender>
+      
+      <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
+        <Row className="m-2">
+          <Col xs={12}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                <div>
+                  <h1 className="mb-1">Crear vacaciones</h1>
+                  <p className="text-muted mb-0">
+                    Registra la solicitud de vacaciones del empleado.
+                  </p>
+                </div>
 
-          <FieldGroup.Stack>
-            <RelationField
-              register={register("idLeader")}
-              options={employees.map((e) => ({
-                id: Number(e.id),
-                displayName: `${e.lastName} ${e.name}`.toUpperCase(),
-                name: `${e.lastName} ${e.name}`.toUpperCase(),
-              }))}
-              label="Líder"
-              callBackMode="id"
-              control={control}
-            />
+                <div className="d-flex flex-wrap gap-2">
+                  <Button
+                    variant="outline-secondary"
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleBack}
+                  >
+                    Cancelar
+                  </Button>
 
-            <FieldSelect
-              label="Periodo Vacacional"
-              options={periods.map((p) => ({
-                label: p.periodDescription,
-                value: Number(p.id),
-              }))}
-              register={register("idPeriod", {
-                required: true,
-              })}
-            />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isSubmitting || !isDirty}
+                    onClick={handleReverse}
+                  >
+                    Limpiar
+                  </Button>
 
-            <RelationField
-              register={register("idPersonDoh")}
-              options={employees.map((e) => ({
-                id: Number(e.id),
-                displayName: `${e.lastName} ${e.name}`.toUpperCase(),
-                name: `${e.lastName} ${e.name}`.toUpperCase(),
-              }))}
-              label="D.O.H."
-              callBackMode="id"
-              control={control}
-            />
-          </FieldGroup.Stack>
+                  <Button
+                    className="bg-success border-success"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Guardando..." : "Guardar"}
+                  </Button>
+                </div>
+              </div>
 
-          <FieldGroup.Stack>
-            <Entry label="Inicio" type="date" register={register("dateInit")} />
-            <Entry
-              label="Final"
-              type="date"
-              register={register("dateEnd")}
-              min={dateInit}
-            />
-          </FieldGroup.Stack>
+              <Card className="rounded-4 shadow-sm border">
+                <Card.Body className="p-3 p-md-5">
+                  <div className="mb-4">
+                    <h5 className="fw-semibold mb-1">Datos del empleado</h5>
+                    <p className="text-muted mb-3">
+                      Selecciona el empleado, líder, periodo vacacional y D.O.H.
+                    </p>
 
-          {selectedPeriod && (
-            <FieldGroup.Stack>
-              <Form.Group className="w-100">
-                <Form.Label className="small text-muted">
-                  Días aprobados usados
-                </Form.Label>
-                <Form.Control
-                  value={String(selectedPeriod.usedDaysApproved ?? 0)}
-                  disabled
-                  readOnly
-                />
-              </Form.Group>
+                    <Row className="g-4">
+                      <Col xs={12}>
+                        <RelationField
+                          register={register("idEmployee")}
+                          options={employees.map((e) => ({
+                            id: Number(e.id),
+                            displayName: `${e.lastName} ${e.name}`.toUpperCase(),
+                            name: `${e.lastName} ${e.name}`.toUpperCase(),
+                          }))}
+                          label="Empleado"
+                          callBackMode="id"
+                          control={control}
+                        />
+                      </Col>
 
-              <Form.Group className="w-100">
-                <Form.Label className="small text-muted">
-                  Días disponibles
-                </Form.Label>
-                <Form.Control
-                  value={String(selectedPeriod.availableDays ?? 0)}
-                  disabled
-                  readOnly
-                />
-              </Form.Group>
-            </FieldGroup.Stack>
-          )}
+                      <Col xs={12} md={4}>
+                        <RelationField
+                          register={register("idLeader")}
+                          options={employees.map((e) => ({
+                            id: Number(e.id),
+                            displayName: `${e.lastName} ${e.name}`.toUpperCase(),
+                            name: `${e.lastName} ${e.name}`.toUpperCase(),
+                          }))}
+                          label="Líder"
+                          callBackMode="id"
+                          control={control}
+                        />
+                      </Col>
 
-          <SignatureInput name="signature" register={register} control={control} />
-        </FieldGroup>
-      </FormView>
+                      <Col xs={12} md={4}>
+                        <FieldSelect
+                          label="Periodo vacacional"
+                          options={periods.map((p) => ({
+                            label: p.periodDescription,
+                            value: Number(p.id),
+                          }))}
+                          register={register("idPeriod", {
+                            required: true,
+                          })}
+                          className="border"
+                        />
+                      </Col>
+
+                      <Col xs={12} md={4}>
+                        <RelationField
+                          register={register("idPersonDoh")}
+                          options={employees.map((e) => ({
+                            id: Number(e.id),
+                            displayName: `${e.lastName} ${e.name}`.toUpperCase(),
+                            name: `${e.lastName} ${e.name}`.toUpperCase(),
+                          }))}
+                          label="D.O.H."
+                          callBackMode="id"
+                          control={control}
+                        />
+                      </Col>
+                    </Row>
+                  </div>
+
+                  <hr className="my-4" />
+
+                  <div className="mb-4">
+                    <h5 className="fw-semibold mb-1">Fechas de vacaciones</h5>
+                    <p className="text-muted mb-3">
+                      Indica la fecha de inicio y fin del periodo solicitado.
+                    </p>
+
+                    <Row className="g-4">
+                      <Col xs={12} md={6}>
+                        <Entry
+                          label="Inicio"
+                          type="date"
+                          register={register("dateInit")}
+                          className="border"
+                        />
+                      </Col>
+
+                      <Col xs={12} md={6}>
+                        <Entry
+                          label="Final"
+                          type="date"
+                          register={register("dateEnd")}
+                          min={dateInit}
+                          className="border"
+                        />
+                      </Col>
+                    </Row>
+                  </div>
+
+                  {selectedPeriod && (
+                    <>
+                      <hr className="my-4" />
+
+                      <div className="mb-4">
+                        <h5 className="fw-semibold mb-1">Resumen del periodo</h5>
+                        <p className="text-muted mb-3">
+                          Consulta los días usados y disponibles del periodo seleccionado.
+                        </p>
+
+                        <Row className="g-4">
+                          <Col xs={12} md={6}>
+                            <Form.Group>
+                              <Form.Label className="fw-semibold">
+                                Días aprobados usados
+                              </Form.Label>
+                              <Form.Control
+                                value={String(selectedPeriod.usedDaysApproved ?? 0)}
+                                disabled
+                                readOnly
+                              />
+                            </Form.Group>
+                          </Col>
+
+                          <Col xs={12} md={6}>
+                            <Form.Group>
+                              <Form.Label className="fw-semibold">
+                                Días disponibles
+                              </Form.Label>
+                              <Form.Control
+                                value={String(selectedPeriod.availableDays ?? 0)}
+                                disabled
+                                readOnly
+                              />
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                      </div>
+                    </>
+                  )}
+
+                  <hr className="my-4" />
+
+                  <div>
+                    <h5 className="fw-semibold mb-1">Firma</h5>
+                    <p className="text-muted mb-3">
+                      Agrega la firma para confirmar la solicitud.
+                    </p>
+
+                    <div className="w-100 overflow-hidden">
+                      <SignatureInput
+                        name="signature"
+                        register={register}
+                        control={control}
+                      />
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Form>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 }

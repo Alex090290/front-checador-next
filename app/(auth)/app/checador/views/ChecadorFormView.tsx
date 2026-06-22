@@ -181,27 +181,32 @@ export default function ChecadorFormView({
   }
 
   /* Desktop real: bloquea scroll */
-  @media (min-width: 992px) {
-    .checador-layout {
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .checador-body {
-      overflow: hidden;
-    }
-
-    .checador-row {
-      height: 100%;
-    }
-
-    .checador-col {
-      height: 80%;
-    }
+  @media (min-width: 1200px) {
+  .checador-layout {
+    height: 100vh;
+    overflow: hidden;
   }
 
+  .checador-card {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .checador-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .checador-row,
+  .checador-col {
+    height: 100%;
+    min-height: 0;
+  }
+}
+
   /* Mobile horizontal */
-  @media (max-width: 991.98px) and (orientation: landscape) {
+  @media (max-width: 1199.98px) and (orientation: landscape) {
     .checador-layout {
       height: auto;
       min-height: 100vh;
@@ -226,7 +231,7 @@ export default function ChecadorFormView({
         <Container fluid className="px-0 checador-layout">
           <Row className="g-0">
             <Col lg="12" className="d-flex flex-column">
-              <Card className="d-flex flex-column border-0 w-100">
+              <Card className="d-flex flex-column border-0 w-100 checador-card">
 
                 {/* HEADER */}
                 <Card.Header className="border-0 flex-shrink-0">
@@ -262,8 +267,8 @@ export default function ChecadorFormView({
                         Mobile : order-2  (debajo de la cámara)
                         Desktop: order-1  (columna izquierda, full height)   */}
                     <Col
-                      xs={12} lg={6}
-                      className="order-2 order-lg-1 d-flex flex-column checador-col"
+                      xs={12} xl={6}
+                      className="order-2 order-xl-1 d-flex flex-column checador-col"
                     >
                       <div
                         className="table-responsive p-1 border rounded shadow"
@@ -316,8 +321,8 @@ export default function ChecadorFormView({
                                            (noticias ocultas aquí en mobile)
                         Desktop: order-2  → cámara arriba + noticias abajo    */}
                     <Col
-                      xs={12} lg={6}
-                      className="order-1 order-lg-2 d-flex flex-column gap-2 checador-col"
+                      xs={12} xl={6}
+                      className="order-1 order-xl-2 d-flex flex-column gap-2 checador-col"
                     >
                       {/* Cámara / formulario manual */}
                       <div className="border rounded shadow p-3 flex-shrink-0">
@@ -347,7 +352,7 @@ export default function ChecadorFormView({
                       </div>
 
                       {/* Noticias — SOLO DESKTOP (d-none en mobile) */}
-                      <div className="border rounded shadow p-3 d-none d-lg-flex flex-column flex-grow-1 overflow-auto">
+                      <div className="border rounded shadow p-3 d-none d-xl-flex flex-column flex-grow-1 overflow-auto">
                         <ConditionalRender cond={showTitleNotice}>
                           <Card className="border-0">
                             <Card.Title className="text-uppercase text-center fs-3 mb-0">
@@ -378,7 +383,7 @@ export default function ChecadorFormView({
                     {/* ── NOTICIAS MOBILE ────────────────────────────────────
                         Solo visible en mobile (d-lg-none), order-3
                         En desktop las noticias viven dentro del col derecho   */}
-                    <Col xs={12} className="order-3 d-lg-none">
+                    <Col xs={12} className="order-3 d-xl-none">
                       <div className="border rounded shadow p-3 d-flex flex-column">
                         <ConditionalRender cond={showTitleNotice}>
                           <Card className="border-0">

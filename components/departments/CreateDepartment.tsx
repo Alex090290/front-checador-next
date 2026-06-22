@@ -9,7 +9,7 @@ import { useModals } from "@/context/ModalContext";
 import { Department, Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -41,6 +41,12 @@ export default function CreateDepartmentComponent({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
 
+  const handleBack = () => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
+    router.push("/app/departments");
+  };
+
   const onSubmit: SubmitHandler<Department> = async (data) => {
     modalConfirm("¿Seguro que quieres guardar este departamento?", async () => {
       try {
@@ -69,62 +75,103 @@ export default function CreateDepartmentComponent({
         <Loading message={messageLoading || "Guardando departamento..."} />
       </ConditionalRender>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={isSubmitting || loading}>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="mb-0">Crear departamento</h1>
+      <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
+        <Row className="m-2">
+          <Col xs={12}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
+              <fieldset disabled={isSubmitting || loading}>
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                  <div>
+                    <h1 className="mb-1">Crear departamento</h1>
+                    <p className="text-muted mb-0">
+                      Registra la información del departamento.
+                    </p>
+                  </div>
 
-            <div className="d-flex gap-2">
-              <Button type="submit" disabled={isSubmitting || loading}>
-                {isSubmitting || loading ? "Guardando..." : "Guardar"}
-              </Button>
+                  <div className="d-flex flex-wrap gap-2">
 
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={isSubmitting || loading || !isDirty}
-                onClick={() => reset(DEFAULT_VALUES)}
-              >
-                Limpiar
-              </Button>
-            </div>
-          </div>
+                    <Button
+                      variant="outline-secondary"
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleBack}
+                    >
+                      Cancelar
+                    </Button>
+                    
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={isSubmitting || loading || !isDirty}
+                      onClick={() => reset(DEFAULT_VALUES)}
+                    >
+                      Limpiar
+                    </Button>
 
-          <FieldGroup>
-            <Entry
-              register={register("nameDepartment", {
-                required: "Este campo es requerido",
-              })}
-              label="Nombre:"
-              invalid={!!errors.nameDepartment}
-              feedBack={errors.nameDepartment?.message}
-              className="text-uppercase"
-            />
+                    <Button
+                      className="bg-success border-success"
+                      type="submit"
+                      disabled={isSubmitting || loading}
+                    >
+                      {isSubmitting || loading ? "Guardando..." : "Guardar"}
+                    </Button>
+                  </div>
+                </div>
 
-            <Entry
-              register={register("description")}
-              label="Descripción:"
-              invalid={!!errors.description}
-              feedBack={errors.description?.message}
-            />
-          </FieldGroup>
+                <Card className="rounded-4 shadow-sm border">
+                  <Card.Body className="p-3 p-md-5">
+                    <div className="mb-4">
+                      <h5 className="fw-semibold mb-1">Datos del departamento</h5>
+                      <p className="text-muted mb-3">
+                        Captura el nombre, descripción y líder del departamento.
+                      </p>
 
-          <FieldGroup>
-            <RelationField
-              register={register("idLeader")}
-              label="Líder:"
-              control={control}
-              callBackMode="id"
-              className="text-uppercase"
-              options={employees.map((emp) => ({
-                id: emp.id ?? 0,
-                displayName: `${emp.name} ${emp.lastName}`,
-                name: `${emp.name} ${emp.lastName}`,
-              }))}
-            />
-          </FieldGroup>
-        </fieldset>
-      </Form>
+                      <Row className="g-4">
+                        <Col xs={12} md={6}>
+                          <Entry
+                            register={register("nameDepartment", {
+                              required: "Este campo es requerido",
+                            })}
+                            label="Nombre"
+                            invalid={!!errors.nameDepartment}
+                            feedBack={errors.nameDepartment?.message}
+                            className="text-uppercase border"
+                          />
+                        </Col>
+
+                        <Col xs={12} md={6}>
+                          <RelationField
+                            register={register("idLeader")}
+                            label="Líder"
+                            control={control}
+                            callBackMode="id"
+                            className="text-uppercase border"
+                            options={employees.map((emp) => ({
+                              id: emp.id ?? 0,
+                              displayName: `${emp.name} ${emp.lastName}`,
+                              name: `${emp.name} ${emp.lastName}`,
+                            }))}
+                          />
+                        </Col>
+
+                        <Col xs={12}>
+                          <Entry
+                            register={register("description")}
+                            label="Descripción"
+                            invalid={!!errors.description}
+                            feedBack={errors.description?.message}
+                            className="border"
+                          />
+                        </Col>
+                      </Row>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </fieldset>
+            </Form>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 }

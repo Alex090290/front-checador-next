@@ -77,7 +77,7 @@ function NavUserInfo() {
       <Stack
         direction="horizontal"
         gap={2}
-        className="align-items-center flex-nowrap"
+        className="align-items-center flex-wrap flex-md-nowrap"
         style={{ maxWidth: "100%", minWidth: 0 }}
       >
         <Dropdown
@@ -88,7 +88,8 @@ function NavUserInfo() {
           <Dropdown.Toggle
             id="nav-user-dropdown-toggle"
             variant={darkMode ? "dark" : "light"}
-            className="border-0 d-flex align-items-center"
+            className="border-0 d-flex align-items-center overflow-hidden"
+            style={{ maxWidth: "140px", minWidth: 0 }}
           >
             <Image
               width={26}
@@ -215,7 +216,7 @@ function NavUserInfo() {
                 className="position-absolute mt-2 shadow-sm"
                 style={{
                   right: 0,
-                  minWidth: "250px",
+                  width: "min(250px, calc(100vw - 24px))",
                   zIndex: 2000,
                 }}
               >

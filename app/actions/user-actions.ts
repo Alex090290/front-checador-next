@@ -33,6 +33,11 @@ type FetchUsersArgs = {
   employee?: number;
 };
 
+type UserAxios = {
+  id?: number;
+  _id?: string;
+};
+
 export async function userLogin({
   email,
   password,
@@ -308,44 +313,67 @@ export async function createUser({
   phone: PhoneNumberFormat | string | null;
   password: string;
   idEmployee: number | null;
-}) {
-  const { apiToken, API_URL } = await storeAction();
+}): Promise<ActionResponse<UserAxios>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
 
-  const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
+    const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
 
-  await axios
-    .post(
-      `${API_URL}/users`,
-      {
-        name,
-        lastName,
-        email,
-        gender,
-        role,
-        permissions,
-        status,
-        phone: sanitizedPhone,
-        password,
-        idEmployee,
+    const dataSave = {
+      name,
+      lastName,
+      email,
+      gender,
+      role,
+      permissions,
+      status,
+      phone: sanitizedPhone,
+      password,
+      idEmployee,
+    };
+
+    const headers = {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      }
-    )
-    .then((res) => {
-      return res.data;
-    })
-    .catch((err) => {
-      throw new Error(
-        err.response.data.message
-          ? err.response.data.message
-          : "Error en la respuesta"
-      );
-    });
+    };
 
-  revalidatePath("/app/users");
+    try {
+      const res = await axios.post<{ data: UserAxios }>(
+        `${API_URL}/users`,
+        dataSave,
+        headers
+      );
+
+      revalidatePath("/app/users");
+
+      return {
+        success: true,
+        message: "Usuario creado correctamente",
+        data: res.data.data,
+      };
+    } catch (err: unknown) {
+      const message =
+        axios.isAxiosError<{ message?: string }>(err)
+          ? err.response?.data?.message || err.message
+          : err instanceof Error
+            ? err.message
+            : "Error en endpoint";
+
+      return {
+        success: false,
+        message,
+      };
+    }
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Error desconocido";
+
+    return {
+      success: false,
+      message,
+    };
+  }
 }
 
 export async function updateUser({
@@ -371,50 +399,69 @@ export async function updateUser({
   phone: PhoneNumberFormat | string | null;
   id: number;
   idEmployee: number | null;
-  /** Solo se sube perfil si viene archivo nuevo o string no vacío (p. ej. base64). */
   imageUrl?: string | File | null;
-}): Promise<string | boolean> {
-  const { apiToken, API_URL } = await storeAction();
+}): Promise<ActionResponse<UserAxios>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+    const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
 
-  const sanitizedPhone = sanitizePhoneNumber(phone as unknown as string);
+    const dataSave = {
+      name,
+      lastName,
+      email,
+      gender,
+      role,
+      permissions,
+      status: Number(status),
+      phone: sanitizedPhone,
+      idEmployee,
+    };
 
-  await axios
-    .put(
-      `${API_URL}/users/${id}`,
-      {
-        name,
-        lastName,
-        email,
-        gender,
-        role,
-        permissions,
-        status: Number(status),
-        phone: sanitizedPhone,
-        idEmployee,
+    const headers = {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      }
-    )
-    .then(async (res) => {
-      return res.data;
-    })
-    .catch((err) => {
-      throw new Error(
-        err.response.data.message
-          ? err.response.data.message
-          : "Error en la respuesta"
+    };
+
+    try {
+      const res = await axios.put<{ data?: UserAxios; message?: string }>(
+        `${API_URL}/users/${id}`,
+        dataSave,
+        headers
       );
-    });
 
-  if (isNonEmptyImagePayload(imageUrl)) {
-    await createUserImage({ imageUrl });
+      if (isNonEmptyImagePayload(imageUrl)) {
+        await createUserImage({ imageUrl });
+      }
+
+      revalidatePath("/app/users");
+
+      return {
+        success: true,
+        message: res.data.message || "Usuario actualizado correctamente",
+        data: res.data.data,
+      };
+    } catch (err: unknown) {
+      const message = axios.isAxiosError<{ message?: string }>(err)
+        ? err.response?.data?.message || err.message
+        : err instanceof Error
+          ? err.message
+          : "Error en endpoint";
+
+      return {
+        success: false,
+        message,
+      };
+    }
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Error desconocido";
+
+    return {
+      success: false,
+      message,
+    };
   }
-
-  revalidatePath("/app/users");
-  return true;
 }
 
 export async function updatePasswordUser({
