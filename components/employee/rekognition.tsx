@@ -6,12 +6,14 @@ import toast from "react-hot-toast";
 import { enrollEmployeeFace } from "@/app/actions/employee-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import { Employee } from "@/lib/definitions";
 
 type Props = {
   employeeId: number;
   employeeName?: string;
   onClose: () => void;
   onSuccess?: () => void;
+  employee: Employee;
 };
 
 type PreviewFile = {
@@ -29,6 +31,7 @@ export default function RegisterBiometricModal({
   employeeName,
   onClose,
   onSuccess,
+  employee,
 }: Props) {
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -40,6 +43,18 @@ export default function RegisterBiometricModal({
   const [cameraOpen, setCameraOpen] = useState(false);
   const [startingCamera, setStartingCamera] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
+  const [hasBiometricPhotos, setHasBiometricPhotos] = useState(false);
+
+  // const hasBiometricPhotos = employee.biometricPhotos && c;
+
+  useEffect(() => {
+    if (employee.biometricPhotos && employee.biometricPhotos?.length > 0) {
+      setHasBiometricPhotos(true);
+    } else {
+      setHasBiometricPhotos(false);
+    }
+  }, [employee])
+
 
   useEffect(() => {
     return () => {
@@ -132,7 +147,7 @@ export default function RegisterBiometricModal({
       setTimeout(() => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
+          videoRef.current.play().catch(() => { });
         }
       }, 50);
     } catch (error) {
@@ -241,6 +256,10 @@ export default function RegisterBiometricModal({
     }
   };
 
+  const handleActiveBiometrics = async () => {
+    setHasBiometricPhotos(false);
+  }
+
   return (
     <div className="p-4">
       <ConditionalRender cond={loading || startingCamera}>
@@ -251,43 +270,53 @@ export default function RegisterBiometricModal({
         <h4 className="mb-1">Registrar biométricos</h4>
         <div className="text-secondary">
           {employeeName
-            ? `Empleado: ${employeeName}`
+            ? `Empleado: ${employeeName.toUpperCase()}`
             : `Empleado #${employeeId}`}
         </div>
       </div>
 
-      <Alert variant="info">
-        Registra entre <strong>{MIN_FILES}</strong> y <strong>{MAX_FILES}</strong>{" "}
-        fotografías claras del rostro del empleado. Idealmente:
-        frontal, ligera izquierda y ligera derecha, con buena iluminación.
-      </Alert>
+      <ConditionalRender cond={!hasBiometricPhotos}>
+        <Alert variant="info">
+          Registra entre <strong>{MIN_FILES}</strong> y <strong>{MAX_FILES}</strong>{" "}
+          fotografías claras del rostro del empleado. Idealmente:
+          frontal, ligera izquierda y ligera derecha, con buena iluminación.
+        </Alert>
+      </ConditionalRender>
 
       <div className="mb-3">
-        <Form.Label className="fw-semibold">Selecciona una opción</Form.Label>
+        <ConditionalRender cond={!hasBiometricPhotos}>
+          <Form.Label className="fw-semibold">Selecciona una opción</Form.Label>
 
-        <div className="d-flex flex-wrap gap-2 mb-2">
-          <Button
-            variant="outline-primary"
-            onClick={() => uploadInputRef.current?.click()}
-            disabled={loading || startingCamera || files.length >= MAX_FILES}
-          >
-            <i className="bi bi-upload me-2" />
-            Subir archivo
-          </Button>
+          <div className="d-flex flex-wrap gap-2 mb-2">
+            <Button
+              variant="outline-primary"
+              onClick={() => uploadInputRef.current?.click()}
+              disabled={loading || startingCamera || files.length >= MAX_FILES}
+            >
+              <i className="bi bi-upload me-2" />
+              Subir archivo
+            </Button>
 
-          <Button
-            variant="outline-success"
-            onClick={handleOpenCamera}
-            disabled={loading || startingCamera || files.length >= MAX_FILES}
-          >
-            <i className="bi bi-camera me-2" />
-            {startingCamera ? "Abriendo cámara..." : "Tomar foto"}
-          </Button>
-        </div>
+            <Button
+              variant="outline-success"
+              onClick={handleOpenCamera}
+              disabled={loading || startingCamera || files.length >= MAX_FILES}
+            >
+              <i className="bi bi-camera me-2" />
+              {startingCamera ? "Abriendo cámara..." : "Tomar foto"}
+            </Button>
+          </div>
 
-        <div className="small text-secondary">
-          Fotos registradas: {files.length} / {MAX_FILES}
-        </div>
+          <div className="small text-secondary">
+            Fotos registradas: {files.length} / {MAX_FILES}
+          </div>
+        </ConditionalRender>
+
+        <ConditionalRender cond={hasBiometricPhotos}>
+          <div className="small text-secondary">
+            Fotos registradas: {employee.biometricPhotos?.length} / {MAX_FILES}
+          </div>
+        </ConditionalRender>
 
         <Form.Control
           ref={uploadInputRef}
@@ -334,11 +363,17 @@ export default function RegisterBiometricModal({
         </div>
       )}
 
-      {!files.length && !cameraOpen && (
+      <ConditionalRender cond={!hasBiometricPhotos}>
         <div className="text-secondary mb-3">
           Aún no has registrado ninguna imagen.
         </div>
-      )}
+      </ConditionalRender>
+
+      {/* <ConditionalRender cond={hasBiometricPhotos}>
+        <div className="text-secondary mb-3">
+          El registro biométrico está completo.
+        </div>
+      </ConditionalRender> */}
 
       {files.length > 0 && (
         <div className="mb-3">
@@ -387,13 +422,24 @@ export default function RegisterBiometricModal({
           Cancelar
         </Button>
 
-        <Button
-          variant="primary"
-          onClick={handleSubmit}
-          disabled={loading || files.length < MIN_FILES}
-        >
-          {loading ? "Registrando..." : "Registrar biométricos"}
-        </Button>
+        <ConditionalRender cond={!hasBiometricPhotos}>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={loading || files.length < MIN_FILES}
+          >
+            {loading ? "Registrando..." : "Registrar biométricos"}
+          </Button>
+        </ConditionalRender>
+
+        <ConditionalRender cond={hasBiometricPhotos}>
+          <Button
+            variant="primary"
+            onClick={handleActiveBiometrics}
+          >
+            Actualizar biométricos
+          </Button>
+        </ConditionalRender>
       </div>
     </div>
   );

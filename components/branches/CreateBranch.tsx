@@ -4,7 +4,6 @@ import { createBranch } from "@/app/actions/branches-actionst";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry } from "@/components/fields";
-import { FieldGroup } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import { Branch } from "@/lib/definitions";
 import { useRouter } from "next/navigation";

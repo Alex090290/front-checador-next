@@ -25,12 +25,12 @@ export async function fetchOverTimeQueries(args: FetchUsersArgs & { search?: str
     const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
 
 
- 
+
     const params = new URLSearchParams();
     params.set("page", String(pageNum));
     params.set("limit", String(limitNum));
-    
-      if (args.search?.trim()) {
+
+    if (args.search?.trim()) {
       params.set("search", args.search.trim());
     }
     const response = await axios
@@ -155,20 +155,20 @@ export async function createOverTime({
     const apiToken = session?.user?.apiToken;
 
     const dataSave = {
-          idEmployee: data.idEmployee,
-          motive: data.motive,
-          date: data.date,
-          hourInit: data.hourInit,
-          hourEnd: data.hourEnd,
-        }        
+      idEmployee: data.idEmployee,
+      motive: data.motive,
+      date: data.date,
+      hourInit: data.hourInit,
+      hourEnd: data.hourEnd,
+    }
 
     const headers = {
-          headers: {
-            Authorization: `Bearer ${apiToken}`,
-          },
-        }
-        
-          
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    }
+
+
     try {
       const res = await axios.post<{ data: OverTimeAxios }>(
         `${API_URL}/overtime`,
@@ -194,71 +194,71 @@ export async function createOverTime({
       };
     }
   } catch (error: unknown) {
-    
+
     const err = error as Error;
 
     return {
       success: false,
       message: err.message
-      
+
     };
   }
 }
 
 //Funcion para actualizar horas extra
-export async function updateOverTime({
-  id,
-  overtime,
-}: {
-  id: number;
-  overtime: OverTime;
-}): Promise<ActionResponse<boolean | null>> {
+// export async function updateOverTime({
+//   id,
+//   overtime,
+// }: {
+//   id: number;
+//   overtime: OverTime;
+// }): Promise<ActionResponse<boolean | null>> {
 
-  try {
-    if (!id) throw new Error("ID NO ESPECIFICADO");
+//   try {
+//     if (!id) throw new Error("ID NO ESPECIFICADO");
 
-    const { apiToken, API_URL } = await storeAction();
-    await axios.put(
-      `${API_URL}/overtime/${String(id)}`,
-      {
-        idEmployee: overtime.idEmployee,
-        motive: overtime.motive,
-        date: overtime.date,
-        hourInit: overtime.hourInit,
-        hourEnd: overtime.hourEnd
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      }
-    );
+//     const { apiToken, API_URL } = await storeAction();
+//     await axios.put(
+//       `${API_URL}/overtime/${String(id)}`,
+//       {
+//         idEmployee: overtime.idEmployee,
+//         motive: overtime.motive,
+//         date: overtime.date,
+//         hourInit: overtime.hourInit,
+//         hourEnd: overtime.hourEnd
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${apiToken}`,
+//         },
+//       }
+//     );
 
-    revalidatePath("/app/overtime");
+//     revalidatePath("/app/overtime");
 
-    return {
-      success: true,
-      message: "Actualizacion exitosa",
-      data: true,
-    };
-  } catch (error: unknown) {
-    console.log(error);
+//     return {
+//       success: true,
+//       message: "Actualizacion exitosa",
+//       data: true,
+//     };
+//   } catch (error: unknown) {
+//     console.log(error);
 
-    let message = "Error en la respuesta";
+//     let message = "Error en la respuesta";
 
-    if (axios.isAxiosError(error)) {
-      message = error.response?.data?.message || error.message || message;
-    } else if (error instanceof Error) {
-      message = error.message;
-    }
+//     if (axios.isAxiosError(error)) {
+//       message = error.response?.data?.message || error.message || message;
+//     } else if (error instanceof Error) {
+//       message = error.message;
+//     }
 
-    return {
-      success: false,
-      message,
-      data: null,
-    };
-  }
-}
+//     return {
+//       success: false,
+//       message,
+//       data: null,
+//     };
+//   }
+// }
 
 //Funcion para borrar horas extra 
 export async function deleteOverTime({
@@ -304,12 +304,12 @@ export async function deleteOverTime({
 //Post de firmas
 export async function sendSignatureOverTime({
   id,
-  signature
+  signature,
 }: {
-  
-    id: number | null;
-    signature: string;
-  
+
+  id: number | null;
+  signature: string;
+
 }): Promise<ActionResponse<boolean>> {
   try {
     if (!id) throw new Error("ID NOT DEFINED");
@@ -328,8 +328,8 @@ export async function sendSignatureOverTime({
         Authorization: `Bearer ${apiToken}`,
       },
     });
-    console.log("firma: ",firma);
-    
+    console.log("firma: ", firma);
+
     return {
       success: true,
       message: "Firma enviada correctamente",
@@ -341,6 +341,71 @@ export async function sendSignatureOverTime({
     return {
       success: false,
       message: err.message ? err.message : "Error al obtener información",
+      data: false,
+    };
+  }
+}
+
+export async function approvedLeaderOvertime({
+  id,
+  signature,
+  status,
+}: {
+  id: number | null;
+  signature: string;
+  status: string;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!id) throw new Error("ID NOT DEFINED");
+    if (!signature) throw new Error("No se recibió la firma");
+
+    const { apiToken, apiUrl } = await storeToken();
+
+    const formData = new FormData();
+    const blob = base64ToBlob(signature, "image/png");
+
+    formData.append("img", blob, "signature.png");
+
+    const firma = await axios.post(
+      `${apiUrl}/overtime/signature/${id}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    );
+
+    const signatureUrl = firma.data?.data ?? firma.data?.url;
+
+    if (!signatureUrl) {
+      throw new Error("No se recibió la URL de la firma");
+    }
+
+    await axios.put(
+      `${apiUrl}/overtime/${id}`,
+      {
+        status,
+        signature: signatureUrl,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    );
+
+    return {
+      success: true,
+      message: "Firma enviada correctamente",
+      data: true,
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+
+    return {
+      success: false,
+      message: err.message || "Error al obtener información",
       data: false,
     };
   }

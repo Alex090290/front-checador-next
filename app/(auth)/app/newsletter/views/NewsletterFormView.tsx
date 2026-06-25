@@ -54,7 +54,7 @@ function NewsletterFormView({
 
   const [fechaInicio] = watch(["dateInitiPublish", "hourInitiPublish"]);
 
-  const { modalError, modalConfirm } = useModals();
+  const { modalError } = useModals();
 
   const router = useRouter();
 

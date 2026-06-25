@@ -1,16 +1,18 @@
 "use client";
 
 import { deleteDepartment, updateDepartment } from "@/app/actions/departments-actions";
-import { ActionResponse, Department, Employee } from "@/lib/definitions";
+import { ActionResponse, Department, Employee, Position } from "@/lib/definitions";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { Button } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import ModalBlur from "../ModalBlur";
 import toast from "react-hot-toast";
 import FormUpdateDepartment from "./UpdateDepartment";
+import CreatePositionModal from "./CreatePositionModal";
+import { createPosition, deletePosition } from "@/app/actions/positions-actions";
 
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
@@ -41,11 +43,14 @@ function InfoItem({
 export default function InfoOneDepartment({
   department,
   employees = [],
+  position,
 }: {
   department: Department | null;
   employees?: Employee[];
+  position?: Position;
 }) {
   const [showUpdateDepartmentModal, setShowUpdateDepartmentModal] = useState(false);
+  const [showCreatePositionModal, setShowCreatePositionModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const { modalError, modalConfirm } = useModals();
@@ -58,7 +63,7 @@ export default function InfoOneDepartment({
       </div>
     );
   }
-  
+
   const leader =
     employees.find((emp) => emp.id === department.idLeader) || department.leader;
 
@@ -102,6 +107,7 @@ export default function InfoOneDepartment({
     };
   };
 
+
   const handleDeleteDepartment = async () => {
     if (!department?.id) {
       modalError("No se encontró el departamento");
@@ -129,116 +135,283 @@ export default function InfoOneDepartment({
     });
   };
 
+  const handleCreatePositionLoading = async (
+    idDepartment: number,
+    namePosition: string
+  ) => {
+    try {
+      setLoading(true);
+      setMessageLoading("Guardando puesto...");
+
+      const res = await createPosition({
+        idDepartment,
+        namePosition,
+      });
+
+      if (!res.success) {
+        modalError(res.message);
+        return;
+      }
+
+      toast.success(res.message);
+      router.refresh();
+    } finally {
+      setLoading(false);
+      setMessageLoading("");
+    }
+  };
+
+  const handleDeletePosition = async (id?: number) => {
+    if (!id) {
+      modalError("No se encontró este puesto");
+      return;
+    }
+
+    modalConfirm("¿Deseas eliminar este puesto?", async () => {
+      try {
+        setLoading(true);
+        setMessageLoading("Eliminando puesto...");
+
+        const res = await deletePosition({ id });
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
+        }
+
+        toast.success(res.message);
+        router.refresh();
+      } finally {
+        setLoading(false);
+        setMessageLoading("");
+      }
+    });
+  };
+
+  const upperCase = (text?: string) => {
+    return text?.toUpperCase() || "";
+  };
+
+  const getDepartmentName = (u: Department) => {
+    return (
+      `${upperCase(u.nameDepartment)}`
+    )
+  };
+
+  const handleBack = () => {
+    router.push("/app/departments")
+  }
+
+  console.log("department.positions", department.positions);
+
+
   return (
     <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-      <div className="d-flex flex-wrap align-items-center gap-2 my-2">
-        <Button
-          size="sm"
-          variant="primary"
-          className="fw-semibold d-inline-flex align-items-center gap-2"
-          onClick={handleCreate}
-          disabled={loading}
-        >
-          <i className="bi bi-plus-lg" />
-          Crear Departamento
-        </Button>
+      <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
-        <Button
-          size="sm"
-          variant="primary"
-          onClick={() => setShowUpdateDepartmentModal(true)}
-          disabled={loading}
-        >
-          <i className="bi bi-pencil me-2" />
-          Actualizar Departamento
-        </Button>
+          <div className="d-flex gap-2 flex-wrap">
+            <Button
+              variant="primary"
+              className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+              onClick={handleCreate}
+              disabled={loading}
+            >
+              <i className="bi bi-plus-lg" />
+              Crear Departamento
+            </Button>
 
-        <Button
-          size="sm"
-          variant="danger"
-          onClick={handleDeleteDepartment}
-          disabled={loading}
-        >
-          <i className="bi bi-trash me-2" />
-          Eliminar Departamento
-        </Button>
-      </div>
+            <Button
+              variant="primary"
+              onClick={() => setShowUpdateDepartmentModal(true)}
+              disabled={loading}
+              className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+            >
+              <i className="bi bi-pencil me-2" />
+              Actualizar Departamento
+            </Button>
 
-      <div className="mb-4">
-        <h1 className="mb-0 text-white">{department.nameDepartment}</h1>
-      </div>
-
-      <div className="d-grid gap-4">
-        <section>
-          <h5 className="mb-3 text-uppercase">Información general</h5>
-          <div className="row g-4">
-            <div className="col-12 col-md-6">
-              <InfoItem
-                label="Nombre:"
-                value={formatText(department.nameDepartment)}
-              />
-            </div>
-
-            <div className="col-12 col-md-6">
-              <InfoItem
-                label="Líder:"
-                value={
-                  leader
-                    ? `${leader.name} ${leader.lastName ?? ""}`.trim()
-                    : "-"
-                }
-              />
-            </div>
-
-            <div className="col-12">
-              <InfoItem
-                label="Descripción:"
-                value={formatText(department.description)}
-                uppercase={false}
-              />
-            </div>
+            <Button
+              variant="danger"
+              onClick={handleDeleteDepartment}
+              disabled={loading}
+              className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+            >
+              <i className="bi bi-trash me-2" />
+              Eliminar Departamento
+            </Button>
           </div>
-        </section>
 
-        <section>
-          <h5 className="mb-3 text-uppercase">Puestos</h5>
+          <Button
+            variant="outline-secondary"
+            onClick={handleBack}
+            disabled={loading}
+            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+          >
+            <i className="bi bi-arrow-left" />
+            Regresar
+          </Button>
+        </div>
 
-          {department.positions?.length ? (
-            <div className="row g-3">
-              {department.positions.map((puesto) => (
-                <div
-                  key={puesto._id || puesto.id || puesto.namePosition}
-                  className="col-12 col-md-6 col-lg-4"
-                >
-                  <div className="rounded border p-3 h-100 bg-body-tertiary">
-                    <div className="fw-semibold text-uppercase">
-                      {formatText(puesto.namePosition)}
+        <div>
+          <h1 className="mb-1 ms-1">{getDepartmentName(department)}</h1>
+          <p className="text-muted mb-0 ms-1">
+            Información del departamento.
+          </p>
+        </div>
+
+        <Card className="border shadow-sm rounded-4 mt-2">
+          <Card.Body className="p-4">
+            <div className="d-flex align-items-center justify-content-between mb-4">
+              <h5 className="mb-0 fw-bold">
+                Departamento
+              </h5>
+
+              <span className="badge bg-info">
+                Información General
+              </span>
+            </div>
+
+            {/* INFORMACIÓN GENERAL */}
+            <Card className="border rounded-4 mb-4">
+              <Card.Body>
+                <div className="d-flex flex-column gap-3">
+                  <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-building text-primary" />
+                      <span className="text-muted">Departamento</span>
                     </div>
+
+                    <span className="fw-semibold">
+                      {getDepartmentName(department)}
+                    </span>
+                  </div>
+
+                  <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-person-workspace text-success" />
+                      <span className="text-muted">Líder</span>
+                    </div>
+
+                    <span className="fw-semibold text-uppercase">
+                      {leader
+                        ? `${leader.name} ${leader.lastName ?? ""}`.trim()
+                        : "-"}
+                    </span>
+                  </div>
+
+                  <div className="d-flex align-items-start justify-content-between">
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-card-text text-info" />
+                      <span className="text-muted">Descripción</span>
+                    </div>
+
+                    <span
+                      className="fw-semibold text-end text-uppercase"
+                      style={{ maxWidth: "400px" }}
+                    >
+                      {formatText(department.description)}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-muted">Sin puestos registrados</div>
-          )}
-        </section>
-      </div>
+              </Card.Body>
+            </Card>
 
-      {showUpdateDepartmentModal && (
-        <ModalBlur onClose={() => setShowUpdateDepartmentModal(false)}>
-          <FormUpdateDepartment
-            show={showUpdateDepartmentModal}
-            onHide={() => setShowUpdateDepartmentModal(false)}
-            sendData={handleUpdateDepartment}
-            department={department}
-            employees={employees}
-          />
-        </ModalBlur>
-      )}
+            {/* PUESTOS */}
+            <Card className="border rounded-4">
+              <Card.Body>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+
+                  <div className="d-flex gap-2 flex-wrap">
+                    <h6 className="mt-1 fw-bold">
+                      Puestos
+                    </h6>
+
+                    <span className="badge bg-secondary">
+                      {department.positions?.length || 0}
+                    </span>
+                  </div>
+
+                  <Button variant="success" onClick={() => setShowCreatePositionModal(true)}>
+                    <i className="bi bi-person me-2" />
+                    Craer nuevo puesto
+                  </Button>
+                </div>
+
+                <ConditionalRender cond={department.positions?.length > 0}>
+                  <Row className="g-3">
+                    {department.positions.map((puesto) => (
+                      <Col
+                        xs={12}
+                        md={6}
+                        lg={4}
+                        key={puesto._id || puesto.id || puesto.namePosition}
+                      >
+                        <div className="border rounded p-3 d-flex justify-content-between align-items-center">
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-briefcase-fill text-primary fs-5" />
+
+                            <span className="fw-semibold text-uppercase">
+                              {formatText(puesto.namePosition)}
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="btn btn-link p-0 border-0"
+                            onClick={() => handleDeletePosition(puesto.id)}
+                          >
+                            <i className="bi bi-trash text-danger fs-5" />
+                          </button>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                </ConditionalRender>
+
+                <ConditionalRender cond={department.positions.length === 0}>
+                  <div className="text-center py-4 text-muted">
+                    <i className="bi bi-briefcase fs-3 d-block mb-2" />
+                    Sin puestos registrados
+                  </div>
+                </ConditionalRender>
+
+              </Card.Body>
+            </Card>
+
+            <ConditionalRender cond={showUpdateDepartmentModal}>
+              <ModalBlur onClose={() => setShowUpdateDepartmentModal(false)}>
+                <FormUpdateDepartment
+                  show={showUpdateDepartmentModal}
+                  onHide={() => setShowUpdateDepartmentModal(false)}
+                  sendData={handleUpdateDepartment}
+                  department={department}
+                  employees={employees}
+                />
+              </ModalBlur>
+            </ConditionalRender>
+
+            <ConditionalRender cond={showCreatePositionModal && !!department?.id}>
+              <ModalBlur onClose={() => setShowCreatePositionModal(false)}>
+                <CreatePositionModal
+                  show={showCreatePositionModal}
+                  onHide={() => setShowCreatePositionModal(false)}
+                  idDepartment={department.id!}
+                  positionData={{
+                    activeId: null,
+                    namePosition: "",
+                  }}
+                  sendData={handleCreatePositionLoading}
+                />
+              </ModalBlur>
+            </ConditionalRender>
+          </Card.Body>
+        </Card>
+      </Container>
     </>
   );
 }

@@ -70,7 +70,7 @@ export default function UserTableClient({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
+  const [, setSelectedIds] = useState<Array<string | number>>([]);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showUpdateUserModal, setShowUpdateUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);

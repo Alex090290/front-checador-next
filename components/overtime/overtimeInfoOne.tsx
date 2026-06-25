@@ -16,6 +16,11 @@ import moment from "moment";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewOvertime from "./signaturesOvertime";
+import { IFiltercUrl } from "@/lib/constancy/interface";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import OvertimeSignatureModal from "./OvertimeSignatureModal"
+import SignatureLeaderModal from "./SignatureLeaderModal";
+import SignatureDohModal from "./SignatureDohModal";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -70,21 +75,66 @@ export function OvertimeOne({
 }) {
 
     // Aqui los const 
-    const [showCurretUser] = useState(false);
+    const session = useSessionSnapshot();
+    const [showCurretUser, setCurrentUser] = useState(false);
+    const [showCurrentLeader, setCurrentLeader] = useState(false);
+    const [showCurrentDoh, setCurrentDoh] = useState(false);
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
-    const [, setEmployeeSignatureModal] = useState(false);
     const router = useRouter();
     const [newArray, setNewArray] = useState<ISignatures[]>([]);
+    const [overtimeSignatureModal, setOvertimeSignatureModal] = useState(false);
+    const [signatureLeaderModal, setSignatureLeaderModal] = useState(false);
+    const [signatureDohModal, setSignatureDohModal] = useState(false);
+
+    const handleOvertimeSignature = () => setOvertimeSignatureModal(true);
+    const handleSignatureLeader = () => setSignatureLeaderModal(true);
+    const handleSignatureDoh = () => setSignatureDohModal(true);
+
+
+    const signatures: ISignatures[] = overtime?.signatures ?? [];
+
+    const isOwnerEmployee = Number(session?.uid?.idEmployee) === Number(overtime?.idEmployee);
+
+    const currentUser = isOwnerEmployee ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)): undefined;
+
+    const currentLeader = session?.uid?.isLeader
+        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)): undefined;
+
+    const currentDoh = session?.uid?.isDoh
+        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)): undefined;
+
+    useEffect(() => {
+        if (currentUser && !currentUser.url) {
+            setCurrentUser(true);
+        } else {
+            setCurrentUser(false);
+        }
+    }, [currentUser]);
+
+    useEffect(() => {
+        if (currentLeader && !currentLeader.url) {
+            setCurrentLeader(true);
+        } else {
+            setCurrentLeader(false);
+        }
+    }, [currentLeader]);
+
+    useEffect(() => {
+        if (currentDoh && !currentDoh.url) {
+            setCurrentDoh(true);
+        } else {
+            setCurrentDoh(false);
+        }
+    }, [currentDoh]);
+
+        //  setNewArray(signatures);
 
 
     useEffect(() => {
         if (!overtime) return;
 
-        const signatures = Array.isArray(overtime.signatures)
-            ? overtime.signatures
-            : [];
 
         const isLeaderRequestPerson = departments.some(
             (dep) => Number(dep.idLeader) === Number(overtime.employee?.id)
@@ -110,44 +160,11 @@ export function OvertimeOne({
 
             // el documento pertenece a un empleado
             const newData = signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label))
-            console.log("Empleado: ", newData);
 
             setNewArray(newData);
         }
 
     }, [overtime, departments, connfigSystem]);
-
-    console.log("newArray: ", newArray);
-
-    // const newArray = useMemo(() => {
-    //     if (!overtime) return [];
-
-    //     const signatures = Array.isArray(overtime.signatures)
-    //         ? overtime.signatures
-    //         : [];
-
-    //     const employeeId = Number(overtime.idEmployee ?? overtime.employee?.id);
-
-    //     const isLeader = departments.some(
-    //         (dep) => Number(dep.idLeader) === employeeId
-    //     );
-
-    //     const tempArray: any[] = [];
-
-    //     if (!isLeader) {
-    //         for (const el of signatures) {
-    //             if (Number(overtime.employee?.id) === Number(el.idSignatory)) {
-    //                 tempArray.push({ ...el, label: "Empleado" });
-    //             } else if (Number(overtime.leader?.id) === Number(el.idSignatory)) {
-    //                 tempArray.push({ ...el, label: "Jefe Inmediato" });
-    //             } else if (Number(overtime.personDoh?.id) === Number(el.idSignatory)) {
-    //                 tempArray.push({ ...el, label: "Director DOH" });
-    //             }
-    //         }
-    //     }
-
-    //     return tempArray;
-    // }, [overtime, departments]);
 
 
 
@@ -191,9 +208,6 @@ export function OvertimeOne({
             }
         });
     };
-
-    //Firma
-    const handleEmployeeSignature = () => setEmployeeSignatureModal(true);
 
     //Regresar a pagina principal
     const handleBack = () => {
@@ -253,7 +267,6 @@ export function OvertimeOne({
 
                     {/* Izquierda */}
                     <div className="d-flex gap-2 flex-wrap">
-
                         <Button
                             variant="primary"
                             onClick={handleCreate}
@@ -277,9 +290,31 @@ export function OvertimeOne({
                         <ConditionalRender cond={showCurretUser}>
                             <Button
                                 variant="secondary"
-                                onClick={handleEmployeeSignature}
+                                onClick={handleOvertimeSignature}
                             >
                                 Firmar
+                            </Button>
+                        </ConditionalRender>
+
+                        <ConditionalRender cond={showCurrentLeader}>
+                            <Button
+                                size="sm"
+                                variant="success"
+                                className="fw-semibold"
+                                onClick={handleSignatureLeader}
+                            >
+                                Aprobar
+                            </Button>
+                        </ConditionalRender>
+
+                        <ConditionalRender cond={showCurrentDoh}>
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                className="fw-semibold"
+                                onClick={handleSignatureDoh}
+                            >
+                                Firmar de enterado
                             </Button>
                         </ConditionalRender>
 
@@ -305,141 +340,234 @@ export function OvertimeOne({
                     </p>
                 </div>
 
-                <Card className="rounded-4 shadow-sm border mt-2">
-                    <Card.Body className="p-4 p-md-5">
-                        {/* Resumen */}
-                        <div className="mb-4">
-                            <div className="d-flex align-items-start flex-wrap gap-3">
-                                <div>
-                                    <h5 className="fw-semibold mb-1">
-                                        Solicitud #{overtime.id}
-                                    </h5>
+                <Card className="border shadow-sm rounded-4 mt-2">
+                    <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <h5 className="mb-1 fw-bold">
+                                    Solicitud #{overtime.id}
+                                </h5>
 
-                                    <p className="text-muted mb-0">
-                                        Horas extra
-                                    </p>
-                                </div>
-                                <div className="mt-1 ms-2">
-                                    {statusLabel(overallStatus)}
-                                </div>
+                                <p className="text-muted mb-0">
+                                    Horas extra
+                                </p>
                             </div>
+
+                            {statusLabel(overallStatus)}
                         </div>
 
                         <Row className="g-4 mb-4">
-                            <Col xs={12} md={4}>
-                                <div className="fw-bold small text-uppercase">
-                                    Creada
-                                </div>
-                                <div>
-                                    {createdAt}
-                                </div>
+                            {/* RESUMEN */}
+                            <Col xs={12} lg={4}>
+                                <Card className="border rounded-4 h-100">
+                                    <Card.Body>
+                                        <div className="d-flex align-items-center justify-content-between mb-4">
+                                            <h6 className="mb-0 fw-bold">
+                                                Resumen
+                                            </h6>
+
+                                            <span className="badge bg-info">
+                                                General
+                                            </span>
+                                        </div>
+
+                                        <div className="d-flex flex-column gap-3">
+                                            <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-calendar-plus text-primary" />
+                                                    <span className="text-muted">Creada</span>
+                                                </div>
+
+                                                <span className="fw-semibold text-end">
+                                                    {createdAt}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-person text-success" />
+                                                    <span className="text-muted">Creada por</span>
+                                                </div>
+
+                                                <span className="fw-semibold text-end">
+                                                    {fullName(overtime.createForPerson)}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-person-workspace text-warning" />
+                                                    <span className="text-muted">Líder</span>
+                                                </div>
+
+                                                <span className="fw-semibold text-end">
+                                                    {fullName(overtime.leader)}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-person-check text-info" />
+                                                    <span className="text-muted">D.O.H.</span>
+                                                </div>
+
+                                                <span className="fw-semibold text-end">
+                                                    {fullName(overtime.personDoh)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
                             </Col>
 
-                            <Col xs={12} md={4}>
-                                <div className="fw-bold small text-uppercase">
-                                    Creada por
-                                </div>
-                                <div>
-                                    {fullName(overtime.createForPerson)}
-                                </div>
-                            </Col>
+                            {/* DETALLES */}
+                            <Col xs={12} lg={8}>
+                                <Card className="border rounded-4 h-100">
+                                    <Card.Body>
+                                        <div className="d-flex align-items-center justify-content-between mb-4">
+                                            <div>
+                                                <h6 className="mb-1 fw-bold">
+                                                    Detalles del registro
+                                                </h6>
 
-                            <Col xs={12} md={4}>
-                                <div className="fw-bold small text-uppercase">
-                                    Líder
-                                </div>
-                                <div>
-                                    {fullName(overtime.leader)}
-                                </div>
-                            </Col>
+                                                <p className="text-muted mb-0 small">
+                                                    Consulta la fecha, horario y motivo registrado.
+                                                </p>
+                                            </div>
 
-                            <Col xs={12} md={4}>
-                                <div className="fw-bold small text-uppercase">
-                                    D.O.H
-                                </div>
-                                <div>
-                                    {fullName(overtime.personDoh)}
-                                </div>
+                                            <span className="badge bg-info">
+                                                Registro
+                                            </span>
+                                        </div>
+
+                                        <div className="d-flex flex-column gap-4">
+                                            <div className="border rounded-3 p-3">
+                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                    <i className="bi bi-chat-left-text text-primary" />
+                                                    <span className="text-muted fw-semibold">
+                                                        Motivo
+                                                    </span>
+                                                </div>
+
+                                                <div>
+                                                    {overtime.motive ?? "—"}
+                                                </div>
+                                            </div>
+
+                                            <Row className="g-3">
+                                                <Col xs={12} md={6} xl={3}>
+                                                    <div className="border rounded-3 p-3 text-center h-100">
+                                                        <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
+
+                                                        <div className="text-muted small">
+                                                            Fecha
+                                                        </div>
+
+                                                        <div className="fw-semibold">
+                                                            {getDate(overtime)}
+                                                        </div>
+                                                    </div>
+                                                </Col>
+
+                                                <Col xs={12} md={6} xl={3}>
+                                                    <div className="border rounded-3 p-3 text-center h-100">
+                                                        <i className="bi bi-clock text-warning fs-5 mb-2 d-block" />
+
+                                                        <div className="text-muted small">
+                                                            Hora inicio
+                                                        </div>
+
+                                                        <div className="fw-semibold">
+                                                            {getHourInit(overtime)}
+                                                        </div>
+                                                    </div>
+                                                </Col>
+
+                                                <Col xs={12} md={6} xl={3}>
+                                                    <div className="border rounded-3 p-3 text-center h-100">
+                                                        <i className="bi bi-clock-history text-danger fs-5 mb-2 d-block" />
+
+                                                        <div className="text-muted small">
+                                                            Hora fin
+                                                        </div>
+
+                                                        <div className="fw-semibold">
+                                                            {getHourEnd(overtime)}
+                                                        </div>
+                                                    </div>
+                                                </Col>
+
+                                                <Col xs={12} md={6} xl={3}>
+                                                    <div className="border rounded-3 p-3 text-center h-100">
+                                                        <i className="bi bi-hourglass-split text-info fs-5 mb-2 d-block" />
+
+                                                        <div className="text-muted small">
+                                                            Total horas
+                                                        </div>
+
+                                                        <div className="fw-bold fs-5">
+                                                            {overtime.informationDate?.totalHours ?? "—"}
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
                             </Col>
                         </Row>
 
-                        <hr className="my-4" />
+                        {/* FIRMAS */}
+                        <Card className="border rounded-4">
+                            <Card.Body>
+                                <div className="d-flex align-items-center justify-content-between mb-4">
+                                    <h6 className="mb-0 fw-bold">
+                                        Firmas
+                                    </h6>
 
-                        {/* Detalles */}
-                        <div className="mb-4">
-                            <h5 className="fw-bold mb-1">
-                                Detalles del registro
-                            </h5>
-                            <p className="text-muted mb-3">
-                                Consulta la fecha, horario y motivo registrado.
-                            </p>
+                                    <span className="badge bg-info">
+                                        Autorizaciones
+                                    </span>
+                                </div>
 
-                            <Row className="g-4">
-                                <Col xs={12}>
-                                    <div className="fw-bold small text-uppercase">
-                                        Motivo
-                                    </div>
-                                    <div>
-                                        {overtime.motive ?? "—"}
-                                    </div>
-                                </Col>
+                                <FormBook dKey="newArray">
+                                    <FormPage title="" eventKey="newArray">
+                                        <Row className="g-3">
+                                            {newArray.map((sign) => (
+                                                <SignaturesViewOvertime
+                                                    key={`${sign.id}-${sign.url}`}
+                                                    id={Number(overtime?.id)}
+                                                    idEmployee={String(sign.idSignatory)}
+                                                    name={sign.name}
+                                                    url={sign.url}
+                                                    label={sign.label}
+                                                    status={overtime.status}
+                                                />
+                                            ))}
+                                        </Row>
+                                    </FormPage>
+                                </FormBook>
+                            </Card.Body>
+                        </Card>
 
-                                <Col xs={12} md={3}>
-                                    <div className="fw-bold small text-uppercase">
-                                        Fecha
-                                    </div>
-                                    <div>
-                                        {getDate(overtime)}
-                                    </div>
-                                </Col>
+                        {/* MODALES ;) */}
+                        <OvertimeSignatureModal
+                            show={overtimeSignatureModal}
+                            onHide={() => setOvertimeSignatureModal(false)}
+                            id={String(overtime.id)}
+                        />
 
-                                <Col xs={12} md={3}>
-                                    <div className="fw-bold small text-uppercase">
-                                        Hora inicio
-                                    </div>
-                                    <div>
-                                        {getHourInit(overtime)}
-                                    </div>
-                                </Col>
-
-                                <Col xs={12} md={3}>
-                                    <div className="fw-bold small text-uppercase">
-                                        Hora fin
-                                    </div>
-                                    <div>
-                                        {getHourEnd(overtime)}
-                                    </div>
-                                </Col>
-
-                                <Col xs={12} md={3}>
-                                    <div className="fw-bold small text-uppercase">
-                                        Total de horas
-                                    </div>
-                                    <div>
-                                        {overtime.informationDate?.totalHours ?? "—"}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </div>
-
-                        {/* Firmas */}
-                        <FormBook dKey="newArray">
-                            <FormPage title="" eventKey="newArray">
-                                <Row className="g-3">
-                                    {newArray.map((sign) => (
-                                        <SignaturesViewOvertime
-                                            key={sign.key}
-                                            id={Number(overtime?.id)}
-                                            idEmployee={String(sign.idSignatory)}
-                                            name={sign.name}
-                                            url={sign.url}
-                                            label={sign.label}
-
-                                        />
-                                    ))}
-                                </Row>
-                            </FormPage>
-                        </FormBook>
+                        <SignatureLeaderModal
+                            show={signatureLeaderModal}
+                            onHide={() => setSignatureLeaderModal(false)}
+                            id={String(overtime.id)}
+                        />
+                        
+                        <SignatureDohModal
+                            show={signatureDohModal}
+                            onHide={() => setSignatureDohModal(false)}
+                            id={String(overtime.id)}
+                        />
                     </Card.Body>
                 </Card>
             </Container>

@@ -23,13 +23,15 @@ export default async function ListAllUsers({
 
   const pageParse = Math.max(Number(page || "1") || 1, 1);
   const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
-
+  
   const [getUsers, permissions, employees] = await Promise.all([
-    fetchUsersPages({ page: pageParse, limit: limitParse, search }),
+    fetchUsersPages({ page: pageParse, limit: limitParse, search: search }),
     fetchPermissions(),
     fetchEmployees(),
   ]);
 
+  console.log("getUsers: ",getUsers);
+  
   return (
     <UserTableClient
       users={getUsers.data}

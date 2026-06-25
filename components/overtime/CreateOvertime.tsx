@@ -47,8 +47,6 @@ export default function CreateOvertimeComponent({
     const { modalError, modalConfirm } = useModals();
     const router = useRouter();
 
-    console.log("SESION:", session);
-
 
     //Helpers
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {

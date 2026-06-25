@@ -49,7 +49,7 @@ export type UserRole =
 
 export interface Department {
   _id?: string;
-  id?: number;
+  id: number;
   nameDepartment: string;
   description: string;
   idLeader: number | null;
@@ -60,7 +60,7 @@ export interface Department {
 
 export interface Position {
   _id?: string;
-  id?: number;
+  id: number;
   namePosition: string;
   idDepartment: number;
   cretedAt?: string;
@@ -106,6 +106,13 @@ type BranchAddress = {
 export interface IFoodBaucher {
   uiid: string;
   cardNumber: string;
+}
+
+export interface biometricPhotos {
+  key: string;
+  type: string;
+  createdAt: string;
+  active: boolean;
 }
 
 export interface Employee {
@@ -188,6 +195,7 @@ export interface Employee {
   isDoh: boolean;
   isLeader?: boolean;
   foodBaucher?: IFoodBaucher | undefined;
+  biometricPhotos?: biometricPhotos[];
 }
 
 type EmergencyContact = {

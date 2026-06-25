@@ -17,6 +17,7 @@ import PDFViewerModal from "./PDFViewer";
 import { IPeriodDocument } from "@/lib/definitions";
 import ModalExpirationDate from "./ModalExpirationDate";
 import { formatDate } from "date-fns";
+import ConditionalRender from "@/components/ConditionalRender";
 
 function DocumentsGrid({
   doc,
@@ -121,7 +122,7 @@ function DocumentsGrid({
             {doc.exist && (
               <DropdownButton
                 size="sm"
-                variant="info"
+                variant="secondary"
                 title={<i className="bi bi-gear-fill"></i>}
               >
                 <Dropdown.Item
@@ -176,12 +177,13 @@ function DocumentsGrid({
               <div className="d-flex flex-column justify-content-center gap-1">
                 {selectedFiles.length === 0 ? (
                   <>
-                    <Button onClick={handleButtonClick}>
+                    {/* <Button variant="success" onClick={handleButtonClick}>
                       {doc.exist ? "Reemplazar" : "Cargar"}
-                    </Button>
-                    {doc.exist && (
-                      <>
-                        <Button variant="warning" onClick={handleGetDocument}>
+                    </Button> */}
+                    <ConditionalRender cond={doc.exist}> 
+                      <Button variant="primary" onClick={handleButtonClick}> Reemplazar </Button>
+
+                      <Button variant="secondary" onClick={handleGetDocument}>
                           Visualizar
                         </Button>
                         {doc.dateExpiration && (
@@ -193,8 +195,18 @@ function DocumentsGrid({
                             {formatDate(doc.dateExpiration, "dd/MM/yyyy")}
                           </div>
                         )}
+                    </ConditionalRender>
+
+                    <ConditionalRender cond={!doc.exist}>
+                      <Button variant="success" onClick={handleButtonClick}> Cargar </Button>
+                    </ConditionalRender>
+
+
+                    {/* {doc.exist && (
+                      <>
+                        
                       </>
-                    )}
+                    )} */}
                   </>
                 ) : (
                   <>

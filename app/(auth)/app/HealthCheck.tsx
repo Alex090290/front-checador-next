@@ -11,14 +11,22 @@ function HealthCheck() {
   const [response, setResponse] = useState<string | null>(null);
 
   useEffect(() => {
+    const DEV_FORCE_JWT = false;
+
     const fetchHealth = async () => {
-      const res = await getWelcome();
+      const res = DEV_FORCE_JWT
+        ? { success: false, message: "jwt" }
+        : await getWelcome();
+
       if (!res.success) {
         if (res.message === "jwt") {
-          setResponse("la Sesión expiró");
-          signOut();
+          setResponse("La sesión expiró");
+
+          // signOut();
+
           return;
         }
+
         setResponse(res.message);
       }
     };
@@ -26,16 +34,43 @@ function HealthCheck() {
     fetchHealth();
   }, [pathname]);
 
-  if (response) {
+  if (!response) return null; 
+
     return (
-      <Alert variant="danger" className="m-0 p-1 text-center fs-4">
-        <i className="bi bi-exclamation-triangle-fill me-3"></i>
-        <span className="text-uppercase">{response}</span>
-      </Alert>
+      <div
+        className="position-fixed top-0 start-0 w-100 vh-100 d-flex justify-content-center align-items-center"
+        style={{
+          background: "rgba(0,0,0,.75)",
+          zIndex: 9999,
+        }}
+      >
+        <div
+          className="bg-white rounded-4 shadow p-5 text-center"
+          style={{ maxWidth: "550px", width: "90%" }}
+        >
+          <div className="display-1 mb-3">⚠️</div>
+
+          <h2 className="fw-bold text-danger mb-3">
+            Sesión expirada
+          </h2>
+
+          <p className="text-secondary fs-5">
+            Tu sesión ha finalizado porque el token ya no es válido.
+            Para continuar vuelve a iniciar sesión.
+          </p>
+
+          <div className="d-grid gap-3 mt-4">
+
+            <button
+              className="btn btn-outline-danger"
+              onClick={() => signOut()}
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
     );
-  } else {
-    return null;
-  }
 }
 
 export default HealthCheck;

@@ -10,6 +10,7 @@ import {
 import {
   Accordion,
   Button,
+  Card,
   Col,
   Container,
   ListGroup,
@@ -28,7 +29,7 @@ import {
 import { formatDate } from "date-fns";
 import DocumentsGrid from "@/app/(auth)/app/employee/views/DocuementsGrid";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ModalBlur from "../ModalBlur";
 import FormUpdateEmployee from "@/app/(auth)/app/employee/views/updateEmplyee/update";
 import { TInputsEmployee } from "@/app/(auth)/app/employee/definition";
@@ -43,6 +44,8 @@ import Loading from "../LoadingSpinner";
 import RegisterBiometricModal from "./rekognition";
 import UnsubscribeEmployeeComponent from "./Unsubscribe";
 import NewDocumentEmployeeComponent from "./NewDocument";
+import AlertBiometrics from "../AlertBiometrics";
+import { useRouter } from "next/navigation";
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
   if (!value) return "-";
@@ -72,52 +75,10 @@ function formatPhone(
   return value.internationalNumber || "-";
 }
 
-function InfoItem({
-  label,
-  value,
-  className = "",
-  uppercase = true,
-}: {
-  label: string;
-  value?: React.ReactNode;
-  className?: string;
-  uppercase?: boolean;
-}) {
-  return (
-    <div className={className}>
-      <div className="text-secondary-emphasis fw-semibold mb-1">{label}</div>
-      <div className={uppercase ? "fw-medium text-uppercase" : "fw-medium"}>
-        {value ?? "-"}
-      </div>
-    </div>
-  );
-}
 
-function InfoTextArea({
-  label,
-  value,
-}: {
-  label: string;
-  value?: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="text-secondary-emphasis fw-semibold mb-1">{label}</div>
-      <div
-        className="fw-medium"
-        style={{
-          whiteSpace: "pre-wrap",
-          lineHeight: 1.6,
-        }}
-      >
-        {value ?? "-"}
-      </div>
-    </div>
-  );
-}
 
 type Props = {
-  employee: Employee | null;
+  employee: Employee;
   id: string;
   departments: Department[];
   branches: Branch[];
@@ -135,6 +96,7 @@ export default function EmployeeDetailsView({
   documents,
   vacations,
 }: Props) {
+  const router = useRouter();
   const { modalError, modalConfirm } = useModals();
   const { data: session } = useSession();
   const [showRegisterBiometricModal, setShowRegisterBiometricModal] = useState(false);
@@ -142,6 +104,12 @@ export default function EmployeeDetailsView({
   const [loading, setLoading] = useState(false);
   const [showUnsubscribeEmployeeModal, setShowUnsubscribeEmployeeModal] = useState(false);
   const [showNewDocumentEmployeeModal, setShowNewDocumentEmployeeModal] = useState(false);
+  const statusOne = employee?.status === 1;
+  const statusTwo = employee?.status === 2;
+  const [hideBiometricAlert, setHideBiometricAlert] = useState(false);
+  const hasBiometricPhotos = (employee?.biometricPhotos?.length ?? 0) > 0;
+
+
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||
@@ -174,7 +142,6 @@ export default function EmployeeDetailsView({
     });
   };
 
-
   const handleReEntry = async () => {
     if (!employee?.id) {
       modalError("No se encontró el empleado");
@@ -200,741 +167,1464 @@ export default function EmployeeDetailsView({
   };
 
   const upperCase = (text?: string) => {
-        return text?.toUpperCase() || "";
-    };
+    return text?.toUpperCase() || "";
+  };
 
   const getEmployeeName = (u: Employee | null) => {
-    if(!u) return "No se puede dejar vacío este campo"
+    if (!u) return "No se puede dejar vacío este campo"
 
-    
+
     return u.id
       ? `${upperCase(u.name)} ${upperCase(u.lastName)}`
       : `EMPLEADO #${u.id}`;
-
   };
+
+  const handleBack = () => {
+    router.push("/app/employee");
+  }
+
+  // if (!hasBiometricPhotos) return (
+  //   <AlertBiometrics onClose={() => setHasBiometricPhotos(true)} />
+  // )
 
   return (
     <>
+    
+      <ConditionalRender cond={!hasBiometricPhotos && !hideBiometricAlert}>
+        <AlertBiometrics onClose={() => setHideBiometricAlert(true)} />
+      </ConditionalRender>
+
       <ConditionalRender cond={loading}>
         <Loading message="Cargando..." />
       </ConditionalRender>
 
-      <div className="mb-4">
-        <h1 className="mb-0 text-white">
-          {getEmployeeName(employee)}
-        </h1>
-      </div>
+      <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
+        {/* <Row className="m-2">
+          <Col xs={12} md={12} lg={12}> */}
 
-      <div className="mb-4 d-flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="primary"
-          onClick={() => setShowUpdateEmployeeModal(true)}
-        >
-          <i className="bi bi-pencil me-2" />
-          Actualizar Empleado
-        </Button>
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
-        {employee?.status === 1 && (
+          <div className="d-flex gap-2 flex-wrap">
+            <Button
+              className="d-inline-flex align-items-center fw-semibold px-3"
+              variant="primary"
+              onClick={() => setShowUpdateEmployeeModal(true)}
+            >
+              <i className="bi bi-pencil me-2" />
+              Actualizar Empleado
+            </Button>
+
+            <ConditionalRender cond={statusOne}>
+              <Button
+                className="d-inline-flex align-items-center fw-semibold px-3"
+                variant="danger"
+                onClick={() => setShowUnsubscribeEmployeeModal(true)}
+              >
+                <i className="bi bi-arrow-down me-2" />
+                Dar de baja
+              </Button>
+            </ConditionalRender>
+
+            <ConditionalRender cond={statusTwo}>
+              <Button
+                className="d-inline-flex align-items-center fw-semibold px-3"
+                variant="success"
+                onClick={handleReEntry}
+              >
+                <i className="bi bi-arrow-up me-2" />
+                Reingreso
+              </Button>
+            </ConditionalRender>
+
+            <Button
+              className="d-inline-flex align-items-center fw-semibold px-3"
+              variant="warning"
+              onClick={() => setShowRegisterBiometricModal(true)}
+            >
+              <i className="bi bi-person-bounding-box me-2" />
+              Registrar biométricos
+            </Button>
+          </div>
+
           <Button
-            size="sm"
-            variant="danger"
-            onClick={() => setShowUnsubscribeEmployeeModal(true)}
+            variant="outline-secondary"
+            onClick={handleBack}
+            disabled={loading}
+            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           >
-            <i className="bi bi-arrow-down me-2" />
-            Dar de baja
+            <i className="bi bi-arrow-left" />
+            Regresar
           </Button>
-        )}
+        </div>
 
-        {employee?.status === 2 && (
-          <Button size="sm" variant="success" onClick={handleReEntry}>
-            <i className="bi bi-arrow-up me-2" />
-            Reingreso
-          </Button>
-        )}
-        <Button
-          size="sm"
-          variant="warning"
-          onClick={() => setShowRegisterBiometricModal(true)}
-        >
-          <i className="bi bi-person-bounding-box me-2" />
-          Registrar biométricos
-        </Button>
-      </div>
+        <div>
+          <h1 className="mb-41 ms-1"> {getEmployeeName(employee)} </h1>
+          <p className="text-muted mb-1 ms-1">
+            Información del empleado.
+          </p>
+        </div>
 
-      <FormBook dKey="personalInfo">
+        <Card className="rounded-4 shadow-sm border">
+          <Card.Body className="p-3 p-md-5">
+            <FormBook dKey="personalInfo">
 
-        {/* =============== Informacion Personal ===================*/}
+              {/* =============== Informacion Personal ===================*/}
 
-        <FormPage title="Información Personal" eventKey="personalInfo">
-          <PageSheet>
-            <FieldGroup>
-              <InfoItem label="Nombre:" value={formatText(employee?.name)} />
-              <InfoItem
-                label="Apellidos:"
-                value={formatText(employee?.lastName)}
-              />
-              <InfoItem
-                label="Correo personal:"
-                value={formatText(employee?.emailPersonal)}
-                uppercase={false}
-              />
+              <FormPage title="Información Personal" eventKey="personalInfo">
+                {/* <PageSheet> */}
+                <Row className="g-4 align-items-stretch">
+                  <Col xs={12} xl={6} className="d-flex">
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Celular:"
-                  value={formatPhone(employee?.phonePersonal)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="Teléfono fijo:"
-                  value={formatPhone(employee?.homePhone)}
-                  uppercase={false}
-                />
-              </FieldGroup.Stack>
-            </FieldGroup>
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Información personal</h6>
 
-            <>
-              <FieldGroup>
-                <InfoItem
-                  label="Calle:"
-                  value={formatText(employee?.address?.street)}
-                />
+                          <span className="badge bg-info">
+                            Empleado
+                          </span>
+                        </div>
 
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="No. Exterior:"
-                    value={formatText(employee?.address?.numberOut)}
-                  />
-                  <InfoItem
-                    label="No. Interior:"
-                    value={formatText(employee?.address?.numberIn)}
-                  />
-                </FieldGroup.Stack>
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-person text-primary" />
+                              <span className="text-muted">Nombre</span>
+                            </div>
 
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Colonia:"
-                    value={formatText(employee?.address?.neighborhood)}
-                  />
-                  <InfoItem
-                    label="C.P."
-                    value={formatText(employee?.address?.zipCode)}
-                  />
-                </FieldGroup.Stack>
+                            <span className="fw-semibold">
+                              {formatText(employee?.name)}
+                            </span>
+                          </div>
 
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Municipio:"
-                    value={formatText(employee?.address?.municipality)}
-                  />
-                  <InfoItem
-                    label="Estado:"
-                    value={formatText(employee?.address?.state)}
-                  />
-                </FieldGroup.Stack>
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-person-badge text-success" />
+                              <span className="text-muted">Apellidos</span>
+                            </div>
 
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="País:"
-                    value={formatText(employee?.address?.country)}
-                  />
-                </FieldGroup.Stack>
-              </FieldGroup>
+                            <span className="fw-semibold">
+                              {formatText(employee?.lastName)}
+                            </span>
+                          </div>
 
-              <FieldGroup>
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Nacimiento:"
-                    value={formatDateValue(employee?.birthDate)}
-                    uppercase={false}
-                  />
-                  <InfoItem
-                    label="Nacionalidad:"
-                    value={formatText(employee?.nationality)}
-                  />
-                </FieldGroup.Stack>
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-envelope text-info" />
+                              <span className="text-muted">Correo personal</span>
+                            </div>
 
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="NSS:"
-                    value={formatText(employee?.socialSecurityNumber)}
-                    uppercase={false}
-                  />
-                  <InfoItem
-                    label="R.F.C."
-                    value={formatText(employee?.rfc)}
-                  />
-                </FieldGroup.Stack>
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.emailPersonal)}
+                            </span>
+                          </div>
 
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="CURP:"
-                    value={formatText(employee?.curp)}
-                  />
-                </FieldGroup.Stack>
-              </FieldGroup>
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-phone text-warning" />
+                              <span className="text-muted">Celular</span>
+                            </div>
 
-              <FieldGroup>
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Género:"
-                    value={formatText(employee?.gender)}
-                  />
-                  <InfoItem
-                    label="Grupo sanguíneo:"
-                    value={formatText(employee?.bloodType)}
-                  />
-                </FieldGroup.Stack>
+                            <span className="fw-semibold">
+                              {formatPhone(employee?.phonePersonal)}
+                            </span>
+                          </div>
 
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Peso:"
-                    value={formatText(employee?.weight)}
-                    uppercase={false}
-                  />
-                  <InfoItem
-                    label="Altura:"
-                    value={formatText(employee?.height)}
-                    uppercase={false}
-                  />
-                </FieldGroup.Stack>
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-telephone text-secondary" />
+                              <span className="text-muted">Teléfono fijo</span>
+                            </div>
 
-                <InfoItem
-                  label="Constitución:"
-                  value={formatText(employee?.constitution)}
-                />
-                <InfoItem
-                  label="Estado de salud:"
-                  value={formatText(employee?.healthStatus)}
-                  uppercase={false}
-                />
-              </FieldGroup>
+                            <span className="fw-semibold">
+                              {formatPhone(employee?.homePhone)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
 
-              <FieldGroup>
-                <InfoItem
-                  label="Formación académica:"
-                  value={formatText(employee?.education)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="Habilidades:"
-                  value={formatText(employee?.skills)}
-                  uppercase={false}
-                />
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Hijos:"
-                    value={formatText(employee?.sons)}
-                    uppercase={false}
-                  />
-                  <InfoItem
-                    label="Hijas:"
-                    value={formatText(employee?.daughters)}
-                    uppercase={false}
-                  />
-                </FieldGroup.Stack>
-              </FieldGroup>
+                  <Col xs={12} xl={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Dirección</h6>
 
-              <FieldGroup>
-                <InfoTextArea
-                  label="Observaciones generales:"
-                  value={formatText(employee?.comments)}
-                />
-              </FieldGroup>
-            </>
-          </PageSheet>
-        </FormPage>
+                          <span className="badge bg-info">
+                            Domicilio
+                          </span>
+                        </div>
 
-        {/* =============== Informacion Laboral ===================*/}
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-signpost text-primary" />
+                              <span className="text-muted">Calle</span>
+                            </div>
 
-        <FormPage title="Información Laboral" eventKey="jobInfo">
-          <PageSheet>
-            <FieldGroup>
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Teléfono de oficina:"
-                  value={formatPhone(employee?.phoneCompany)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="Extensión:"
-                  value={formatText(employee?.phoneExtCompany)}
-                  uppercase={false}
-                />
-              </FieldGroup.Stack>
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.address?.street)}
+                            </span>
+                          </div>
 
-              <InfoItem
-                label="Correo:"
-                value={formatText(employee?.emailCompany)}
-                uppercase={false}
-              />
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-house-door text-success" />
+                              <span className="text-muted">No. Exterior</span>
+                            </div>
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Departamento:"
-                  value={formatText(department?.nameDepartment)}
-                />
-                <InfoItem
-                  label="Puesto:"
-                  value={formatText(employee?.position?.namePosition)}
-                />
-              </FieldGroup.Stack>
+                            <span className="fw-semibold">
+                              {formatText(employee?.address?.numberOut)}
+                            </span>
+                          </div>
 
-              <InfoItem
-                label="Gerente:"
-                value={
-                  leader
-                    ? `${leader.name} ${leader.lastName}`
-                    : departmentLeader
-                      ? `${departmentLeader.name} ${departmentLeader.lastName}`
-                      : "-"
-                }
-              />
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-door-open text-info" />
+                              <span className="text-muted">No. Interior</span>
+                            </div>
 
-              <InfoItem
-                label="Sucursal"
-                value={formatText(branch?.name)}
-              />
-            </FieldGroup>
+                            <span className="fw-semibold">
+                              {formatText(employee?.address?.numberIn)}
+                            </span>
+                          </div>
 
-            <FieldGroup>
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="ID Checador:"
-                  value={formatText(employee?.idCheck)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="Contraseña de checador:"
-                  value={formatText(employee?.passwordCheck)}
-                  uppercase={false}
-                />
-              </FieldGroup.Stack>
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-buildings text-warning" />
+                              <span className="text-muted">Colonia</span>
+                            </div>
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Entrada Oficina:"
-                  value={formatText(employee?.scheduleOffice?.entry)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="Salida Oficina:"
-                  value={formatText(employee?.scheduleOffice?.exit)}
-                  uppercase={false}
-                />
-              </FieldGroup.Stack>
+                            <span className="fw-semibold">
+                              {formatText(employee?.address?.neighborhood)}
+                            </span>
+                          </div>
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Entrada comedor:"
-                  value={formatText(employee?.scheduleLunch?.entry)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="Salida comedor:"
-                  value={formatText(employee?.scheduleLunch?.exit)}
-                  uppercase={false}
-                />
-              </FieldGroup.Stack>
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-mailbox text-secondary" />
+                              <span className="text-muted">C.P.</span>
+                            </div>
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Entrada sabatina:"
-                  value={formatText(employee?.scheduleSaturday?.entry)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="Salida sabatina:"
-                  value={formatText(employee?.scheduleSaturday?.exit)}
-                  uppercase={false}
-                />
-              </FieldGroup.Stack>
+                            <span className="fw-semibold">
+                              {formatText(employee?.address?.zipCode)}
+                            </span>
+                          </div>
 
-              <InfoItem
-                label="Descripción del horario:"
-                value={formatText(employee?.scheduleDescription)}
-                uppercase={false}
-              />
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-geo-alt text-danger" />
+                              <span className="text-muted">Municipio</span>
+                            </div>
 
-              {session?.user?.permissions.some(
-                (p) => p.text === "visualizar_salario"
-              ) && (
-                  <FieldGroup.Stack>
-                    <InfoItem
-                      label="Salario diario:"
-                      value={formatText(employee?.dailyWage)}
-                      uppercase={false}
-                    />
-                  </FieldGroup.Stack>
-                )}
-            </FieldGroup>
+                            <span className="fw-semibold">
+                              {formatText(employee?.address?.municipality)}
+                            </span>
+                          </div>
 
-            <FieldGroup>
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Carta de aniversario:"
-                  value={formatText(employee?.anniversaryLetter)}
-                />
-                <InfoItem
-                  label="Status:"
-                  value={
-                    employee?.status === 1
-                      ? "Activo"
-                      : employee?.status === 2
-                        ? "Baja"
-                        : "-"
-                  }
-                />
-              </FieldGroup.Stack>
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-map text-primary" />
+                              <span className="text-muted">Estado</span>
+                            </div>
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="keyCONTPAQi:"
-                  value={formatText(employee?.keyCONTPAQi)}
-                  uppercase={false}
-                />
-                <InfoItem
-                  label="keyAspelNOI:"
-                  value={formatText(employee?.keyAspelNOI)}
-                  uppercase={false}
-                />
-              </FieldGroup.Stack>
+                            <span className="fw-semibold">
+                              {formatText(employee?.address?.state)}
+                            </span>
+                          </div>
 
-              <InfoItem
-                label="Motivo de la baja:"
-                value={formatText(employee?.dischargeReason)}
-                uppercase={false}
-              />
-            </FieldGroup>
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-globe-americas text-success" />
+                              <span className="text-muted">País</span>
+                            </div>
 
-            <FieldGroup>
+                            <span className="fw-semibold">
+                              {formatText(employee?.address?.country)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="UID: "
-                  value={formatText(employee?.foodBaucher?.uiid)}
-                  uppercase={false} />
-              </FieldGroup.Stack>
+                  <Col xs={12} xl={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Identificación</h6>
 
-              <FieldGroup.Stack>
-                <InfoItem
-                  label="Número de tarjeta: "
-                  value={formatText(employee?.foodBaucher?.cardNumber)}
-                  uppercase={false} />
-              </FieldGroup.Stack>
+                          <span className="badge bg-info">
+                            Datos oficiales
+                          </span>
+                        </div>
 
-            </FieldGroup>
-          </PageSheet>
-        </FormPage>
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-calendar-event text-primary" />
+                              <span className="text-muted">Nacimiento</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatDateValue(employee?.birthDate)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-flag text-success" />
+                              <span className="text-muted">Nacionalidad</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.nationality)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-shield-check text-info" />
+                              <span className="text-muted">NSS</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.socialSecurityNumber)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-file-earmark-text text-warning" />
+                              <span className="text-muted">R.F.C.</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.rfc)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-person-vcard text-secondary" />
+                              <span className="text-muted">CURP</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.curp)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} xl={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Datos físicos y salud</h6>
+
+                          <span className="badge bg-info">
+                            Salud
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-gender-ambiguous text-primary" />
+                              <span className="text-muted">Género</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.gender)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-droplet-fill text-danger" />
+                              <span className="text-muted">Grupo sanguíneo</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.bloodType)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-speedometer2 text-warning" />
+                              <span className="text-muted">Peso</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.weight)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-arrows-vertical text-info" />
+                              <span className="text-muted">Altura</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.height)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-person-standing text-success" />
+                              <span className="text-muted">Constitución</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.constitution)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-heart-pulse text-danger" />
+                              <span className="text-muted">Estado de salud</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.healthStatus)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} xl={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Formación y familia</h6>
+
+                          <span className="badge bg-info">
+                            Perfil
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-mortarboard text-primary" />
+                              <span className="text-muted">Formación académica</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.education)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-stars text-warning" />
+                              <span className="text-muted">Habilidades</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.skills)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-person-fill text-info" />
+                              <span className="text-muted">Hijos</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.sons)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-person-fill text-danger" />
+                              <span className="text-muted">Hijas</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.daughters)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} lg={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Observaciones generales</h6>
+
+                          <span className="badge bg-info">
+                            Notas
+                          </span>
+                        </div>
+
+                        <div className="d-flex align-items-start gap-3">
+                          <i
+                            className="bi bi-chat-left-text text-primary fs-4"
+                          />
+
+                          <div className="flex-grow-1">
+                            <div className="text-muted small mb-2">
+                              Comentarios registrados
+                            </div>
+
+                            <div
+                              className="p-3 rounded-3 border"
+                              style={{
+                                minHeight: "120px",
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {formatText(employee?.comments)}
+                            </div>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+                {/* </PageSheet> */}
+              </FormPage>
+
+              {/* =============== Informacion Laboral ===================*/}
+
+              <FormPage title="Información Laboral" eventKey="jobInfo">
+                {/* <PageSheet> */}
+                <Row className="g-4 align-items-stretch">
+                  <Col xs={12} xl={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Información laboral</h6>
+
+                          <span className="badge bg-info">
+                            Empresa
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-telephone text-primary" />
+                              <span className="text-muted">Teléfono de oficina</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatPhone(employee?.phoneCompany)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-diagram-2 text-success" />
+                              <span className="text-muted">Extensión</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.phoneExtCompany)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-envelope-at text-info" />
+                              <span className="text-muted">Correo corporativo</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.emailCompany)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-building text-warning" />
+                              <span className="text-muted">Departamento</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(department?.nameDepartment)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-briefcase text-secondary" />
+                              <span className="text-muted">Puesto</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.position?.namePosition)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-person-workspace text-primary" />
+                              <span className="text-muted">Gerente</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {leader
+                                ? `${leader.name} ${leader.lastName}`
+                                : departmentLeader
+                                  ? `${departmentLeader.name} ${departmentLeader.lastName}`
+                                  : "-"}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-geo-alt text-danger" />
+                              <span className="text-muted">Sucursal</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(branch?.name)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} lg={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Horario y checador</h6>
+
+                          <span className="badge bg-info">
+                            Asistencia
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-fingerprint text-primary" />
+                              <span className="text-muted">ID Checador</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.idCheck)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-key text-warning" />
+                              <span className="text-muted">Contraseña de checador</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.passwordCheck)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-box-arrow-in-right text-success" />
+                              <span className="text-muted">Entrada Oficina</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.scheduleOffice?.entry)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-box-arrow-right text-danger" />
+                              <span className="text-muted">Salida Oficina</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.scheduleOffice?.exit)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-cup-hot text-success" />
+                              <span className="text-muted">Entrada comedor</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.scheduleLunch?.entry)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-cup-straw text-danger" />
+                              <span className="text-muted">Salida comedor</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.scheduleLunch?.exit)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-calendar-week text-primary" />
+                              <span className="text-muted">Entrada sabatina</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.scheduleSaturday?.entry)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-calendar-x text-secondary" />
+                              <span className="text-muted">Salida sabatina</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.scheduleSaturday?.exit)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-start justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-card-text text-info" />
+                              <span className="text-muted">Descripción del horario</span>
+                            </div>
+
+                            <span className="fw-semibold text-end" style={{ maxWidth: "250px" }}>
+                              {formatText(employee?.scheduleDescription)}
+                            </span>
+                          </div>
+
+                          {session?.user?.permissions.some(
+                            (p) => p.text === "visualizar_salario"
+                          ) && (
+                              <div className="d-flex align-items-center justify-content-between">
+                                <div className="d-flex align-items-center gap-2">
+                                  <i className="bi bi-cash-coin text-success" />
+                                  <span className="text-muted">Salario diario</span>
+                                </div>
+
+                                <span className="fw-semibold">
+                                  {formatText(employee?.dailyWage)}
+                                </span>
+                              </div>
+                            )}
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} lg={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Administración laboral</h6>
+
+                          <span className="badge bg-info">
+                            Recursos Humanos
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-envelope-paper-heart text-primary" />
+                              <span className="text-muted">Carta de aniversario</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.anniversaryLetter)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i
+                                className={`bi ${employee?.status === 1
+                                  ? "bi-check-circle-fill text-success"
+                                  : employee?.status === 2
+                                    ? "bi-x-circle-fill text-danger"
+                                    : "bi-dash-circle text-secondary"
+                                  }`}
+                              />
+
+                              <span className="text-muted">Status</span>
+                            </div>
+
+                            <span
+                              className={`fw-semibold ${employee?.status === 1
+                                ? "text-success"
+                                : employee?.status === 2
+                                  ? "text-danger"
+                                  : ""
+                                }`}
+                            >
+                              {employee?.status === 1
+                                ? "Activo"
+                                : employee?.status === 2
+                                  ? "Baja"
+                                  : "-"}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-key text-warning" />
+                              <span className="text-muted">keyCONTPAQi</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.keyCONTPAQi)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-key-fill text-info" />
+                              <span className="text-muted">keyAspel NOI</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatText(employee?.keyAspelNOI)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-start justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-file-earmark-minus text-danger" />
+                              <span className="text-muted">Motivo de la baja</span>
+                            </div>
+
+                            <span
+                              className="fw-semibold text-end"
+                              style={{ maxWidth: "250px" }}
+                            >
+                              {formatText(employee?.dischargeReason)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} lg={6} className="d-flex">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Vales de despensa</h6>
+
+                          <span className="badge bg-info">
+                            Prestación
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-upc-scan text-primary" />
+                              <span className="text-muted">UID</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.foodBaucher?.uiid)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-credit-card-2-front text-success" />
+                              <span className="text-muted">Número de tarjeta</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.foodBaucher?.cardNumber)}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  {/* </PageSheet> */}
+                </Row>
+              </FormPage>
 
 
-        {/* =============== Informacion Contactos ===================*/}
+              {/* =============== Informacion Contactos ===================*/}
 
-        <FormPage title="Contactos" eventKey="contacts">
-          <FormSheet>
-            <Col md="12">
-              <Table size="sm" borderless hover responsive>
-                <thead>
-                  <tr className="border-bottom table-active">
-                    <th className="border-end">Name</th>
-                    <th className="border-end">Parentezco</th>
-                    <th className="border-end">Contacto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employee?.emergencyContacts?.length ? (
-                    employee.emergencyContacts.map((contact, index) => (
-                      <tr key={`${contact.name}-${index}`}>
-                        <td valign="middle" className="border-bottom">
-                          {formatText(contact.name)}
-                        </td>
-                        <td valign="middle" className="border-bottom">
-                          {formatText(contact.kinship)}
-                        </td>
-                        <td valign="middle" className="border-bottom">
-                          {formatPhone(contact.phone)}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={3} className="text-center py-3">
-                        Sin contactos registrados
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </Col>
-          </FormSheet>
-        </FormPage>
+              <FormPage title="Contactos" eventKey="contacts">
+                <Row className="g-4 align-items-stretch">
+                  <Col xs={12} xl={12}>
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Contactos de emergencia</h6>
 
-        {/* =============== Informacion Ingresos y bajas ===================*/}
+                          <span className="badge bg-info">
+                            Emergencia
+                          </span>
+                        </div>
 
-        <FormPage title="Ingresos y Bajas" eventKey="historical">
-          <Container>
-            <Row className="py-1">
-              <FieldGroup>
-                <FieldGroup.Stack>
-                  <InfoItem
-                    label="Inicio de relación:"
-                    value={formatDateValue(employee?.admissionDate, "yyyy-MM-dd")}
-                    uppercase={false}
-                  />
-                  <InfoItem
-                    label="Fin de relación:"
-                    value={formatDateValue(employee?.dischargeDate, "yyyy-MM-dd")}
-                    uppercase={false}
-                  />
-                </FieldGroup.Stack>
-              </FieldGroup>
+                        <Table size="sm" hover responsive className="align-middle mb-0">
+                          <thead>
+                            <tr className="border-bottom">
+                              <th className="text-muted fw-semibold">
+                                <i className="bi bi-person me-2 text-primary" />
+                                Nombre
+                              </th>
 
-              <FieldGroup>
-                <InfoItem
-                  label="Tipo de baja:"
-                  value={formatText(employee?.typeOfDischarge)}
-                  uppercase={false}
-                />
-                <InfoTextArea
-                  label=""
-                  value={formatText(employee?.dischargeReason)}
-                />
-              </FieldGroup>
-            </Row>
+                              <th className="text-muted fw-semibold">
+                                <i className="bi bi-people me-2 text-success" />
+                                Parentesco
+                              </th>
 
-            <Row className="py-1">
-              <Col md="12">
-                <Table borderless hover className="text-uppercase">
-                  <thead>
-                    <tr>
-                      <th className="border-end border-bottom table-active">
-                        Reingreso
-                      </th>
-                      <th className="border-end border-bottom table-active">
-                        Baja
-                      </th>
-                      <th className="border-end border-bottom table-active">
-                        Razón
-                      </th>
-                      <th className="border-end border-bottom table-active">
-                        Tipo
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employee?.reEntry?.length ? (
-                      employee.reEntry.map((re) => (
-                        <tr key={re._id}>
-                          <td className="border-bottom text-center">
-                            {re.reEntryDate
-                              ? formatDate(re.reEntryDate, "MM/dd/yyyy")
-                              : "-"}
-                          </td>
-                          <td className="border-bottom text-center">
-                            {re.dischargeDate
-                              ? formatDate(re.dischargeDate, "MM/dd/yyyy")
-                              : "-"}
-                          </td>
-                          <td className="border-bottom text-nowrap">
-                            {formatText(re.dischargeReason)}
-                          </td>
-                          <td className="border-bottom text-nowrap">
-                            {formatText(re.typeOfDischarge)}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} className="text-center py-3">
-                          Sin historial
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </Col>
-            </Row>
-          </Container>
-        </FormPage>
+                              <th className="text-muted fw-semibold">
+                                <i className="bi bi-telephone me-2 text-info" />
+                                Contacto
+                              </th>
+                            </tr>
+                          </thead>
 
-        {/* =============== Documentos ===================*/}
+                          <tbody>
+                            {employee?.emergencyContacts?.length ? (
+                              employee.emergencyContacts.map((contact, index) => (
+                                <tr key={`${contact.name}-${index}`}>
+                                  <td className="border-bottom py-3">
+                                    <span className="fw-semibold">
+                                      {formatText(contact.name)}
+                                    </span>
+                                  </td>
 
-        <FormPage title="Documentos" eventKey="documents">
-          <Container className="mt-1">
-            <Row className="mb-2">
-              <Col md="12">
-                <Nav>
-                  {session?.user?.permissions.some(
-                    (p) => p.text === "crear_plantilla_de_documento"
-                  ) && (
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => setShowNewDocumentEmployeeModal(true)}
-                      >
-                        <i className="bi bi-file-earmark-plus me-2 mt-2" />
-                        Nueva plantilla
-                      </Button>
-                    )}
-                </Nav>
-              </Col>
-            </Row>
+                                  <td className="border-bottom py-3">
+                                    {formatText(contact.kinship)}
+                                  </td>
 
-            <Accordion>
-              {documents.map((period, index) => (
-                <Accordion.Item
-                  eventKey={String(period.idPeriod)}
-                  key={`${period.idPeriod}-docs`}
-                >
-                  <Accordion.Header>Periodo {index + 1}</Accordion.Header>
-                  <Accordion.Body>
-                    <Row className="g-2">
-                      {period.documents.map((doc) => (
-                        <DocumentsGrid
-                          key={doc.title}
-                          doc={doc}
-                          idEmployee={Number(id)}
-                        />
-                      ))}
-                    </Row>
-                  </Accordion.Body>
-                </Accordion.Item>
-              ))}
-            </Accordion>
-          </Container>
-        </FormPage>
+                                  <td className="border-bottom py-3">
+                                    {formatPhone(contact.phone)}
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={3} className="text-center py-4 text-muted">
+                                  <i className="bi bi-person-x fs-5 d-block mb-2" />
+                                  Sin contactos registrados
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </Table>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+              </FormPage>
 
-        {/* Pestaña de vacaciones (A reciclar) */}
-        <FormPage title="Vacaciones" eventKey="vacations">
-          <Container className="mt-1">
-            <Row>
-              <Col md="12">
-                <Accordion>
-                  {vacations.map((v) => (
-                    <Accordion.Item
-                      key={v.id}
-                      eventKey={v.periodDescription}
-                      className="bg-secondary"
-                    >
-                      <Accordion.Header>{v.periodDescription}</Accordion.Header>
-                      <Accordion.Body>
-                        <ListGroup horizontal className="mb-3">
-                          <ListGroup.Item>
-                            <strong>Días totales: </strong>
-                            {v.totalDaysPeriod}
-                          </ListGroup.Item>
-                          <ListGroup.Item>
-                            <strong>Fecha inicio: </strong>
-                            {formatDate(v.dateInitPeriod, "dd/MM/yyyy")}
-                          </ListGroup.Item>
-                          <ListGroup.Item>
-                            <strong>Fecha final: </strong>
-                            {formatDate(v.dateEndPeriod, "dd/MM/yyyy")}
-                          </ListGroup.Item>
-                        </ListGroup>
+              {/* =============== Informacion Ingresos y bajas ===================*/}
 
-                        <Accordion>
-                          {v.vacationsRequestsData.map((vr) => (
+              <FormPage title="Ingresos y Bajas" eventKey="historical">
+                <Row className="g-4 align-items-stretch">
+                  <Col xs={12} xl={6}>
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Relación laboral</h6>
+
+                          <span className="badge bg-info">
+                            Vigencia
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-calendar-check text-success" />
+                              <span className="text-muted">Inicio de relación</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatDateValue(employee?.admissionDate, "yyyy-MM-dd")}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-calendar-x text-danger" />
+                              <span className="text-muted">Fin de relación</span>
+                            </div>
+
+                            <span className="fw-semibold">
+                              {formatDateValue(employee?.dischargeDate, "yyyy-MM-dd")}
+                            </span>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} xl={6}>
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Información de baja</h6>
+
+                          <span className="badge bg-danger">
+                            Baja
+                          </span>
+                        </div>
+
+                        <div className="d-flex flex-column gap-3">
+                          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-file-earmark-minus text-danger" />
+                              <span className="text-muted">Tipo de baja</span>
+                            </div>
+
+                            <span className="fw-semibold text-end">
+                              {formatText(employee?.typeOfDischarge)}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-start gap-3">
+                            <i className="bi bi-journal-text text-warning fs-5 mt-1" />
+
+                            <div className="flex-grow-1">
+                              <div className="text-muted small mb-2">
+                                Motivo de la baja
+                              </div>
+
+                              <div
+                                className="p-3 rounded-3 border"
+                                style={{
+                                  minHeight: "100px",
+                                  whiteSpace: "pre-wrap",
+                                }}
+                              >
+                                {formatText(employee?.dischargeReason)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col md="12">
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Historial de reingresos</h6>
+
+                          <span className="badge bg-info">
+                            Historial
+                          </span>
+                        </div>
+
+                        <Table hover responsive className="align-middle mb-0">
+                          <thead>
+                            <tr className="border-bottom">
+                              <th className="text-muted fw-semibold">
+                                <i className="bi bi-calendar-check me-2 text-success" />
+                                Reingreso
+                              </th>
+
+                              <th className="text-muted fw-semibold">
+                                <i className="bi bi-calendar-x me-2 text-danger" />
+                                Baja
+                              </th>
+
+                              <th className="text-muted fw-semibold">
+                                <i className="bi bi-chat-left-text me-2 text-warning" />
+                                Razón
+                              </th>
+
+                              <th className="text-muted fw-semibold">
+                                <i className="bi bi-file-earmark-text me-2 text-primary" />
+                                Tipo
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {employee?.reEntry?.length ? (
+                              employee.reEntry.map((re) => (
+                                <tr key={re._id}>
+                                  <td className="border-bottom py-3 text-center">
+                                    <span className="fw-semibold">
+                                      {re.reEntryDate
+                                        ? formatDate(re.reEntryDate, "MM/dd/yyyy")
+                                        : "-"}
+                                    </span>
+                                  </td>
+
+                                  <td className="border-bottom py-3 text-center">
+                                    <span className="fw-semibold">
+                                      {re.dischargeDate
+                                        ? formatDate(re.dischargeDate, "MM/dd/yyyy")
+                                        : "-"}
+                                    </span>
+                                  </td>
+
+                                  <td className="border-bottom py-3">
+                                    {formatText(re.dischargeReason)}
+                                  </td>
+
+                                  <td className="border-bottom py-3">
+                                    {formatText(re.typeOfDischarge)}
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={4} className="text-center py-4 text-muted">
+                                  <i className="bi bi-clock-history fs-5 d-block mb-2" />
+                                  Sin historial de reingresos
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </Table>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+              </FormPage>
+
+              {/* =============== Documentos ===================*/}
+
+              <FormPage title="Documentos" eventKey="documents">
+                <Row className="g-4 align-items-stretch">
+                  <Col xs={12} xl={12}>
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Documentos del empleado</h6>
+
+                          {session?.user?.permissions.some(
+                            (p) => p.text === "crear_plantilla_de_documento"
+                          ) && (
+                              <div className="d-flex justify-content-end mb-4">
+                                <Button
+                                  variant="primary"
+                                  onClick={() => setShowNewDocumentEmployeeModal(true)}
+                                >
+                                  <i className="bi bi-file-earmark-plus me-2" />
+                                  Nueva plantilla
+                                </Button>
+                              </div>
+                            )}
+                        </div>
+
+                        <Accordion flush>
+                          {documents.map((period, index) => (
                             <Accordion.Item
-                              key={vr._id}
-                              eventKey={String(vr.id)}
+                              eventKey={String(period.idPeriod)}
+                              key={`${period.idPeriod}-docs`}
+                              className="border rounded-3 mb-3 overflow-hidden"
                             >
                               <Accordion.Header>
-                                <h6>{vr.holidayName}</h6>
-                              </Accordion.Header>
-                              <Accordion.Body>
-                                <div>
-                                  <div className="d-flex justify-content-around align-items-center mb-3">
-                                    <div>
-                                      <strong>Fecha inicio: </strong>
-                                      {formatDate(vr.dateInit, "dd/MM/yyyy")}
-                                    </div>
-                                    <div>
-                                      <strong>Fecha final: </strong>
-                                      {formatDate(vr.dateEnd, "dd/MM/yyyy")}
-                                    </div>
-                                  </div>
-
-                                  <div className="d-flex justify-content-around align-items-center">
-                                    <div>
-                                      <strong>Status líder: </strong>
-                                      {vr.leaderApproval === "APPROVED"
-                                        ? "APROBADO"
-                                        : vr.leaderApproval === "REJECTED"
-                                          ? "RECHAZADO"
-                                          : "PENDIENTE"}
-                                    </div>
-                                    <div>
-                                      <strong>Status D.O.H. </strong>
-                                      {vr.dohApproval === "APPROVED"
-                                        ? "ENTERADO"
-                                        : "NO ENTERADO"}
-                                    </div>
-                                  </div>
+                                <div className="d-flex align-items-center gap-2">
+                                  <i className="bi bi-folder2-open text-primary" />
+                                  <span className="fw-semibold">
+                                    Periodo {index + 1}
+                                  </span>
                                 </div>
+                              </Accordion.Header>
+
+                              <Accordion.Body className="">
+                                <Row className="g-3">
+                                  {period.documents?.length ? (
+                                    period.documents.map((doc) => (
+                                      <DocumentsGrid
+                                        key={doc.title}
+                                        doc={doc}
+                                        idEmployee={Number(id)}
+                                      />
+                                    ))
+                                  ) : (
+                                    <Col xs={12}>
+                                      <div className="text-center text-muted py-4">
+                                        <i className="bi bi-file-earmark-x fs-4 d-block mb-2" />
+                                        Sin documentos registrados
+                                      </div>
+                                    </Col>
+                                  )}
+                                </Row>
                               </Accordion.Body>
                             </Accordion.Item>
                           ))}
                         </Accordion>
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  ))}
-                </Accordion>
-              </Col>
-            </Row>
-          </Container>
-        </FormPage>
-        {/* =============== Aqui termina ================  */}
-      </FormBook>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+              </FormPage>
 
-      {showUpdateEmployeeModal && (
-        <ModalBlur onClose={() => setShowUpdateEmployeeModal(false)}>
-          <FormUpdateEmployee
-            show={showUpdateEmployeeModal}
-            onHide={() => setShowUpdateEmployeeModal(false)}
-            sendData={handleUpdateEmployee}
-            employee={employee}
-            departments={departments}
-            branches={branches}
-            employees={employees}
-          />
-        </ModalBlur>
-      )}
-      {showRegisterBiometricModal && employee?.id && (
-        <ModalBlur onClose={() => setShowRegisterBiometricModal(false)}>
-          <RegisterBiometricModal
-            employeeId={Number(employee.id)}
-            employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
-            onClose={() => setShowRegisterBiometricModal(false)}
-            onSuccess={() => {
-              setShowRegisterBiometricModal(false);
-            }}
-          />
-        </ModalBlur>
-      )}
-      {showUnsubscribeEmployeeModal && employee?.id && (
-        <ModalBlur onClose={() => setShowUnsubscribeEmployeeModal(false)}>
-          <UnsubscribeEmployeeComponent
-            employeeId={Number(employee.id)}
-            employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
-            onClose={() => setShowUnsubscribeEmployeeModal(false)}
-            onSuccess={() => {
-              setShowUnsubscribeEmployeeModal(false);
-            }}
-          />
-        </ModalBlur>
-      )}
-      {showNewDocumentEmployeeModal && (
-        <ModalBlur onClose={() => setShowNewDocumentEmployeeModal(false)}>
-          <NewDocumentEmployeeComponent
-            onClose={() => setShowNewDocumentEmployeeModal(false)}
-            onSuccess={() => {
-              setShowNewDocumentEmployeeModal(false);
-            }}
-          />
-        </ModalBlur>
-      )}
+              {/* Pestaña de vacaciones (A reciclar) */}
+              <FormPage title="Vacaciones" eventKey="vacations">
+                <Row className="g-4 align-items-stretch">
+                  <Col xs={12} xl={12}>
+                    <Card className="border shadow-sm rounded-4 m-2 w-100 h-100">
+                      <Card.Body className="p-4">
+                        <div className="d-flex align-items-center justify-content-between mb-4">
+                          <h6 className="mb-0 fw-bold">Vacaciones</h6>
+
+                          <span className="badge bg-info">
+                            Historial
+                          </span>
+                        </div>
+
+                        {vacations?.length ? (
+                          <Accordion flush>
+                            {vacations.map((v) => (
+                              <Accordion.Item
+                                key={v.id}
+                                eventKey={v.periodDescription}
+                                className="border rounded-3 mb-3 overflow-hidden"
+                              >
+                                <Accordion.Header>
+                                  <div className="d-flex align-items-center gap-2">
+                                    <i className="bi bi-calendar2-week text-primary" />
+
+                                    <span className="fw-semibold">
+                                      {v.periodDescription}
+                                    </span>
+                                  </div>
+                                </Accordion.Header>
+
+                                <Accordion.Body>
+                                  <div className="row g-3 mb-4">
+                                    <div className="col-md-4">
+                                      <div className="border rounded-3 p-3 text-center">
+                                        <div className="text-muted small">
+                                          Días totales
+                                        </div>
+
+                                        <div className="fw-bold fs-5">
+                                          {v.totalDaysPeriod}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="col-md-4">
+                                      <div className="border rounded-3 p-3 text-center">
+                                        <div className="text-muted small">
+                                          Fecha inicio
+                                        </div>
+
+                                        <div className="fw-semibold">
+                                          {formatDate(v.dateInitPeriod, "dd/MM/yyyy")}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="col-md-4">
+                                      <div className="border rounded-3 p-3 text-center">
+                                        <div className="text-muted small">
+                                          Fecha final
+                                        </div>
+
+                                        <div className="fw-semibold">
+                                          {formatDate(v.dateEndPeriod, "dd/MM/yyyy")}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {v.vacationsRequestsData?.length ? (
+                                    <Accordion flush>
+                                      {v.vacationsRequestsData.map((vr) => (
+                                        <Accordion.Item
+                                          key={vr._id}
+                                          eventKey={String(vr.id)}
+                                          className="border rounded-3 mb-2 overflow-hidden"
+                                        >
+                                          <Accordion.Header>
+                                            <div className="d-flex align-items-center gap-2">
+                                              <i className="bi bi-suitcase text-success" />
+
+                                              <span>{vr.holidayName}</span>
+                                            </div>
+                                          </Accordion.Header>
+
+                                          <Accordion.Body>
+                                            <div className="row g-3">
+                                              <div className="col-md-6">
+                                                <div className="border rounded-3 p-3">
+                                                  <div className="text-muted small">
+                                                    Fecha inicio
+                                                  </div>
+
+                                                  <div className="fw-semibold">
+                                                    {formatDate(vr.dateInit, "dd/MM/yyyy")}
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              <div className="col-md-6">
+                                                <div className="border rounded-3 p-3">
+                                                  <div className="text-muted small">
+                                                    Fecha final
+                                                  </div>
+
+                                                  <div className="fw-semibold">
+                                                    {formatDate(vr.dateEnd, "dd/MM/yyyy")}
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              <div className="col-md-6">
+                                                <div className="border rounded-3 p-3">
+                                                  <div className="text-muted small mb-1">
+                                                    Status líder
+                                                  </div>
+
+                                                  <span
+                                                    className={`badge ${vr.leaderApproval === "APPROVED"
+                                                      ? "bg-success"
+                                                      : vr.leaderApproval === "REJECTED"
+                                                        ? "bg-danger"
+                                                        : "bg-warning text-dark"
+                                                      }`}
+                                                  >
+                                                    {vr.leaderApproval === "APPROVED"
+                                                      ? "APROBADO"
+                                                      : vr.leaderApproval === "REJECTED"
+                                                        ? "RECHAZADO"
+                                                        : "PENDIENTE"}
+                                                  </span>
+                                                </div>
+                                              </div>
+
+                                              <div className="col-md-6">
+                                                <div className="border rounded-3 p-3">
+                                                  <div className="text-muted small mb-1">
+                                                    Status D.O.H.
+                                                  </div>
+
+                                                  <span
+                                                    className={`badge ${vr.dohApproval === "APPROVED"
+                                                      ? "bg-success"
+                                                      : "bg-secondary"
+                                                      }`}
+                                                  >
+                                                    {vr.dohApproval === "APPROVED"
+                                                      ? "ENTERADO"
+                                                      : "NO ENTERADO"}
+                                                  </span>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </Accordion.Body>
+                                        </Accordion.Item>
+                                      ))}
+                                    </Accordion>
+                                  ) : (
+                                    <div className="text-center py-4 text-muted">
+                                      <i className="bi bi-calendar-minus fs-4 d-block mb-2" />
+                                      Sin solicitudes de vacaciones
+                                    </div>
+                                  )}
+                                </Accordion.Body>
+                              </Accordion.Item>
+                            ))}
+                          </Accordion>
+                        ) : (
+                          <div className="text-center py-5 text-muted">
+                            <i className="bi bi-calendar-x fs-1 d-block mb-3" />
+
+                            <h6 className="mb-2">
+                              Sin historial de vacaciones
+                            </h6>
+
+                            <small>
+                              No existen periodos vacacionales registrados para este empleado.
+                            </small>
+                          </div>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+              </FormPage>
+              {/* =============== Aqui termina ================  */}
+            </FormBook>
+
+            <ConditionalRender cond={showUpdateEmployeeModal}>
+              <ModalBlur onClose={() => setShowUpdateEmployeeModal(false)}>
+                <FormUpdateEmployee
+                  show={showUpdateEmployeeModal}
+                  onHide={() => setShowUpdateEmployeeModal(false)}
+                  sendData={handleUpdateEmployee}
+                  employee={employee}
+                  departments={departments}
+                  branches={branches}
+                  employees={employees}
+                />
+              </ModalBlur>
+            </ConditionalRender>
+
+            {showRegisterBiometricModal && employee?.id && (
+              <ModalBlur onClose={() => setShowRegisterBiometricModal(false)}>
+                <RegisterBiometricModal
+                  employee={employee}
+                  employeeId={Number(employee.id)}
+                  employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
+                  onClose={() => setShowRegisterBiometricModal(false)}
+                  onSuccess={() => {
+                    setShowRegisterBiometricModal(false);
+                  }}
+                />
+              </ModalBlur>
+            )}
+
+            {showUnsubscribeEmployeeModal && employee?.id && (
+              <ModalBlur onClose={() => setShowUnsubscribeEmployeeModal(false)}>
+                <UnsubscribeEmployeeComponent
+                  employeeId={Number(employee.id)}
+                  employeeName={`${employee.name || ""} ${employee.lastName || ""}`.trim()}
+                  onClose={() => setShowUnsubscribeEmployeeModal(false)}
+                  onSuccess={() => {
+                    setShowUnsubscribeEmployeeModal(false);
+                  }}
+                />
+              </ModalBlur>
+            )}
+
+            <ConditionalRender cond={showNewDocumentEmployeeModal}>
+              <ModalBlur onClose={() => setShowNewDocumentEmployeeModal(false)}>
+                <NewDocumentEmployeeComponent
+                  onClose={() => setShowNewDocumentEmployeeModal(false)}
+                  onSuccess={() => {
+                    setShowNewDocumentEmployeeModal(false);
+                  }}
+                />
+              </ModalBlur>
+            </ConditionalRender>
+
+          </Card.Body>
+        </Card>
+        {/* </Col>
+        </Row> */}
+      </Container >
     </>
   );
 }

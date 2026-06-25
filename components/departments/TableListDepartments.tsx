@@ -109,9 +109,9 @@ export default function DepartmentsTableList({
     }
   };
 
-  const handleDelete = () => {
-    modalConfirm("Confirmar Acción", deleteIds);
-  };
+  // const handleDelete = () => {
+  //   modalConfirm("Confirmar Acción", deleteIds);
+  // };
 
   return (
     <>

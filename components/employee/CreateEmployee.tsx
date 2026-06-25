@@ -6,8 +6,6 @@ import {
   FieldGroup,
   FormBook,
   FormPage,
-  FormSheet,
-  PageSheet,
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import {
@@ -190,6 +188,7 @@ export default function CreateEmployeeComponent({
           <Col xs={12} md={12} lg={12}>
             <Form onSubmit={handleSubmit(onSubmit)}>
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+          {/* ENCABEZADO */}
                 <div>
                   <h1 className="mb-1">Crear empleado</h1>
                   <p className="text-muted mb-0">
@@ -197,6 +196,7 @@ export default function CreateEmployeeComponent({
                   </p>
                 </div>
 
+          {/* BOTONES PRINCIPALES */}
                 <div className="d-flex flex-wrap gap-2">
                   <Button
                     variant="outline-secondary"

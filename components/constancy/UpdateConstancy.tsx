@@ -64,12 +64,11 @@ export default function FormUpdateConstancy({
     const watchedInvolved = watch("involved") ?? [];
 
     const currentInvolvedEmployees = Array.isArray(watchedInvolved)
-  ? watchedInvolved.flatMap((inv) => inv.employees ?? [])
-  : [];
+        ? watchedInvolved.flatMap((inv) => inv.employees ?? [])
+        : [];
 
     const [loading, setLoading] = useState(false);
     const { modalError, modalConfirm } = useModals();
-    console.log("sendData: ", constancy);
 
     useEffect(() => {
         setLoading(true);
@@ -176,7 +175,7 @@ export default function FormUpdateConstancy({
     };
 
 
-    return (
+return (
         <>
             {/* Condicional para caragar la pagina */}
             <ConditionalRender cond={loading}>
