@@ -1,7 +1,7 @@
 import { getUserData, userLoginCredentials } from "@/app/actions/user-actions";
 import NextAuth, { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { Permission, User, UserRole } from "./definitions";
+import { IRolesMe, Permission, User, UserRole } from "./definitions";
 
 export const authOptions = {
   providers: [
@@ -40,7 +40,8 @@ export const authOptions = {
           status: userData.status,
           idEmployee: userData.idEmployee,
           isDoh: userData.isDoh,
-          isLeader: userData.isLeader
+          isLeader: userData.isLeader,
+          roles: userData.roles
         };
       },
     }),
@@ -48,7 +49,7 @@ export const authOptions = {
   session: {
     strategy: "jwt",
     maxAge: 10 * 365 * 24 * 60 * 60,
-    updateAge: 60 * 5,
+    updateAge: 60 * 60,
   },
   secret: process.env.AUTH_SECRET,
   trustHost: true,
@@ -68,6 +69,7 @@ export const authOptions = {
         token.idEmployee = user.idEmployee;
         token.isDoh = user.isDoh;
         token.isLeader = user.isLeader;
+        token.roles = user.roles;
       }
       return token;
     },
@@ -83,6 +85,7 @@ export const authOptions = {
         session.user.idEmployee = token.idEmployee as number;
         session.user.isDoh = token.isDoh as boolean;
         session.user.isLeader = token.isLeader as boolean;
+        session.user.roles = token.roles as IRolesMe;
       }
       return session;
     },

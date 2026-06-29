@@ -1,4 +1,4 @@
-import { Permission, UserRole } from "@/lib/definitions";
+import { IRolesMe, Permission, UserRole } from "@/lib/definitions";
 import NextAuth from "next-auth";
 
 declare module "next-auth" {
@@ -10,5 +10,6 @@ declare module "next-auth" {
     idEmployee: number | null;
     isDoh: boolean;
     isLeader?: boolean;
+    roles:IRolesMe
   }
 }

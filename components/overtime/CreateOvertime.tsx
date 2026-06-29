@@ -47,7 +47,8 @@ export default function CreateOvertimeComponent({
     const { modalError, modalConfirm } = useModals();
     const router = useRouter();
 
-
+    const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh; 
+    
     //Helpers
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
 
@@ -95,7 +96,7 @@ export default function CreateOvertimeComponent({
         setMessageLoading("Cargando...");
         router.push("/app/overtime");
     };
-
+    
     return (
         <>
             <ConditionalRender cond={loading}>
@@ -175,7 +176,7 @@ export default function CreateOvertimeComponent({
                                             </div>
 
                                             <RelationField
-                                                readonly={session?.uid?.role === "EMPLOYEE"}
+                                                readonly={readInput}
                                                 register={register("idEmployee", {
                                                     required: "El empleado es requerido",
                                                     validate: (value) =>

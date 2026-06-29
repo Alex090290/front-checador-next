@@ -148,7 +148,8 @@ export async function getUserData({
             : "Error en la respuesta"
         );
       });
-
+      console.log("response: ",response);
+      
     return {
       success: true,
       message: response.data.mesaage,

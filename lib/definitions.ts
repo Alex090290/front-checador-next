@@ -13,6 +13,18 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface IRolesMe {
+    isLeader: true,
+    isDoh: false,
+    isExtra: false,
+    isApproverLeaders: false,
+    isApproverDoh: false,
+    departmentLeader: {
+      id: number,
+      name: string
+    }
+}
+
 export interface User {
   _id: string;
   id: number;
@@ -28,6 +40,7 @@ export interface User {
   idEmployee: number | null;
   isDoh: boolean;
   isLeader?: boolean;
+  roles: IRolesMe;
 }
 
 export type DisplayType = {
