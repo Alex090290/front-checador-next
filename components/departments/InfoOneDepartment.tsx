@@ -13,37 +13,17 @@ import toast from "react-hot-toast";
 import FormUpdateDepartment from "./UpdateDepartment";
 import CreatePositionModal from "./CreatePositionModal";
 import { createPosition, deletePosition } from "@/app/actions/positions-actions";
+import OverLay from "../templates/OverLay";
 
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
   return String(value);
 }
 
-function InfoItem({
-  label,
-  value,
-  className = "",
-  uppercase = true,
-}: {
-  label: string;
-  value?: React.ReactNode;
-  className?: string;
-  uppercase?: boolean;
-}) {
-  return (
-    <div className={className}>
-      <div className="text-secondary-emphasis fw-semibold mb-1">{label}</div>
-      <div className={uppercase ? "fw-medium text-uppercase" : "fw-medium"}>
-        {value ?? "-"}
-      </div>
-    </div>
-  );
-}
 
 export default function InfoOneDepartment({
   department,
   employees = [],
-  position,
 }: {
   department: Department | null;
   employees?: Employee[];
@@ -215,35 +195,51 @@ export default function InfoOneDepartment({
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
           <div className="d-flex gap-2 flex-wrap">
-            <Button
-              variant="primary"
-              className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-              onClick={handleCreate}
-              disabled={loading}
-            >
-              <i className="bi bi-plus-lg" />
-              Crear Departamento
-            </Button>
 
-            <Button
-              variant="primary"
-              onClick={() => setShowUpdateDepartmentModal(true)}
-              disabled={loading}
-              className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-            >
-              <i className="bi bi-pencil me-2" />
-              Actualizar Departamento
-            </Button>
+            <OverLay string="Crear Departamento">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={handleCreate}
+                disabled={loading}
+              >
+                <i className="bi bi-plus-lg" />
 
-            <Button
-              variant="danger"
-              onClick={handleDeleteDepartment}
-              disabled={loading}
-              className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-            >
-              <i className="bi bi-trash me-2" />
-              Eliminar Departamento
-            </Button>
+                <span className="d-none d-md-inline">
+                  Crear Departamento
+                </span>
+              </Button>
+            </OverLay>
+
+            <OverLay string="Actualizar Departamento">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={() => setShowUpdateDepartmentModal(true)}
+                disabled={loading}
+              >
+                <i className="bi bi-pencil" />
+
+                <span className="d-none d-md-inline">
+                  Actualizar Departamento
+                </span>
+              </Button>
+            </OverLay>
+
+            <OverLay string="Eliminar Departamento">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="danger"
+                onClick={handleDeleteDepartment}
+                disabled={loading}
+              >
+                <i className="bi bi-trash" />
+
+                <span className="d-none d-md-inline ms-2">
+                  Eliminar Departamento
+                </span>
+              </Button>
+            </OverLay>
           </div>
 
           <Button
@@ -271,7 +267,7 @@ export default function InfoOneDepartment({
                 Departamento
               </h5>
 
-              <span className="badge bg-info">
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                 Información General
               </span>
             </div>
@@ -297,7 +293,7 @@ export default function InfoOneDepartment({
                       <span className="text-muted">Líder</span>
                     </div>
 
-                    <span className="fw-semibold text-uppercase">
+                    <span className="fw-semibold text-uppercase text-end">
                       {leader
                         ? `${leader.name} ${leader.lastName ?? ""}`.trim()
                         : "-"}
@@ -331,7 +327,7 @@ export default function InfoOneDepartment({
                       Puestos
                     </h6>
 
-                    <span className="badge bg-secondary">
+                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
                       {department.positions?.length || 0}
                     </span>
                   </div>

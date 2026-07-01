@@ -62,7 +62,7 @@ export type UserRole =
 
 export interface Department {
   _id?: string;
-  id: number;
+  id?: number;
   nameDepartment: string;
   description: string;
   idLeader: number | null;
@@ -416,7 +416,7 @@ export type VacationRequestStatus =
   | "APPROVED"
   | "REFUSED"
   | "PENDING"
-  | "EMPLOYEE";
+  // | "EMPLOYEE";
 
 export interface ConfigSystemUpdate {
   permissions: {

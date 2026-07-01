@@ -4,7 +4,6 @@ import { getWelcome } from "@/app/actions/entry-actions";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Alert } from "react-bootstrap";
 
 function HealthCheck() {
   const pathname = usePathname();

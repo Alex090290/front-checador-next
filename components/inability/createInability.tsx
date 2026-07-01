@@ -62,6 +62,8 @@ export default function CreateInabilityComponent({
 
   const onChangeDateInit = watch("dateInit");
 
+  const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
+
   useEffect(() => {
     const values: TInputs = {
       ...DEFAULT_VALUES,
@@ -175,6 +177,7 @@ export default function CreateInabilityComponent({
                       <Row className="g-4">
                         <Col xs={12}>
                           <RelationField
+                          readonly={readInput}
                             callBackMode="id"
                             control={control}
                             label="Empleado"
@@ -184,7 +187,7 @@ export default function CreateInabilityComponent({
                               name: `${em.lastName} ${em.name}`.toUpperCase(),
                             }))}
                             register={register("idEmployee", { required: true })}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                           />
                         </Col>
 

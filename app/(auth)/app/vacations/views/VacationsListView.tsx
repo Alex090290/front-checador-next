@@ -17,7 +17,7 @@ export const vacationStatus: Record<VacationRequestStatus, string> = {
   APPROVED: "Aprobado",
   PENDING: "Pendiente",
   REFUSED: "Rechazado",
-  EMPLOYEE: "Empleado",
+  // EMPLOYEE: "Empleado",
 };
 
 function VacationsListView({

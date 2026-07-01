@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Offcanvas, Button } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import TopNavItems from "../top-nav/TopNavItems";
+import ConditionalRender from "../ConditionalRender";
 
 export default function Sidebar() {
   const { data: session } = useSession();
@@ -23,11 +24,21 @@ export default function Sidebar() {
   return (
     <>
       {/* Botón menú */}
-      <div className="p-2 border-bottom">
-        <Button variant="outline-primary" onClick={toggleShow}>
+      <ConditionalRender cond={!show}>
+        <Button
+          variant="outline-primary"
+          onClick={toggleShow}
+          className="position-fixed top-0 start-0 m-2 d-inline-flex align-items-center justify-content-center"
+          style={{
+            zIndex: 1050,
+            width: "38px",
+            height: "38px",
+            
+          }}
+        >
           <i className="bi bi-list" />
         </Button>
-      </div>
+      </ConditionalRender>
 
       <Offcanvas
         show={show}

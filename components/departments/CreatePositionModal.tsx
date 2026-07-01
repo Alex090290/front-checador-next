@@ -1,17 +1,12 @@
 "use client";
 
-import {
-    createPosition,
-} from "@/app/actions/positions-actions";
 import { Entry } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
-import { Button, Form, Spinner } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useState } from "react";
-import { ActionResponse, Position } from "@/lib/definitions";
 
 type TInputs = {
     namePosition: string;

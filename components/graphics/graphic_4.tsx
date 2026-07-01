@@ -90,9 +90,9 @@ const GraphicFour = () => {
   };
 
   return (
-      <div style={{ minHeight: "0", height: "100%", maxHeight: "100%", minWidth: "0", width: "100%", maxWidth: "100%" }}>
-        <Line data={data} options={options} />
-      </div>
+    <div className="w-100 h-100 position-relative">
+      <Line data={data} options={options} />
+    </div>
   );
 };
 

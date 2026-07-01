@@ -23,7 +23,7 @@ function TopNav() {
           <Navbar.Brand
             as={Link}
             href="/app/checador?view_type=form"
-            className="me-2 flex-shrink-0"
+            className=" flex-shrink-0 ms-5"
           >
             <OverLay string="Checador">
               <i className="bi bi-clock"></i>

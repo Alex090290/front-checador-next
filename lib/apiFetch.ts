@@ -4,18 +4,22 @@
 import { signOut } from "@/lib/auth";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-export async function apiFetch<T = any>(
+export async function apiFetch<T = unknown>(
   method: "get" | "post" | "put" | "patch" | "delete",
   url: string,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> {
   try {
     return await axios[method]<T>(url, config);
-  } catch (error: any) {
-    if (error?.response?.status === 401) {
+  } catch (error: unknown) {
+    if (
+      axios.isAxiosError(error) &&
+      error.response?.status === 401
+    ) {
       await signOut({ redirectTo: "/auth" });
       throw new Error("TOKEN_EXPIRED");
     }
+
     throw error;
   }
 }

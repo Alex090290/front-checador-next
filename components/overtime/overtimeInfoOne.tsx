@@ -21,6 +21,7 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import OvertimeSignatureModal from "./OvertimeSignatureModal"
 import SignatureLeaderModal from "./SignatureLeaderModal";
 import SignatureDohModal from "./SignatureDohModal";
+import OverLay from "../templates/OverLay";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -67,11 +68,11 @@ function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
 export function OvertimeOne({
     overtime,
     departments = [],
-    connfigSystem
+    connfigSystem,
 }: {
     overtime: OverTime | null;
     departments: Department[];
-    connfigSystem: IConfigSystem[]
+    connfigSystem: IConfigSystem[];
 }) {
 
     // Aqui los const 
@@ -97,13 +98,13 @@ export function OvertimeOne({
 
     const isOwnerEmployee = Number(session?.uid?.idEmployee) === Number(overtime?.idEmployee);
 
-    const currentUser = isOwnerEmployee ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)): undefined;
+    const currentUser = isOwnerEmployee ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
 
     const currentLeader = session?.uid?.isLeader
-        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)): undefined;
+        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
 
     const currentDoh = session?.uid?.isDoh
-        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)): undefined;
+        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
 
     useEffect(() => {
         if (currentUser && !currentUser.url) {
@@ -129,11 +130,11 @@ export function OvertimeOne({
         }
     }, [currentDoh]);
 
-        //  setNewArray(signatures);
+    //  setNewArray(signatures);
 
 
     useEffect(() => {
-        if (!overtime) return;
+        if (!overtime?.signatures) return;
 
 
         const isLeaderRequestPerson = departments.some(
@@ -148,18 +149,18 @@ export function OvertimeOne({
         if (isLeaderRequestPerson) {
             // el documento pertenece a un empleado que es lider
 
-            const newData = signatures.filter((f) => ["Empleado", "Dirección", "DOH"].includes(f.label));
+            const newData = overtime?.signatures.filter((f) => ["Empleado", "Dirección", "DOH"].includes(f.label));
             setNewArray(newData);
 
         } else if (isDohRequesPerson) {
             // el documento pertenece a un empleado que es DOH  
-            const newData = signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label));
+            const newData = overtime?.signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label));
             setNewArray(newData);
 
         } else {
 
             // el documento pertenece a un empleado
-            const newData = signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label))
+            const newData = overtime?.signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label))
 
             setNewArray(newData);
         }
@@ -263,74 +264,107 @@ export function OvertimeOne({
             </ConditionalRender>
 
             <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
+
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
                     {/* Izquierda */}
                     <div className="d-flex gap-2 flex-wrap">
-                        <Button
-                            variant="primary"
-                            onClick={handleCreate}
-                            disabled={loading}
-                            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-                        >
-                            <i className="bi bi-plus-lg" />
-                            Crear registro
-                        </Button>
-
-                        <Button
-                            variant="danger"
-                            onClick={handleDeleteOvertime}
-                            disabled={loading}
-                            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-                        >
-                            <i className="bi bi-trash" />
-                            Eliminar registro
-                        </Button>
-
-                        <ConditionalRender cond={showCurretUser}>
+                        <OverLay string="Crear registro">
                             <Button
-                                variant="secondary"
-                                onClick={handleOvertimeSignature}
+                                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                variant="primary"
+                                onClick={handleCreate}
+                                disabled={loading}
                             >
-                                Firmar
-                            </Button>
-                        </ConditionalRender>
+                                <i className="bi bi-plus-lg" />
 
-                        <ConditionalRender cond={showCurrentLeader}>
-                            <Button
-                                size="sm"
-                                variant="success"
-                                className="fw-semibold"
-                                onClick={handleSignatureLeader}
-                            >
-                                Aprobar
+                                <span className="d-none d-md-inline ms-2">
+                                    Crear registro
+                                </span>
                             </Button>
-                        </ConditionalRender>
+                        </OverLay>
 
-                        <ConditionalRender cond={showCurrentDoh}>
+
+                        <OverLay string="Eliminar registro">
                             <Button
-                                size="sm"
-                                variant="secondary"
-                                className="fw-semibold"
-                                onClick={handleSignatureDoh}
+                                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                variant="danger"
+                                onClick={handleDeleteOvertime}
+                                disabled={loading}
                             >
-                                Firmar de enterado
+                                <i className="bi bi-trash" />
+
+                                <span className="d-none d-md-inline ms-2">
+                                    Eliminar registro
+                                </span>
                             </Button>
-                        </ConditionalRender>
+                        </OverLay>
+
+                        <OverLay string="Firmar">
+                            <ConditionalRender cond={showCurretUser}>
+                                <Button
+                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                    variant="warning"
+                                    onClick={handleOvertimeSignature}
+                                    disabled={loading}
+                                >
+                                    <i className="bi bi-pen-fill" />
+
+                                    <span className="d-none d-md-inline ms-2">
+                                        Firmar
+                                    </span>
+                                </Button>
+                            </ConditionalRender>
+                        </OverLay>
+
+                        <OverLay string="Aprobar">
+                            <ConditionalRender cond={showCurrentLeader}>
+                                <Button
+                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                    variant="success"
+                                    onClick={handleSignatureLeader}
+                                    disabled={loading}
+                                >
+                                    <i className="bi bi-check-circle" />
+
+                                    <span className="d-none d-md-inline ms-2">
+                                        Aprobar
+                                    </span>
+                                </Button>
+                            </ConditionalRender>
+                        </OverLay>
+
+                        <OverLay string="Firmar de enterado">
+                            <ConditionalRender cond={showCurrentDoh}>
+                                <Button
+                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                    variant="secondary"
+                                    onClick={handleSignatureDoh}
+                                    disabled={loading}
+                                >
+                                    <i className="bi bi-card-checklist" />
+
+                                    <span className="d-none d-md-inline ms-2">
+                                        Firmar de enterado
+                                    </span>
+                                </Button>
+                            </ConditionalRender>
+                        </OverLay>
 
                     </div>
 
                     {/* Derecha */}
-                    <Button
-                        variant="outline-secondary"
-                        onClick={handleBack}
-                        disabled={loading}
-                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-                    >
-                        <i className="bi bi-arrow-left" />
-                        Regresar
-                    </Button>
-
+                    <div className=" d-md-flex flex-wrap">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={handleBack}
+                            disabled={loading}
+                            className="d-inline-flex align-items-center gap-2 fw-semibold px-2 px-md-3"
+                        >
+                            <i className="bi bi-arrow-left" />
+                            Regresar
+                        </Button>
+                    </div>
                 </div>
 
                 <div>
@@ -562,7 +596,7 @@ export function OvertimeOne({
                             onHide={() => setSignatureLeaderModal(false)}
                             id={String(overtime.id)}
                         />
-                        
+
                         <SignatureDohModal
                             show={signatureDohModal}
                             onHide={() => setSignatureDohModal(false)}

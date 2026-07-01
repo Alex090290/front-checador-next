@@ -2,7 +2,6 @@
 
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { Button, Card } from "react-bootstrap";
-import ConditionalRender from "../ConditionalRender";
 
 const upperCase = (text?: string) => {
   return text?.toUpperCase() || "";
@@ -21,10 +20,7 @@ function fullNames(list?: { name: string; lastName: string }[]) {
 function BlockView({
   title,
   doh,
-  leaders,
-  extras,
-  management
-}: {
+  extras}: {
   title: string;
   doh?: { employee?: { name: string; lastName: string } };
   leaders?: { employee?: { name: string; lastName: string } };
@@ -37,7 +33,7 @@ function BlockView({
         <div className="d-flex align-items-center justify-content-between mb-4">
           <h6 className="mb-0 fw-bold">{title}</h6>
 
-          <span className="badge bg-info">
+          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
             Revisiones
           </span>
         </div>
@@ -55,7 +51,7 @@ function BlockView({
             </span>
           </div>
 
-          <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+          {/* <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
             <div className="d-flex align-items-center gap-2">
               <i className="bi bi-diagram-3 text-primary" />
               <span className="text-muted">
@@ -66,9 +62,9 @@ function BlockView({
             <span className="fw-semibold">
               {fullName(leaders?.employee)}
             </span>
-          </div>
+          </div> */}
 
-          <ConditionalRender cond={!!management}>
+          {/* <ConditionalRender cond={!!management}>
             <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
               <div className="d-flex align-items-center gap-2">
                 <i className="bi bi-building text-warning" />
@@ -79,13 +75,13 @@ function BlockView({
                 {fullName(management?.employee)}
               </span>
             </div>
-          </ConditionalRender>
+          </ConditionalRender> */}
 
           <div className="d-flex align-items-start justify-content-between">
             <div className="d-flex align-items-center gap-2">
-              <i className="bi bi-people text-info" />
+              <i className="bi bi-building text-warning" />
               <span className="text-muted">
-                Líderes Extras
+                Dirección
               </span>
             </div>
 

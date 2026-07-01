@@ -4,7 +4,7 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { Branch } from "@/lib/definitions";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
@@ -29,12 +29,12 @@ export default function BranchesTableClient({
   const searchParamsString = sp.toString();
 
 
-  useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-  }, [searchParamsString]);
+  // useEffect(() => {
+  //   if (loading) {
+  //     setLoading(false);
+  //     setMessageLoading("");
+  //   }
+  // }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
     setLoading(true);

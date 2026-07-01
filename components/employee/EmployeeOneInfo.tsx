@@ -1,11 +1,8 @@
 "use client";
 
 import {
-  FieldGroup,
   FormBook,
   FormPage,
-  FormSheet,
-  PageSheet,
 } from "@/components/templates/FormView";
 import {
   Accordion,
@@ -13,8 +10,6 @@ import {
   Card,
   Col,
   Container,
-  ListGroup,
-  Nav,
   Row,
   Table,
 } from "react-bootstrap";
@@ -29,7 +24,7 @@ import {
 import { formatDate } from "date-fns";
 import DocumentsGrid from "@/app/(auth)/app/employee/views/DocuementsGrid";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ModalBlur from "../ModalBlur";
 import FormUpdateEmployee from "@/app/(auth)/app/employee/views/updateEmplyee/update";
 import { TInputsEmployee } from "@/app/(auth)/app/employee/definition";
@@ -46,6 +41,7 @@ import UnsubscribeEmployeeComponent from "./Unsubscribe";
 import NewDocumentEmployeeComponent from "./NewDocument";
 import AlertBiometrics from "../AlertBiometrics";
 import { useRouter } from "next/navigation";
+import OverLay from "../templates/OverLay";
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
   if (!value) return "-";
@@ -78,7 +74,7 @@ function formatPhone(
 
 
 type Props = {
-  employee: Employee;
+  employee: Employee | null;
   id: string;
   departments: Department[];
   branches: Branch[];
@@ -189,7 +185,7 @@ export default function EmployeeDetailsView({
 
   return (
     <>
-    
+
       <ConditionalRender cond={!hasBiometricPhotos && !hideBiometricAlert}>
         <AlertBiometrics onClose={() => setHideBiometricAlert(true)} />
       </ConditionalRender>
@@ -199,30 +195,37 @@ export default function EmployeeDetailsView({
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
-        {/* <Row className="m-2">
-          <Col xs={12} md={12} lg={12}> */}
 
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
           <div className="d-flex gap-2 flex-wrap">
-            <Button
-              className="d-inline-flex align-items-center fw-semibold px-3"
-              variant="primary"
-              onClick={() => setShowUpdateEmployeeModal(true)}
-            >
-              <i className="bi bi-pencil me-2" />
-              Actualizar Empleado
-            </Button>
+            <OverLay string="Actualizar empleado">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={() => setShowUpdateEmployeeModal(true)}
+              >
+                <i className="bi bi-pencil" />
+
+                <span className="d-none d-md-inline ms-2">
+                  Actualizar Empleado
+                </span>
+              </Button>
+            </OverLay>
 
             <ConditionalRender cond={statusOne}>
-              <Button
-                className="d-inline-flex align-items-center fw-semibold px-3"
-                variant="danger"
-                onClick={() => setShowUnsubscribeEmployeeModal(true)}
-              >
-                <i className="bi bi-arrow-down me-2" />
-                Dar de baja
-              </Button>
+              <OverLay string="Dar de baja">
+                <Button
+                  className="d-inline-flex align-items-center fw-semibold px-2 px-md-3"
+                  variant="danger"
+                  onClick={() => setShowUnsubscribeEmployeeModal(true)}
+                >
+                  <i className="bi bi-arrow-down " />
+                  <span className="d-none d-md-inline ms-2">
+                    Dar de baja
+                  </span>
+                </Button>
+              </OverLay>
             </ConditionalRender>
 
             <ConditionalRender cond={statusTwo}>
@@ -236,29 +239,36 @@ export default function EmployeeDetailsView({
               </Button>
             </ConditionalRender>
 
-            <Button
-              className="d-inline-flex align-items-center fw-semibold px-3"
-              variant="warning"
-              onClick={() => setShowRegisterBiometricModal(true)}
-            >
-              <i className="bi bi-person-bounding-box me-2" />
-              Registrar biométricos
-            </Button>
+            <OverLay string="Registrar biométricos">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="warning"
+                onClick={() => setShowRegisterBiometricModal(true)}
+              >
+                <i className="bi bi-person-bounding-box" />
+
+                <span className="d-none d-md-inline ms-2">
+                  Registrar biométricos
+                </span>
+              </Button>
+            </OverLay>
           </div>
 
-          <Button
-            variant="outline-secondary"
-            onClick={handleBack}
-            disabled={loading}
-            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-          >
-            <i className="bi bi-arrow-left" />
-            Regresar
-          </Button>
+          <div className=" d-md-flex flex-wrap">
+            <Button
+              variant="outline-secondary"
+              onClick={handleBack}
+              disabled={loading}
+              className="d-inline-flex align-items-center gap-2 fw-semibold px-2 px-md-3"
+            >
+              <i className="bi bi-arrow-left" />
+              Regresar
+            </Button>
+          </div>
         </div>
 
         <div>
-          <h1 className="mb-41 ms-1"> {getEmployeeName(employee)} </h1>
+          <h1 className=" ms-1"> {getEmployeeName(employee)} </h1>
           <p className="text-muted mb-1 ms-1">
             Información del empleado.
           </p>
@@ -280,7 +290,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Información personal</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Empleado
                           </span>
                         </div>
@@ -292,7 +302,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Nombre</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.name)}
                             </span>
                           </div>
@@ -303,7 +313,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Apellidos</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.lastName)}
                             </span>
                           </div>
@@ -314,7 +324,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Correo personal</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-break">
                               {formatText(employee?.emailPersonal)}
                             </span>
                           </div>
@@ -336,7 +346,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Teléfono fijo</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-end">
                               {formatPhone(employee?.homePhone)}
                             </span>
                           </div>
@@ -351,7 +361,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Dirección</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Domicilio
                           </span>
                         </div>
@@ -363,7 +373,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Calle</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.address?.street)}
                             </span>
                           </div>
@@ -374,7 +384,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">No. Exterior</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.address?.numberOut)}
                             </span>
                           </div>
@@ -385,7 +395,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">No. Interior</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.address?.numberIn)}
                             </span>
                           </div>
@@ -396,7 +406,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Colonia</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.address?.neighborhood)}
                             </span>
                           </div>
@@ -418,7 +428,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Municipio</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.address?.municipality)}
                             </span>
                           </div>
@@ -429,7 +439,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Estado</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.address?.state)}
                             </span>
                           </div>
@@ -440,7 +450,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">País</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.address?.country)}
                             </span>
                           </div>
@@ -455,7 +465,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Identificación</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Datos oficiales
                           </span>
                         </div>
@@ -478,7 +488,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Nacionalidad</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.nationality)}
                             </span>
                           </div>
@@ -500,7 +510,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">R.F.C.</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.rfc)}
                             </span>
                           </div>
@@ -511,7 +521,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">CURP</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.curp)}
                             </span>
                           </div>
@@ -526,7 +536,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Datos físicos y salud</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Salud
                           </span>
                         </div>
@@ -538,7 +548,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Género</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.gender)}
                             </span>
                           </div>
@@ -549,7 +559,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Grupo sanguíneo</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.bloodType)}
                             </span>
                           </div>
@@ -582,7 +592,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Constitución</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.constitution)}
                             </span>
                           </div>
@@ -593,7 +603,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Estado de salud</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.healthStatus)}
                             </span>
                           </div>
@@ -608,7 +618,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Formación y familia</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Perfil
                           </span>
                         </div>
@@ -620,7 +630,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Formación académica</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.education)}
                             </span>
                           </div>
@@ -631,7 +641,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Habilidades</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.skills)}
                             </span>
                           </div>
@@ -642,7 +652,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Hijos</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.sons)}
                             </span>
                           </div>
@@ -653,7 +663,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Hijas</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.daughters)}
                             </span>
                           </div>
@@ -668,7 +678,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Observaciones generales</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Notas
                           </span>
                         </div>
@@ -684,7 +694,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <div
-                              className="p-3 rounded-3 border"
+                              className="p-3 rounded-3 border text-uppercase"
                               style={{
                                 minHeight: "120px",
                                 whiteSpace: "pre-wrap",
@@ -712,7 +722,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Información laboral</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Empresa
                           </span>
                         </div>
@@ -724,7 +734,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Teléfono de oficina</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-end">
                               {formatPhone(employee?.phoneCompany)}
                             </span>
                           </div>
@@ -735,7 +745,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Extensión</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-end">
                               {formatText(employee?.phoneExtCompany)}
                             </span>
                           </div>
@@ -746,7 +756,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Correo corporativo</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-break">
                               {formatText(employee?.emailCompany)}
                             </span>
                           </div>
@@ -757,7 +767,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Departamento</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase text-end">
                               {formatText(department?.nameDepartment)}
                             </span>
                           </div>
@@ -768,7 +778,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Puesto</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase text-end">
                               {formatText(employee?.position?.namePosition)}
                             </span>
                           </div>
@@ -779,7 +789,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Gerente</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-uppercase">
                               {leader
                                 ? `${leader.name} ${leader.lastName}`
                                 : departmentLeader
@@ -794,7 +804,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Sucursal</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(branch?.name)}
                             </span>
                           </div>
@@ -809,7 +819,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Horario y checador</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Asistencia
                           </span>
                         </div>
@@ -909,7 +919,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Descripción del horario</span>
                             </div>
 
-                            <span className="fw-semibold text-end" style={{ maxWidth: "250px" }}>
+                            <span className="fw-semibold text-end text-uppercase" style={{ maxWidth: "250px" }}>
                               {formatText(employee?.scheduleDescription)}
                             </span>
                           </div>
@@ -939,7 +949,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Administración laboral</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Recursos Humanos
                           </span>
                         </div>
@@ -951,7 +961,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Carta de aniversario</span>
                             </div>
 
-                            <span className="fw-semibold">
+                            <span className="fw-semibold text-uppercase">
                               {formatText(employee?.anniversaryLetter)}
                             </span>
                           </div>
@@ -971,7 +981,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span
-                              className={`fw-semibold ${employee?.status === 1
+                              className={`fw-semibold text-uppercase ${employee?.status === 1
                                 ? "text-success"
                                 : employee?.status === 2
                                   ? "text-danger"
@@ -1015,7 +1025,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span
-                              className="fw-semibold text-end"
+                              className="fw-semibold text-end text-uppercase"
                               style={{ maxWidth: "250px" }}
                             >
                               {formatText(employee?.dischargeReason)}
@@ -1032,7 +1042,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Vales de despensa</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Prestación
                           </span>
                         </div>
@@ -1078,7 +1088,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Contactos de emergencia</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Emergencia
                           </span>
                         </div>
@@ -1108,16 +1118,16 @@ export default function EmployeeDetailsView({
                               employee.emergencyContacts.map((contact, index) => (
                                 <tr key={`${contact.name}-${index}`}>
                                   <td className="border-bottom py-3">
-                                    <span className="fw-semibold">
+                                    <span className="fw-semibold text-uppercase">
                                       {formatText(contact.name)}
                                     </span>
                                   </td>
 
-                                  <td className="border-bottom py-3">
+                                  <td className="border-bottom py-3 text-uppercase">
                                     {formatText(contact.kinship)}
                                   </td>
 
-                                  <td className="border-bottom py-3">
+                                  <td className="border-bottom py-3 text-uppercase">
                                     {formatPhone(contact.phone)}
                                   </td>
                                 </tr>
@@ -1148,7 +1158,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Relación laboral</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Vigencia
                           </span>
                         </div>
@@ -1186,7 +1196,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Información de baja</h6>
 
-                          <span className="badge bg-danger">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
                             Baja
                           </span>
                         </div>
@@ -1198,7 +1208,7 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Tipo de baja</span>
                             </div>
 
-                            <span className="fw-semibold text-end">
+                            <span className="fw-semibold text-end text-uppercase">
                               {formatText(employee?.typeOfDischarge)}
                             </span>
                           </div>
@@ -1212,7 +1222,7 @@ export default function EmployeeDetailsView({
                               </div>
 
                               <div
-                                className="p-3 rounded-3 border"
+                                className="p-3 rounded-3 border text-uppercase"
                                 style={{
                                   minHeight: "100px",
                                   whiteSpace: "pre-wrap",
@@ -1233,7 +1243,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Historial de reingresos</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Historial
                           </span>
                         </div>
@@ -1283,11 +1293,11 @@ export default function EmployeeDetailsView({
                                     </span>
                                   </td>
 
-                                  <td className="border-bottom py-3">
+                                  <td className="border-bottom py-3 text-uppercase">
                                     {formatText(re.dischargeReason)}
                                   </td>
 
-                                  <td className="border-bottom py-3">
+                                  <td className="border-bottom py-3 text-uppercase">
                                     {formatText(re.typeOfDischarge)}
                                   </td>
                                 </tr>
@@ -1387,7 +1397,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Vacaciones</h6>
 
-                          <span className="badge bg-info">
+                          <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                             Historial
                           </span>
                         </div>

@@ -9,11 +9,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useModals } from "@/context/ModalContext";
-import router from "next/router";
+
 
 //Imports para loading de guardar 
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import { useRouter } from "next/navigation";
 
 
 
@@ -110,7 +111,10 @@ export function EmployeeAutocomplete({
   const userTypingRef = useRef(false);
   const pendingClearRef = useRef(false);
 
-  const employeesArray = Array.isArray(employees) ? employees : [];
+  const employeesArray = useMemo(
+    () => (Array.isArray(employees) ? employees : []),
+    [employees]
+  );
 
   const selected = useMemo(
     () => employeesArray.find((e) => Number(e.id) === Number(value)),
@@ -255,12 +259,19 @@ function EmployeeMultiSelect({
   placeholder?: string;
   isEmployeesLoading?: boolean;
 }) {
-  const employeesArray = Array.isArray(employees) ? employees : [];
+  const employeesArray = useMemo(
+    () => (Array.isArray(employees) ? employees : []),
+    [employees]
+  );
 
   const selectedEmployees = useMemo(() => {
+    if (!Array.isArray(employees)) return [];
+
     const set = new Set(value.map(Number));
-    return employeesArray.filter((e) => set.has(Number(e.id)));
-  }, [employeesArray, value]);
+
+    return employees.filter((e) => set.has(Number(e.id)));
+  }, [employees, value]);
+
 
   const addOne = (id: number) => {
     if (!id) return;
@@ -494,6 +505,7 @@ export default function ConfigSystemUpdate({
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
+  const router = useRouter();
 
   const { modalConfirm } = useModals();
 
@@ -551,14 +563,12 @@ export default function ConfigSystemUpdate({
         }
 
         toast.success(res.message ?? "Configuración actualizada");
-        router.back();
+        router.push("/app/configSystem")
       } finally {
         setLoading(false);
         setMessageLoading("");
       }
     });
-
-    console.log("PRUEBA:", payload);
   };
 
   return (
@@ -609,7 +619,7 @@ export default function ConfigSystemUpdate({
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3">
+                      {/* <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
                         <EmployeeField
                           control={control}
@@ -617,10 +627,10 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.permissions?.approvalLeaders?.employee)}
                         />
-                      </Form.Group>
+                      </Form.Group> */}
 
                       <Form.Group>
-                        <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
+                        <Form.Label className="small text-muted">Dirección</Form.Label>
                         <EmployeeExtraField
                           control={control}
                           name="permissions_extra_ids"
@@ -647,7 +657,7 @@ export default function ConfigSystemUpdate({
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3">
+                      {/* <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
                         <EmployeeField
                           control={control}
@@ -655,10 +665,10 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.vacations?.approvalLeaders?.employee)}
                         />
-                      </Form.Group>
+                      </Form.Group> */}
 
                       <Form.Group>
-                        <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
+                        <Form.Label className="small text-muted">Dirección</Form.Label>
                         <EmployeeExtraField control={control} name="vacations_extra_ids" />
                       </Form.Group>
                     </Card.Body>
@@ -681,7 +691,7 @@ export default function ConfigSystemUpdate({
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3">
+                      {/* <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
                         <EmployeeField
                           control={control}
@@ -689,10 +699,10 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.penaltyForUnjustifiedAbsence?.approvalLeaders?.employee)}
                         />
-                      </Form.Group>
+                      </Form.Group> */}
 
                       <Form.Group>
-                        <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
+                        <Form.Label className="small text-muted">Dirección</Form.Label>
                         <EmployeeExtraField control={control} name="penalty_extra_ids" />
                       </Form.Group>
                     </Card.Body>
@@ -715,7 +725,7 @@ export default function ConfigSystemUpdate({
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3">
+                      {/* <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
                         <EmployeeField
                           control={control}
@@ -723,10 +733,10 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.overTime?.approvalLeaders?.employee)}
                         />
-                      </Form.Group>
+                      </Form.Group> */}
 
                       <Form.Group>
-                        <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
+                        <Form.Label className="small text-muted">Dirección</Form.Label>
                         <EmployeeExtraField control={control} name="overTime_extra_ids" />
                       </Form.Group>
                     </Card.Body>
@@ -749,7 +759,7 @@ export default function ConfigSystemUpdate({
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3">
+                      {/* <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
                         <EmployeeField
                           control={control}
@@ -757,10 +767,10 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.constancy?.approvalLeaders?.employee)}
                         />
-                      </Form.Group>
+                      </Form.Group> */}
 
                       <Form.Group>
-                        <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
+                        <Form.Label className="small text-muted">Dirección</Form.Label>
                         <EmployeeExtraField control={control} name="constancy_extra_ids" />
                       </Form.Group>
                     </Card.Body>
@@ -783,7 +793,7 @@ export default function ConfigSystemUpdate({
                         />
                       </Form.Group>
 
-                      <Form.Group className="mb-3">
+                      {/* <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
                         <EmployeeField
                           control={control}
@@ -791,9 +801,9 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.penalties?.approvalLeaders?.employee)}
                         />
-                      </Form.Group>
+                      </Form.Group> */}
 
-                      <Form.Group className="mb-3">
+                      {/* <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Dirección</Form.Label>
                         <EmployeeField
                           control={control}
@@ -801,11 +811,11 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.penalties?.approvalManager?.employee)}
                         />
-                      </Form.Group>
+                      </Form.Group> */}
 
 
                       <Form.Group>
-                        <Form.Label className="small text-muted">Revisión Dirección A Lideres Extras</Form.Label>
+                        <Form.Label className="small text-muted">Dirección</Form.Label>
                         <EmployeeExtraField control={control} name="penalties_extra_ids" />
                       </Form.Group>
                     </Card.Body>
