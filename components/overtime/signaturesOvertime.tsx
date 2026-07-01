@@ -48,33 +48,33 @@ function SignaturesViewOvertime({
 
     if (normalizedLabel === "empleado") {
       return hasSigned
-        ? { text: "Firmado", bg: "success" }
-        : { text: "Pendiente de firma", bg: "warning" };
+        ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+        : { text: "Pendiente de firma", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
     }
 
     if (normalizedLabel === "lider") {
       if (normalizedStatus === "APPROVED") {
-        return { text: "Aprobado", bg: "success" };
+        return { text: "Aprobado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" };
       }
 
       if (normalizedStatus === "REFUSED") {
-        return { text: "Rechazado", bg: "danger" };
+        return { text: "Rechazado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle" };
       }
 
       return hasSigned
-        ? { text: "Firmado", bg: "success" }
-        : { text: "Pendiente de aprobación", bg: "warning" };
+        ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+        : { text: "Pendiente de aprobación", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
     }
 
     if (normalizedLabel === "doh") {
       return hasSigned
-        ? { text: "Enterado", bg: "info" }
-        : { text: "Pendiente", bg: "warning" };
+        ? { text: "Enterado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle" }
+        : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
     }
 
     return hasSigned
-      ? { text: "Firmado", bg: "success" }
-      : { text: "Pendiente", bg: "warning" };
+      ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+      : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
   };
 
   const badge = getBadge();

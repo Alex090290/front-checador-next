@@ -400,7 +400,7 @@ export function OvertimeOne({
                                                 Resumen
                                             </h6>
 
-                                            <span className="badge bg-info">
+                                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                                                 General
                                             </span>
                                         </div>
@@ -469,7 +469,7 @@ export function OvertimeOne({
                                                 </p>
                                             </div>
 
-                                            <span className="badge bg-info">
+                                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                                                 Registro
                                             </span>
                                         </div>
@@ -559,7 +559,7 @@ export function OvertimeOne({
                                         Firmas
                                     </h6>
 
-                                    <span className="badge bg-info">
+                                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                                         Autorizaciones
                                     </span>
                                 </div>
