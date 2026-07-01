@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import ListView from "../templates/ListView";
@@ -69,7 +69,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-center fs-6 fw-semibold">{row.holidayName}</div>
+        <div className="text-left fs-6 fw-semibold">{row.holidayName}</div>
       ),
     },
     {
@@ -79,7 +79,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-center fs-6 fw-semibold">
+        <div className="text-left fs-6 fw-semibold">
           {row.period.periodDescription}
         </div>
       ),
@@ -91,7 +91,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-center fs-6 fw-semibold">
+        <div className="text-left fs-6 fw-semibold">
           {formatDate(row.dateInit, "dd/MM/yyyy")}
         </div>
       ),
@@ -103,7 +103,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-center fs-6 fw-semibold">
+        <div className="text-left fs-6 fw-semibold">
           {formatDate(row.dateEnd, "dd/MM/yyyy")}
         </div>
       ),
@@ -113,23 +113,28 @@ export default function VacationsTableClient({
       label: "Estado",
       accessor: (row) => vacationStatus[row.status],
       type: "string",
-      render: (row) => {
-        const status = vacationStatus[row.status];
-        return (
-          <div className="text-center">
-            <Badge
-              bg={
-                status === "APROBADO"
-                  ? "badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle"
-                  : status === "PENDIENTE"
-                    ? "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle"
-                    : "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle"
-              }
-            >
-              {vacationStatus[row.status]}
-            </Badge>
-          </div>
-        );
+      render: (e) => {
+        const estado = e.status
+        switch (estado) {
+          case "APPROVED":
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                APROBADO
+              </span>
+            );
+          case "PENDING":
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                PENDIENTE
+              </span>
+            );
+          case "REFUSED":
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                RECHAZADO
+              </span>
+            );
+        }
       },
     },
   ],

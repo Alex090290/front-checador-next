@@ -11,32 +11,89 @@ function SignaturesViewOvertime({
   idEmployee,
   name,
   label,
+  status,
 }: {
   id: number | null;
   idEmployee: string | null;
   name: string;
   url?: string;
   label?: string;
-
+  status?: string | null;
 }) {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
-
 
   useEffect(() => {
     const handleFetchSignature = async () => {
       if (!id || !idEmployee) return;
+
       const res = await fetchSignatureOverTime({ id, idEmployee });
+
       if (!res.success) return;
+
       setImgUrl(res.data || null);
     };
+
     handleFetchSignature();
   }, [id, idEmployee]);
+
+  const hasSigned = Boolean(imgUrl);
+
+  const getBadge = () => {
+    const normalizedLabel = label
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    const normalizedStatus = status?.toUpperCase();
+
+    if (normalizedLabel === "empleado") {
+      return hasSigned
+        ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+        : { text: "Pendiente de firma", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
+    }
+
+    if (normalizedLabel === "lider") {
+      if (normalizedStatus === "APPROVED") {
+        return { text: "Aprobado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" };
+      }
+
+      if (normalizedStatus === "REFUSED") {
+        return { text: "Rechazado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle" };
+      }
+
+      return hasSigned
+        ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+        : { text: "Pendiente de aprobación", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
+    }
+
+    if (normalizedLabel === "doh") {
+      return hasSigned
+        ? { text: "Enterado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle" }
+        : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
+    }
+
+    return hasSigned
+      ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+      : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
+  };
+
+  const badge = getBadge();
 
   return (
     <Col md={4}>
       <Card className="mt-2">
-        <Card.Header className="fw-bold text-center text-uppercase bg-dark text-white">
-          {label}
+        <Card.Header className="position-relative bg-dark text-white pt-4">
+
+          <span
+            className={`badge bg-${badge.bg} position-absolute top-0 end-0 m-2`}
+          >
+            {badge.text}
+          </span>
+
+          <div className="fw-bold text-center text-uppercase">
+            {label}
+          </div>
+
         </Card.Header>
 
         <Card.Body className="p-1 text-center">
@@ -50,7 +107,7 @@ function SignaturesViewOvertime({
         </Card.Body>
 
         <Card.Footer className="text-center text-capitalize fw-semibold">
-          {name}
+          <div>{name}</div>
         </Card.Footer>
       </Card>
     </Col>

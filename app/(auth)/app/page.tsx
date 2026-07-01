@@ -1,12 +1,13 @@
 import Loading from "@/components/LoadingSpinner";
 import { Suspense } from "react";
+import DashboardView from "./dashboard/dashboardView";
 
-async function PageApp() {
+function PageApp() {
   return (
-  <Suspense fallback={<Loading message="Cargando datos..." />}>
-  <h2>Administración</h2>
-  </Suspense>
-)}
+    <Suspense fallback={<Loading message="Cargando datos..." />}>
+      <DashboardView/> 
+    </Suspense>
+  );
+}
 
 export default PageApp;
- 

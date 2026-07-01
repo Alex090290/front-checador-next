@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import ListView from "../templates/ListView";
@@ -123,23 +123,28 @@ export default function PermissionsTableClient({
       key: "leaderApproval",
       label: "Estado",
       accessor: (row) => leaderApproval[row.status],
-      render: (row) => {
-        const status = leaderApproval[row.status];
-        return (
-          <div className="text-center">
-            <Badge
-              bg={
-                status === "APROBADO"
-                  ? "badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle"
-                  : status === "PENDIENTE"
-                    ? "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle"
-                    : "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle"
-              }
-            >
-              {leaderApproval[row.status]}
-            </Badge>
-          </div>
-        );
+      render: (e) => {
+        const estado = e.status
+        switch (estado) {
+          case "APPROVED":
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                APROBADO
+              </span>
+            );
+          case "PENDING":
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                PENDIENTE
+              </span>
+            );
+          case "REFUSED":
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                RECHAZADO
+              </span>
+            );
+        }
       },
     },
   ];

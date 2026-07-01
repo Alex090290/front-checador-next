@@ -73,6 +73,8 @@ function CreateVacationComponent({
 
   const originalValuesRef = useRef<TInputs | null>(null);
 
+  const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
+
   // ✅ periodo seleccionado para mostrar stats
   const selectedPeriod = useMemo(() => {
     const pid = Number(idPeriodSelected);
@@ -196,12 +198,13 @@ function CreateVacationComponent({
     getPeriods();
   }, [getPeriods]);
 
+
   return (
     <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading || "Guardando permiso..."} />
       </ConditionalRender>
-      
+
       <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
         <Row className="m-2">
           <Col xs={12}>
@@ -254,6 +257,7 @@ function CreateVacationComponent({
                     <Row className="g-4">
                       <Col xs={12}>
                         <RelationField
+                          readonly={readInput}
                           register={register("idEmployee")}
                           options={employees.map((e) => ({
                             id: Number(e.id),
@@ -283,12 +287,21 @@ function CreateVacationComponent({
                       <Col xs={12} md={4}>
                         <FieldSelect
                           label="Periodo vacacional"
-                          options={periods.map((p) => ({
-                            label: p.periodDescription,
-                            value: Number(p.id),
-                          }))}
+                          options={
+                            periods.length > 0
+                              ? periods.map((p) => ({
+                                label: p.periodDescription,
+                                value: Number(p.id),
+                              }))
+                              : [
+                                {
+                                  label: "El empleado no cuenta con periodos disponibles",
+                                  value: "",
+                                },
+                              ]
+                          }
                           register={register("idPeriod", {
-                            required: true,
+                            required: periods.length > 0,
                           })}
                           className="border"
                         />

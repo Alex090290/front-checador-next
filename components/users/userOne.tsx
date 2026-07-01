@@ -7,10 +7,11 @@ import ModalBlur from "@/components/ModalBlur";
 import { TInputsUser } from "@/components/users/UsersTableList";
 import { ActionResponse, Employee, Permission, User } from "@/lib/definitions";
 import { useState } from "react";
-import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
+import OverLay from "../templates/OverLay";
 
 function formatPermission(text?: string | null) {
   if (!text) return "—";
@@ -112,229 +113,292 @@ export default function ShowInfoOneUser({
     router.push("/app/users/create");
   };
 
+  const handleBack = () => {
+    router.push("/app/users");
+  }
+
   return (
     <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-  <div className="d-flex flex-wrap align-items-center gap-2 my-2">
-    <Button
-      size="sm"
-      variant="primary"
-      className="fw-semibold d-inline-flex align-items-center gap-2"
-      onClick={handleCreate}
-    >
-      <i className="bi bi-plus-lg" />
-      Crear Usuario
-    </Button>
+      <Container className="py-3 overflow-x-auto" style={{ maxWidth: "1600px" }}>
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <div className="d-flex gap-2 flex-wrap">
+            <OverLay string="Crear Usuario">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={handleCreate}
+                disabled={loading}
+              >
+                <i className="bi bi-plus-lg" />
 
-    <Button
-      size="sm"
-      variant="primary"
-      onClick={() => setShowUpdateUserModal(true)}
-    >
-      <i className="bi bi-pencil me-2" />
-      Actualizar usuario
-    </Button>
+                <span className="d-none d-md-inline ms-2">
+                  Crear Usuario
+                </span>
+              </Button>
+            </OverLay>
 
-    <Button
-      size="sm"
-      variant="secondary"
-      onClick={() => setShowPasswordModal(true)}
-    >
-      <i className="bi bi-key-fill me-2" />
-      Actualizar contraseña
-    </Button>
-  </div>
+            <OverLay string="Actualizar usuario">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={() => setShowUpdateUserModal(true)}
+                disabled={loading}
+              >
+                <i className="bi bi-pencil" />
 
-      <Card className="border-0 h-100">
-      <Card.Body className="p-3 p-md-4">
-        <Container fluid className="px-0">
-        {/* Header */}
-        <Row className="g-3 align-items-start">
-        <Col xs={12}>
-            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <span className="d-none d-md-inline ms-2">
+                  Actualizar usuario
+                </span>
+              </Button>
+            </OverLay>
 
-            {/* IZQUIERDA */}
-            <div>
-                <div className="d-flex align-items-center gap-2">
-                <h4 className="m-0 fw-bold text-capitalize">
-                    {fullName(user)}
-                </h4>
+            <OverLay string="Actualizar contraseña">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="secondary"
+                onClick={() => setShowPasswordModal(true)}
+                disabled={loading}
+              >
+                <i className="bi bi-key-fill" />
 
-                <Badge bg={statusVariant(user.status)}>
-                    {statusLabel(user.status)}
-                </Badge>
-                </div>
+                <span className="d-none d-md-inline ms-2">
+                  Actualizar contraseña
+                </span>
+              </Button>
+            </OverLay>
+          </div>
 
-                <div className="text-muted mt-2">
-                <div className="small">Información general del usuario</div>
-                </div>
+          <Button
+            variant="outline-secondary"
+            onClick={handleBack}
+            disabled={loading}
+            className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+          >
+            <i className="bi bi-arrow-left" />
+            Regresar
+          </Button>
+        </div>
+
+        <div>
+          <h1 className="mb-1 ms-1 text-uppercase">
+            {fullName(user)}
+          </h1>
+
+          <p className="text-muted mb-0 ms-1">
+            Información general del usuario.
+          </p>
+        </div>
+
+        <Card className="border shadow-sm rounded-4 mt-2">
+          <Card.Body className="p-4">
+            <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+              <h5 className="mb-0 fw-bold">
+                Usuario
+                <span className={`badge ms-1 rounded-pill px-3 py-2 fw-semibold bg-${statusVariant(user.status)}-subtle text-${statusVariant(user.status)}-emphasis border border-${statusVariant(user.status)}-subtle`}>
+                  {statusLabel(user.status)}
+                </span>
+              </h5>
             </div>
 
-            {/* DERECHA */}
-            <div className="d-flex flex-column align-items-md-end gap-2">
+            <Row className="g-4">
+              <Col xs={12} lg={6}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <h6 className="mb-0 fw-bold">
+                        Datos personales
+                      </h6>
 
+                      <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        Perfil
+                      </span>
+                    </div>
 
-                
+                    <div className="d-flex flex-column gap-3">
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-hash text-secondary" />
+                          <span className="text-muted">ID Usuario</span>
+                        </div>
 
-                {/* FECHA ABAJO */}
-                <div className="text-md-end">
-                <div className="text-muted small text-uppercase">
-                    Fecha de creación
-                </div>
-                <div className="fw-semibold">
-                    {user.createdAt ?? "—"}
-                </div>
-                </div>
+                        <span className="fw-semibold text-end">
+                          {user.id ?? "—"}
+                        </span>
+                      </div>
 
-            </div>
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-badge text-info" />
+                          <span className="text-muted">ID Empleado</span>
+                        </div>
 
-            </div>
-        </Col>
-        </Row>
+                        <span className="fw-semibold text-end">
+                          {user.idEmployee ?? "—"}
+                        </span>
+                      </div>
 
-          {/* Main info */}
-          <Row className="g-3 mt-1">
-            <Col xs={12} lg={6}>
-              <Card className="border-0 table-active h-100">
-                <Card.Body className="py-3 px-3">
-                  <div className="fw-semibold text-uppercase mb-3">
-                    Datos personales
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person text-primary" />
+                          <span className="text-muted">Nombre</span>
+                        </div>
+
+                        <span className="fw-semibold text-end text-uppercase">
+                          {user.name ?? "—"}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-lines-fill text-primary" />
+                          <span className="text-muted">Apellidos</span>
+                        </div>
+
+                        <span className="fw-semibold text-end text-uppercase">
+                          {user.lastName ?? "—"}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-gender-ambiguous text-info" />
+                          <span className="text-muted">Género</span>
+                        </div>
+
+                        <span className="fw-semibold text-end text-uppercase">
+                          {user.gender ?? "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              <Col xs={12} lg={6}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <h6 className="mb-0 fw-bold">
+                        Contacto y cuenta
+                      </h6>
+
+                      <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        Acceso
+                      </span>
+                    </div>
+
+                    <div className="d-flex flex-column gap-3">
+                      <div className="d-flex flex-column flex-md-row justify-content-between border-bottom pb-2 gap-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-envelope text-primary" />
+                          <span className="text-muted">Correo</span>
+                        </div>
+
+                        <span className="fw-semibold text-md-end text-break">
+                          {user.email ?? "—"}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-telephone text-success" />
+                          <span className="text-muted">Teléfono</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {phone}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-badge text-warning" />
+                          <span className="text-muted">Rol</span>
+                        </div>
+
+                        <span className="fw-semibold text-end text-uppercase">
+                          {user.role ?? "—"}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-calendar-event text-secondary" />
+                          <span className="text-muted">Fecha de creación</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {user.createdAt ?? "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+
+            <Card className="border rounded-4 mt-4">
+              <Card.Body>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                  <div className="d-flex gap-2 flex-wrap">
+                    <h6 className="mt-1 fw-bold">
+                      Permisos del usuario
+                    </h6>
+
+                    <span className="badge rounded-pill px-3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                      {sortedPermissions.length}
+                    </span>
                   </div>
+                </div>
 
+                {sortedPermissions.length === 0 ? (
+                  <div className="text-center py-4 text-muted">
+                    <i className="bi bi-shield-lock fs-3 d-block mb-2" />
+                    Este usuario no tiene permisos asignados.
+                  </div>
+                ) : (
                   <Row className="g-3">
-                    <Col xs={12} sm={6}>
-                      <div className="text-muted small text-uppercase">
-                        ID Usuario
-                      </div>
-                      <div className="fw-semibold">{user.id ?? "—"}</div>
-                    </Col>
+                    {sortedPermissions.map((permission) => (
+                      <Col xs={12} sm={6} lg={4} xl={3} key={permission.id}>
+                        <div className="border rounded p-3 h-100 d-flex align-items-center gap-2">
+                          <i className="bi bi-shield-check text-success fs-5" />
 
-                    <Col xs={12} sm={6}>
-                      <div className="text-muted small text-uppercase">
-                        ID Empleado
-                      </div>
-                      <div className="fw-semibold">{user.idEmployee ?? "—"}</div>
-                    </Col>
-
-                    <Col xs={12} sm={6}>
-                      <div className="text-muted small text-uppercase">
-                        Nombre
-                      </div>
-                      <div className="fw-semibold">{user.name ?? "—"}</div>
-                    </Col>
-
-                    <Col xs={12} sm={6}>
-                      <div className="text-muted small text-uppercase">
-                        Apellidos
-                      </div>
-                      <div className="fw-semibold">{user.lastName ?? "—"}</div>
-                    </Col>
-
-                    <Col xs={12}>
-                      <div className="text-muted small text-uppercase">
-                        Género
-                      </div>
-                      <div className="fw-semibold">{user.gender ?? "—"}</div>
-                    </Col>
+                          <span className="fw-semibold text-uppercase">
+                            {formatPermission(permission.text)}
+                          </span>
+                        </div>
+                      </Col>
+                    ))}
                   </Row>
-                </Card.Body>
-              </Card>
-            </Col>
+                )}
+              </Card.Body>
+            </Card>
+          </Card.Body>
+        </Card>
 
-            <Col xs={12} lg={6}>
-              <Card className="border-0 table-active h-100">
-                <Card.Body className="py-3 px-3">
-                  <div className="fw-semibold text-uppercase mb-3">
-                    Contacto y cuenta
-                  </div>
+        <ChangePasswordModal
+          show={showPasswordModal}
+          userId={user.id ?? null}
+          onHide={() => setShowPasswordModal(false)}
+        />
 
-                  <Row className="g-3">
-                    <Col xs={12}>
-                      <div className="text-muted small text-uppercase">
-                        Correo
-                      </div>
-                      <div className="fw-semibold text-break">
-                        {user.email ?? "—"}
-                      </div>
-                    </Col>
-
-                    <Col xs={12} sm={6}>
-                      <div className="text-muted small text-uppercase">
-                        Teléfono
-                      </div>
-                      <div className="fw-semibold">{phone}</div>
-                    </Col>
-
-                    <Col xs={12} sm={6}>
-                      <div className="text-muted small text-uppercase">
-                        Rol
-                      </div>
-                      <div className="fw-semibold">{user.role ?? "—"}</div>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Permissions */}
-          <Row className="g-3 mt-1">
-            <Col xs={12}>
-              <Card className="border-0">
-                <Card.Header className="table-active border-0 d-flex justify-content-between align-items-center">
-                  <div className="fw-semibold text-uppercase">Permisos del usuario</div>
-                  <div className="text-muted small">
-                    {sortedPermissions.length} permisos
-                  </div>
-                </Card.Header>
-
-                <Card.Body className="pt-3">
-                  {sortedPermissions.length === 0 ? (
-                    <div className="text-muted">Este usuario no tiene permisos asignados.</div>
-                  ) : (
-                    <Row className="g-2">
-                      {sortedPermissions.map((permission) => (
-                        <Col xs={12} sm={6} lg={4} xl={3} key={permission.id}>
-                          <Card className="border-0 table-active h-100">
-                            <Card.Body className="py-2 px-3">
-                              <div className="fw-semibold small">
-                                {formatPermission(permission.text)}
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      </Card.Body>
-      </Card>
-
-      <ChangePasswordModal
-        show={showPasswordModal}
-        userId={user.id ?? null}
-        onHide={() => setShowPasswordModal(false)}
-      />
-
-      {showUpdateUserModal && (
-        <ModalBlur onClose={() => setShowUpdateUserModal(false)}>
-          <FormUpdateUser
-            show={showUpdateUserModal}
-            onHide={() => setShowUpdateUserModal(false)}
-            sendData={handleUpdateUser}
-            user={user}
-            perms={perms}
-            employees={employees}
-          />
-        </ModalBlur>
-      )}
+        <ConditionalRender cond={showUpdateUserModal}>
+          <ModalBlur onClose={() => setShowUpdateUserModal(false)}>
+            <FormUpdateUser
+              show={showUpdateUserModal}
+              onHide={() => setShowUpdateUserModal(false)}
+              sendData={handleUpdateUser}
+              user={user}
+              perms={perms}
+              employees={employees}
+            />
+          </ModalBlur>
+        </ConditionalRender>
+      </Container>
     </>
   );
 }

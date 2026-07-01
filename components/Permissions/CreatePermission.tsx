@@ -89,6 +89,8 @@ export default function CreatePermissionComponent({
 
   const { data } = useSWR("/api/configsystem", fetcher);
 
+  const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
+
   const config: IConfigSystem | null = useMemo(() => {
     const maybe = data?.data?.[0];
     return maybe ?? null;
@@ -287,6 +289,7 @@ export default function CreatePermissionComponent({
 
                         <Col xs={12} md={6}>
                           <RelationField
+                          readonly={readInput}
                             register={register("idLeader")}
                             options={employees.map((e) => ({
                               id: e.id ?? 0,
@@ -297,10 +300,10 @@ export default function CreatePermissionComponent({
                             label="Líder:"
                             callBackMode="id"
                             control={control}
-                            readonly={
-                              session?.uid?.role === "EMPLOYEE" &&
-                              session.uid.isDoh === false
-                            }
+                            // readonly={
+                            //   session?.uid?.role === "EMPLOYEE" &&
+                            //   session.uid.isDoh === false
+                            // }
                           />
                         </Col>
 

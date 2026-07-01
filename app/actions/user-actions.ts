@@ -31,6 +31,7 @@ type FetchUsersArgs = {
   leader?: number;
   personDoh?: number;
   employee?: number;
+  search?: string;
 };
 
 type UserAxios = {
@@ -147,7 +148,8 @@ export async function getUserData({
             : "Error en la respuesta"
         );
       });
-
+      console.log("response: ",response);
+      
     return {
       success: true,
       message: response.data.mesaage,
@@ -164,7 +166,7 @@ export async function getUserData({
   }
 }
 
-export async function fetchUsersPages(args: FetchUsersArgs & { search?: string } = {}): Promise<{
+export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
   data: User[];
   total: number;
   page: number;
@@ -203,7 +205,7 @@ export async function fetchUsersPages(args: FetchUsersArgs & { search?: string }
 
       const total = Number(response.total ?? 0);
       const pages = Math.max(Math.ceil(total / limitNum), 1);
-  
+      
       return {
         data: response.data ?? [],
         total,

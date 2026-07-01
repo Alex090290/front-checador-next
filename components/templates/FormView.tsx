@@ -300,12 +300,14 @@ export const FieldGroupFluid = ({
 export const FormBook = ({
   children,
   dKey,
+  id = "form-book-tabs",
 }: {
   children: React.ReactNode;
   dKey: string;
+  id?: string;
 }) => {
   return (
-    <Tabs defaultActiveKey={dKey} transition={false}>
+    <Tabs id={id} defaultActiveKey={dKey} transition={false}>
       {children}
     </Tabs>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
@@ -70,6 +70,7 @@ export default function UserTableClient({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
+  const [, setSelectedIds] = useState<Array<string | number>>([]);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showUpdateUserModal, setShowUpdateUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -79,13 +80,12 @@ export default function UserTableClient({
   const isClearingSelectionRef = useRef(false);
   const [, setTableResetKey] = useState(0);
 
-  useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParamsString]);
+  // useEffect(() => {
+  //   if (loading) {
+  //     setLoading(false);
+  //     setMessageLoading("");
+  //   }
+  // }, [searchParamsString]);
 
   // const goToPage = (nextPage: number) => {
   //   setLoading(true);

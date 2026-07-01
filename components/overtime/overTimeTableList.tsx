@@ -2,12 +2,12 @@
 
 import { OverTime } from "@/lib/overTime/interface";
 import { TableTemplateColumn } from "../templates/TablePage";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import moment from "moment";
 import GenericSearchInput from "../employee/GenericSearchInput";
 
@@ -33,19 +33,15 @@ export default function OverTimeTableClient({
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-    const pathname = usePathname();
     const currentSearch = sp.get("search") ?? "";
     const [, setTableResetKey] = useState(0);
     const router = useRouter();
 
 
-    useEffect(() => {
-        if (loading) {
-            setLoading(false);
-            setMessageLoading("");
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pathname, searchParamsString]);
+    // useEffect(() => {
+    //     setLoading(false);
+    //     setMessageLoading("");
+    // }, [pathname, searchParamsString]);
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Employee } from "@/lib/definitions";
 import ListView from "../templates/ListView";
@@ -40,13 +40,12 @@ export default function EmployeeTableClient({
   const isClearingSelectionRef = useRef(false);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
 
-  useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParamsString]);
+  // useEffect(() => {
+  //   if (loading) {
+  //     setLoading(false);
+  //     setMessageLoading("");
+  //   }
+  // }, [searchParamsString]);
 
   const handleCreate = () => {
     setLoading(true);

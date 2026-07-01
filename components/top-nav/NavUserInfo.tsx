@@ -20,6 +20,7 @@ function NavUserInfo() {
   const profile = params.get("profile") || null;
   const [showPeriodInfo, setShowPeriodInfo] = useState(false);
 
+
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
@@ -100,12 +101,7 @@ function NavUserInfo() {
               className="me-2 rounded flex-shrink-0"
             />
 
-            <span
-              className="text-uppercase text-truncate d-inline-block"
-              style={{ maxWidth: "85px" }}
-            >
-              {session?.user?.name}
-            </span>
+            <span className="text-uppercase text-truncate d-inline-block" style={{ maxWidth: "85px" }} > {session?.user?.name} </span>
 
             <i
               className={`bi ms-1 ${profileOpen ? "bi-chevron-up" : "bi-chevron-down"
@@ -197,12 +193,12 @@ function NavUserInfo() {
             role="button"
             className="badge bg-secondary text-uppercase text-truncate"
             style={{
-              maxWidth: "105px",
+              maxWidth: "80px",
               cursor: "pointer",
             }}
             onClick={() => setShowPeriodInfo(!showPeriodInfo)}
           >
-            {currentPeriod?.description ?? "—"}
+            {/* {currentPeriod?.description ?? "—"} */}
 
             <i
               className={`bi ms-1 ${showPeriodInfo ? "bi-chevron-up" : "bi-chevron-down"

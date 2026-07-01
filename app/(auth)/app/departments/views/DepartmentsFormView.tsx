@@ -18,7 +18,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Col, Row, Table } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
-import PositionFormCreate from "./PositionFormCreate";
 import OverLay from "@/components/templates/OverLay";
 import { deletePosition } from "@/app/actions/positions-actions";
 
@@ -48,7 +47,7 @@ function DepartmentsFormView({
   const router = useRouter();
 
   const [positionFormShow, setPositionFormShow] = useState(false);
-  const [positionData, setPositionData] = useState<{
+  const [, setPositionData] = useState<{
     activeId: number | null;
     namePosition: string;
   }>({ activeId: null, namePosition: "" });
@@ -232,12 +231,6 @@ function DepartmentsFormView({
           </FormPage>
         </FormBook>
       </FormView>
-      <PositionFormCreate
-        positionData={positionData}
-        idDepartment={id}
-        show={positionFormShow}
-        onHide={() => setPositionFormShow(!positionFormShow)}
-      />
     </>
   );
 }

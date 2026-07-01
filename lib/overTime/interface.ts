@@ -49,7 +49,7 @@ export interface OverTimeAxios {
     id: number
 }
 
-export type OvertimeRequestStatus =
+export type OvertimeRequestStatus = 
     | "APPROVED"
     | "REFUSED"
     | "PENDING"

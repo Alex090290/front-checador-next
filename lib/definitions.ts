@@ -13,6 +13,18 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface IRolesMe {
+    isLeader: true,
+    isDoh: false,
+    isExtra: false,
+    isApproverLeaders: false,
+    isApproverDoh: false,
+    departmentLeader: {
+      id: number,
+      name: string
+    }
+}
+
 export interface User {
   _id: string;
   id: number;
@@ -28,6 +40,7 @@ export interface User {
   idEmployee: number | null;
   isDoh: boolean;
   isLeader?: boolean;
+  roles: IRolesMe;
 }
 
 export type DisplayType = {
@@ -60,7 +73,7 @@ export interface Department {
 
 export interface Position {
   _id?: string;
-  id?: number;
+  id: number;
   namePosition: string;
   idDepartment: number;
   cretedAt?: string;
@@ -106,6 +119,13 @@ type BranchAddress = {
 export interface IFoodBaucher {
   uiid: string;
   cardNumber: string;
+}
+
+export interface biometricPhotos {
+  key: string;
+  type: string;
+  createdAt: string;
+  active: boolean;
 }
 
 export interface Employee {
@@ -188,6 +208,7 @@ export interface Employee {
   isDoh: boolean;
   isLeader?: boolean;
   foodBaucher?: IFoodBaucher | undefined;
+  biometricPhotos?: biometricPhotos[];
 }
 
 type EmergencyContact = {
@@ -395,7 +416,7 @@ export type VacationRequestStatus =
   | "APPROVED"
   | "REFUSED"
   | "PENDING"
-  | "EMPLOYEE";
+  // | "EMPLOYEE";
 
 export interface ConfigSystemUpdate {
   permissions: {

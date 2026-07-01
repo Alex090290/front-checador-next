@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import toast from "react-hot-toast";
 import ModalBlur from "@/components/ModalBlur";
 import ConditionalRender from "@/components/ConditionalRender";
@@ -26,26 +26,6 @@ function formatText(value?: string | number | null) {
   return String(value);
 }
 
-function InfoItem({
-  label,
-  value,
-  className = "",
-  uppercase = true,
-}: {
-  label: string;
-  value?: React.ReactNode;
-  className?: string;
-  uppercase?: boolean;
-}) {
-  return (
-    <div className={className}>
-      <div className="text-secondary-emphasis fw-semibold mb-1">{label}</div>
-      <div className={uppercase ? "fw-medium text-uppercase" : "fw-medium"}>
-        {value ?? "-"}
-      </div>
-    </div>
-  );
-}
 
 export default function UserProfileView({
   user,
@@ -55,8 +35,14 @@ export default function UserProfileView({
   const [showUpdateProfileModal, setShowUpdateProfileModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [loading] = useState(false);
-  const [messageLoading] = useState("");
+  const [messageLoading] = useState("Cargando datos...");
 
+
+  // useEffect(() => {
+  //   if (user) {
+  //     setLoading(false);
+  //   }
+  // }, [user])
 
   if (!user) {
     return (
@@ -77,7 +63,7 @@ export default function UserProfileView({
       status: user.status,
       idEmployee: user.idEmployee || null,
     });
-  
+
     if (!res) {
       return {
         success: false,
@@ -85,132 +71,216 @@ export default function UserProfileView({
         data: null,
       };
     }
-  
+
     toast.success("Perfil actualizado correctamente");
-  
+
     return {
       success: true,
       message: "Perfil actualizado correctamente",
       data: true,
     };
   };
+
+  const upperCase = (text?: string) => {
+    return text?.toUpperCase() || "";
+  };
+
+  const getUser = (u: User) => {
+    return (`${upperCase(u.name)} ${upperCase(u.lastName)}`)
+  }
+
   return (
     <>
+
       <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Cargando..."} />
+        <Loading message={messageLoading} />
       </ConditionalRender>
 
-      <div className="mb-4">
-        <h1 className="mb-0 text-white">
-          {`${user.name || ""} ${user.lastName || ""}`.trim() || "Mi Perfil"}
-        </h1>
-      </div>
+      <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
 
-      <div className="mb-4 d-flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="primary"
-          onClick={() => setShowUpdateProfileModal(true)}
-        >
-          <i className="bi bi-pencil me-2" />
-          Actualizar perfil
-        </Button>
 
-        <Button
-          size="sm"
-          variant="info"
-          onClick={() => setShowChangePasswordModal(true)}
-        >
-          <i className="bi bi-key me-2" />
-          Cambiar contraseña
-        </Button>
-      </div>
+        <div className="d-flex flex-nowrap gap-2 mb-4">
+          <Button
+            className="d-inline-flex align-items-center fw-semibold px-3"
+            variant="primary"
+            onClick={() => setShowUpdateProfileModal(true)}
+          >
+            <i className="bi bi-pencil me-2" />
+            Actualizar perfil
+          </Button>
 
-      <div className="d-grid gap-4">
-        <section>
-          <h5 className="mb-3 text-uppercase">Datos personales</h5>
-          <div className="row g-4">
-            <div className="col-12 col-md-6">
-              <InfoItem label="Nombre:" value={formatText(user.name)} />
-            </div>
+          <Button
+            className="d-inline-flex align-items-center fw-semibold px-3"
+            variant="info"
+            onClick={() => setShowChangePasswordModal(true)}
+          >
+            <i className="bi bi-key me-2" />
+            Cambiar contraseña
+          </Button>
+        </div>
 
-            <div className="col-12 col-md-6">
-              <InfoItem label="Apellidos:" value={formatText(user.lastName)} />
-            </div>
 
-            <div className="col-12 col-md-6">
-              <InfoItem
-                label="Teléfono:"
-                value={formatText(user.phone?.internationalNumber)}
-                uppercase={false}
-              />
-            </div>
+        <div>
+          <h1 className="ms-1">
+            {getUser(user)}
+          </h1>
 
-            <div className="col-12 col-md-6">
-              <InfoItem label="Género:" value={formatText(user.gender)} />
-            </div>
-          </div>
-        </section>
+          <p className="text-muted mb-1 ms-1">
+            Consulta y administra la información de tu cuenta.
+          </p>
+        </div>
 
-        <section>
-          <h5 className="mb-3 text-uppercase">Cuenta</h5>
-          <div className="row g-4">
-            <div className="col-12 col-md-6">
-              <InfoItem
-                label="Correo:"
-                value={formatText(user.email)}
-                uppercase={false}
-              />
-            </div>
+        <Card className="rounded-4 shadow-sm border">
+          <Card.Body className="p-3 p-md-5">
+            <Row className="g-2">
+              <Col xs={12} lg={6}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body className="p-4">
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <h6 className="mb-0 fw-bold">Datos personales</h6>
 
-            <div className="col-12 col-md-6">
-              <InfoItem label="Rol:" value={formatText(user.role)} />
-            </div>
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+                        Perfil
+                      </span>
+                    </div>
 
-            <div className="col-12 col-md-6">
-              <InfoItem
-                label="Estatus:"
-                value={
-                  user.status === 1
-                    ? "Activo"
-                    : user.status === 2
-                    ? "Suspendido"
-                    : user.status === 3
-                    ? "Eliminado"
-                    : "-"
-                }
-              />
-            </div>
+                    <div className="d-flex flex-column gap-3">
+                      <div className="d-flex align-items-start justify-content-between gap-3 border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-person text-primary" />
+                          <span>Nombre</span>
+                        </div>
 
-            <div className="col-12 col-md-6">
-              <InfoItem
-                label="ID Empleado relacionado:"
-                value={formatText(user.idEmployee)}
-                uppercase={false}
-              />
-            </div>
-          </div>
-        </section>
-      </div>
+                        <span className="fw-semibold text-end text-uppercase">
+                          {formatText(user.name)}
+                        </span>
+                      </div>
 
-      {showUpdateProfileModal && (
-        <ModalBlur onClose={() => setShowUpdateProfileModal(false)}>
-          <FormUpdateProfile
-            show={showUpdateProfileModal}
-            onHide={() => setShowUpdateProfileModal(false)}
-            sendData={handleUpdateProfile}
-            user={user}
+                      <div className="d-flex align-items-start justify-content-between gap-3 border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-person-lines-fill text-primary" />
+                          <span>Apellidos</span>
+                        </div>
+
+                        <span className="fw-semibold text-end text-uppercase">
+                          {formatText(user.lastName)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-start justify-content-between gap-3 border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-telephone text-success" />
+                          <span>Teléfono</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {formatText(user.phone?.internationalNumber)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-start justify-content-between gap-3">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-gender-ambiguous text-info" />
+                          <span>Género</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {formatText(user.gender)}
+                        </span>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              <Col xs={12} lg={6}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body className="p-4">
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <h6 className="mb-0 fw-bold">Cuenta</h6>
+
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        Acceso
+                      </span>
+                    </div>
+
+                    <div className="d-flex flex-column gap-3">
+                      <div className="d-flex align-items-start justify-content-between gap-3 border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-envelope text-primary" />
+                          <span>Correo</span>
+                        </div>
+
+                        <span className="fw-semibold text-end text-break">
+                          {formatText(user.email)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-start justify-content-between gap-3 border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-person-badge text-warning" />
+                          <span>Rol</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {formatText(user.role)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-start justify-content-between gap-3 border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-check-circle text-success" />
+                          <span>Estatus</span>
+                        </div>
+
+                        <span className="fw-semibold text-end text-uppercase">
+                          {user.status === 1
+                            ? "Activo"
+                            : user.status === 2
+                              ? "Suspendido"
+                              : user.status === 3
+                                ? "Eliminado"
+                                : "-"}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-start justify-content-between gap-3">
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <i className="bi bi-hash text-secondary" />
+                          <span>ID Empleado relacionado</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {formatText(user.idEmployee)}
+                        </span>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+
+        <ConditionalRender cond={showUpdateProfileModal}>
+          <ModalBlur onClose={() => setShowUpdateProfileModal(false)}>
+            <FormUpdateProfile
+              show={showUpdateProfileModal}
+              onHide={() => setShowUpdateProfileModal(false)}
+              sendData={handleUpdateProfile}
+              user={user}
+            />
+          </ModalBlur>
+        </ConditionalRender>
+
+        <ConditionalRender cond={showChangePasswordModal}>
+          <ChangePasswordModal
+            show={showChangePasswordModal}
+            userId={Number.isFinite(Number(user.id)) ? Number(user.id) : null}
+            onHide={() => setShowChangePasswordModal(false)}
           />
-        </ModalBlur>
-      )}
-
-      {showChangePasswordModal && (
-        <ChangePasswordModal
-          show={showChangePasswordModal}
-          userId={Number.isFinite(Number(user.id)) ? Number(user.id) : null}
-          onHide={() => setShowChangePasswordModal(false)}
-        />
-      )}
+        </ConditionalRender>
+      </Container>
     </>
   );
 }
