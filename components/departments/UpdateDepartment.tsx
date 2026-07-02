@@ -95,7 +95,7 @@ export default function FormUpdateDepartment({
                   label="Nombre:"
                   invalid={!!errors.nameDepartment}
                   feedBack={errors.nameDepartment?.message}
-                  className="text-uppercase"
+                  className="text-uppercase border"
                 />
               </div>
 
@@ -105,6 +105,7 @@ export default function FormUpdateDepartment({
                   label="Descripción:"
                   invalid={!!errors.description}
                   feedBack={errors.description?.message}
+                  className="text-uppercase border"
                 />
               </div>
 
@@ -114,7 +115,7 @@ export default function FormUpdateDepartment({
                   label="Líder:"
                   control={control}
                   callBackMode="id"
-                  className="text-uppercase"
+                  className="text-uppercase border"
                   options={employees.map((emp) => ({
                     id: emp.id ?? 0,
                     displayName: `${emp.name} ${emp.lastName}`,
@@ -124,7 +125,7 @@ export default function FormUpdateDepartment({
               </div>
 
               <div className="d-flex justify-content-between align-items-center pt-2">
-                <Button type="submit" disabled={loading || isSubmitting}>
+                <Button type="submit" variant="success" disabled={loading || isSubmitting}>
                   Guardar
                 </Button>
 

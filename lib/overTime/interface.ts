@@ -64,6 +64,7 @@ export type TInputsOvertime = {
     hourInit: string;
     hourEnd: string;
     signature?: string;
+    status?: OvertimeRequestStatus;
 };
 
 type informationDate = {

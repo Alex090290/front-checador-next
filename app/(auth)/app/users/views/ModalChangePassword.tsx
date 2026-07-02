@@ -114,7 +114,7 @@ function ChangePasswordModal({
               label="Nueva contraseña:"
               invalid={!!errors.password}
               type="password"
-              className="text-center"
+              className="text-center border"
               feedBack={errors.password?.message}
             />
             <Entry
@@ -134,7 +134,7 @@ function ChangePasswordModal({
               label="Confirma la contraseña:"
               invalid={!!errors.password2}
               type="password"
-              className="text-center"
+              className="text-center border"
               feedBack={errors.password2?.message}
             />
             <Button type="submit">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Employee } from "@/lib/definitions";
 import ListView from "../templates/ListView";
@@ -40,12 +40,12 @@ export default function EmployeeTableClient({
   const isClearingSelectionRef = useRef(false);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
 
-  // useEffect(() => {
-  //   if (loading) {
-  //     setLoading(false);
-  //     setMessageLoading("");
-  //   }
-  // }, [searchParamsString]);
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      setMessageLoading("");
+    }
+  }, [searchParamsString, loading]);
 
   const handleCreate = () => {
     setLoading(true);
@@ -106,7 +106,6 @@ export default function EmployeeTableClient({
       } else {
         params.delete("search");
       }
-
       clearSelectedIds();
       router.push(`/app/employee?${params.toString()}`);
     },

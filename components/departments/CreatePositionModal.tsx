@@ -89,11 +89,12 @@ function CreatePositionModal({
                                 label="Nombre:"
                                 invalid={!!errors.namePosition}
                                 feedBack={errors.namePosition?.message}
+                                className="border"
                             />
                         </Form.Group>
 
                         <div className="d-flex justify-content-between align-items-center pt-2">
-                            <Button type="submit" disabled={loading || isSubmitting}>
+                            <Button type="submit" variant="success" disabled={loading || isSubmitting}>
                                 {isSubmitting ? "Guardando..." : "Guardar"}
                             </Button>
 

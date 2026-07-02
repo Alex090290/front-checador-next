@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
@@ -80,12 +80,12 @@ export default function UserTableClient({
   const isClearingSelectionRef = useRef(false);
   const [, setTableResetKey] = useState(0);
 
-  // useEffect(() => {
-  //   if (loading) {
-  //     setLoading(false);
-  //     setMessageLoading("");
-  //   }
-  // }, [searchParamsString]);
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+      setMessageLoading("");
+    }
+  }, [searchParamsString, loading]);
 
   // const goToPage = (nextPage: number) => {
   //   setLoading(true);

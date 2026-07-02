@@ -736,7 +736,7 @@ export default function FormUpdateEmployee({
             </FormBook>
 
             <div className="mt-4 d-flex gap-2">
-                <Button type="submit" variant="primary">
+                <Button type="submit" variant="success">
                 Guardar
                 </Button>
 

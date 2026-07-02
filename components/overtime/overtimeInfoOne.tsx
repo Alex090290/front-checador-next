@@ -98,13 +98,24 @@ export function OvertimeOne({
 
     const isOwnerEmployee = Number(session?.uid?.idEmployee) === Number(overtime?.idEmployee);
 
-    const currentUser = isOwnerEmployee ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
+    // const currentUser = isOwnerEmployee ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
+    const currentUser =
+        isOwnerEmployee && session?.uid?.role === "EMPLOYEE"
+            ? signatures.find(
+                (el: IFiltercUrl) => Number(el.idSignatory)
+            )
+            : undefined;
 
     const currentLeader = session?.uid?.isLeader
         ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
 
     const currentDoh = session?.uid?.isDoh
         ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
+
+    console.log("isOwnerEmployee:", isOwnerEmployee);
+    console.log("session:", session);
+
+    console.log("currentUser:", currentUser);
 
     useEffect(() => {
         if (currentUser && !currentUser.url) {
@@ -483,7 +494,7 @@ export function OvertimeOne({
                                                     </span>
                                                 </div>
 
-                                                <div>
+                                                <div className="text-uppercase">
                                                     {overtime.motive ?? "—"}
                                                 </div>
                                             </div>

@@ -21,16 +21,29 @@ function SignaturesViewOvertime({
   status?: string | null;
 }) {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const [loadingSignature, setLoadingSignature] = useState(true);
+
 
   useEffect(() => {
     const handleFetchSignature = async () => {
-      if (!id || !idEmployee) return;
+      if (!id || !idEmployee) {
+        setLoadingSignature(false);
+        return;
+      }
 
-      const res = await fetchSignatureOverTime({ id, idEmployee });
+      try {
+        setLoadingSignature(true);
 
-      if (!res.success) return;
+        const res = await fetchSignatureOverTime({ id, idEmployee });
 
-      setImgUrl(res.data || null);
+        if (res.success && res.data) {
+          setImgUrl(res.data);
+        } else {
+          setImgUrl(null);
+        }
+      } finally {
+        setLoadingSignature(false);
+      }
     };
 
     handleFetchSignature();
@@ -52,7 +65,7 @@ function SignaturesViewOvertime({
         : { text: "Pendiente de firma", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
     }
 
-    if (normalizedLabel === "lider") {
+    if (normalizedLabel === "Líder") {
       if (normalizedStatus === "APPROVED") {
         return { text: "Aprobado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" };
       }
@@ -79,38 +92,63 @@ function SignaturesViewOvertime({
 
   const badge = getBadge();
 
+
   return (
     <Col md={4}>
       <Card className="mt-2">
         <Card.Header className="position-relative bg-dark text-white pt-4">
-
           <span
-            className={`badge bg-${badge.bg} position-absolute top-0 end-0 m-2`}
+            className={`badge ${loadingSignature ? "bg-secondary" : badge.bg} position-absolute top-0 end-0 m-2`}
+            style={{ minWidth: "120px" }}
           >
-            {badge.text}
+            {loadingSignature ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                />
+                Cargando...
+              </>
+            ) : (
+              badge.text
+            )}
           </span>
 
           <div className="fw-bold text-center text-uppercase">
             {label}
           </div>
-
         </Card.Header>
 
         <Card.Body className="p-1 text-center">
-          <Image
-            unoptimized
-            src={imgUrl ?? "/image/avatar_default.svg"}
-            alt="signature"
-            width={300}
-            height={150}
-          />
+          {loadingSignature ? (
+            <div
+              className="d-flex justify-content-center align-items-center"
+              style={{ height: "150px" }}
+            >
+              <div
+                className="spinner-border text-primary"
+                role="status"
+              >
+                <span className="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+          ) : (
+            <Image
+              unoptimized
+              src={imgUrl ?? "/image/avatar_default.svg"}
+              alt="signature"
+              width={300}
+              height={150}
+            />
+          )}
         </Card.Body>
 
         <Card.Footer className="text-center text-capitalize fw-semibold">
-          <div>{name}</div>
+          <div className="text-uppercase">{name}</div>
         </Card.Footer>
       </Card>
-    </Col>
+    </Col >
   );
 }
 

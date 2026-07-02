@@ -2,7 +2,7 @@
 
 import { OverTime } from "@/lib/overTime/interface";
 import { TableTemplateColumn } from "../templates/TablePage";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
@@ -10,6 +10,7 @@ import ListView from "../templates/ListView";
 import { useSearchParams, useRouter } from "next/navigation";
 import moment from "moment";
 import GenericSearchInput from "../employee/GenericSearchInput";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
 export default function OverTimeTableClient({
     total,
@@ -26,6 +27,7 @@ export default function OverTimeTableClient({
 }) {
     //Aqui van los const 
 
+    const session = useSessionSnapshot();
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const isClearingSelectionRef = useRef(false);
@@ -38,10 +40,12 @@ export default function OverTimeTableClient({
     const router = useRouter();
 
 
-    // useEffect(() => {
-    //     setLoading(false);
-    //     setMessageLoading("");
-    // }, [pathname, searchParamsString]);
+    useEffect(() => {
+        if (loading) {
+          setLoading(false);
+          setMessageLoading("");
+        }
+      }, [searchParamsString, loading]);
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {
@@ -49,7 +53,7 @@ export default function OverTimeTableClient({
         setMessageLoading("Cargando...");
         router.push("/app/overtime/create");
     };
-
+    
     //Helpers
 
     const goToPage = (nextPage: number) => {
@@ -251,7 +255,7 @@ export default function OverTimeTableClient({
             },
         }
     ];
-
+    
     return (
         <>
             <ConditionalRender cond={loading}>
