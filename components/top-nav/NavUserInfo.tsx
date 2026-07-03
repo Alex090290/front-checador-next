@@ -63,6 +63,10 @@ function NavUserInfo() {
     })
   }
 
+  const singOutHanddle = ()=>{
+    localStorage.removeItem("menu-data");
+    signOut()
+  }
   const [profileOpen, setProfileOpen] = useState(false);
 
   const periodText = `${currentPeriod?.description ?? "—"} · ${currentPeriod?.dateInit
@@ -130,7 +134,7 @@ function NavUserInfo() {
             </Dropdown.Item>
             </ConditionalRender>
 
-            <Dropdown.Item onClick={() => signOut()}>
+            <Dropdown.Item onClick={() =>singOutHanddle()}>
               <i className="bi bi-box-arrow-right me-2"></i>
               <span>Cerrar sesión</span>
             </Dropdown.Item>

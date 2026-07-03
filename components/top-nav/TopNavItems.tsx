@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import NextLinkRef from "@/components/NextLinkRef";
 import NavGroup from "@/components/NavGroup";
 
+const MENU_STORAGE_KEY = "menu-data";
+
 type MenuItem = {
   className: string;
   href?: string;
@@ -18,7 +20,27 @@ type TopNavItemsProps = {
   onNavigate?: () => void;
 };
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+// const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+const fetcher = async (url: string) => {
+  // 1. Busca en localStorage primero
+  try {
+    const cached = localStorage.getItem(MENU_STORAGE_KEY);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch {}
+
+  // 2. Si no hay caché, llama a /api/menu y guarda el resultado
+  const res = await fetch(url);
+  const data = await res.json();
+
+  try {
+    localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+
+  return data;
+};
 
 function stableKey(item: MenuItem) {
   const base = item.eventKey ?? item.href ?? item.span;
@@ -37,6 +59,8 @@ export default function TopNavItems({ onNavigate }: TopNavItemsProps) {
     dedupingInterval: 60_000,
   });
 
+  console.log(data);
+  
   const items: MenuItem[] = data?.data ?? [];
 
   if (isLoading && items.length === 0) return null;
