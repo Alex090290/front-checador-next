@@ -22,10 +22,10 @@ function ConfirmModal({ show, onHide, string, action }: ModalBasicProps) {
       </Modal.Header>
       <Modal.Body>{string ?? "¿Ejecutar acción?"}</Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={onHide}>
+        <Button variant="secondary" onClick={onHide}>
           Cancelar
         </Button>
-        <Button onClick={handleAccept}>Aceptar</Button>
+        <Button className="bg-success border-success" onClick={handleAccept}>Aceptar</Button>
       </Modal.Footer>
     </Modal>
   );

@@ -42,10 +42,10 @@ export default function OverTimeTableClient({
 
     useEffect(() => {
         if (loading) {
-          setLoading(false);
-          setMessageLoading("");
+            setLoading(false);
+            setMessageLoading("");
         }
-      }, [searchParamsString, loading]);
+    }, [searchParamsString, loading]);
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {
@@ -53,7 +53,7 @@ export default function OverTimeTableClient({
         setMessageLoading("Cargando...");
         router.push("/app/overtime/create");
     };
-    
+
     //Helpers
 
     const goToPage = (nextPage: number) => {
@@ -140,9 +140,6 @@ export default function OverTimeTableClient({
 
             if (value) {
                 params.set("search", value);
-
-                console.log("Busca:", search);
-
             } else {
                 params.delete("search");
             }
@@ -164,6 +161,8 @@ export default function OverTimeTableClient({
 
         return String(row[column.key as keyof OverTime] ?? "-");
     };
+
+    console.log("Sesion:", session);
 
     const columns: TableTemplateColumn<OverTime>[] = [
         {
@@ -255,7 +254,7 @@ export default function OverTimeTableClient({
             },
         }
     ];
-    
+
     return (
         <>
             <ConditionalRender cond={loading}>

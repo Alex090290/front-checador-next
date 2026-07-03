@@ -38,39 +38,40 @@ function SignatureLeaderModal({
     const onSubmit: SubmitHandler<TInputs> = async (data) => {
         onHide();
 
-        try {
+        modalConfirm("¿Seguro que quieres guardar la firma?", async () => {
+            try {
+                setLoading(true);
+                setMessageLoading("Enviando firma...");
 
-            setLoading(true);
-            setMessageLoading("Enviando firma...");
+                const res = await approvedLeaderOvertime({
+                    id: id ? Number(id) : null,
+                    signature: data.signature,
+                    status: data.status
+                });
 
-            const res = await approvedLeaderOvertime({
-                id: id ? Number(id) : null,
-                signature: data.signature,
-                status: data.status
-            });
+                if (!res.success) {
+                    modalError(res.message);
+                    return;
+                }
 
-            if (!res.success) {
-                modalError(res.message);
-                return;
+                toast.success(res.message);
+                onHide();
+                router.refresh();
+
+            } finally {
+
+                setLoading(false);
+                setMessageLoading("");
+
             }
-
-            toast.success(res.message);
-            onHide();
-            router.refresh();
-
-        } finally {
-
-            setLoading(false);
-            setMessageLoading("");
-
-        }
+        });
     };
 
     const handleOnExited = () => {
         reset({ status: "", signature: "" });
     };
 
-    const handleConfirm = () => modalConfirm("Confirmar", handleSubmit(onSubmit));
+
 
     return (
         <>
@@ -120,12 +121,12 @@ function SignatureLeaderModal({
                         <Button variant="secondary" onClick={onHide}>
                             Cancelar
                         </Button>
-                        <Button type="button" onClick={handleConfirm}>
-                            {isSubmitting ? (
-                                <Spinner size="sm" animation="border" />
-                            ) : (
-                                <span>Enviar</span>
-                            )}
+                        <Button
+                            className="bg-success border-success"
+                            type="submit"
+                            disabled={isSubmitting}
+                        >
+                            Enviar
                         </Button>
                     </Modal.Footer>
                 </Form>

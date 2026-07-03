@@ -77,6 +77,7 @@ export function OvertimeOne({
 
     // Aqui los const 
     const session = useSessionSnapshot();
+    const userSession = session?.uid;
     const [showCurretUser, setCurrentUser] = useState(false);
     const [showCurrentLeader, setCurrentLeader] = useState(false);
     const [showCurrentDoh, setCurrentDoh] = useState(false);
@@ -96,26 +97,25 @@ export function OvertimeOne({
 
     const signatures: ISignatures[] = overtime?.signatures ?? [];
 
-    const isOwnerEmployee = Number(session?.uid?.idEmployee) === Number(overtime?.idEmployee);
+    const isOwnerEmployee =
+        userSession?.role === "EMPLOYEE" &&
+        Number(userSession?.idEmployee) === Number(overtime?.employee?.id);
+
+        const isOwnerLeader = 
+        userSession?.roles.isLeader &&
+        Number(userSession.isLeader) === Number(overtime?.leaderApproval);
 
     // const currentUser = isOwnerEmployee ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
-    const currentUser =
-        isOwnerEmployee && session?.uid?.role === "EMPLOYEE"
-            ? signatures.find(
-                (el: IFiltercUrl) => Number(el.idSignatory)
-            )
-            : undefined;
+    const currentUser = isOwnerEmployee
+        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory))
+        : undefined;
 
-    const currentLeader = session?.uid?.isLeader
-        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
+    const currentLeader = isOwnerLeader
+        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory)) 
+        : undefined;
 
-    const currentDoh = session?.uid?.isDoh
-        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
-
-    console.log("isOwnerEmployee:", isOwnerEmployee);
-    console.log("session:", session);
-
-    console.log("currentUser:", currentUser);
+    const currentDoh = session?.uid?.roles.isDoh
+        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(userSession?.idEmployee)) : undefined;
 
     useEffect(() => {
         if (currentUser && !currentUser.url) {
@@ -146,38 +146,12 @@ export function OvertimeOne({
 
     useEffect(() => {
         if (!overtime?.signatures) return;
+        setNewArray(overtime?.signatures);
 
 
-        const isLeaderRequestPerson = departments.some(
-            (dep) => Number(dep.idLeader) === Number(overtime.employee?.id)
-        );
+    }, [overtime]);
 
-        const overTimeConfig = connfigSystem[0].overTime;
-
-        const isDohRequesPerson = overTimeConfig.approvalDoh.idPerson === overtime.employee?.id;
-
-
-        if (isLeaderRequestPerson) {
-            // el documento pertenece a un empleado que es lider
-
-            const newData = overtime?.signatures.filter((f) => ["Empleado", "Dirección", "DOH"].includes(f.label));
-            setNewArray(newData);
-
-        } else if (isDohRequesPerson) {
-            // el documento pertenece a un empleado que es DOH  
-            const newData = overtime?.signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label));
-            setNewArray(newData);
-
-        } else {
-
-            // el documento pertenece a un empleado
-            const newData = overtime?.signatures.filter((f) => ["Empleado", "Líder", "DOH"].includes(f.label))
-
-            setNewArray(newData);
-        }
-
-    }, [overtime, departments, connfigSystem]);
-
+    console.log("Sesion:", session);
 
 
     const overallStatus = overtime?.status ?? "PENDING";

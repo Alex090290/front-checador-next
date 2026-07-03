@@ -30,7 +30,7 @@ function SignaturesViewOvertime({
         setLoadingSignature(false);
         return;
       }
-
+      
       try {
         setLoadingSignature(true);
 
@@ -58,14 +58,14 @@ function SignaturesViewOvertime({
       .toLowerCase();
 
     const normalizedStatus = status?.toUpperCase();
-
+   
     if (normalizedLabel === "empleado") {
       return hasSigned
         ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
         : { text: "Pendiente de firma", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
     }
 
-    if (normalizedLabel === "Líder") {
+    if (normalizedLabel === "lider") {
       if (normalizedStatus === "APPROVED") {
         return { text: "Aprobado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" };
       }

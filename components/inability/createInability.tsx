@@ -200,7 +200,7 @@ export default function CreateInabilityComponent({
                               { label: "Maternidad", value: "maternidad" },
                             ]}
                             register={register("disabilityCategory", { required: true })}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             invalid={!!errors.disabilityCategory}
                             className="border"
                           />
@@ -215,7 +215,7 @@ export default function CreateInabilityComponent({
                               { label: "Alta", value: "alta" },
                             ]}
                             register={register("typeOfDisability", { required: true })}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             invalid={!!errors.typeOfDisability}
                             className="border"
                           />
@@ -239,7 +239,7 @@ export default function CreateInabilityComponent({
                             register={register("dateInit", { required: true })}
                             invalid={!!errors.dateInit}
                             min={formatDate(new Date(), "yyyy-MM-dd")}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             className="border"
                           />
                         </Col>
@@ -251,7 +251,7 @@ export default function CreateInabilityComponent({
                             min={onChangeDateInit}
                             register={register("dateEnd", { required: true })}
                             invalid={!!errors.dateEnd}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             className="border"
                           />
                         </Col>

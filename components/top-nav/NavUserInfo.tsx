@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { getCurrentPeriod } from "@/app/actions/periods-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import moment from "moment-timezone";
+import ConditionalRender from "../ConditionalRender";
 
 function NavUserInfo() {
   const { data: session } = useSession();
@@ -119,6 +120,7 @@ function NavUserInfo() {
               zIndex: 2000,
             }}
           >
+            <ConditionalRender cond={!session?.user}> 
             <Dropdown.Item
               as={Link}
               href={`/app/users/profile?id=${session?.user?.id}`}
@@ -126,6 +128,7 @@ function NavUserInfo() {
               <i className="bi bi-person-circle me-2"></i>
               <span>Perfil</span>
             </Dropdown.Item>
+            </ConditionalRender>
 
             <Dropdown.Item onClick={() => signOut()}>
               <i className="bi bi-box-arrow-right me-2"></i>

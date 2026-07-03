@@ -105,10 +105,10 @@ export default function TableInabilityComponent({
       type: "string",
       render: (r) => {
         const status = String(r.status ?? "").toUpperCase();
-        const variant = statusVariantMap[status] ?? "info";
+        const variant = statusVariantMap[status] ?? "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle";
 
         return (
-          <div className="text-center">
+          <div className="text-start">
             <Badge pill bg={variant}>
               {status}
             </Badge>
@@ -136,7 +136,7 @@ export default function TableInabilityComponent({
       filterable: true,
       type: "date",
       render: (r) => (
-        <div className="small text-center">
+        <div className="small text-start text-uppercase">
           {r.createdAt ? moment.utc(r.createdAt).format("DD/MM/YYYY") : ""}
         </div>
       ),
