@@ -3,7 +3,7 @@
 import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { Button, Modal, Spinner, Form } from "react-bootstrap";
+import { Button, Modal, Form } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { SignatureInput } from "../fields";
 import toast from "react-hot-toast";

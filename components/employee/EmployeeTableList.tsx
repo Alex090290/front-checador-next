@@ -41,11 +41,9 @@ export default function EmployeeTableClient({
   const [, setSelectedIds] = useState<Array<string | number>>([]);
 
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-  }, [searchParamsString, loading]);
+  setLoading(false);
+  setMessageLoading("");
+}, [searchParamsString]);
 
   const handleCreate = () => {
     setLoading(true);

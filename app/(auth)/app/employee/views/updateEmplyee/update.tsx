@@ -224,6 +224,8 @@ export default function FormUpdateEmployee({
 
         if (!res.success) {
           modalError(res.message);
+          console.log(res.message);
+          
           return;
         }
         toast.success(res.message);
@@ -240,8 +242,8 @@ export default function FormUpdateEmployee({
   };
 
   const onError: SubmitErrorHandler<TInputsEmployee> = () => {
-  onHide();
-  modalError("Faltan campos requeridos por llenar");
+  alert("Faltan campos");
+  // modalError("Faltan campos requeridos por llenar");
 };
 
   return <>

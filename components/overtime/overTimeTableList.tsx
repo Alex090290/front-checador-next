@@ -41,11 +41,9 @@ export default function OverTimeTableClient({
 
 
     useEffect(() => {
-        if (loading) {
-            setLoading(false);
-            setMessageLoading("");
-        }
-    }, [searchParamsString, loading]);
+        setLoading(false);
+        setMessageLoading("");
+    }, [searchParamsString]);
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {
@@ -146,7 +144,7 @@ export default function OverTimeTableClient({
             clearSelectedIds();
             router.push(`/app/overtime?${params.toString()}`);
         },
-        [currentSearch, searchParamsString, limit, router, clearSelectedIds, search]
+        [currentSearch, searchParamsString, limit, router, clearSelectedIds]
     );
 
 

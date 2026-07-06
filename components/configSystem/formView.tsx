@@ -17,12 +17,6 @@ function fullName(emp?: Employee) {
   return `${upperCase(emp.lastName ?? "")} ${upperCase(emp.name ?? "")}`.trim();
 }
 
-function fullNames(list?: Employee[]) {
-  if (!list || list.length === 0) return "-";
-  return list.map(fullName).filter(Boolean).join(", ");
-}
-
-
 function BlockView({
   title,
   doh,

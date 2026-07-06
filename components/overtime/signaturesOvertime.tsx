@@ -30,7 +30,7 @@ function SignaturesViewOvertime({
         setLoadingSignature(false);
         return;
       }
-      
+
       try {
         setLoadingSignature(true);
 
@@ -57,15 +57,17 @@ function SignaturesViewOvertime({
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
 
-    const normalizedStatus = status?.toUpperCase();
-   
+    const normalizedStatus = status?.toUpperCase();   
+    
+
+
     if (normalizedLabel === "empleado") {
       return hasSigned
         ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
         : { text: "Pendiente de firma", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
     }
 
-    if (normalizedLabel === "lider") {
+    if (normalizedLabel === "lider" || normalizedLabel === "direccion") {
       if (normalizedStatus === "APPROVED") {
         return { text: "Aprobado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" };
       }
@@ -73,83 +75,82 @@ function SignaturesViewOvertime({
       if (normalizedStatus === "REFUSED") {
         return { text: "Rechazado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle" };
       }
-
-      return hasSigned
-        ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
-        : { text: "Pendiente de aprobación", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
-    }
-
-    if (normalizedLabel === "doh") {
-      return hasSigned
-        ? { text: "Enterado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle" }
-        : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
-    }
-
+      if (normalizedStatus === "PENDING") {
+        return { text: "Pendiente de aprobar", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
+      }
+  }
+  
+  if (normalizedLabel === "doh") {
     return hasSigned
-      ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+      ? { text: "Enterado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle" }
       : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
-  };
+  }
 
-  const badge = getBadge();
+  return hasSigned
+    ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
+    : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
+};
+
+const badge = getBadge();
 
 
-  return (
-    <Col md={4}>
-      <Card className="mt-2">
-        <Card.Header className="position-relative bg-dark text-white pt-4">
-          <span
-            className={`badge ${loadingSignature ? "bg-secondary" : badge.bg} position-absolute top-0 end-0 m-2`}
-            style={{ minWidth: "120px" }}
-          >
-            {loadingSignature ? (
-              <>
-                <span
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                  aria-hidden="true"
-                />
-                Cargando...
-              </>
-            ) : (
-              badge.text
-            )}
-          </span>
-
-          <div className="fw-bold text-center text-uppercase">
-            {label}
-          </div>
-        </Card.Header>
-
-        <Card.Body className="p-1 text-center">
+return (
+  <Col md={4}>
+    <Card className="mt-2">
+      <Card.Header className="position-relative bg-dark text-white pt-4">
+        <span
+          className={`badge ${loadingSignature ? "bg-secondary" : badge.bg} position-absolute top-0 end-0 m-2`}
+          style={{ minWidth: "120px" }}
+        >
           {loadingSignature ? (
-            <div
-              className="d-flex justify-content-center align-items-center"
-              style={{ height: "150px" }}
-            >
-              <div
-                className="spinner-border text-primary"
+            <>
+              <span
+                className="spinner-border spinner-border-sm me-2"
                 role="status"
-              >
-                <span className="visually-hidden">Cargando...</span>
-              </div>
-            </div>
+                aria-hidden="true"
+              />
+              Cargando...
+            </>
           ) : (
-            <Image
-              unoptimized
-              src={imgUrl ?? "/image/avatar_default.svg"}
-              alt="signature"
-              width={300}
-              height={150}
-            />
+            badge.text
           )}
-        </Card.Body>
+        </span>
 
-        <Card.Footer className="text-center text-capitalize fw-semibold">
-          <div className="text-uppercase">{name}</div>
-        </Card.Footer>
-      </Card>
-    </Col >
-  );
+        <div className="fw-bold text-center text-uppercase">
+          {label}
+        </div>
+      </Card.Header>
+
+      <Card.Body className="p-1 text-center">
+        {loadingSignature ? (
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ height: "150px" }}
+          >
+            <div
+              className="spinner-border text-primary"
+              role="status"
+            >
+              <span className="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        ) : (
+          <Image
+            unoptimized
+            src={imgUrl ?? "/image/avatar_default.svg"}
+            alt="signature"
+            width={300}
+            height={150}
+          />
+        )}
+      </Card.Body>
+
+      <Card.Footer className="text-center text-capitalize fw-semibold">
+        <div className="text-uppercase">{name}</div>
+      </Card.Footer>
+    </Card>
+  </Col >
+);
 }
 
 export default SignaturesViewOvertime;

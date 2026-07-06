@@ -38,11 +38,9 @@ export default function TableInabilityComponent({
   const [messageLoading, setMessageLoading] = useState("");
 
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-  }, [searchParamsString, loading]);
+    setLoading(false);
+    setMessageLoading("");
+  }, [searchParamsString]);
 
   const handleCreate = () => {
     setLoading(true);

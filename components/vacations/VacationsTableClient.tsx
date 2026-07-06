@@ -35,11 +35,8 @@ export default function VacationsTableClient({
 
 
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setLoading(false);
+    setMessageLoading("");
   }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {

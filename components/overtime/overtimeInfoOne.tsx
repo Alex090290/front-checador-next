@@ -30,6 +30,7 @@ function fullName(p?: { name?: string; lastName?: string } | null) {
 }
 
 function statusLabel(status?: string | null) {
+    console.log("ESTADO:", status);
     switch ((status ?? "").toUpperCase()) {
         case "APPROVED":
             return (
@@ -64,11 +65,10 @@ function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
 
 
 
+
 //En esta funcion colocaremos las sesiones para identificar quien firma 
 export function OvertimeOne({
     overtime,
-    departments = [],
-    connfigSystem,
 }: {
     overtime: OverTime | null;
     departments: Department[];

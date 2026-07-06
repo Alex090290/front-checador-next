@@ -81,11 +81,9 @@ export default function UserTableClient({
   const [, setTableResetKey] = useState(0);
 
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-  }, [searchParamsString, loading]);
+  setLoading(false);
+  setMessageLoading("");
+}, [searchParamsString]);
 
   // const goToPage = (nextPage: number) => {
   //   setLoading(true);

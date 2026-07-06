@@ -6,7 +6,7 @@ import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, Form, Modal, Spinner } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
