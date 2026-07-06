@@ -357,7 +357,7 @@ export function OvertimeOne({
                                 </h5>
 
                                 <p className="text-muted mb-0">
-                                    Horas extra
+                                    HORAS EXTRAS
                                 </p>
                             </div>
 

@@ -114,7 +114,12 @@ export default function ShowInfoOneUser({
   };
 
   const handleBack = () => {
-    router.push("/app/users");
+    setLoading(true);
+    setMessageLoading("Cargando datos...");
+
+    
+      router.push("/app/users");
+    
   }
 
   return (

@@ -342,6 +342,7 @@ export interface Vacations {
   dateEnd: string;
   isAutomatic: boolean;
   holidayName: string;
+  
   createForPerson: {
     _id: string;
     id: number;

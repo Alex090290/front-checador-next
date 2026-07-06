@@ -1,11 +1,12 @@
 import { Button } from "react-bootstrap";
-
+import ConditionalRender from "../ConditionalRender";
 
 type Props = {
     onClose: () => void;
+    pendingIds: number[];
 };
 
-export default function AlertSignatures({ onClose }: Props) {
+export default function AlertSignatures({ onClose, pendingIds }: Props) {
     return (
         <div
             className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
@@ -17,11 +18,23 @@ export default function AlertSignatures({ onClose }: Props) {
             <div className="bg-white rounded p-4 text-center shadow">
                 <i className="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
 
-                <h4 className="mt-3 text-dark">Tines registros pendientes de Firmar</h4>
+                <ConditionalRender cond={pendingIds.length > 1}>
 
-                <p className="mb-3 text-dark">
-                    Este empleado no tiene biométricos registrados.
-                </p>
+                    <h4 className="mt-3 text-dark">Tienes registros pendientes de firmar</h4>
+
+                    <p className="text-dark mb-3">
+                        Registros: {pendingIds.join(", ")}
+                    </p>
+                </ConditionalRender>
+
+                <ConditionalRender cond={pendingIds.length === 1}>
+
+                    <h4 className="mt-3 text-dark"> Tienes un registro pendiente de firmar</h4>
+
+                    <p className="text-dark mb-3">
+                        Registro: {pendingIds.join(", ")}
+                    </p>
+                </ConditionalRender>
 
                 <Button variant="warning" onClick={onClose}>
                     Entendido
@@ -30,5 +43,3 @@ export default function AlertSignatures({ onClose }: Props) {
         </div>
     );
 }
-
-

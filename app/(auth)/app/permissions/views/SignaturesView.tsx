@@ -49,7 +49,7 @@ function SignaturesView({
 
   return (
     <Col md="4">
-      <Card>
+      <Card className="mt-2">
         <Card.Header>
           <div className="d-flex justify-content-between align-items-center">
             <Badge

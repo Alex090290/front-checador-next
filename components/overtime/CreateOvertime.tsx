@@ -50,7 +50,7 @@ export default function CreateOvertimeComponent({
 
     const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
     const idEmployee = Number(session?.uid?.idEmployee);
-    
+
 
     useEffect(() => {
         if (session?.uid?.roles?.isLeader) {
@@ -67,12 +67,12 @@ export default function CreateOvertimeComponent({
 
     //Helpers
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
-        const isLeader = session?.uid?.roles.isLeader === true;
 
-        if (isLeader && !data.signature) {
-            modalError("La firma es obligatoria para los líderes.");
+        if (!data.signature || data.signature && data.signature === "") {
+            modalError("La firma es obligatoria");
             return;
         }
+
 
         modalConfirm("¿Seguro que quieres guardar el registro?", async () => {
             try {
