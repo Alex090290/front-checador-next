@@ -59,7 +59,6 @@ export default function TopNavItems({ onNavigate }: TopNavItemsProps) {
     dedupingInterval: 60_000,
   });
 
-  console.log(data);
   
   const items: MenuItem[] = data?.data ?? [];
 

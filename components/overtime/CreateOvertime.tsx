@@ -3,9 +3,9 @@
 import { createOverTime, sendSignatureOverTime } from "@/app/actions/overtime-actions";
 import { useModals } from "@/context/ModalContext";
 import { ActionResponse, Employee } from "@/lib/definitions"
-import { OverTime, OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
+import { ISignatures, OverTime, OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Card, Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Entry, RelationField, SignatureInput } from "../fields";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
@@ -24,9 +24,8 @@ const DEFAULT_VALUES: TInputsOvertime = {
 
 
 export default function CreateOvertimeComponent({
-    employees = [],
+    employees = []
 }: {
-    overtime?: OverTime[];
     employees?: Employee[];
 }) {
     const {
@@ -45,11 +44,26 @@ export default function CreateOvertimeComponent({
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
+    const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
+
     const router = useRouter();
 
     const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
+    const idEmployee = Number(session?.uid?.idEmployee);
+    
 
-    console.log("SESION:", session);
+    useEffect(() => {
+        if (session?.uid?.roles?.isLeader) {
+
+            const filtrados = employees.filter(
+                (el: Employee) => Number(el.department?.idLeader) === Number(session.uid?.idEmployee)
+            );
+            setFilteredEmployees(filtrados);
+        } else {
+            setFilteredEmployees(employees);
+        }
+    }, [session, idEmployee, employees]);
+
 
     //Helpers
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
@@ -191,7 +205,7 @@ export default function CreateOvertimeComponent({
                                                     validate: (value) =>
                                                         Number(value) > 0 || "El empleado es requerido",
                                                 })}
-                                                options={employees.map((e) => ({
+                                                options={filteredEmployees.map((e) => ({
                                                     id: e.id!,
                                                     displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                                                     name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,

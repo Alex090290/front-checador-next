@@ -13,16 +13,17 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface IDepartmentLeaderValues {
+    id: number,
+    name: string
+}
 export interface IRolesMe {
     isLeader: true,
     isDoh: false,
     isExtra: false,
     isApproverLeaders: false,
     isApproverDoh: false,
-    departmentLeader: {
-      id: number,
-      name: string
-    }
+    departmentLeader: IDepartmentLeaderValues;
 }
 
 export interface User {

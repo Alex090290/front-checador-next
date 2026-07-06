@@ -2,7 +2,7 @@
 
 import { Department } from "@/lib/definitions";
 import { ISignatures, OverTime } from "@/lib/overTime/interface";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import OvertimeOneError from "./overtimeMessageError";
 import ConditionalRender from "../ConditionalRender";
@@ -16,7 +16,6 @@ import moment from "moment";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewOvertime from "./signaturesOvertime";
-import { IFiltercUrl } from "@/lib/constancy/interface";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import OvertimeSignatureModal from "./OvertimeSignatureModal"
 import SignatureLeaderModal from "./SignatureLeaderModal";
@@ -30,7 +29,7 @@ function fullName(p?: { name?: string; lastName?: string } | null) {
 }
 
 function statusLabel(status?: string | null) {
-    console.log("ESTADO:", status);
+
     switch ((status ?? "").toUpperCase()) {
         case "APPROVED":
             return (
@@ -69,23 +68,20 @@ function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
 //En esta funcion colocaremos las sesiones para identificar quien firma 
 export function OvertimeOne({
     overtime,
+    connfigSystem
 }: {
     overtime: OverTime | null;
     departments: Department[];
     connfigSystem: IConfigSystem[];
 }) {
 
+    
     // Aqui los const 
     const session = useSessionSnapshot();
-    const userSession = session?.uid;
-    const [showCurretUser, setCurrentUser] = useState(false);
-    const [showCurrentLeader, setCurrentLeader] = useState(false);
-    const [showCurrentDoh, setCurrentDoh] = useState(false);
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
     const router = useRouter();
-    const [newArray, setNewArray] = useState<ISignatures[]>([]);
     const [overtimeSignatureModal, setOvertimeSignatureModal] = useState(false);
     const [signatureLeaderModal, setSignatureLeaderModal] = useState(false);
     const [signatureDohModal, setSignatureDohModal] = useState(false);
@@ -95,67 +91,60 @@ export function OvertimeOne({
     const handleSignatureDoh = () => setSignatureDohModal(true);
 
 
+    // Configuración de overtime del sistema
+    const configOvertime = connfigSystem[0].overTime;
+        
+    // Firmas del registro de overtime (array vacío si no existe)
     const signatures: ISignatures[] = overtime?.signatures ?? [];
 
-    const isOwnerEmployee =
-        userSession?.role === "EMPLOYEE" &&
-        Number(userSession?.idEmployee) === Number(overtime?.employee?.id);
+    // ID del empleado con sesión activa
+    const idEmployee = Number(session?.uid?.idEmployee);
 
-        const isOwnerLeader = 
-        userSession?.roles.isLeader &&
-        Number(userSession.isLeader) === Number(overtime?.leaderApproval);
+    // ID del empleado al que pertenece el registro de overtime
+    const overtimeEmployeeId = Number(overtime?.employee?.id);
 
-    // const currentUser = isOwnerEmployee ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(session?.uid?.idEmployee)) : undefined;
-    const currentUser = isOwnerEmployee
-        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory))
-        : undefined;
+    // Indica si el registro aún está pendiente de aprobación
+    const isPending = overtime?.status === 'PENDING';
 
-    const currentLeader = isOwnerLeader
-        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory)) 
-        : undefined;
+    // Busca la firma correspondiente al empleado con sesión activa
+    // Solo recalcula si cambia el array de firmas o el id del empleado en sesión
+    const currentSignature = useMemo(() => {
+        return signatures.find((i: ISignatures) => i.idSignatory === idEmployee) ?? null;
+    }, [signatures, idEmployee]);
 
-    const currentDoh = session?.uid?.roles.isDoh
-        ? signatures.find((el: IFiltercUrl) => Number(el.idSignatory) === Number(userSession?.idEmployee)) : undefined;
+    // Indica si el firmante actual aún no ha firmado (url vacía = sin firma)
+    const hasNotSigned = currentSignature?.url === '';
 
-    useEffect(() => {
-        if (currentUser && !currentUser.url) {
-            setCurrentUser(true);
-        } else {
-            setCurrentUser(false);
-        }
-    }, [currentUser]);
+    // Muestra el botón de firma para el empleado dueño del registro
+    // Condiciones: el empleado en sesión es el mismo del registro, tiene entrada en signatures y no ha firmado
+    const showCurrentUser = useMemo(() => {
+        return idEmployee === overtimeEmployeeId
+            && !!currentSignature
+            && hasNotSigned;
+    }, [idEmployee, overtimeEmployeeId, currentSignature, hasNotSigned]);
 
-    useEffect(() => {
-        if (currentLeader && !currentLeader.url) {
-            setCurrentLeader(true);
-        } else {
-            setCurrentLeader(false);
-        }
-    }, [currentLeader]);
+    // Muestra el botón de aprobación para líderes y extras
+    // Condiciones: tiene rol de líder o extra, no es el dueño del registro,
+    // tiene entrada en signatures, no ha firmado y el registro está pendiente
+    const showCurrentLeader = useMemo(() => {
+        return (!!session?.uid?.roles?.isLeader || !!session?.uid?.roles?.isExtra)
+            && idEmployee !== overtimeEmployeeId
+            && !!currentSignature
+            && hasNotSigned
+            && isPending;
+    }, [session, idEmployee, overtimeEmployeeId, currentSignature, hasNotSigned, isPending]);
 
-    useEffect(() => {
-        if (currentDoh && !currentDoh.url) {
-            setCurrentDoh(true);
-        } else {
-            setCurrentDoh(false);
-        }
-    }, [currentDoh]);
-
-    //  setNewArray(signatures);
-
-
-    useEffect(() => {
-        if (!overtime?.signatures) return;
-        setNewArray(overtime?.signatures);
-
-
-    }, [overtime]);
-
-    console.log("Sesion:", session);
-
-
-    const overallStatus = overtime?.status ?? "PENDING";
-    const createdAt = safeDate(overtime?.createdAt ?? "dd/MM/yyyy HH:mm");
+    // Muestra el botón de aprobación para el DOH
+    // Condiciones: tiene rol DOH, su id coincide con el aprobador DOH configurado en el sistema,
+    // tiene entrada en signatures y no ha firmado
+    const showCurrentDoh = useMemo(() => {
+        return !!session?.uid?.roles?.isDoh
+            && idEmployee === Number(configOvertime.approvalDoh.idPerson)
+            && !!currentSignature
+            && hasNotSigned;
+    }, [session, idEmployee, configOvertime, currentSignature, hasNotSigned]);
+        const overallStatus = overtime?.status ?? "PENDING";
+        const createdAt = safeDate(overtime?.createdAt ?? "dd/MM/yyyy HH:mm");
 
 
     // ============ Aqui los helpers ===============
@@ -286,7 +275,7 @@ export function OvertimeOne({
                         </OverLay>
 
                         <OverLay string="Firmar">
-                            <ConditionalRender cond={showCurretUser}>
+                            <ConditionalRender cond={showCurrentUser}>
                                 <Button
                                     className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                                     variant="warning"
@@ -552,7 +541,7 @@ export function OvertimeOne({
                                 <FormBook dKey="newArray">
                                     <FormPage title="" eventKey="newArray">
                                         <Row className="g-3">
-                                            {newArray.map((sign) => (
+                                            {signatures.map((sign) => (
                                                 <SignaturesViewOvertime
                                                     key={`${sign.id}-${sign.url}`}
                                                     id={Number(overtime?.id)}
