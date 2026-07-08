@@ -510,3 +510,43 @@ export async function getInhabilityDocument({
     };
   }
 }
+
+export async function deleteInability({
+  id,
+}: {
+  id: number | null;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.delete(`${API_URL}/inability/${String(id)}`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    revalidatePath("/app/inability");
+
+    return {
+      success: true,
+      message: "Eliminado exitosamente",
+    };
+  } catch (error: unknown) {
+    console.log(error);
+
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return {
+      success: false,
+      message,
+    };
+  }
+}

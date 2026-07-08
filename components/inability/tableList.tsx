@@ -123,7 +123,7 @@ export default function TableInabilityComponent({
       type: "string",
       render: (r) => (
         <div className="text-uppercase">
-          {r.whoCreate?.name ?? ""} {r.whoCreate?.lastName ?? ""}
+          {r.whoCreate?.lastName ?? ""} {r.whoCreate?.name ?? ""}
         </div>
       ),
     },
@@ -134,7 +134,7 @@ export default function TableInabilityComponent({
       filterable: true,
       type: "date",
       render: (r) => (
-        <div className="small text-start text-uppercase">
+        <div className="text-start">
           {r.createdAt ? moment.utc(r.createdAt).format("DD/MM/YYYY") : ""}
         </div>
       ),

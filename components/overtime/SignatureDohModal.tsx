@@ -31,6 +31,8 @@ function SignatureDohModal({
 
     const { modalError, modalConfirm } = useModals();
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [messageLoading, setMessageLoading] = useState("");
 
     const onSubmit: SubmitHandler<TInputs> = async (data) => {
         onHide();
@@ -68,8 +70,7 @@ function SignatureDohModal({
         reset({ signature: "" });
     };
 
-    const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
+    
 
     return (
         <>

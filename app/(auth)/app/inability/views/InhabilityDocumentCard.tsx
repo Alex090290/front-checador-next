@@ -67,7 +67,7 @@ function InhabilityDocCard({
         formData.append("files", file);
       });
 
-      const res = await updateInabilityModal({ formData, idDoc, selfId, folio }); 
+      const res = await updateInabilityModal({ formData, idDoc, selfId, folio });
 
       if (!res.success) {
         setLoading(false);
@@ -109,12 +109,12 @@ function InhabilityDocCard({
   };
 
   return (
-    <Col md="2">
-      <Card className="rounded shadow-sm bg-body-tertiary">
-        <Card.Header className="d-flex justify-content-between align-items-end">
+    <Col xs={12} sm={6} md={4} xl={2}>
+      <Card className="rounded shadow-sm bg-body-tertiary h-100">
+        <Card.Header className="d-flex justify-content-end align-items-end">
           <DropdownButton
             size="sm"
-            variant="info"
+            variant="secondary"
             title={<i className="bi bi-gear-fill"></i>}
           >
             <Dropdown.Item>
@@ -166,16 +166,14 @@ function InhabilityDocCard({
               <div className="d-flex flex-column justify-content-center gap-1">
                 {selectedFiles.length === 0 ? (
                   <>
-                  <p>Folio: {folio}</p>
+                    <p>Folio: {folio}</p>
                     <Button onClick={handleButtonClick}>
                       {urlDocument ? "Reemplazar" : "Cargar"}
                     </Button>
                     {urlDocument && (
-                      <>
-                        <Button variant="warning" onClick={handleGetDocument}>
-                          Visualizar
-                        </Button>
-                      </>
+                      <Button variant="warning" onClick={handleGetDocument}>
+                        Visualizar
+                      </Button>
                     )}
                   </>
                 ) : (

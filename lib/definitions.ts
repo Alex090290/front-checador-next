@@ -504,6 +504,13 @@ export interface IInability {
     name: string;
     lastName: string;
   };
+
+  createForPerson: {
+    _id: string;
+    id: number;
+    name: string;
+    lastName: string;
+  };
 }
 
 export type InabilityPayload = {

@@ -2,7 +2,7 @@
 
 import { createPermission } from "@/app/actions/permissions-actions";
 import { findEmployeeById } from "@/app/actions/employee-actions";
-import { IConfigSystem } from "@/app/actions/configSystem-actions";
+import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import {
@@ -75,6 +75,7 @@ export default function CreatePermissionComponent({
     defaultValues: DEFAULT_VALUES,
   });
 
+
   const session = useSessionSnapshot();
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
@@ -84,61 +85,166 @@ export default function CreatePermissionComponent({
 
   const modeSelect = watch("modeSelect");
   const dateInit = watch("dateInit");
-  const idEmployeeSelected = watch("idEmployee");
   const currentDoh = watch("idPersonDoh");
-
   const { data } = useSWR("/api/configsystem", fetcher);
-
-  const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
-
   const config: IConfigSystem | null = useMemo(() => {
     const maybe = data?.data?.[0];
     return maybe ?? null;
   }, [data]);
 
-  const onSubmit: SubmitHandler<TInputs> = async (data) => {
-    modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
+  const idEmployeeSelected = watch("idEmployee");
+  const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
+  const readOnlyDoh = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh && Number(session.uid.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+  const idEmployee = Number(session?.uid?.idEmployee);
+
+
+  const directionList: EmployeeRef[] | undefined = config?.permissions.extra?.employees;
+
+
+
+  // Este sirve para filtrar el empleado al que se le asignara el registro
+  useEffect(() => {
+    if (session?.uid?.roles?.isLeader) {
+
+      const filtrados = employees.filter(
+        (el: Employee) => Number(el.department?.idLeader) === Number(session.uid?.idEmployee)
+      );
+      setFilteredEmployees(filtrados);
+    } else {
+      setFilteredEmployees(employees);
+    }
+  }, [session, idEmployee, employees]);
+
+  useEffect(() => {
+    if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
+
+  }, [session, setValue]);
+
+  // Este sirve para filtrar las opciones de idLeader
+  useEffect(() => {
+    if (!idEmployeeSelected) return;
+
+    let cancelled = false;
+
+    const run = async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Guardando permiso...");
+        const employeeId = Number(idEmployeeSelected);
+        if (!employeeId || Number.isNaN(employeeId)) return;
 
-        const newData = {
-          ...data,
-          forDays: data.modeSelect === "forDays",
-          forHours: data.modeSelect === "forHours",
-          hourInit: data.modeSelect === "forDays" ? "" : data.hourInit,
-          hourEnd: data.modeSelect === "forDays" ? "" : data.hourEnd,
-        };
+        const ownId = Number(session?.uid?.idEmployee);
+        const isLeaderNotExtra = session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra;
 
-        const res = await createPermission({ data: newData });
-
-        if (!res.success) {
-          modalError(res.message);
+        // Caso: el líder vuelve a seleccionarse a sí mismo -> default a la posición 0 de directionList
+        if (isLeaderNotExtra && employeeId === ownId) {
+          setValue("idLeader", Number(directionList?.[0]?.id) || null, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
           return;
         }
 
-        toast.success(res.message);
-        router.back();
-      } finally {
-        setLoading(false);
-        setMessageLoading("");
+        const emp = await findEmployeeById({ id: employeeId });
+        console.log("emp: ", emp);
+
+        if (cancelled || !emp) return;
+
+        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+
+        if (emp.isLeader) {
+          if (!leaderFromConfig) return;
+
+          setValue("idLeader", Number(leaderFromConfig), {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+          return;
+        }
+
+        const leaderId = emp?.leader?.id ?? null;
+
+        console.log("leaderId: ", leaderId);
+
+        setValue("idLeader", leaderId ? Number(leaderId) : null, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      } catch (error) {
+        console.log(error);
       }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [idEmployeeSelected, config, setValue, session, directionList]);
+
+  const leaderOptions = useMemo(() => {
+    const mapToOption = (e: Employee | EmployeeRef) => ({
+      id: e.id!,
+      displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+      name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
     });
-  };
+
+    function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
+      return e.id !== undefined;
+    }
+
+    const isLeaderNotExtra = session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra;
+    const ownId = Number(session?.uid?.idEmployee);
+    const selectedId = Number(idEmployeeSelected);
+
+    if (isLeaderNotExtra) {
+      // Caso 1: seleccionó a sí mismo -> puede elegir su propio líder (directionList)
+      if (selectedId === ownId) {
+        return (directionList ?? []).filter(hasId).map(mapToOption);
+      }
+
+      // Caso 2: seleccionó a un subordinado -> mostrar fijo el líder real de ese subordinado
+      if (selectedId) {
+        const subordinate = employees.find((e) => Number(e.id) === selectedId);
+        const leaderId = subordinate?.leader?.id;
+
+        if (!leaderId) return [];
+
+        // Buscamos el registro completo del líder (para nombre/apellido) dentro de employees
+        const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
+
+        return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
+      }
+
+      return [];
+    }
+
+    return employees.filter(hasId).map(mapToOption);
+  }, [session, directionList, employees, idEmployeeSelected]);
 
   useEffect(() => {
     const employeeId = Number(session?.uid?.id);
     if (!employeeId) return;
 
+
+    if (session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra) {
+      const values: TInputs = {
+        ...DEFAULT_VALUES,
+        idEmployee: employeeId,
+        idLeader: Number(directionList?.[0]?.id)
+      };
+
+      reset(values);
+      return
+    }
+
     const values: TInputs = {
       ...DEFAULT_VALUES,
       idEmployee: employeeId,
-      idLeader:
-        employees.find((e) => Number(e.id) === Number(employeeId))?.leader?.id || null,
+      idLeader: employees.find((e) => Number(e.id) === Number(employeeId))?.leader?.id || null,
     };
 
     reset(values);
-  }, [reset, employees, session]);
+  }, [reset, employees, session, directionList]);
 
   useEffect(() => {
     if (dateInit) {
@@ -210,7 +316,40 @@ export default function CreatePermissionComponent({
     router.push("/app/permissions");
   };
 
-  //   console.log("employees: ",employees);
+  const onSubmit: SubmitHandler<TInputs> = async (data) => {
+    if (!data.signature || data.signature && data.signature === "") {
+      modalError("La firma es obligatoria");
+      return;
+    }
+
+    modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
+      try {
+        setLoading(true);
+        setMessageLoading("Guardando permiso...");
+
+        const newData = {
+          ...data,
+          forDays: data.modeSelect === "forDays",
+          forHours: data.modeSelect === "forHours",
+          hourInit: data.modeSelect === "forDays" ? "" : data.hourInit,
+          hourEnd: data.modeSelect === "forDays" ? "" : data.hourEnd,
+        };
+
+        const res = await createPermission({ data: newData });
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
+        }
+
+        toast.success(res.message);
+        router.push("/app/permissions");
+      } finally {
+        setLoading(false);
+        setMessageLoading("");
+      }
+    });
+  };
 
   return (
     <>
@@ -270,46 +409,37 @@ export default function CreatePermissionComponent({
                       <Row className="g-4">
                         <Col xs={12}>
                           <RelationField
-                            register={register("idEmployee")}
-                            options={employees.map((e) => ({
-                              id: e.id ?? 0,
-                              displayName:
-                                `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                            register={register("idEmployee", { required: true })}
+                            options={filteredEmployees.map((e) => ({
+                              id: e.id!,
+                              displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                               name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                             }))}
                             label="Empleado:"
                             callBackMode="id"
                             control={control}
-                            readonly={
-                              session?.uid?.role === "EMPLOYEE" &&
-                              session.uid.isDoh === false
-                            }
+                            readonly={readInput}
                           />
                         </Col>
 
                         <Col xs={12} md={6}>
                           <RelationField
-                          readonly={readInput}
-                            register={register("idLeader")}
-                            options={employees.map((e) => ({
-                              id: e.id ?? 0,
-                              displayName:
-                                `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                              name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                            }))}
+                            readonly={readInput}
+                            register={register("idLeader", { required: true })}
+                            options={leaderOptions}
                             label="Líder:"
                             callBackMode="id"
                             control={control}
-                            // readonly={
-                            //   session?.uid?.role === "EMPLOYEE" &&
-                            //   session.uid.isDoh === false
-                            // }
+                          // readonly={
+                          //   session?.uid?.role === "EMPLOYEE" &&
+                          //   session.uid.isDoh === false
+                          // }
                           />
                         </Col>
 
                         <Col xs={12} md={6}>
                           <RelationField
-                            register={register("idPersonDoh")}
+                            register={register("idPersonDoh", { required: true })}
                             options={employees.map((e) => ({
                               id: e.id ?? 0,
                               displayName:
@@ -319,6 +449,9 @@ export default function CreatePermissionComponent({
                             label="D.O.H."
                             callBackMode="id"
                             control={control}
+                            readonly={
+                              !readOnlyDoh
+                            }
                           />
                         </Col>
                       </Row>
@@ -413,7 +546,7 @@ export default function CreatePermissionComponent({
                             type="date"
                             register={register("dateInit")}
                             min={formatDate(new Date(), "yyyy-MM-dd")}
-                            className="border"
+                            className="border text-left"
                           />
                         </Col>
 
@@ -425,17 +558,17 @@ export default function CreatePermissionComponent({
                             invalid={!!errors.dateEnd}
                             readonly={modeSelect === "forHours"}
                             min={dateInit}
-                            className="border"
+                            className="border text-left"
                           />
                         </Col>
 
-                        {modeSelect === "forHours" && (
+                        <ConditionalRender cond={modeSelect === "forHours"}>
                           <>
                             <Col xs={12} md={6}>
                               <Entry
                                 register={register("hourInit")}
                                 label="Hora inicial:"
-                                className="text-center"
+                                className="text-left"
                                 type="time"
                               />
                             </Col>
@@ -444,12 +577,12 @@ export default function CreatePermissionComponent({
                               <Entry
                                 label="Hora final:"
                                 register={register("hourEnd")}
-                                className="text-center"
+                                className="text-left"
                                 type="time"
                               />
                             </Col>
                           </>
-                        )}
+                        </ConditionalRender>
                       </Row>
                     </div>
 

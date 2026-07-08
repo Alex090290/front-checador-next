@@ -2,7 +2,7 @@
 
 import { Department } from "@/lib/definitions";
 import { ISignatures, OverTime } from "@/lib/overTime/interface";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import OvertimeOneError from "./overtimeMessageError";
 import ConditionalRender from "../ConditionalRender";
@@ -95,7 +95,7 @@ export function OvertimeOne({
     const configOvertime = connfigSystem[0].overTime;
         
     // Firmas del registro de overtime (array vacío si no existe)
-    const signatures: ISignatures[] = overtime?.signatures ?? [];
+    const signatures: ISignatures[] = useMemo(() => overtime?.signatures ?? [], [overtime?.signatures]);
 
     // ID del empleado con sesión activa
     const idEmployee = Number(session?.uid?.idEmployee);
@@ -277,7 +277,7 @@ export function OvertimeOne({
                         <OverLay string="Firmar">
                             <ConditionalRender cond={showCurrentUser}>
                                 <Button
-                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                                     variant="warning"
                                     onClick={handleOvertimeSignature}
                                     disabled={loading}
@@ -294,7 +294,7 @@ export function OvertimeOne({
                         <OverLay string="Aprobar">
                             <ConditionalRender cond={showCurrentLeader}>
                                 <Button
-                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                                     variant="success"
                                     onClick={handleSignatureLeader}
                                     disabled={loading}
@@ -311,7 +311,7 @@ export function OvertimeOne({
                         <OverLay string="Firmar de enterado">
                             <ConditionalRender cond={showCurrentDoh}>
                                 <Button
-                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                                     variant="secondary"
                                     onClick={handleSignatureDoh}
                                     disabled={loading}

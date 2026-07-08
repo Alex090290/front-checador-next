@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PeriodVacation, Vacations } from "@/lib/definitions";
 import {
-  Badge,
   Button,
   Card,
   Col,
@@ -34,29 +33,31 @@ function fullName(p?: { name?: string; lastName?: string } | null) {
   return `${p.lastName ?? ""} ${p.name ?? ""}`.trim().toUpperCase();
 }
 
-function statusLabel(status?: string | null) {
-  switch ((status ?? "").toUpperCase()) {
-    case "APPROVED":
-      return "APROBADO";
-    case "PENDING":
-      return "PENDIENTE";
-    case "REFUSED":
-      return "RECHAZADO";
-    default:
-      return status ? status.toUpperCase() : "—";
-  }
-}
-
 function statusVariant(status?: string | null) {
   switch ((status ?? "").toUpperCase()) {
     case "APPROVED":
-      return "success";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+          APROBADO
+        </span>
+      )
+
     case "PENDING":
-      return "warning";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+          PENDIENTE
+        </span>
+      )
     case "REFUSED":
-      return "danger";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+          RECHAZADO
+        </span>
+      )
     default:
-      return "secondary";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+      )
   }
 }
 
@@ -182,36 +183,36 @@ export default function ShowInfoVacation({
   const handleBack = () => {
     setLoading(true);
     setMessageLoading("Cargando datos...");
-    router.push("/app/vacations");
+    router.push("/app/vacationList");
   }
 
-   //Borrar
-    const handleDeleteOvertime = async () => {
-        if (!vacation?.id) {
-            modalError("No se encontró el registro");
-            return;
+  //Borrar
+  const handleDeleteOvertime = async () => {
+    if (!vacation?.id) {
+      modalError("No se encontró el registro");
+      return;
+    }
+
+    modalConfirm("¿Deseas eliminar este registro?", async () => {
+      try {
+        setLoading(true);
+        setMessageLoading("Eliminando registro...");
+
+        const res = await deleteVacation(Number(vacation.idPeriod), Number(vacation.id));
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
         }
 
-        modalConfirm("¿Deseas eliminar este registro?", async () => {
-            try {
-                setLoading(true);
-                setMessageLoading("Eliminando registro...");
-
-                const res = await deleteVacation(Number(vacation.idPeriod), Number(vacation.id));
-
-                if (!res.success) {
-                    modalError(res.message);
-                    return;
-                }
-
-                toast.success(res.message);
-                router.push("/app/vacations");
-            } finally {
-                setLoading(false);
-                setMessageLoading("");
-            }
-        });
-    };
+        toast.success(res.message);
+        router.push("/app/vacations");
+      } finally {
+        setLoading(false);
+        setMessageLoading("");
+      }
+    });
+  };
 
   return (
     <>
@@ -239,6 +240,23 @@ export default function ShowInfoVacation({
                 </span>
               </Button>
             </OverLay>
+
+            <ConditionalRender cond={showAnyActions}>
+              <OverLay string="Eliminar registro">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  variant="danger"
+                  onClick={handleDeleteOvertime}
+                  disabled={loading}
+                >
+                  <i className="bi bi-trash" />
+
+                  <span className="d-none d-md-inline ms-2">
+                    Eliminar registro
+                  </span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
 
             <ConditionalRender cond={showEmployeeSign}>
               <OverLay string="Firmar">
@@ -289,27 +307,6 @@ export default function ShowInfoVacation({
                 <span className="d-none d-md-inline ms-2">Descargar</span>
               </Button>
             </OverLay>
-
-            <ConditionalRender cond={showAnyActions}>
-              <OverLay string="Eliminar registro">
-                <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                  variant="danger"
-                  onClick={handleDeleteOvertime}
-                  disabled={loading}
-                >
-                  <i className="bi bi-trash" />
-
-                  <span className="d-none d-md-inline ms-2">
-                    Eliminar registro
-                  </span>
-                </Button>
-              </OverLay>
-              {/* <DeleteleVacation
-                idRequest={vacation.id}
-                idPeriod={Number(vacation.idPeriod)}
-              /> */}
-            </ConditionalRender>
           </div>
 
           <div className=" d-md-flex flex-wrap">
@@ -325,220 +322,234 @@ export default function ShowInfoVacation({
           </div>
         </div>
 
-        {/* Título */}
-        <div className="d-flex flex-wrap align-items-center gap-2 mb-1">
-          <h5 className="m-0 fw-bold text-uppercase">
-            Solicitud #{vacation.id}
-          </h5>
-          <Badge bg={statusVariant(overallStatus)}>
-            {statusLabel(overallStatus)}
-          </Badge>
+        <div>
+          <h1 className="mb-1 ms-1 text-uppercase"> {fullName(vacation.employee)}</h1>
+          <p className="text-muted mb-0 ms-1">
+            Información de la solicitud de vacaciones.
+          </p>
         </div>
-        <p className="text-muted mb-3">
-          {vacation.holidayName ?? "Solicitada por el empleado"} · Creada: {createdAt}
-        </p>
 
-        <Row className="g-4 mb-4">
-          {/* RESUMEN */}
-          <Col xs={12} lg={4}>
-            <Card className="border rounded-4 h-100">
-              <Card.Body>
-                <div className="d-flex align-items-center justify-content-between mb-4">
-                  <h6 className="mb-0 fw-bold">Resumen</h6>
-                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-                    General
-                  </span>
-                </div>
 
-                <div className="d-flex flex-column gap-3">
-                  <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-calendar-plus text-primary" />
-                      <span className="text-muted">Creada</span>
-                    </div>
-                    <span className="fw-semibold text-end">{createdAt}</span>
-                  </div>
+        {/* Título */}
+        <Card className="border shadow-sm rounded-4 mt-2">
+          <Card.Body className="p-4">
 
-                  <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-person text-success" />
-                      <span className="text-muted">Empleado</span>
-                    </div>
-                    <span className="fw-semibold text-end">
-                      {fullName(vacation.employee)}
-                    </span>
-                  </div>
-
-                  <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-person-workspace text-warning" />
-                      <span className="text-muted">Líder</span>
-                    </div>
-                    <span className="fw-semibold text-end">
-                      {fullName(vacation.leader)}
-                    </span>
-                  </div>
-
-                  <div className="d-flex align-items-center justify-content-between">
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-person-check text-info" />
-                      <span className="text-muted">D.O.H.</span>
-                    </div>
-                    <span className="fw-semibold text-end">
-                      {fullName(vacation.personDoh)}
-                    </span>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          {/* DETALLES */}
-          <Col xs={12} lg={8}>
-            <Card className="border rounded-4 h-100">
-              <Card.Body>
-                <div className="d-flex align-items-center justify-content-between mb-4">
-                  <div>
-                    <h6 className="mb-1 fw-bold">Detalles del registro</h6>
-                    <p className="text-muted mb-0 small">
-                      Consulta el periodo vacacional y los días solicitados.
-                    </p>
-                  </div>
-                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-                    Registro
-                  </span>
-                </div>
-
-                <div className="d-flex flex-column gap-4">
-                  <div className="border rounded-3 p-3">
-                    <div className="d-flex align-items-center gap-2 mb-2">
-                      <i className="bi bi-calendar-range text-primary" />
-                      <span className="text-muted fw-semibold">
-                        Periodo vacacional
-                      </span>
-                    </div>
-                    <div className="text-uppercase">
-                      {formatDate(vacation.period.dateInitPeriod, "dd/MM/yyyy")}
-                      {" "}-{" "}
-                      {formatDate(vacation.period.dateEndPeriod, "dd/MM/yyyy")}
-                    </div>
-                  </div>
-
-                  <Row className="g-3">
-                    <Col xs={12} md={6} xl={3}>
-                      <div className="border rounded-3 p-3 text-center h-100">
-                        <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
-                        <div className="text-muted small">Inicio</div>
-                        <div className="fw-semibold">
-                          {safeDate(vacation.dateInit)}
-                        </div>
-                      </div>
-                    </Col>
-
-                    <Col xs={12} md={6} xl={3}>
-                      <div className="border rounded-3 p-3 text-center h-100">
-                        <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
-                        <div className="text-muted small">Fin</div>
-                        <div className="fw-semibold">
-                          {safeDate(vacation.dateEnd)}
-                        </div>
-                      </div>
-                    </Col>
-
-                    <Col xs={12} md={6} xl={3}>
-                      <div className="border rounded-3 p-3 text-center h-100">
-                        <i className="bi bi-hourglass-split text-info fs-5 mb-2 d-block" />
-                        <div className="text-muted small">Días solicitados</div>
-                        <div className="fw-bold fs-5">
-                          {vacation.daysRequest ?? 0}
-                        </div>
-                      </div>
-                    </Col>
-
-                    <Col xs={12} md={6} xl={3}>
-                      <div className="border rounded-3 p-3 text-center h-100">
-                        <i className="bi bi-person-lines-fill text-secondary fs-5 mb-2 d-block" />
-                        <div className="text-muted small">Creada por</div>
-                        <div className="fw-semibold">
-                          {fullName(vacation.createForPerson)}
-                        </div>
-                      </div>
-                    </Col>
-                  </Row>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* DESGLOSE DE DÍAS */}
-        <Card className="border rounded-4 mb-4">
-          <Card.Body>
             <div className="d-flex align-items-center justify-content-between mb-4">
-              <h6 className="mb-0 fw-bold">Días solicitados</h6>
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-                Desglose
-              </span>
+              <div>
+                <h5 className="mb-1 fw-bold">
+                  Solicitud #{vacation.id}
+                </h5>
+
+                <p className="text-muted mb-0 text-uppercase">
+                  {vacation.holidayName ?? "Solicitada por el empleado"}
+                </p>
+              </div>
+
+              {statusVariant(overallStatus)}
+
             </div>
 
-            {daysList.length === 0 ? (
-              <div className="text-muted">Sin desglose.</div>
-            ) : (
-              <Table responsive hover borderless className="m-0">
-                <thead className="text-uppercase">
-                  <tr>
-                    <th className="text-muted small">Día</th>
-                    <th className="text-muted small text-end">
-                      Periodo catorcenal
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {daysList.map((d) => (
-                    <tr key={d.id}>
-                      <td className="fw-semibold">{safeDate(d.day)}</td>
-                      <td className="text-end">
-                        {d.fortnightlyPeriod ?? "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
-          </Card.Body>
-        </Card>
+            <Row className="g-4 mb-4">
+              {/* RESUMEN */}
+              <Col xs={12} lg={4}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <h6 className="mb-0 fw-bold">Resumen</h6>
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        General
+                      </span>
+                    </div>
 
-        {/* FIRMAS */}
-        <FormBook dKey="signatures">
-          {signatures.length > 0 && (
-            <FormPage title="" eventKey="signatures">
-              <Card className="border rounded-4">
-                <Card.Body>
-                  <div className="d-flex align-items-center justify-content-between mb-4">
-                    <h6 className="mb-0 fw-bold">Firmas</h6>
-                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-                      Autorizaciones
-                    </span>
+                    <div className="d-flex flex-column gap-3">
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-calendar-plus text-primary" />
+                          <span className="text-muted">Creada</span>
+                        </div>
+                        <span className="fw-semibold text-end">{createdAt}</span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person text-success" />
+                          <span className="text-muted">Creada por</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(vacation.createForPerson)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-workspace text-warning" />
+                          <span className="text-muted">Líder</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(vacation.leader)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-check text-info" />
+                          <span className="text-muted">D.O.H.</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(vacation.personDoh)}
+                        </span>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              {/* DETALLES */}
+              <Col xs={12} lg={8}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <div>
+                        <h6 className="mb-1 fw-bold">Detalles del registro</h6>
+                        <p className="text-muted mb-0 small">
+                          Consulta el periodo vacacional y los días solicitados.
+                        </p>
+                      </div>
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        Registro
+                      </span>
+                    </div>
+
+                    <div className="d-flex flex-column gap-4">
+                      <div className="border rounded-3 p-3">
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <i className="bi bi-calendar-range text-primary" />
+                          <span className="text-muted fw-semibold">
+                            Periodo vacacional
+                          </span>
+                        </div>
+                        <div className="text-uppercase">
+                          {formatDate(vacation.period.dateInitPeriod, "dd/MM/yyyy")}
+                          {" "}-{" "}
+                          {formatDate(vacation.period.dateEndPeriod, "dd/MM/yyyy")}
+                        </div>
+                      </div>
+
+                      <Row className="g-3">
+                        <Col xs={12} md={6} xl={4}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Inicio</div>
+                            <div className="fw-semibold">
+                              {safeDate(vacation.dateInit)}
+                            </div>
+                          </div>
+                        </Col>
+
+                        <Col xs={12} md={6} xl={4}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Fin</div>
+                            <div className="fw-semibold">
+                              {safeDate(vacation.dateEnd)}
+                            </div>
+                          </div>
+                        </Col>
+
+                        <Col xs={12} md={6} xl={4}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-hourglass-split text-info fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Días solicitados</div>
+                            <div className="fw-bold fs-5">
+                              {vacation.daysRequest ?? 0}
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+
+            {/* DESGLOSE DE DÍAS */}
+            <Card className="border rounded-4 mb-4">
+              <Card.Body>
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                  <h6 className="mb-0 fw-bold">Días solicitados</h6>
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                    Desglose
+                  </span>
+                </div>
+
+                <ConditionalRender cond={daysList.length === 0}>
+                  <div className="text-center py-4 text-muted">
+                    <i className="bi bi-calendar-minus fs-4 d-block mb-2" />
+                    Sin desgloce de días solicitados.
                   </div>
+                </ConditionalRender>
 
-                  <Row className="g-2 py-2">
-                    {signatures.map((sign) => (
-                      <SignaturesVacationView
-                        key={sign.id}
-                        idSolicitud={vacation.id}
-                        idPeriod={vacation.period.id}
-                        idEmployee={sign.idSignatory}
-                        name={sign.name}
-                        status={sign.status}
-                      />
-                    ))}
-                  </Row>
-                </Card.Body>
-              </Card>
-            </FormPage>
-          )}
-        </FormBook>
-      </Container>
+                <ConditionalRender cond={daysList.length > 0}>
+                  <Table responsive hover borderless className="m-0">
+                    <thead className="text-uppercase">
+                      <tr>
+                        <th className="text-muted small">Día</th>
+                        <th className="text-muted small text-end">
+                          Periodo catorcenal
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {daysList.map((d) => (
+                        <tr key={d.id}>
+                          <td className="fw-semibold">{safeDate(d.day)}</td>
+                          <td className="text-end">
+                            {d.fortnightlyPeriod ?? "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </ConditionalRender>
+
+              </Card.Body>
+            </Card>
+
+            {/* FIRMAS */}
+            <Card className="border rounded-4">
+              <Card.Body>
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                  <h6 className="mb-0 fw-bold">
+                    Firmas
+                  </h6>
+
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                    Autorizaciones
+                  </span>
+                </div>
+
+                <FormBook dKey="newArray">
+                  <FormPage title="" eventKey="newArray">
+                    <Row className="g-2 py-2">
+                      {signatures.map((sign) => (
+                        <SignaturesVacationView
+                          key={sign.id}
+                          idSolicitud={vacation.id}
+                          idPeriod={vacation.period.id}
+                          idEmployee={sign.idSignatory}
+                          name={sign.name}
+                          status={sign.status}
+                        />
+                      ))}
+                    </Row>
+                  </FormPage>
+                </FormBook>
+              </Card.Body>
+            </Card >
+
+          </Card.Body>
+        </Card >
+      </Container >
 
       <ApproveVacationLeaderModal
         id={String(vacation.id)}

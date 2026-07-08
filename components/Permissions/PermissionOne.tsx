@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { IPermissionRequest } from "@/lib/definitions";
-import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
@@ -16,7 +16,8 @@ import ConditionalRender from "../ConditionalRender";
 import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
 import { useRouter } from "next/navigation";
-import { Span } from "next/dist/trace";
+import { ISignatures } from "@/lib/overTime/interface";
+
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
@@ -80,6 +81,24 @@ export default function ShowInfoPermissionRequest({
     ? permission!.signatures
     : [];
 
+  // ID del empleado con sesión activa
+  const idEmployee = Number(session?.uid?.idEmployee);
+
+  // ID del empleado al que pertenece el registro de overtime
+  const overtimeEmployeeId = Number(permission?.employee?.id);
+
+  // Indica si el registro aún está pendiente de aprobación
+  const isPending = permission?.status === 'PENDING';
+
+  // Busca la firma correspondiente al empleado con sesión activa
+  // Solo recalcula si cambia el array de firmas o el id del empleado en sesión
+  const currentSignature = useMemo(() => {
+    return signatures.find((i: ISignatures) => i.idSignatory === idEmployee) ?? null;
+  }, [signatures, idEmployee]);
+
+  // Indica si el firmante actual aún no ha firmado (url vacía = sin firma)
+  const hasNotSigned = currentSignature?.url === '';
+
   const getSignatureEmployee = () => {
     const sign = permission?.signatures?.filter(
       (f) => f.idSignatory === Number(session?.uid?.idEmployee)
@@ -88,9 +107,19 @@ export default function ShowInfoPermissionRequest({
     return sign?.url !== "";
   };
 
-  const showLeaderApprove =
-    permission?.leader.id === Number(session?.uid?.idEmployee) &&
-    permission.leaderApproval !== "APPROVED";
+  // const showLeaderApprove =
+  //   permission?.leader.id === Number(session?.uid?.idEmployee) &&
+  //   permission.leaderApproval !== "APPROVED";
+
+  const showLeaderApprove = useMemo(() => {
+    return (!!session?.uid?.roles?.isLeader || !!session?.uid?.roles?.isExtra)
+      && idEmployee !== overtimeEmployeeId
+      && !!currentSignature
+      && hasNotSigned
+      && isPending;
+  }, [session, idEmployee, overtimeEmployeeId, currentSignature, hasNotSigned, isPending]);
+
+
 
   const showDohApprove =
     session?.uid?.idEmployee === permission?.personDoh.id &&
@@ -130,6 +159,7 @@ export default function ShowInfoPermissionRequest({
     router.push("/app/permissions/create");
   };
 
+
   const handleBack = () => {
     setLoading(true);
     setMessageLoading("Cargando datos...");
@@ -138,7 +168,6 @@ export default function ShowInfoPermissionRequest({
 
   return (
     <>
-
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
@@ -159,7 +188,7 @@ export default function ShowInfoPermissionRequest({
                 <i className="bi bi-plus-lg" />
 
                 <span className="d-none d-md-inline ms-2">
-                  Crear registro
+                  Crear permiso
                 </span>
               </Button>
             </OverLay>
@@ -167,8 +196,8 @@ export default function ShowInfoPermissionRequest({
             <ConditionalRender cond={showEmployeeSign}>
               <OverLay string="Firmar">
                 <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                  variant="primary"
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="warning"
                   onClick={handleEmployeeSignature}
                 >
                   <i className="bi bi-pen-fill" />
@@ -180,7 +209,7 @@ export default function ShowInfoPermissionRequest({
             <ConditionalRender cond={showLeaderApprove}>
               <OverLay string="Aprobar">
                 <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                   variant="success"
                   onClick={handleApprove}
                 >
@@ -193,20 +222,20 @@ export default function ShowInfoPermissionRequest({
             <ConditionalRender cond={showDohApprove}>
               <OverLay string="Aprobar">
                 <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                  variant="success"
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="secondary"
                   onClick={handleSignatureDoh}
                 >
                   <i className="bi bi-card-checklist" />
-                  <span className="d-none d-md-inline ms-2">Aprobar</span>
+                  <span className="d-none d-md-inline ms-2">Firmar de enterado</span>
                 </Button>
               </OverLay>
             </ConditionalRender>
 
             <OverLay string="Descargar PDF">
               <Button
-                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                variant="secondary"
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
+                variant="dark"
                 onClick={handleDownloadPDF}
               >
                 <i className="bi bi-filetype-pdf" />
@@ -402,7 +431,7 @@ export default function ShowInfoPermissionRequest({
                     <Row className="g-3">
                       {signatures.map((sign) => (
                         <SignaturesView
-                          key={sign._id}
+                          key={`${sign.id}-${sign.url}`}
                           idPermission={String(permission.id)}
                           idEmployee={String(sign.idSignatory)}
                           name={sign.name}
@@ -410,6 +439,7 @@ export default function ShowInfoPermissionRequest({
                           status={sign.status}
                           dateApprove={permission.dateApprove}
                           dateApproveDoh={permission.dateApproveDoh}
+                          label={sign.label}
                         />
                       ))}
                     </Row>

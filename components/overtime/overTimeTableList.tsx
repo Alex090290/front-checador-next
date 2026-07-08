@@ -18,8 +18,7 @@ export default function OverTimeTableClient({
     page,
     limit,
     search = "",
-    overtime,
-    overtimes
+    overtime
 }: {
     total: number;
     page: number;

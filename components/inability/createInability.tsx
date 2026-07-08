@@ -6,7 +6,6 @@ import Loading from "@/components/LoadingSpinner";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import { Employee } from "@/lib/definitions";
-import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
@@ -238,7 +237,7 @@ export default function CreateInabilityComponent({
                             type="date"
                             register={register("dateInit", { required: true })}
                             invalid={!!errors.dateInit}
-                            min={formatDate(new Date(), "yyyy-MM-dd")}
+                            
                             // readonly={session?.uid?.role === "EMPLOYEE"}
                             className="border"
                           />
