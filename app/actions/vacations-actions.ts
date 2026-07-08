@@ -340,7 +340,6 @@ export async function fetchVacationSignature({
 }: {
   data: {
     idSolicitud: number | null;
-    idPeriod: number | null;
     idEmployee: number | null;
   };
 }): Promise<ActionResponse<string>> {
@@ -349,7 +348,7 @@ export async function fetchVacationSignature({
     // Obtener imagen en binario
     const resImg = await axios
       .get(
-        `${apiUrl}/vacations/signature/${data.idSolicitud}/${data.idPeriod}/${data.idEmployee}`,
+        `${apiUrl}/vacations/signature/${data.idSolicitud}/${data.idEmployee}`,
         {
           headers: {
             Authorization: `Bearer ${apiToken}`,

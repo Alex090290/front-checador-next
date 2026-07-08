@@ -430,11 +430,7 @@ export default function CreatePermissionComponent({
                             label="Líder:"
                             callBackMode="id"
                             control={control}
-                          // readonly={
-                          //   session?.uid?.role === "EMPLOYEE" &&
-                          //   session.uid.isDoh === false
-                          // }
-                          />
+                            />
                         </Col>
 
                         <Col xs={12} md={6}>
@@ -449,9 +445,7 @@ export default function CreatePermissionComponent({
                             label="D.O.H."
                             callBackMode="id"
                             control={control}
-                            readonly={
-                              !readOnlyDoh
-                            }
+                            readonly={!readOnlyDoh}
                           />
                         </Col>
                       </Row>

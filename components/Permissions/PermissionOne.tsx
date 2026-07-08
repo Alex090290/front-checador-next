@@ -106,11 +106,7 @@ export default function ShowInfoPermissionRequest({
 
     return sign?.url !== "";
   };
-
-  // const showLeaderApprove =
-  //   permission?.leader.id === Number(session?.uid?.idEmployee) &&
-  //   permission.leaderApproval !== "APPROVED";
-
+  
   const showLeaderApprove = useMemo(() => {
     return (!!session?.uid?.roles?.isLeader || !!session?.uid?.roles?.isExtra)
       && idEmployee !== overtimeEmployeeId

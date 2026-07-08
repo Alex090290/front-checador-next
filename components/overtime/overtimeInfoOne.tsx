@@ -146,7 +146,7 @@ export function OvertimeOne({
         const overallStatus = overtime?.status ?? "PENDING";
         const createdAt = safeDate(overtime?.createdAt ?? "dd/MM/yyyy HH:mm");
 
-
+        
     // ============ Aqui los helpers ===============
 
     //crear
@@ -228,8 +228,6 @@ export function OvertimeOne({
             <OvertimeOneError />
         )
     }
-
-
 
     return (
         <>

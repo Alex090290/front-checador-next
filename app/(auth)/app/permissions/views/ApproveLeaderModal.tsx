@@ -35,6 +35,10 @@ function ApproveLeaderModal({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
 
+  const handleOnExited = () => {
+    reset({ status: "", signature: "" });
+  };
+
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     onHide();
 
@@ -63,10 +67,6 @@ function ApproveLeaderModal({
 
       }
     });
-  };
-
-  const handleOnExited = () => {
-    reset({ status: "", signature: "" });
   };
 
   return (

@@ -27,6 +27,8 @@ import Loading from "../LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { useModals } from "@/context/ModalContext";
 import toast from "react-hot-toast";
+import { ISignatures } from "@/lib/overTime/interface";
+import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
@@ -88,16 +90,36 @@ export default function ShowInfoVacation({
   const [approveModal, setApproveModal] = useState(false);
   const [signatureDohModal, setSignatureDohModal] = useState(false);
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
+  const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [, setPeriods] = useState<PeriodVacation[]>([]);
   const { modalError, modalConfirm } = useModals();
+
+  const signatures = Array.isArray(vacation?.signatures)
+    ? vacation!.signatures
+    : [];
+
+  // ID del empleado con sesión activa
+  const idEmployee = Number(session?.uid?.idEmployee);
+
+  // ID del empleado al que pertenece el registro de overtime
+  const overtimeEmployeeId = Number(vacation?.employee?.id);
+
+  // Indica si el registro aún está pendiente de aprobación
+  const isPending = vacation?.status === 'PENDING';
+
+  // Busca la firma correspondiente al empleado con sesión activa
+  // Solo recalcula si cambia el array de firmas o el id del empleado en sesión
+  const currentSignature = useMemo(() => {
+    return signatures.find((i: ISignatures) => i.idSignatory === idEmployee) ?? null;
+  }, [signatures, idEmployee]);
+
+  // Indica si el firmante actual aún no ha firmado (url vacía = sin firma)
+  const hasNotSigned = currentSignature?.url === '';
+
 
   // ✅ Estos cálculos quedan ANTES del early return para no romper hooks
   const daysList: DayBreakdown[] = Array.isArray(vacation?.daysdaysBrokenDown)
     ? (vacation?.daysdaysBrokenDown as DayBreakdown[])
-    : [];
-
-  const signatures = Array.isArray(vacation?.signatures)
-    ? vacation!.signatures
     : [];
 
   const getSignatureEmployee = () => {
@@ -108,9 +130,13 @@ export default function ShowInfoVacation({
     return sign?.url !== "";
   };
 
-  const showLeaderApprove =
-    vacation?.idLeader === Number(session?.uid?.idEmployee) &&
-    vacation?.leaderApproval !== "APPROVED";
+  const showLeaderApprove = useMemo(() => {
+    return (!!session?.uid?.roles?.isLeader || !!session?.uid?.roles?.isExtra)
+      && idEmployee !== overtimeEmployeeId
+      && !!currentSignature
+      && hasNotSigned
+      && isPending;
+  }, [session, idEmployee, overtimeEmployeeId, currentSignature, hasNotSigned, isPending]);
 
   const showDohApprove =
     session?.uid?.idEmployee === vacation?.idPersonDoh &&
@@ -170,14 +196,12 @@ export default function ShowInfoVacation({
   const handleDownloadPDF = () => setVacationPDFModal(true);
 
   // si tienes modal/flujo de firma empleado, aquí lo conectas
-  const handleEmployeeSignature = () => {
-    // TODO: conectar flujo de firma empleado
-  };
+  const handleEmployeeSignature = () => setEmployeeSignatureModal(true);
 
   const handleCreate = () => {
     setLoading(true);
     setMessageLoading('Cargando...');
-    router.push("/app/vacations/create");
+    router.push("/app/vacationList/create");
   };
 
   const handleBack = () => {
@@ -213,7 +237,7 @@ export default function ShowInfoVacation({
       }
     });
   };
-
+  
   return (
     <>
       <ConditionalRender cond={loading}>
@@ -261,7 +285,7 @@ export default function ShowInfoVacation({
             <ConditionalRender cond={showEmployeeSign}>
               <OverLay string="Firmar">
                 <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                   variant="warning"
                   onClick={handleEmployeeSignature}
                 >
@@ -274,7 +298,7 @@ export default function ShowInfoVacation({
             <ConditionalRender cond={showLeaderApprove}>
               <OverLay string="Aprobar">
                 <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                   variant="success"
                   onClick={handleApprove}
                 >
@@ -287,20 +311,20 @@ export default function ShowInfoVacation({
             <ConditionalRender cond={showDohApprove}>
               <OverLay string="Aprobar">
                 <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                  variant="success"
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="secondary"
                   onClick={handleSignatureDoh}
                 >
                   <i className="bi bi-card-checklist" />
-                  <span className="d-none d-md-inline ms-2">Aprobar</span>
+                  <span className="d-none d-md-inline ms-2">Firmar de enterado</span>
                 </Button>
               </OverLay>
             </ConditionalRender>
 
             <OverLay string="Descargar PDF">
               <Button
-                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                variant="secondary"
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
+                variant="dark"
                 onClick={handleDownloadPDF}
               >
                 <i className="bi bi-filetype-pdf" />
@@ -533,12 +557,13 @@ export default function ShowInfoVacation({
                     <Row className="g-2 py-2">
                       {signatures.map((sign) => (
                         <SignaturesVacationView
-                          key={sign.id}
+                          key={`${sign.id}-${sign.url}`}
                           idSolicitud={vacation.id}
                           idPeriod={vacation.period.id}
                           idEmployee={sign.idSignatory}
                           name={sign.name}
                           status={sign.status}
+                          label={sign.label}
                         />
                       ))}
                     </Row>
@@ -551,6 +576,13 @@ export default function ShowInfoVacation({
         </Card >
       </Container >
 
+      <SignatureEmployeeModal
+        show={employeeSignatureModal}
+        idPeriod={Number(vacation?.idPeriod)}
+        onHide={() => setEmployeeSignatureModal(false)}
+        id={String(vacation.id)}
+        idEmployee={vacation.idEmployee}
+      />
       <ApproveVacationLeaderModal
         id={String(vacation.id)}
         idPeriod={Number(vacation?.idPeriod)}

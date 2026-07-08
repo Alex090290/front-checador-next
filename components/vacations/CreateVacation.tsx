@@ -2,7 +2,7 @@
 
 import { createVacation, fetchPeriods } from "@/app/actions/vacations-actions";
 import { findEmployeeById } from "@/app/actions/employee-actions";
-import { IConfigSystem } from "@/app/actions/configSystem-actions";
+import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
 import {
   Entry,
   FieldSelect,
@@ -33,6 +33,18 @@ type TInputs = Pick<
 > & {
   incidence: string;
   signature: string;
+};
+
+const DEFAULT_VALUES: TInputs = {
+  idEmployee: null,
+  idLeader: null,
+  idPersonDoh: null,
+  idPeriod: null,
+  periodDescription: "",
+  dateEnd: "",
+  dateInit: "",
+  incidence: "",
+  signature: ""
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -66,14 +78,155 @@ function CreateVacationComponent({
     return maybe ?? null;
   }, [data]);
 
-  const { modalError } = useModals();
+  const { modalError,modalConfirm } = useModals();
   const router = useRouter();
 
   const [periods, setPeriods] = useState<PeriodVacation[]>([]);
 
   const originalValuesRef = useRef<TInputs | null>(null);
 
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
   const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
+  const readOnlyDoh = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh && Number(session.uid.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+  const directionList: EmployeeRef[] | undefined = config?.permissions.extra?.employees;
+  const idEmployee = Number(session?.uid?.idEmployee);
+
+  // Este sirve para filtrar el empleado al que se le asignara el registro
+  useEffect(() => {
+    if (session?.uid?.roles?.isLeader) {
+
+      const filtrados = employees.filter(
+        (el: Employee) => Number(el.department?.idLeader) === Number(session.uid?.idEmployee)
+      );
+      setFilteredEmployees(filtrados);
+    } else {
+      setFilteredEmployees(employees);
+    }
+  }, [session, idEmployee, employees]);
+
+  useEffect(() => {
+    if (!idEmployeeSelected) return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        const employeeId = Number(idEmployeeSelected);
+        if (!employeeId || Number.isNaN(employeeId)) return;
+
+        const ownId = Number(session?.uid?.idEmployee);
+        const isLeaderNotExtra = session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra;
+
+        // Caso: el líder vuelve a seleccionarse a sí mismo -> default a la posición 0 de directionList
+        if (isLeaderNotExtra && employeeId === ownId) {
+          setValue("idLeader", Number(directionList?.[0]?.id) || null, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+          return;
+        }
+
+        const emp = await findEmployeeById({ id: employeeId });
+        console.log("emp: ", emp);
+
+        if (cancelled || !emp) return;
+
+        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+
+        if (emp.isLeader) {
+          if (!leaderFromConfig) return;
+
+          setValue("idLeader", Number(leaderFromConfig), {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+          return;
+        }
+
+        const leaderId = emp?.leader?.id ?? null;
+
+        console.log("leaderId: ", leaderId);
+
+        setValue("idLeader", leaderId ? Number(leaderId) : null, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [idEmployeeSelected, config, setValue, session, directionList]);
+
+  const leaderOptions = useMemo(() => {
+    const mapToOption = (e: Employee | EmployeeRef) => ({
+      id: e.id!,
+      displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+      name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+    });
+
+    function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
+      return e.id !== undefined;
+    }
+
+    const isLeaderNotExtra = session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra;
+    const ownId = Number(session?.uid?.idEmployee);
+    const selectedId = Number(idEmployeeSelected);
+
+    if (isLeaderNotExtra) {
+      // Caso 1: seleccionó a sí mismo -> puede elegir su propio líder (directionList)
+      if (selectedId === ownId) {
+        return (directionList ?? []).filter(hasId).map(mapToOption);
+      }
+
+      // Caso 2: seleccionó a un subordinado -> mostrar fijo el líder real de ese subordinado
+      if (selectedId) {
+        const subordinate = employees.find((e) => Number(e.id) === selectedId);
+        const leaderId = subordinate?.leader?.id;
+
+        if (!leaderId) return [];
+
+        // Buscamos el registro completo del líder (para nombre/apellido) dentro de employees
+        const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
+
+        return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
+      }
+
+      return [];
+    }
+
+    return employees.filter(hasId).map(mapToOption);
+  }, [session, directionList, employees, idEmployeeSelected]);
+
+  useEffect(() => {
+    const employeeId = Number(session?.uid?.id);
+    if (!employeeId) return;
+
+
+    if (session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra) {
+      const values: TInputs = {
+        ...DEFAULT_VALUES,
+        idEmployee: employeeId,
+        idLeader: Number(directionList?.[0]?.id)
+      };
+
+      reset(values);
+      return
+    }
+
+    const values: TInputs = {
+      ...DEFAULT_VALUES,
+      idEmployee: employeeId,
+      idLeader: employees.find((e) => Number(e.id) === Number(employeeId))?.leader?.id || null,
+    };
+
+    reset(values);
+  }, [reset, employees, session, directionList]);
 
   // ✅ periodo seleccionado para mostrar stats
   const selectedPeriod = useMemo(() => {
@@ -81,13 +234,6 @@ function CreateVacationComponent({
     if (!pid || Number.isNaN(pid)) return null;
     return periods.find((p) => Number(p.id) === pid) ?? null;
   }, [idPeriodSelected, periods]);
-
-  const onSubmit: SubmitHandler<TInputs> = async (data) => {
-    const res = await createVacation({ data });
-    if (!res.success) return modalError(res.message);
-    toast.success(res.message);
-    router.back();
-  };
 
   const handleReverse = () => {
     if (originalValuesRef.current) {
@@ -199,6 +345,33 @@ function CreateVacationComponent({
   }, [getPeriods]);
 
 
+  const onSubmit: SubmitHandler<TInputs> = async (data) => {
+    if (!data.signature || data.signature && data.signature === "") {
+      modalError("La firma es obligatoria");
+      return;
+    }
+
+    modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
+      try {
+        setLoading(true);
+        setMessageLoading("Guardando permiso...");
+
+        const res = await createVacation({ data });
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
+        }
+
+        toast.success(res.message);
+        router.push("/app/vacationList");
+      } finally {
+        setLoading(false);
+        setMessageLoading("");
+      }
+    });
+  };
+
   return (
     <>
       <ConditionalRender cond={loading}>
@@ -259,7 +432,7 @@ function CreateVacationComponent({
                         <RelationField
                           readonly={readInput}
                           register={register("idEmployee")}
-                          options={employees.map((e) => ({
+                          options={filteredEmployees.map((e) => ({
                             id: Number(e.id),
                             displayName: `${e.lastName} ${e.name}`.toUpperCase(),
                             name: `${e.lastName} ${e.name}`.toUpperCase(),
@@ -273,14 +446,11 @@ function CreateVacationComponent({
                       <Col xs={12} md={4}>
                         <RelationField
                           register={register("idLeader")}
-                          options={employees.map((e) => ({
-                            id: Number(e.id),
-                            displayName: `${e.lastName} ${e.name}`.toUpperCase(),
-                            name: `${e.lastName} ${e.name}`.toUpperCase(),
-                          }))}
+                          options={leaderOptions}
                           label="Líder"
                           callBackMode="id"
                           control={control}
+                          readonly={readInput}
                         />
                       </Col>
 
@@ -318,6 +488,7 @@ function CreateVacationComponent({
                           label="D.O.H."
                           callBackMode="id"
                           control={control}
+                          readonly={!readOnlyDoh}
                         />
                       </Col>
                     </Row>
