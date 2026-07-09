@@ -12,7 +12,7 @@ import {
   ModalBasicProps,
 } from "@/lib/definitions";
 import { useEffect, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 type ModalAction = {
@@ -75,73 +75,93 @@ export default function FormUpdateDepartment({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message="Cargando..." />
+      <ConditionalRender cond={loading || isSubmitting}>
+        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
       </ConditionalRender>
 
-      <ConditionalRender cond={isSubmitting}>
-        <Loading message="Guardando..." />
-      </ConditionalRender>
-
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={loading || isSubmitting}>
-          <div className="p-2">
-            <FieldGroupFluid>
-              <div className="mb-3">
-                <Entry
-                  register={register("nameDepartment", {
-                    required: "Este campo es requerido",
-                  })}
-                  label="Nombre:"
-                  invalid={!!errors.nameDepartment}
-                  feedBack={errors.nameDepartment?.message}
-                  className="text-uppercase border"
-                />
-              </div>
-
-              <div className="mb-3">
-                <Entry
-                  register={register("description")}
-                  label="Descripción:"
-                  invalid={!!errors.description}
-                  feedBack={errors.description?.message}
-                  className="text-uppercase border"
-                />
-              </div>
-
-              <div className="mb-4">
-                <RelationField
-                  register={register("idLeader")}
-                  label="Líder:"
-                  control={control}
-                  callBackMode="id"
-                  className="text-uppercase border"
-                  options={employees.map((emp) => ({
-                    id: emp.id ?? 0,
-                    displayName: `${emp.name} ${emp.lastName}`,
-                    name: `${emp.name} ${emp.lastName}`,
-                  }))}
-                />
-              </div>
-
-              <div className="d-flex justify-content-between align-items-center pt-2">
-                <Button type="submit" variant="success" disabled={loading || isSubmitting}>
-                  Guardar
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={onHide}
-                  disabled={loading || isSubmitting}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </FieldGroupFluid>
+      <div className="p-2">
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 className="mb-1 fw-bold">Departamento</h4>
+            <p className="text-muted mb-0">
+              Registra el nombre, descripción y líder del departamento.
+            </p>
           </div>
-        </fieldset>
-      </Form>
+
+          <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+            Nuevo
+          </span>
+        </div>
+
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <fieldset disabled={loading || isSubmitting}>
+
+            <Card className="border rounded-4 mb-3">
+              <Card.Body>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <i className="bi bi-diagram-3 text-primary" />
+                  <h6 className="mb-0 fw-bold">Datos del departamento</h6>
+                </div>
+
+                <Row className="g-3">
+                  <Col md={12}>
+                    <Entry
+                      register={register("nameDepartment", {
+                        required: "Este campo es requerido",
+                      })}
+                      label="Nombre:"
+                      invalid={!!errors.nameDepartment}
+                      feedBack={errors.nameDepartment?.message}
+                      className="text-uppercase border"
+                    />
+                  </Col>
+
+                  <Col md={12}>
+                    <Entry
+                      register={register("description")}
+                      label="Descripción:"
+                      invalid={!!errors.description}
+                      feedBack={errors.description?.message}
+                      className="text-uppercase border"
+                    />
+                  </Col>
+
+                  <Col md={12}>
+                    <RelationField
+                      register={register("idLeader")}
+                      label="Líder:"
+                      control={control}
+                      callBackMode="id"
+                      className="text-uppercase border"
+                      options={employees.map((emp) => ({
+                        id: emp.id ?? 0,
+                        displayName: `${emp.name} ${emp.lastName}`,
+                        name: `${emp.name} ${emp.lastName}`,
+                      }))}
+                    />
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onHide}
+                disabled={loading || isSubmitting}
+              >
+                Cancelar
+              </Button>
+
+              <Button type="submit" variant="success" disabled={loading || isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar"}
+              </Button>
+            </div>
+
+          </fieldset>
+        </Form>
+      </div>
     </>
   );
 }

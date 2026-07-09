@@ -123,7 +123,7 @@ export async function fetchVacations(args: FetchVacationsArgs = {}): Promise<{
       limit: limitNum,
       pages,
     };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(error);
     return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
@@ -335,12 +335,61 @@ export async function createVacation({
   }
 }
 
+//Mandar firma del empleado
+export async function sendSignatureVacations({
+  id,
+  idPeriod,
+  signature,
+}: {
+
+  id: number | null;
+  idPeriod: number | null;
+  signature: string;
+
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!id) throw new Error("ID NOT DEFINED");
+    if (!signature) throw new Error("No se recibió la firma");
+
+    const { apiToken, apiUrl } = await storeToken();
+
+    const formData = new FormData();
+
+    const blob = base64ToBlob(signature, "image/png");
+
+    formData.append("img", blob, "signature.png");
+
+    const firma = await axios.post(`${apiUrl}/vacations/signature/${id}/${idPeriod}`, formData, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+    console.log("firma: ", firma);
+
+    return {
+      success: true,
+      message: "Firma enviada correctamente",
+      data: true,
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+
+    return {
+      success: false,
+      message: err.message ? err.message : "Error al obtener información",
+      data: false,
+    };
+  }
+}
+
+//Obtener firmas
 export async function fetchVacationSignature({
   data,
 }: {
   data: {
     idSolicitud: number | null;
     idEmployee: number | null;
+    idPeriod: number | null;
   };
 }): Promise<ActionResponse<string>> {
   try {
@@ -348,7 +397,7 @@ export async function fetchVacationSignature({
     // Obtener imagen en binario
     const resImg = await axios
       .get(
-        `${apiUrl}/vacations/signature/${data.idSolicitud}/${data.idEmployee}`,
+        `${apiUrl}/vacations/signature/${data.idSolicitud}/${data.idPeriod}/${data.idEmployee}`,
         {
           headers: {
             Authorization: `Bearer ${apiToken}`,
@@ -476,12 +525,12 @@ export async function deleteVacation(idRequest: number, idPeriod: number): Promi
 
     const { apiToken, apiUrl } = await storeToken();
 
-    await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`,{
-          headers: {
-            Authorization: `Bearer ${apiToken}`,
-          },
-        }
-      )
+    await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    }
+    )
       .then((res) => {
         return res.data;
       })

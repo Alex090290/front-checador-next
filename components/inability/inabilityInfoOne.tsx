@@ -18,6 +18,7 @@ import { deleteInability, updateInability } from "@/app/actions/inability-action
 import toast from "react-hot-toast";
 import { useModals } from "@/context/ModalContext";
 import OverLay from "../templates/OverLay";
+import InabilityOneError from "./inabilityMessageError";
 
 type TInputs = {
   idEmployee: number | null;
@@ -68,9 +69,7 @@ export default function InfoOneInability({
 
   if (!inhability) {
     return (
-      <div className="py-4">
-        <h4 className="mb-0">Incapacidad no encontrada</h4>
-      </div>
+      <InabilityOneError/>
     );
   }
 
@@ -247,7 +246,7 @@ export default function InfoOneInability({
                 </p>
               </div>
 
-              <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle text-uppercase">
+              <span className="badge rounded-pill px-3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle text-uppercase">
                 {formatText(inhability.status)}
               </span>
             </div>

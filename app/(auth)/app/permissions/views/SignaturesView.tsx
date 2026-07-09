@@ -25,6 +25,8 @@ function SignaturesView({
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [loadingSignature, setLoadingSignature] = useState(true);
 
+  console.log("url:", imgUrl);
+  
 
  useEffect(() => {
     const handleFetchSignature = async () => {

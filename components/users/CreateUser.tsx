@@ -132,7 +132,7 @@ export default function CreateUserComponent({
             <Form onSubmit={handleSubmit(onSubmit)}>
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                 <div>
-                  <h1 className="mb-1">Crear registro</h1>
+                  <h1 className="mb-1">Crear Usuario</h1>
                   <p className="text-muted mb-0">
                     Registra la información del usuario.
                   </p>

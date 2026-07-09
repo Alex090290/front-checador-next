@@ -29,6 +29,7 @@ import { useModals } from "@/context/ModalContext";
 import toast from "react-hot-toast";
 import { ISignatures } from "@/lib/overTime/interface";
 import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
+import VacationsOneError from "./vacationsMessageError";
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
@@ -175,21 +176,6 @@ export default function ShowInfoVacation({
     getPeriods();
   }, [getPeriods]);
 
-  // ✅ Early return ahora va DESPUÉS de los hooks
-  if (!vacation) {
-    return (
-      <Card className="border-0">
-        <Card.Body className="py-3">
-          <div className="text-muted">
-            Selecciona una solicitud para ver el detalle.
-          </div>
-        </Card.Body>
-      </Card>
-    );
-  }
-
-  const overallStatus = vacation.status ?? "PENDING";
-  const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy HH:mm");
 
   const handleApprove = () => setApproveModal(true);
   const handleSignatureDoh = () => setSignatureDohModal(true);
@@ -237,7 +223,20 @@ export default function ShowInfoVacation({
       }
     });
   };
+
+
+  if (!vacation || !vacation.id || !vacation.period){
+    return (
+      <VacationsOneError />
+    );
+  }
+  const overallStatus = vacation.status ?? "PENDING";
+  const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy HH:mm");
+
+  console.log("LLEGA:", vacation);
+  console.log("Firmas:", signatures);
   
+
   return (
     <>
       <ConditionalRender cond={loading}>
@@ -453,9 +452,7 @@ export default function ShowInfoVacation({
                           </span>
                         </div>
                         <div className="text-uppercase">
-                          {formatDate(vacation.period.dateInitPeriod, "dd/MM/yyyy")}
-                          {" "}-{" "}
-                          {formatDate(vacation.period.dateEndPeriod, "dd/MM/yyyy")}
+                          {vacation.period.periodDescription ?? "-----"}
                         </div>
                       </div>
 

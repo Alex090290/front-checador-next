@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useSearchParams } from "next/navigation";
@@ -23,14 +23,11 @@ type ChangePasswordModalProps = ModalBasicProps & {
 
 function ChangePasswordModal({
   onHide,
-  show,
   userId,
 }: ChangePasswordModalProps) {
   const {
     register,
-    setFocus,
     handleSubmit,
-    reset,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<TInputs>({
@@ -78,72 +75,102 @@ function ChangePasswordModal({
   };
 
   return (
-    <Modal
-      size="sm"
-      show={show}
-      onHide={onHide}
-      backdrop="static"
-      animation
-      onEntered={() => setFocus("password")}
-      onExited={() => reset({ password: "", password2: "" })}
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Cambiar cotraseña</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <ConditionalRender cond={isSubmitting}>
-          <Loading message="Cambiando contraseña..." />
-        </ConditionalRender>
+    <div className="p-2">
+      <ConditionalRender cond={isSubmitting}>
+        <Loading message="Cambiando contraseña..." />
+      </ConditionalRender>
 
-        <Form onSubmit={handleSubmit(onSubmit)}>
-          <fieldset disabled={isSubmitting}>
-            <Entry
-              register={register("password", {
-                required: true,
-                minLength: {
-                  value: 8,
-                  message: "La contraseña debe tener al menos 8 caracteres",
-                },
-                pattern: {
-                  value:
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message:
-                    "Debe contener al menos una mayúscula, una minúscula, un número y un carácter especial",
-                },
-              })}
-              label="Nueva contraseña:"
-              invalid={!!errors.password}
-              type="password"
-              className="text-center border"
-              feedBack={errors.password?.message}
-            />
-            <Entry
-              register={register("password2", {
-                required: true,
-                minLength: {
-                  value: 8,
-                  message: "La contraseña debe tener al menos 8 caracteres",
-                },
-                pattern: {
-                  value:
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message:
-                    "Debe contener al menos una mayúscula, una minúscula, un número y un carácter especial",
-                },
-              })}
-              label="Confirma la contraseña:"
-              invalid={!!errors.password2}
-              type="password"
-              className="text-center border"
-              feedBack={errors.password2?.message}
-            />
-            <Button type="submit">
-              <span>Aceptar</span>
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h4 className="mb-1 fw-bold">Cambiar contraseña</h4>
+          <p className="text-muted mb-0">
+            Ingresa y confirma la nueva contraseña.
+          </p>
+        </div>
+
+        <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+          Seguridad
+        </span>
+      </div>
+
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset disabled={isSubmitting}>
+
+          <Card className="border rounded-4 mb-3">
+            <Card.Body>
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <i className="bi bi-shield-lock text-primary" />
+                <h6 className="mb-0 fw-bold">Nueva contraseña</h6>
+              </div>
+
+              <Row className="g-3">
+                <Col xs={12}>
+                  <Entry
+                    register={register("password", {
+                      required: true,
+                      minLength: {
+                        value: 8,
+                        message: "La contraseña debe tener al menos 8 caracteres",
+                      },
+                      pattern: {
+                        value:
+                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                        message:
+                          "Debe contener al menos una mayúscula, una minúscula, un número y un carácter especial",
+                      },
+                    })}
+                    label="Nueva contraseña:"
+                    invalid={!!errors.password}
+                    type="password"
+                    className="text-left border"
+                    feedBack={errors.password?.message}
+                  />
+                </Col>
+
+                <Col xs={12}>
+                  <Entry
+                    register={register("password2", {
+                      required: true,
+                      minLength: {
+                        value: 8,
+                        message: "La contraseña debe tener al menos 8 caracteres",
+                      },
+                      pattern: {
+                        value:
+                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                        message:
+                          "Debe contener al menos una mayúscula, una minúscula, un número y un carácter especial",
+                      },
+                    })}
+                    label="Confirma la contraseña:"
+                    invalid={!!errors.password2}
+                    type="password"
+                    className="text-left border"
+                    feedBack={errors.password2?.message}
+                  />
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+
+          <div className="d-flex justify-content-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onHide}
+              disabled={isSubmitting}
+            >
+              Cancelar
             </Button>
-          </fieldset>
-        </Form>
-      </Modal.Body>
-    </Modal>
+
+            <Button type="submit" variant="success" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando..." : "Aceptar"}
+            </Button>
+          </div>
+
+        </fieldset>
+      </Form>
+    </div>
   );
 }
 

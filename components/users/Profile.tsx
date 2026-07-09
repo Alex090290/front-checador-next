@@ -47,7 +47,7 @@ export default function UserProfileView({
 
   if (!user) {
     return (
-      <ProfileError/> 
+      <ProfileError />
     );
   }
 
@@ -273,11 +273,13 @@ export default function UserProfileView({
         </ConditionalRender>
 
         <ConditionalRender cond={showChangePasswordModal}>
-          <ChangePasswordModal
-            show={showChangePasswordModal}
-            userId={Number.isFinite(Number(user.id)) ? Number(user.id) : null}
-            onHide={() => setShowChangePasswordModal(false)}
-          />
+          <ModalBlur onClose={() => setShowChangePasswordModal(false)}>
+            <ChangePasswordModal
+              show={showChangePasswordModal}
+              userId={Number.isFinite(Number(user.id)) ? Number(user.id) : null}
+              onHide={() => setShowChangePasswordModal(false)}
+            />
+          </ModalBlur>
         </ConditionalRender>
       </Container>
     </>

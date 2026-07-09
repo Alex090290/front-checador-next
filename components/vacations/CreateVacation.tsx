@@ -20,6 +20,7 @@ import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import useSWR from "swr";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
+import { formatDate } from "date-fns";
 
 type TInputs = Pick<
   Vacations,
@@ -78,7 +79,7 @@ function CreateVacationComponent({
     return maybe ?? null;
   }, [data]);
 
-  const { modalError,modalConfirm } = useModals();
+  const { modalError, modalConfirm } = useModals();
   const router = useRouter();
 
   const [periods, setPeriods] = useState<PeriodVacation[]>([]);
@@ -127,7 +128,6 @@ function CreateVacationComponent({
         }
 
         const emp = await findEmployeeById({ id: employeeId });
-        console.log("emp: ", emp);
 
         if (cancelled || !emp) return;
 
@@ -144,8 +144,6 @@ function CreateVacationComponent({
         }
 
         const leaderId = emp?.leader?.id ?? null;
-
-        console.log("leaderId: ", leaderId);
 
         setValue("idLeader", leaderId ? Number(leaderId) : null, {
           shouldDirty: true,
@@ -215,6 +213,16 @@ function CreateVacationComponent({
         idLeader: Number(directionList?.[0]?.id)
       };
 
+      reset(values);
+      return
+    }
+
+    if (session?.uid?.roles.isExtra || session?.uid?.roles.isDoh && !session.uid.roles.isLeader) {
+      const values: TInputs = {
+        ...DEFAULT_VALUES,
+        idEmployee: null,
+        idLeader: null
+      };
       reset(values);
       return
     }
@@ -375,6 +383,10 @@ function CreateVacationComponent({
   return (
     <>
       <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={loading}>
         <Loading message={messageLoading || "Guardando permiso..."} />
       </ConditionalRender>
 
@@ -460,7 +472,7 @@ function CreateVacationComponent({
                           options={
                             periods.length > 0
                               ? periods.map((p) => ({
-                                label: p.periodDescription,
+                                label: `${formatDate(p.dateInitPeriod, "dd/MM/yyyy")} - ${formatDate(p.dateEndPeriod, "dd/MM/yyyy")}`,
                                 value: Number(p.id),
                               }))
                               : [
@@ -534,31 +546,25 @@ function CreateVacationComponent({
                           Consulta los días usados y disponibles del periodo seleccionado.
                         </p>
 
-                        <Row className="g-4">
+                        <Row className="g-3">
                           <Col xs={12} md={6}>
-                            <Form.Group>
-                              <Form.Label className="fw-semibold">
-                                Días aprobados usados
-                              </Form.Label>
-                              <Form.Control
-                                value={String(selectedPeriod.usedDaysApproved ?? 0)}
-                                disabled
-                                readOnly
-                              />
-                            </Form.Group>
+                            <div className="border rounded-3 p-3 text-center h-100">
+                              <i className="bi bi-check2-circle text-success fs-5 mb-2 d-block" />
+                              <div className="text-muted small">Días aprobados usados</div>
+                              <div className="fw-bold fs-5">
+                                {selectedPeriod.usedDaysApproved ?? 0}
+                              </div>
+                            </div>
                           </Col>
 
                           <Col xs={12} md={6}>
-                            <Form.Group>
-                              <Form.Label className="fw-semibold">
-                                Días disponibles
-                              </Form.Label>
-                              <Form.Control
-                                value={String(selectedPeriod.availableDays ?? 0)}
-                                disabled
-                                readOnly
-                              />
-                            </Form.Group>
+                            <div className="border rounded-3 p-3 text-center h-100">
+                              <i className="bi bi-calendar2-check text-info fs-5 mb-2 d-block" />
+                              <div className="text-muted small">Días disponibles</div>
+                              <div className="fw-bold fs-5">
+                                {selectedPeriod.availableDays ?? 0}
+                              </div>
+                            </div>
                           </Col>
                         </Row>
                       </div>

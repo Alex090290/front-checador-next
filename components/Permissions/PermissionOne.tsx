@@ -17,6 +17,7 @@ import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { ISignatures } from "@/lib/overTime/interface";
+import PermissionsOneError from "./permissionsMessageError";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -131,13 +132,7 @@ export default function ShowInfoPermissionRequest({
 
   if (!permission) {
     return (
-      <Card className="border-0">
-        <Card.Body className="py-3">
-          <div className="text-muted">
-            Selecciona una solicitud para ver el detalle.
-          </div>
-        </Card.Body>
-      </Card>
+      <PermissionsOneError/> 
     );
   }
 

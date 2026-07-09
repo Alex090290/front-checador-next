@@ -145,7 +145,6 @@ export default function CreatePermissionComponent({
         }
 
         const emp = await findEmployeeById({ id: employeeId });
-        console.log("emp: ", emp);
 
         if (cancelled || !emp) return;
 
@@ -163,7 +162,6 @@ export default function CreatePermissionComponent({
 
         const leaderId = emp?.leader?.id ?? null;
 
-        console.log("leaderId: ", leaderId);
 
         setValue("idLeader", leaderId ? Number(leaderId) : null, {
           shouldDirty: true,
@@ -237,6 +235,16 @@ export default function CreatePermissionComponent({
       return
     }
 
+    if (session?.uid?.roles.isExtra || session?.uid?.roles.isDoh && !session.uid.roles.isLeader){
+      const values: TInputs = {
+        ...DEFAULT_VALUES,
+        idEmployee: null,
+        idLeader: null
+      };
+      reset(values);
+      return 
+    }
+
     const values: TInputs = {
       ...DEFAULT_VALUES,
       idEmployee: employeeId,
@@ -263,7 +271,6 @@ export default function CreatePermissionComponent({
         if (!employeeId || Number.isNaN(employeeId)) return;
 
         const emp = await findEmployeeById({ id: employeeId });
-        console.log("emp: ", emp);
 
         if (cancelled || !emp) return;
 
@@ -281,7 +288,6 @@ export default function CreatePermissionComponent({
 
         const leaderId = emp?.leader?.id ?? null;
 
-        console.log("leaderId: ", leaderId);
 
         setValue("idLeader", leaderId ? Number(leaderId) : null, {
           shouldDirty: true,

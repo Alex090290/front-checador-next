@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchVacationSignature } from "@/app/actions/vacations-actions";
+import { fetchVacationSignature, sendSignatureVacations } from "@/app/actions/vacations-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import { SignatureInput } from "@/components/fields";
 import Loading from "@/components/LoadingSpinner";
@@ -14,13 +14,14 @@ import toast from "react-hot-toast";
 
 type TInputs = {
     signature: string;
-    idEmployee: number | null;
 };
 
 function SignatureEmployeeModal({
     show,
     onHide,
     id,
+    idEmployee,
+    idPeriod,
 }: ModalBasicProps & {
     id: string;
     idPeriod: number | null;
@@ -48,11 +49,10 @@ function SignatureEmployeeModal({
                 setLoading(true);
                 setMessageLoading("Enviando firma...");
 
-                const res = await fetchVacationSignature({
-                    data: {
-                        idSolicitud: Number(id),
-                        idEmployee: Number(data.idEmployee),
-                    },
+                const res = await sendSignatureVacations({
+                    id: id ? Number(id) : null,
+                    idPeriod: idPeriod ? Number(idPeriod) : null,
+                    signature: data.signature
                 });
 
                 if (!res.success) {

@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import OverLay from "../templates/OverLay";
+import UserOneError from "./usersMessageError";
 
 function formatPermission(text?: string | null) {
   if (!text) return "—";
@@ -54,13 +55,7 @@ export default function ShowInfoOneUser({
 
   if (!user) {
     return (
-      <Card className="border-0">
-        <Card.Body className="py-3">
-          <div className="text-muted">
-            Selecciona un usuario para ver el detalle.
-          </div>
-        </Card.Body>
-      </Card>
+      <UserOneError/>
     );
   }
 
@@ -117,9 +112,9 @@ export default function ShowInfoOneUser({
     setLoading(true);
     setMessageLoading("Cargando datos...");
 
-    
-      router.push("/app/users");
-    
+
+    router.push("/app/users");
+
   }
 
   return (
@@ -385,11 +380,15 @@ export default function ShowInfoOneUser({
           </Card.Body>
         </Card>
 
-        <ChangePasswordModal
-          show={showPasswordModal}
-          userId={user.id ?? null}
-          onHide={() => setShowPasswordModal(false)}
-        />
+        <ConditionalRender cond={showPasswordModal}>
+          <ModalBlur onClose={() => setShowPasswordModal(false)}>
+            <ChangePasswordModal
+              show={showPasswordModal}
+              userId={user.id ?? null}
+              onHide={() => setShowPasswordModal(false)}
+            />
+          </ModalBlur>
+        </ConditionalRender>
 
         <ConditionalRender cond={showUpdateUserModal}>
           <ModalBlur onClose={() => setShowUpdateUserModal(false)}>
@@ -403,7 +402,7 @@ export default function ShowInfoOneUser({
             />
           </ModalBlur>
         </ConditionalRender>
-      </Container>
+      </Container >
     </>
   );
 }

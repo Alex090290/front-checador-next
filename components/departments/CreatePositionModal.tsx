@@ -2,7 +2,7 @@
 
 import { Entry } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
-import { Button, Form } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
@@ -59,60 +59,76 @@ function CreatePositionModal({
 
     return (
         <>
-            {/* Condicional para caragar la pagina */}
-            <ConditionalRender cond={loading}>
-                <Loading message="Cargando..." />
+            <ConditionalRender cond={loading || isSubmitting}>
+                <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
             </ConditionalRender>
 
-            {/* Condicional para guardar cambios  */}
-            <ConditionalRender cond={isSubmitting}>
-                <Loading message="Guardando..." />
-            </ConditionalRender>
+            <div className="p-2">
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h4 className="mb-1 fw-bold">Puesto</h4>
+                        <p className="text-muted mb-0">
+                            {positionData.activeId
+                                ? "Edita el nombre del puesto."
+                                : "Registra un nuevo puesto."}
+                        </p>
+                    </div>
 
-            <Form onSubmit={handleSubmit(onSubmit)}>
-                <fieldset disabled={loading || isSubmitting}>
-                    <div className="p-2">
-                        <h5 className="mb-3">
-                            {positionData.activeId ? "Editar Puesto" : "Nuevo Puesto"}
-                        </h5>
+                    <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        {positionData.activeId ? "Editar" : "Nuevo"}
+                    </span>
+                </div>
 
-                        <Form.Group className="mb-3">
-                            <Entry
-                                register={register("namePosition", {
-                                    required: "Nombre es requerido",
-                                    maxLength: {
-                                        value: 50,
-                                        message:
-                                            "El nombre del puesto no puede exceder los 50 caracteres",
-                                    },
-                                })}
-                                label="Nombre:"
-                                invalid={!!errors.namePosition}
-                                feedBack={errors.namePosition?.message}
-                                className="border"
-                            />
-                        </Form.Group>
+                <Form onSubmit={handleSubmit(onSubmit)}>
+                    <fieldset disabled={loading || isSubmitting}>
 
-                        <div className="d-flex justify-content-between align-items-center pt-2">
-                            <Button type="submit" variant="success" disabled={loading || isSubmitting}>
-                                {isSubmitting ? "Guardando..." : "Guardar"}
-                            </Button>
+                        <Card className="border rounded-4 mb-3">
+                            <Card.Body>
+                                <div className="d-flex align-items-center gap-2 mb-4">
+                                    <i className="bi bi-briefcase text-primary" />
+                                    <h6 className="mb-0 fw-bold">Datos del puesto</h6>
+                                </div>
 
+                                <Row className="g-3">
+                                    <Col md={12}>
+                                        <Entry
+                                            register={register("namePosition", {
+                                                required: "Nombre es requerido",
+                                                maxLength: {
+                                                    value: 50,
+                                                    message: "El nombre del puesto no puede exceder los 50 caracteres",
+                                                },
+                                            })}
+                                            label="Nombre:"
+                                            invalid={!!errors.namePosition}
+                                            feedBack={errors.namePosition?.message}
+                                            className="border"
+                                        />
+                                    </Col>
+                                </Row>
+                            </Card.Body>
+                        </Card>
+
+                        <div className="d-flex justify-content-end gap-2 mt-4">
                             <Button
                                 type="button"
                                 variant="secondary"
                                 onClick={handleClose}
-                                disabled={isSubmitting}
+                                disabled={loading || isSubmitting}
                             >
                                 Cancelar
                             </Button>
+
+                            <Button type="submit" variant="success" disabled={loading || isSubmitting}>
+                                {isSubmitting ? "Guardando..." : "Guardar"}
+                            </Button>
                         </div>
-                    </div>
-                </fieldset>
-            </Form>
+
+                    </fieldset>
+                </Form>
+            </div>
         </>
     );
-
 }
 
 export default CreatePositionModal;
