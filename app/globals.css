@@ -7,3 +7,19 @@
   background-color: #c0b300;
   color: #fff !important;
 } */
+@keyframes pulse-warning {
+  0% {
+    box-shadow: 0 0 0 0 rgba(236, 40, 6, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}
+
+.btn-needs-signature {
+  animation: pulse-warning 1.8s infinite;
+  position: relative;
+}

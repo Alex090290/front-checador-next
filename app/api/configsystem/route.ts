@@ -1,4 +1,4 @@
-// app/api/menu/route.ts
+// app/api/configSystem/route.ts
 import { NextResponse } from "next/server";
 import { getConfigSystem } from "@/app/actions/configSystem-actions";
 

@@ -1,8 +1,8 @@
 "use client"
 
-import { OverTime } from "@/lib/overTime/interface";
+import { ISignatures, OverTime } from "@/lib/overTime/interface";
 import { TableTemplateColumn } from "../templates/TablePage";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
@@ -10,6 +10,8 @@ import ListView from "../templates/ListView";
 import { useSearchParams, useRouter } from "next/navigation";
 import moment from "moment";
 import GenericSearchInput from "../employee/GenericSearchInput";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import AlertSignatures from "./AlertSignatures";
 
 export default function OverTimeTableClient({
     total,
@@ -23,9 +25,11 @@ export default function OverTimeTableClient({
     limit: number;
     search?: string;
     overtime?: OverTime[];
+    overtimes?: OverTime | null;
 }) {
     //Aqui van los const 
 
+    const session = useSessionSnapshot();
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const isClearingSelectionRef = useRef(false);
@@ -36,12 +40,32 @@ export default function OverTimeTableClient({
     const currentSearch = sp.get("search") ?? "";
     const [, setTableResetKey] = useState(0);
     const router = useRouter();
+    const [hideSignatures, setHideSignatures] = useState(false);
+    const idEmployee = Number(session?.uid?.idEmployee);
 
 
-    // useEffect(() => {
-    //     setLoading(false);
-    //     setMessageLoading("");
-    // }, [pathname, searchParamsString]);
+    useEffect(() => {
+        setLoading(false);
+        setMessageLoading("");
+    }, [searchParamsString]);
+
+    const pendingOvertimes = useMemo(() => {
+        return (overtime ?? []).filter((o: OverTime) => {
+            const signatures: ISignatures[] = o.signatures ?? [];
+            const mySignature = signatures.find(
+                (i: ISignatures) => Number(i.idSignatory) === idEmployee
+            );
+            if (!mySignature) return false;
+            return mySignature.url === '';
+        });
+    }, [overtime, idEmployee]);
+
+    const hasPendingSignature = pendingOvertimes.length > 0;
+
+    useEffect(() => {
+        setHideSignatures(hasPendingSignature);
+    }, [hasPendingSignature]);
+
 
     // Para redirigir a la pagina de crear
     const handleCreate = () => {
@@ -117,10 +141,7 @@ export default function OverTimeTableClient({
         }, 0);
     }, []);
 
-    // const handleSelectionChange = (ids: Array<string | number>) => {
-    //     if (isClearingSelectionRef.current) return;
-    //     setSelectedIds(ids);
-    // };
+
     const handleSearch = useCallback(
         (value: string) => {
             if (value === currentSearch) return;
@@ -136,16 +157,13 @@ export default function OverTimeTableClient({
 
             if (value) {
                 params.set("search", value);
-
-                console.log("Busca:", search);
-
             } else {
                 params.delete("search");
             }
             clearSelectedIds();
             router.push(`/app/overtime?${params.toString()}`);
         },
-        [currentSearch, searchParamsString, limit, router, clearSelectedIds, search]
+        [currentSearch, searchParamsString, limit, router, clearSelectedIds]
     );
 
 
@@ -161,7 +179,21 @@ export default function OverTimeTableClient({
         return String(row[column.key as keyof OverTime] ?? "-");
     };
 
+
+
     const columns: TableTemplateColumn<OverTime>[] = [
+        {
+            key: "id",
+            label: "ID",
+            accessor: (e) => e.id,
+            filterable: true,
+            type: "string",
+            render: (e) => (
+                <div className="text-uppercase">
+                    {`#${e.id}` || "-"}
+                </div>
+            )
+        },
         {
             key: "employee",
             label: "Empleado",
@@ -254,6 +286,13 @@ export default function OverTimeTableClient({
 
     return (
         <>
+            <ConditionalRender cond={hideSignatures}>
+                <AlertSignatures
+                    onClose={() => setHideSignatures(false)}
+                    pendingIds={pendingOvertimes.map((o) => o.id)}
+                />
+            </ConditionalRender>
+
             <ConditionalRender cond={loading}>
                 <Loading message={messageLoading} />
             </ConditionalRender>

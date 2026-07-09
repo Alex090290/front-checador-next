@@ -20,13 +20,16 @@ import {
 
 import { formatDate } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
-import { Button, Col, Form, Table } from "react-bootstrap";
+import { Button, Card, Col, Form, Row, Table } from "react-bootstrap";
 import {
+  SubmitErrorHandler,
   SubmitHandler,
   useFieldArray,
   useForm,
 } from "react-hook-form";
 import { TInputsEmployee } from "../../definition";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 type ModalAction = {
   sendData: (data: TInputsEmployee) => Promise<ActionResponse<boolean | null>>;
@@ -130,9 +133,11 @@ export default function FormUpdateEmployee({
     defaultValues: formatEmployeeValues(employee),
   });
 
-  const { modalError } = useModals();
+  const { modalError, modalConfirm } = useModals();
+  const [, setMessageLoading] = useState("");
   const [loading, setLoading] = useState(false);
   const [puestos, setPuestos] = useState<Position[]>([]);
+  const router = useRouter();
 
   const {
     append: appendContact,
@@ -208,544 +213,709 @@ export default function FormUpdateEmployee({
   );
 
   const onSubmit: SubmitHandler<TInputsEmployee> = async (data) => {
-    const res = await sendData(data);
-
-    if (!res.success) {
-      modalError(res.message);
-      return;
-    }
-
     onHide();
+
+    modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
+
+      try {
+        setLoading(true);
+        setMessageLoading("Actualizando cambios...");
+        const res = await sendData(data);
+
+        if (!res.success) {
+          modalError(res.message);
+          console.log(res.message);
+
+          return;
+        }
+        toast.success(res.message);
+        onHide();
+        router.refresh();
+
+      } finally {
+
+        setLoading(false);
+        setMessageLoading("");
+      }
+
+    })
   };
 
-  return <>
-        <ConditionalRender cond={loading}>
-            <Loading message="Cargando..." />
-        </ConditionalRender>
+  const onError: SubmitErrorHandler<TInputsEmployee> = () => {
+    alert("Faltan campos");
+    // modalError("Faltan campos requeridos por llenar");
+  };
 
-        <ConditionalRender cond={isSubmitting}>
-            <Loading message="Guardando..." />
-        </ConditionalRender>
-    
-        <div className="">
-            <Form onSubmit={handleSubmit(onSubmit)}>
-            <fieldset disabled={loading || isSubmitting}>
+  return (
+    <>
+      <ConditionalRender cond={loading || isSubmitting}>
+        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      </ConditionalRender>
+
+      <div className="p-2">
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 className="mb-1 fw-bold">Empleado</h4>
+            <p className="text-muted mb-0">
+              Administra la información personal, laboral y de contacto del empleado.
+            </p>
+          </div>
+
+          <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+            Editar
+          </span>
+        </div>
+
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <fieldset disabled={loading || isSubmitting}>
             <FormBook dKey="personalInfo">
-                <FormPage title="Información Personal" eventKey="personalInfo">
 
-                  {/* =============== Informacion Personal ===================*/}
-                <FieldGroupFluid>
-                    <Entry
-                    register={register("name", { required: "Nombre requerido" })}
-                    label="Nombre:"
-                    invalid={!!errors.name}
-                    feedBack={errors.name?.message}
-                    />
+              {/* =============== Información Personal ===================*/}
+              <FormPage title="Información Personal" eventKey="personalInfo">
 
-                    <Entry
-                    register={register("lastName", {
-                        required: "Apellidos requeridos",
-                    })}
-                    label="Apellidos:"
-                    invalid={!!errors.lastName}
-                    feedBack={errors.lastName?.message}
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-person text-primary" />
+                      <h6 className="mb-0 fw-bold">Datos generales</h6>
+                    </div>
 
-                    <Entry
-                    register={register("emailPersonal")}
-                    label="Correo personal:"
-                    invalid={!!errors.emailPersonal}
-                    />
-
-                    <Entry
-                    register={register("phonePersonal", {
-                        required: "Celular requerido",
-                    })}
-                    label="Celular:"
-                    invalid={!!errors.phonePersonal}
-                    feedBack={errors.phonePersonal?.message}
-                    />
-
-                    <Entry
-                    register={register("homePhone")}
-                    label="Teléfono fijo:"
-                    />
-
-                    <Entry
-                    register={register("address.street", {
-                        required: "Calle requerida",
-                    })}
-                    label="Calle:"
-                    invalid={!!errors.address?.street}
-                    feedBack={errors.address?.street?.message}
-                    />
-
-                    <Entry
-                    register={register("address.numberOut", {
-                        required: "No. exterior requerido",
-                    })}
-                    label="No. Exterior:"
-                    invalid={!!errors.address?.numberOut}
-                    feedBack={errors.address?.numberOut?.message}
-                    />
-
-                    <Entry
-                    register={register("address.numberIn")}
-                    label="No. Interior:"
-                    />
-
-                    <Entry
-                    register={register("address.neighborhood", {
-                        required: "Colonia requerida",
-                    })}
-                    label="Colonia:"
-                    invalid={!!errors.address?.neighborhood}
-                    feedBack={errors.address?.neighborhood?.message}
-                    />
-
-                    <Entry
-                    register={register("address.zipCode", {
-                        required: "C.P. requerido",
-                    })}
-                    label="C.P.:"
-                    invalid={!!errors.address?.zipCode}
-                    feedBack={errors.address?.zipCode?.message}
-                    />
-
-                    <Entry
-                    register={register("address.municipality")}
-                    label="Municipio:"
-                    />
-
-                    <Entry
-                    register={register("address.state", {
-                        required: "Estado requerido",
-                    })}
-                    label="Estado:"
-                    invalid={!!errors.address?.state}
-                    feedBack={errors.address?.state?.message}
-                    />
-
-                    <Entry
-                    register={register("address.country", {
-                        required: "País requerido",
-                    })}
-                    label="País:"
-                    invalid={!!errors.address?.country}
-                    feedBack={errors.address?.country?.message}
-                    />
-
-                    <Entry
-                    register={register("birthDate", {
-                        required: "Fecha de nacimiento requerida",
-                    })}
-                    type="date"
-                    label="Nacimiento:"
-                    invalid={!!errors.birthDate}
-                    feedBack={errors.birthDate?.message}
-                    />
-
-                    <Entry
-                    register={register("nationality", {
-                        required: "Nacionalidad requerida",
-                    })}
-                    label="Nacionalidad:"
-                    invalid={!!errors.nationality}
-                    feedBack={errors.nationality?.message}
-                    />
-
-                    <Entry
-                    register={register("socialSecurityNumber", {
-                        required: "NSS requerido",
-                    })}
-                    label="NSS:"
-                    invalid={!!errors.socialSecurityNumber}
-                    feedBack={errors.socialSecurityNumber?.message}
-                    />
-
-                    <Entry
-                    register={register("rfc", { required: "RFC requerido" })}
-                    label="R.F.C.:"
-                    invalid={!!errors.rfc}
-                    feedBack={errors.rfc?.message}
-                    className="text-uppercase"
-                    />
-
-                    <Entry
-                    register={register("curp", { required: "CURP requerido" })}
-                    label="CURP:"
-                    invalid={!!errors.curp}
-                    feedBack={errors.curp?.message}
-                    className="text-uppercase"
-                    />
-
-                    <FieldSelect
-                    register={register("gender", {
-                        required: "Género requerido",
-                    })}
-                    options={[
-                        { value: "MASCULINO", label: "MASCULINO" },
-                        { value: "FEMENINO", label: "FEMENINO" },
-                    ]}
-                    label="Género:"
-                    invalid={!!errors.gender}
-                    feedBack={errors.gender?.message}
-                    />
-
-                    <Entry
-                    register={register("bloodType")}
-                    label="Grupo sanguíneo:"
-                    />
-
-                    <Entry register={register("weight")} label="Peso:" />
-                    <Entry register={register("height")} label="Altura:" />
-                    <Entry
-                    register={register("constitution")}
-                    label="Constitución:"
-                    />
-                    <Entry
-                    register={register("healthStatus")}
-                    label="Estado de salud:"
-                    />
-                    <Entry
-                    register={register("education")}
-                    label="Formación académica:"
-                    />
-                    <Entry register={register("skills")} label="Habilidades:" />
-                    <Entry register={register("sons")} label="Hijos:" />
-                    <Entry register={register("daughters")} label="Hijas:" />
-
-                    <Col xs={12}>
-                    <Form.Group>
-                        <Form.Label className="fw-semibold">
-                        Observaciones generales:
-                        </Form.Label>
-                        <Form.Control
-                        as="textarea"
-                        rows={5}
-                        {...register("comments")}
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry
+                          register={register("name", { required: "Nombre requerido" })}
+                          label="Nombre:"
+                          invalid={!!errors.name}
+                          feedBack={errors.name?.message}
+                          className="border"
                         />
-                    </Form.Group>
-                    </Col>
-                </FieldGroupFluid>
-                </FormPage>
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("lastName", { required: "Apellidos requeridos" })}
+                          label="Apellidos:"
+                          invalid={!!errors.lastName}
+                          feedBack={errors.lastName?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("birthDate", { required: "Fecha de nacimiento requerida" })}
+                          type="date"
+                          label="Nacimiento:"
+                          invalid={!!errors.birthDate}
+                          feedBack={errors.birthDate?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("nationality", { required: "Nacionalidad requerida" })}
+                          label="Nacionalidad:"
+                          invalid={!!errors.nationality}
+                          feedBack={errors.nationality?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <FieldSelect
+                          register={register("gender", { required: "Género requerido" })}
+                          options={[
+                            { value: "MASCULINO", label: "MASCULINO" },
+                            { value: "FEMENINO", label: "FEMENINO" },
+                          ]}
+                          label="Género:"
+                          invalid={!!errors.gender}
+                          feedBack={errors.gender?.message}
+                        />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                  {/* =============== Informacion Laboral ===================*/}
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-telephone text-success" />
+                      <h6 className="mb-0 fw-bold">Contacto</h6>
+                    </div>
 
-                <FormPage title="Información Laboral" eventKey="jobInfo">
-                <FieldGroupFluid>
-                    <Entry
-                    register={register("phoneCompany")}
-                    label="Teléfono de oficina:"
-                    />
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry
+                          register={register("emailPersonal")}
+                          label="Correo personal:"
+                          invalid={!!errors.emailPersonal}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("phonePersonal", { required: "Celular requerido" })}
+                          label="Celular:"
+                          invalid={!!errors.phonePersonal}
+                          feedBack={errors.phonePersonal?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("homePhone")}
+                          label="Teléfono fijo:"
+                          className="border"
+                        />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <Entry
-                    register={register("phoneExtCompany")}
-                    label="Extensión:"
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-house text-warning" />
+                      <h6 className="mb-0 fw-bold">Domicilio</h6>
+                    </div>
 
-                    <Entry
-                    register={register("emailCompany")}
-                    label="Correo:"
-                    />
+                    <Row className="g-3">
+                      <Col md={8}>
+                        <Entry
+                          register={register("address.street", { required: "Calle requerida" })}
+                          label="Calle:"
+                          invalid={!!errors.address?.street}
+                          feedBack={errors.address?.street?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <Entry
+                          register={register("address.numberOut", { required: "No. exterior requerido" })}
+                          label="No. Exterior:"
+                          invalid={!!errors.address?.numberOut}
+                          feedBack={errors.address?.numberOut?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <Entry
+                          register={register("address.numberIn")}
+                          label="No. Interior:"
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <Entry
+                          register={register("address.neighborhood", { required: "Colonia requerida" })}
+                          label="Colonia:"
+                          invalid={!!errors.address?.neighborhood}
+                          feedBack={errors.address?.neighborhood?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <Entry
+                          register={register("address.zipCode", { required: "C.P. requerido" })}
+                          label="C.P.:"
+                          invalid={!!errors.address?.zipCode}
+                          feedBack={errors.address?.zipCode?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("address.municipality")}
+                          label="Municipio:"
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("address.state", { required: "Estado requerido" })}
+                          label="Estado:"
+                          invalid={!!errors.address?.state}
+                          feedBack={errors.address?.state?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={12}>
+                        <Entry
+                          register={register("address.country", { required: "País requerido" })}
+                          label="País:"
+                          invalid={!!errors.address?.country}
+                          feedBack={errors.address?.country?.message}
+                          className="border"
+                        />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <RelationField
-                    register={register("idDepartment.id", {
-                        required: "Departamento requerido",
-                    })}
-                    options={departmentOptions}
-                    label="Departamento:"
-                    control={control}
-                    callBackMode="id"
-                    invalid={!!errors.idDepartment}
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-card-checklist text-info" />
+                      <h6 className="mb-0 fw-bold">Identificación</h6>
+                    </div>
 
-                    <RelationField
-                    register={register("idPosition", {
-                        required: "Puesto requerido",
-                    })}
-                    options={positionOptions}
-                    label="Puesto:"
-                    control={control}
-                    callBackMode="id"
-                    invalid={!!errors.idPosition}
-                    />
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry
+                          register={register("socialSecurityNumber", { required: "NSS requerido" })}
+                          label="NSS:"
+                          invalid={!!errors.socialSecurityNumber}
+                          feedBack={errors.socialSecurityNumber?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={3}>
+                        <Entry
+                          register={register("rfc", { required: "RFC requerido" })}
+                          label="R.F.C.:"
+                          invalid={!!errors.rfc}
+                          feedBack={errors.rfc?.message}
+                          className="text-uppercase border"
+                        />
+                      </Col>
+                      <Col md={3}>
+                        <Entry
+                          register={register("curp", { required: "CURP requerido" })}
+                          label="CURP:"
+                          invalid={!!errors.curp}
+                          feedBack={errors.curp?.message}
+                          className="text-uppercase border"
+                        />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <RelationField
-                    register={register("idDepartment.idLeader")}
-                    options={managerOptions}
-                    label="Gerente:"
-                    control={control}
-                    callBackMode="id"
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-heart-pulse text-danger" />
+                      <h6 className="mb-0 fw-bold">Salud y complementarios</h6>
+                    </div>
 
-                    <RelationField
-                    register={register("branch", {
-                        required: "Sucursal requerida",
-                    })}
-                    options={branchOptions}
-                    label="Sucursal:"
-                    control={control}
-                    callBackMode="id"
-                    invalid={!!errors.branch}
-                    />
+                    <Row className="g-3">
+                      <Col md={4}>
+                        <Entry register={register("bloodType")} label="Grupo sanguíneo:" className="border" />
+                      </Col>
+                      <Col md={4}>
+                        <Entry register={register("weight")} label="Peso:" className="border" />
+                      </Col>
+                      <Col md={4}>
+                        <Entry register={register("height")} label="Altura:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("constitution")} label="Constitución:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("healthStatus")} label="Estado de salud:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("education")} label="Formación académica:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("skills")} label="Habilidades:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("sons")} label="Hijos:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("daughters")} label="Hijas:" className="border" />
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Group>
+                          <Form.Label className="fw-semibold">Observaciones generales:</Form.Label>
+                          <Form.Control
+                            as="textarea"
+                            rows={5}
+                            className="border"
+                            {...register("comments")}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              </FormPage>
 
-                    <Entry
-                    register={register("idCheck", {
-                        required: "ID checador requerido",
-                    })}
-                    label="ID Checador:"
-                    invalid={!!errors.idCheck}
-                    feedBack={errors.idCheck?.message}
-                    />
+              {/* =============== Información Laboral ===================*/}
+              <FormPage title="Información Laboral" eventKey="jobInfo">
 
-                    <Entry
-                    register={register("passwordCheck", {
-                        required: "Contraseña requerida",
-                    })}
-                    label="Contraseña de checador:"
-                    invalid={!!errors.passwordCheck}
-                    feedBack={errors.passwordCheck?.message}
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-diagram-3 text-primary" />
+                      <h6 className="mb-0 fw-bold">Puesto y organización</h6>
+                    </div>
 
-                    <Entry
-                    register={register("entryOffice", {
-                        required: "Entrada requerida",
-                    })}
-                    label="Entrada Oficina:"
-                    invalid={!!errors.entryOffice}
-                    feedBack={errors.entryOffice?.message}
-                    />
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <RelationField
+                          register={register("idDepartment.id", { required: "Departamento requerido" })}
+                          options={departmentOptions}
+                          label="Departamento:"
+                          control={control}
+                          callBackMode="id"
+                          invalid={!!errors.idDepartment}
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <RelationField
+                          register={register("idPosition", { required: "Puesto requerido" })}
+                          options={positionOptions}
+                          label="Puesto:"
+                          control={control}
+                          callBackMode="id"
+                          invalid={!!errors.idPosition}
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <RelationField
+                          register={register("idDepartment.idLeader")}
+                          options={managerOptions}
+                          label="Gerente:"
+                          control={control}
+                          callBackMode="id"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <RelationField
+                          register={register("branch", { required: "Sucursal requerida" })}
+                          options={branchOptions}
+                          label="Sucursal:"
+                          control={control}
+                          callBackMode="id"
+                          invalid={!!errors.branch}
+                        />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <Entry
-                    register={register("exitOffice", {
-                        required: "Salida requerida",
-                    })}
-                    label="Salida Oficina:"
-                    invalid={!!errors.exitOffice}
-                    feedBack={errors.exitOffice?.message}
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-envelope text-success" />
+                      <h6 className="mb-0 fw-bold">Contacto de oficina</h6>
+                    </div>
 
-                    <Entry
-                    register={register("entryLunch", {
-                        required: "Entrada comedor requerida",
-                    })}
-                    label="Entrada comedor:"
-                    invalid={!!errors.entryLunch}
-                    feedBack={errors.entryLunch?.message}
-                    />
+                    <Row className="g-3">
+                      <Col md={4}>
+                        <Entry register={register("phoneCompany")} label="Teléfono de oficina:" className="border" />
+                      </Col>
+                      <Col md={4}>
+                        <Entry register={register("phoneExtCompany")} label="Extensión:" className="border" />
+                      </Col>
+                      <Col md={4}>
+                        <Entry register={register("emailCompany")} label="Correo:" className="border" />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <Entry
-                    register={register("exitLunch", {
-                        required: "Salida comedor requerida",
-                    })}
-                    label="Salida comedor:"
-                    invalid={!!errors.exitLunch}
-                    feedBack={errors.exitLunch?.message}
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-fingerprint text-warning" />
+                      <h6 className="mb-0 fw-bold">Checador</h6>
+                    </div>
 
-                    <Entry
-                    register={register("entrySaturdayOffice", {
-                        required: "Entrada sabatina requerida",
-                    })}
-                    label="Entrada sabatina:"
-                    invalid={!!errors.entrySaturdayOffice}
-                    feedBack={errors.entrySaturdayOffice?.message}
-                    />
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry
+                          register={register("idCheck", { required: "ID checador requerido" })}
+                          label="ID Checador:"
+                          invalid={!!errors.idCheck}
+                          feedBack={errors.idCheck?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("passwordCheck", { required: "Contraseña requerida" })}
+                          label="Contraseña de checador:"
+                          invalid={!!errors.passwordCheck}
+                          feedBack={errors.passwordCheck?.message}
+                          className="border"
+                        />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <Entry
-                    register={register("exitSaturdayOffice", {
-                        required: "Salida sabatina requerida",
-                    })}
-                    label="Salida sabatina:"
-                    invalid={!!errors.exitSaturdayOffice}
-                    feedBack={errors.exitSaturdayOffice?.message}
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-clock text-info" />
+                      <h6 className="mb-0 fw-bold">Horario</h6>
+                    </div>
 
-                    <Entry
-                    register={register("scheduleDescription")}
-                    label="Descripción del horario:"
-                    />
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry
+                          register={register("entryOffice", { required: "Entrada requerida" })}
+                          label="Entrada Oficina:"
+                          invalid={!!errors.entryOffice}
+                          feedBack={errors.entryOffice?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("exitOffice", { required: "Salida requerida" })}
+                          label="Salida Oficina:"
+                          invalid={!!errors.exitOffice}
+                          feedBack={errors.exitOffice?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("entryLunch", { required: "Entrada comedor requerida" })}
+                          label="Entrada comedor:"
+                          invalid={!!errors.entryLunch}
+                          feedBack={errors.entryLunch?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("exitLunch", { required: "Salida comedor requerida" })}
+                          label="Salida comedor:"
+                          invalid={!!errors.exitLunch}
+                          feedBack={errors.exitLunch?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("entrySaturdayOffice", { required: "Entrada sabatina requerida" })}
+                          label="Entrada sabatina:"
+                          invalid={!!errors.entrySaturdayOffice}
+                          feedBack={errors.entrySaturdayOffice?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry
+                          register={register("exitSaturdayOffice", { required: "Salida sabatina requerida" })}
+                          label="Salida sabatina:"
+                          invalid={!!errors.exitSaturdayOffice}
+                          feedBack={errors.exitSaturdayOffice?.message}
+                          className="border"
+                        />
+                      </Col>
+                      <Col md={12}>
+                        <Entry
+                          register={register("scheduleDescription")}
+                          label="Descripción del horario:"
+                          className="border"
+                        />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <Entry
-                    register={register("dailyWage")}
-                    label="Salario diario:"
-                    />
+                <Card className="border rounded-4 mb-3">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-cash-coin text-danger" />
+                      <h6 className="mb-0 fw-bold">Nómina y status</h6>
+                    </div>
 
-                    <FieldSelect
-                    register={register("anniversaryLetter")}
-                    options={[
-                        { label: "Pendiente", value: "pending" },
-                        { label: "Entregada", value: "ENTREGADA" },
-                    ]}
-                    label="Carta de aniversario:"
-                    />
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry register={register("dailyWage")} label="Salario diario:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <FieldSelect
+                          register={register("status")}
+                          options={[
+                            { value: 1, label: "Activo" },
+                            { value: 2, label: "Baja" },
+                          ]}
+                          label="Status:"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <FieldSelect
+                          register={register("anniversaryLetter")}
+                          options={[
+                            { label: "Pendiente", value: "pending" },
+                            { label: "Entregada", value: "ENTREGADA" },
+                          ]}
+                          label="Carta de aniversario:"
+                        />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("dischargeReason")} label="Motivo de la baja:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("keyCONTPAQi")} label="keyCONTPAQi:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("keyAspelNOI")} label="keyAspelNOI:" className="border" />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
 
-                    <FieldSelect
-                    register={register("status")}
-                    options={[
-                        { value: 1, label: "Activo" },
-                        { value: 2, label: "Baja" },
-                    ]}
-                    label="Status:"
-                    />
+                <Card className="border rounded-4">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-credit-card-2-front text-secondary" />
+                      <h6 className="mb-0 fw-bold">Vales de despensa</h6>
+                    </div>
 
-                    <Entry
-                    register={register("keyCONTPAQi")}
-                    label="keyCONTPAQi:"
-                    />
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry register={register("foodBaucher.uiid")} label="UIID:" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("foodBaucher.cardNumber")} label="Número de tarjeta:" className="border" />
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              </FormPage>
 
-                    <Entry
-                    register={register("keyAspelNOI")}
-                    label="keyAspelNOI:"
-                    />
+              {/* =============== Contactos ===================*/}
+              <FormPage title="Contactos" eventKey="contacts">
+                <Card className="border rounded-4">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-person-lines-fill text-primary" />
+                      <h6 className="mb-0 fw-bold">Contactos de emergencia</h6>
+                    </div>
 
-                    <Entry
-                    register={register("dischargeReason")}
-                    label="Motivo de la baja:"
-                    />
-
-                    <Entry 
-                    register={register("foodBaucher.uiid")}
-                    label="UIID: "
-                    />
-                    <Entry 
-                    register={register("foodBaucher.cardNumber")}
-                    label="Número de tarjeta: "
-                    />
-                </FieldGroupFluid>
-                </FormPage>
-
-                  {/* =============== Informacion Contactos ===================*/}
-
-                <FormPage title="Contactos" eventKey="contacts">
-                <Col xs={12}>
                     <Table size="sm" borderless hover responsive>
-                    <thead>
+                      <thead>
                         <tr className="border-bottom table-active">
-                        <th className="border-end">Nombre</th>
-                        <th className="border-end">Parentezco</th>
-                        <th className="border-end">Contacto</th>
-                        <th className="border-end text-center">
-                            <i className="bi bi-trash"></i>
-                        </th>
+                          <th className="border-end">Nombre</th>
+                          <th className="border-end">Parentezco</th>
+                          <th className="border-end">Contacto</th>
+                          <th className="border-end text-center">
+                            <i className="bi bi-trash" />
+                          </th>
                         </tr>
-                    </thead>
-                    <tbody>
+                      </thead>
+                      <tbody>
                         {contactFields.map((contact, index) => (
-                        <tr key={contact.id}>
+                          <tr key={contact.id}>
                             <td className="border-bottom">
-                            <Form.Control
-                                {...register(`emergencyContacts.${index}.name`, {
-                                required: true,
-                                })}
+                              <Form.Control
+                                {...register(`emergencyContacts.${index}.name`, { required: true })}
                                 size="sm"
                                 className="border-0 shadow-none"
-                            />
+                              />
                             </td>
                             <td className="border-bottom">
-                            <Form.Control
-                                {...register(`emergencyContacts.${index}.kinship`, {
-                                required: true,
-                                })}
+                              <Form.Control
+                                {...register(`emergencyContacts.${index}.kinship`, { required: true })}
                                 size="sm"
                                 className="border-0 shadow-none"
-                            />
+                              />
                             </td>
                             <td className="border-bottom">
-                            <Form.Control
-                                {...register(
-                                `emergencyContacts.${index}.phone.internationalNumber`,
-                                { required: true }
-                                )}
+                              <Form.Control
+                                {...register(`emergencyContacts.${index}.phone.internationalNumber`, { required: true })}
                                 size="sm"
                                 className="border-0 shadow-none"
-                            />
+                              />
                             </td>
                             <td className="border-bottom text-center">
-                            <Button
+                              <Button
                                 type="button"
-                                size="sm"
-                                variant="link"
+                                
+                                variant="danger"
                                 onClick={() => removeContact(index)}
-                            >
-                                <i className="bi bi-trash"></i>
-                            </Button>
+                              >
+                                <i className="bi bi-trash" />
+                              </Button>
                             </td>
-                        </tr>
+                          </tr>
                         ))}
 
                         <tr>
-                        <td colSpan={4}>
+                          <td colSpan={4}>
                             <Button
-                            type="button"
-                            size="sm"
-                            variant="link"
-                            onClick={() =>
+                              type="button"
+                              size="sm"
+                              variant="link"
+                              onClick={() =>
                                 appendContact({
-                                name: "",
-                                kinship: "",
-                                phone: "",
+                                  name: "",
+                                  kinship: "",
+                                  phone: "",
                                 } as never)
-                            }
+                              }
                             >
-                            Agregar
+                              Agregar
                             </Button>
-                        </td>
+                          </td>
                         </tr>
-                    </tbody>
+                      </tbody>
                     </Table>
-                </Col>
-                </FormPage>
+                  </Card.Body>
+                </Card>
+              </FormPage>
 
-                  {/* =============== Informacion Ingresos y Bajas ===================*/}
+              {/* =============== Ingresos y Bajas ===================*/}
+              <FormPage title="Ingresos y Bajas" eventKey="historical">
+                <Card className="border rounded-4">
+                  <Card.Body>
+                    <div className="d-flex align-items-center gap-2 mb-4">
+                      <i className="bi bi-calendar-range text-warning" />
+                      <h6 className="mb-0 fw-bold">Historial laboral</h6>
+                    </div>
 
-                <FormPage title="Ingresos y Bajas" eventKey="historical">
-                <FieldGroupFluid>
-                    <Entry
-                    register={register("admissionDate")}
-                    label="Inicio de relación:"
-                    type="date"
-                    />
-
-                    <Entry
-                    register={register("dischargeDate")}
-                    label="Fin de relación:"
-                    type="date"
-                    />
-
-                    <Entry
-                    register={register("typeOfDischarge")}
-                    label="Tipo de baja:"
-                    />
-
-                    <Col xs={12}>
-                    <Form.Group>
-                        <Form.Label className="fw-semibold">
-                        Motivo / detalle de baja:
-                        </Form.Label>
-                        <Form.Control
-                        as="textarea"
-                        rows={4}
-                        {...register("dischargeReason")}
-                        />
-                    </Form.Group>
-                    </Col>
-                </FieldGroupFluid>
-                </FormPage>
+                    <Row className="g-3">
+                      <Col md={6}>
+                        <Entry register={register("admissionDate")} label="Inicio de relación:" type="date" className="border" />
+                      </Col>
+                      <Col md={6}>
+                        <Entry register={register("dischargeDate")} label="Fin de relación:" type="date" className="border" />
+                      </Col>
+                      <Col md={12}>
+                        <Entry register={register("typeOfDischarge")} label="Tipo de baja:" className="border" />
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Group>
+                          <Form.Label className="fw-semibold">Motivo / detalle de baja:</Form.Label>
+                          <Form.Control
+                            as="textarea"
+                            rows={4}
+                            className="border"
+                            {...register("dischargeReason")}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              </FormPage>
             </FormBook>
 
-            <div className="mt-4 d-flex gap-2">
-                <Button type="submit" variant="primary">
-                Guardar
-                </Button>
-
-                <Button type="button" variant="secondary" onClick={onHide}>
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onHide}
+                disabled={loading || isSubmitting}
+              >
                 Cancelar
-                </Button>
+              </Button>
+
+              <Button type="submit" variant="success" disabled={loading || isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar"}
+              </Button>
             </div>
-            </fieldset>
-            </Form>
-        </div>
+
+          </fieldset>
+        </Form>
+      </div>
     </>
+  )
 }

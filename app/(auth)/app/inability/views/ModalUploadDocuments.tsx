@@ -5,7 +5,7 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry } from "@/components/fields";
 import React, { useState } from "react";
-import { Button, Form, Row, Col } from "react-bootstrap";
+import { Button, Form, Row, Col, Card } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -83,58 +83,100 @@ function ModalAddDocuments({ idDoc, onHide }: Props) {
       </ConditionalRender>
 
       <div className="p-2">
-        <div className="mb-4">
-          <h4 className="mb-1">Documento CITT</h4>
-          <p className="text-secondary mb-0">
-            Agrega un nuevo documento con su rango de fechas y folio.
-          </p>
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 className="mb-1 fw-bold">Documento CITT</h4>
+            <p className="text-muted mb-0">
+              Agrega un nuevo documento con su rango de fechas y folio.
+            </p>
+          </div>
+
+          <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+            Nuevo
+          </span>
         </div>
 
         <Form onSubmit={onSubmit}>
-          <Row className="g-3">
-            <Col md={6}>
-              <Entry
-                type="date"
-                register={register("dateInit", { required: true })}
-                label="Fecha inicio"
-                invalid={!!errors.dateInit}
-              />
-            </Col>
+          <Card className="border rounded-4 mb-3">
+            <Card.Body>
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <i className="bi bi-calendar-range text-primary" />
+                <h6 className="mb-0 fw-bold">Vigencia</h6>
+              </div>
 
-            <Col md={6}>
-              <Entry
-                type="date"
-                register={register("dateEnd", { required: true })}
-                label="Fecha fin"
-                min={onChangeDateInit}
-                invalid={!!errors.dateEnd}
-              />
-            </Col>
+              <Row className="g-3">
+                <Col md={6}>
+                  <Entry
+                    type="date"
+                    register={register("dateInit", { required: true })}
+                    label="Fecha inicio"
+                    invalid={!!errors.dateInit}
+                    className="border"
+                  />
+                </Col>
 
-            <Col md={12}>
-              <Entry
-                register={register("folio", { required: true })}
-                label="Folio CITT"
-                className="text-uppercase"
-                invalid={!!errors.folio}
-              />
-            </Col>
+                <Col md={6}>
+                  <Entry
+                    type="date"
+                    register={register("dateEnd", { required: true })}
+                    label="Fecha fin"
+                    min={onChangeDateInit}
+                    invalid={!!errors.dateEnd}
+                    className="border"
+                  />
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
 
-            <Col md={12}>
-              <Form.Group>
-                <Form.Label className="fw-semibold">Documento</Form.Label>
-                <Form.Control
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.pdf,.webp"
-                  {...register("document", { required: true })}
-                  isInvalid={!!errors.document}
-                />
-                <Form.Control.Feedback type="invalid">
-                  Este campo es requerido
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
+          <Card className="border rounded-4 mb-3">
+            <Card.Body>
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <i className="bi bi-upc-scan text-warning" />
+                <h6 className="mb-0 fw-bold">Folio</h6>
+              </div>
+
+              <Row className="g-3">
+                <Col md={12}>
+                  <Entry
+                    register={register("folio", { required: true })}
+                    label="Folio CITT"
+                    className="text-uppercase border"
+                    invalid={!!errors.folio}
+                  />
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+
+          <Card className="border rounded-4">
+            <Card.Body>
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <i className="bi bi-file-earmark-arrow-up text-info" />
+                <h6 className="mb-0 fw-bold">Documento</h6>
+              </div>
+
+              <Row className="g-3">
+                <Col md={12}>
+                  <Form.Group>
+                    <Form.Label className="fw-semibold">
+                      Archivo
+                    </Form.Label>
+                    <Form.Control
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf,.webp"
+                      className="border"
+                      {...register("document", { required: true })}
+                      isInvalid={!!errors.document}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      Este campo es requerido
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
 
           <div className="d-flex justify-content-end gap-2 mt-4">
             <Button
@@ -146,7 +188,7 @@ function ModalAddDocuments({ idDoc, onHide }: Props) {
               Cancelar
             </Button>
 
-            <Button type="submit" disabled={loading || isSubmitting}>
+            <Button type="submit" variant="success" disabled={loading || isSubmitting}>
               {loading || isSubmitting ? "Cargando..." : "Cargar"}
             </Button>
           </div>

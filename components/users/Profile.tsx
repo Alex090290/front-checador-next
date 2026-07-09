@@ -11,6 +11,7 @@ import { User } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import FormUpdateProfile from "./UpdateProfile";
 import ChangePasswordModal from "@/app/(auth)/app/users/views/ModalChangePassword";
+import ProfileError from "./profileMessageError";
 
 type TInputsProfile = {
   name: string;
@@ -46,9 +47,7 @@ export default function UserProfileView({
 
   if (!user) {
     return (
-      <div className="py-4">
-        <h4 className="mb-0">Perfil no encontrado</h4>
-      </div>
+      <ProfileError />
     );
   }
 
@@ -111,7 +110,7 @@ export default function UserProfileView({
 
           <Button
             className="d-inline-flex align-items-center fw-semibold px-3"
-            variant="info"
+            variant="secondary"
             onClick={() => setShowChangePasswordModal(true)}
           >
             <i className="bi bi-key me-2" />
@@ -274,11 +273,13 @@ export default function UserProfileView({
         </ConditionalRender>
 
         <ConditionalRender cond={showChangePasswordModal}>
-          <ChangePasswordModal
-            show={showChangePasswordModal}
-            userId={Number.isFinite(Number(user.id)) ? Number(user.id) : null}
-            onHide={() => setShowChangePasswordModal(false)}
-          />
+          <ModalBlur onClose={() => setShowChangePasswordModal(false)}>
+            <ChangePasswordModal
+              show={showChangePasswordModal}
+              userId={Number.isFinite(Number(user.id)) ? Number(user.id) : null}
+              onHide={() => setShowChangePasswordModal(false)}
+            />
+          </ModalBlur>
         </ConditionalRender>
       </Container>
     </>

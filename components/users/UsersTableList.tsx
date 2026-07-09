@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
@@ -10,15 +10,10 @@ import { Button, Card, Col, Container, Form, InputGroup, Row } from "react-boots
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import {
-  ActionResponse,
   Employee,
   Permission,
   User,
 } from "@/lib/definitions";
-import ChangePasswordModal from "@/app/(auth)/app/users/views/ModalChangePassword";
-import ModalBlur from "../ModalBlur";
-import FormUpdateUser from "@/app/(auth)/app/users/views/UpdateUser";
-import { updateUser } from "@/app/actions/user-actions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import GenericSearchInput from "../employee/GenericSearchInput";
 
@@ -48,10 +43,7 @@ export default function UserTableClient({
   total,
   page,
   limit,
-  perms = [],
-  employees = [],
   search = "",
-
 }: {
   users: User[];
   total: number;
@@ -71,31 +63,15 @@ export default function UserTableClient({
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showUpdateUserModal, setShowUpdateUserModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [passwordModalUserId, setPasswordModalUserId] = useState<number | null>(
-    null
-  );
   const isClearingSelectionRef = useRef(false);
   const [, setTableResetKey] = useState(0);
 
-  // useEffect(() => {
-  //   if (loading) {
-  //     setLoading(false);
-  //     setMessageLoading("");
-  //   }
-  // }, [searchParamsString]);
+  useEffect(() => {
+    setLoading(false);
+    setMessageLoading("");
+  }, [searchParamsString]);
 
-  // const goToPage = (nextPage: number) => {
-  //   setLoading(true);
-  //   setMessageLoading("Cargando");
-  //   const params = new URLSearchParams(searchParamsString);
-  //   params.set("id", "null");
-  //   params.set("page", String(nextPage));
-  //   params.set("limit", String(limit));
-  //   router.push(`/app/users?${params.toString()}`);
-  // };
+  
   const goToPage = (nextPage: number) => {
     setLoading(true);
     setMessageLoading("Cargando...");
@@ -125,47 +101,6 @@ export default function UserTableClient({
     }, 0);
   }, []);
 
-  const handleClosePasswordModal = () => {
-    setShowPasswordModal(false);
-    setPasswordModalUserId(null);
-  };
-
-  const handleCloseUserFormModal = () => {
-    clearSelectedIds();
-    setSelectedUser(null);
-    setShowUpdateUserModal(false);
-  };
-
-  const handleUpdateUser = async (
-    data: TInputsUser
-  ): Promise<ActionResponse<boolean | null>> => {
-    if (!selectedUser?.id) {
-      return {
-        success: false,
-        message: "No hay usuario seleccionado",
-        data: null,
-      };
-    }
-
-    const res = await updateUser({
-      ...data,
-      id: selectedUser.id,
-    });
-
-    if (!res) {
-      return {
-        success: false,
-        message: "No se pudo actualizar el usuario",
-        data: null,
-      };
-    }
-
-    return {
-      success: true,
-      message: "Usuario actualizado correctamente",
-      data: true,
-    };
-  };
 
   const handleCreate = () => {
     setLoading(true);
@@ -289,25 +224,6 @@ export default function UserTableClient({
         <Loading message={messageLoading} />
       </ConditionalRender>
 
-      <ConditionalRender cond={showUpdateUserModal && !!selectedUser}>
-        <ModalBlur onClose={handleCloseUserFormModal}>
-          <FormUpdateUser
-            show={showUpdateUserModal}
-            onHide={handleCloseUserFormModal}
-            sendData={handleUpdateUser}
-            user={selectedUser}
-            perms={perms ?? []}
-            employees={employees ?? []}
-          />
-        </ModalBlur>
-      </ConditionalRender>
-
-      <ChangePasswordModal
-        show={showPasswordModal}
-        userId={passwordModalUserId}
-        onHide={handleClosePasswordModal}
-      />
-
       <Container className="py-3" style={{ maxWidth: "1600px" }}>
         <Button
           variant="primary"
@@ -329,7 +245,7 @@ export default function UserTableClient({
           </div>
         </div>
 
-        <Row className="justify-content-center" style={{height: "100%"}}>
+        <Row className="justify-content-center" style={{ height: "100%" }}>
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">

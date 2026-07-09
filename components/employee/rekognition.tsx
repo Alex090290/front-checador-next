@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Alert, Button, Form, Image } from "react-bootstrap";
+import { Alert, Button, Card, Col, Form, Image, Row } from "react-bootstrap";
 import toast from "react-hot-toast";
 import { enrollEmployeeFace } from "@/app/actions/employee-actions";
 import ConditionalRender from "@/components/ConditionalRender";
@@ -261,170 +261,188 @@ export default function RegisterBiometricModal({
   }
 
   return (
-    <div className="p-4">
+    <div className="p-2">
       <ConditionalRender cond={loading || startingCamera}>
         <Loading message={messageLoading || "Cargando..."} />
       </ConditionalRender>
 
-      <div className="mb-3 pe-4">
-        <h4 className="mb-1">Registrar biométricos</h4>
-        <div className="text-secondary">
-          {employeeName
-            ? `Empleado: ${employeeName.toUpperCase()}`
-            : `Empleado #${employeeId}`}
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h4 className="mb-1 fw-bold">Registrar biométricos</h4>
+          <p className="text-muted mb-0">
+            {employeeName
+              ? `Empleado: ${employeeName.toUpperCase()}`
+              : `Empleado #${employeeId}`}
+          </p>
         </div>
+
+        <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+          {hasBiometricPhotos ? "Registrado" : "Nuevo"}
+        </span>
       </div>
 
       <ConditionalRender cond={!hasBiometricPhotos}>
-        <Alert variant="info">
+        <Alert variant="info" className="rounded-4">
           Registra entre <strong>{MIN_FILES}</strong> y <strong>{MAX_FILES}</strong>{" "}
           fotografías claras del rostro del empleado. Idealmente:
           frontal, ligera izquierda y ligera derecha, con buena iluminación.
         </Alert>
       </ConditionalRender>
 
-      <div className="mb-3">
-        <ConditionalRender cond={!hasBiometricPhotos}>
-          <Form.Label className="fw-semibold">Selecciona una opción</Form.Label>
-
-          <div className="d-flex flex-wrap gap-2 mb-2">
-            <Button
-              variant="outline-primary"
-              onClick={() => uploadInputRef.current?.click()}
-              disabled={loading || startingCamera || files.length >= MAX_FILES}
-            >
-              <i className="bi bi-upload me-2" />
-              Subir archivo
-            </Button>
-
-            <Button
-              variant="outline-success"
-              onClick={handleOpenCamera}
-              disabled={loading || startingCamera || files.length >= MAX_FILES}
-            >
-              <i className="bi bi-camera me-2" />
-              {startingCamera ? "Abriendo cámara..." : "Tomar foto"}
-            </Button>
+      <Card className="border rounded-4 mb-3">
+        <Card.Body>
+          <div className="d-flex align-items-center justify-content-between mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-camera text-primary" />
+              <h6 className="mb-0 fw-bold">Captura de fotografías</h6>
+            </div>
+            <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+              {hasBiometricPhotos
+                ? `${employee.biometricPhotos?.length} / ${MAX_FILES}`
+                : `${files.length} / ${MAX_FILES}`}
+            </span>
           </div>
 
-          <div className="small text-secondary">
-            Fotos registradas: {files.length} / {MAX_FILES}
-          </div>
-        </ConditionalRender>
+          <ConditionalRender cond={!hasBiometricPhotos}>
+            <Form.Label className="fw-semibold">Selecciona una opción</Form.Label>
 
-        <ConditionalRender cond={hasBiometricPhotos}>
-          <div className="small text-secondary">
-            Fotos registradas: {employee.biometricPhotos?.length} / {MAX_FILES}
-          </div>
-        </ConditionalRender>
-
-        <Form.Control
-          ref={uploadInputRef}
-          type="file"
-          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-          multiple
-          onChange={handleChangeUploadFile}
-          disabled={loading}
-          className="d-none"
-        />
-      </div>
-
-      {cameraOpen && (
-        <div className="mb-3">
-          <div className="border rounded p-2 text-center">
-            <video
-              ref={videoRef}
-              className="w-100 rounded"
-              style={{ maxHeight: 360, objectFit: "cover" }}
-              autoPlay
-              playsInline
-              muted
-            />
-
-            <div className="d-flex justify-content-center gap-2 mt-3">
+            <div className="d-flex flex-wrap gap-2 mb-2">
               <Button
-                variant="success"
-                onClick={handleTakePhoto}
-                disabled={files.length >= MAX_FILES || loading}
+                variant="outline-primary"
+                onClick={() => uploadInputRef.current?.click()}
+                disabled={loading || startingCamera || files.length >= MAX_FILES}
               >
-                <i className="bi bi-camera-fill me-2" />
-                Capturar foto
+                <i className="bi bi-upload me-2" />
+                Subir archivo
               </Button>
 
               <Button
-                variant="secondary"
-                onClick={stopCamera}
-                disabled={loading}
+                variant="outline-success"
+                onClick={handleOpenCamera}
+                disabled={loading || startingCamera || files.length >= MAX_FILES}
               >
-                Cancelar cámara
+                <i className="bi bi-camera me-2" />
+                {startingCamera ? "Abriendo cámara..." : "Tomar foto"}
               </Button>
             </div>
-          </div>
-        </div>
+          </ConditionalRender>
+
+          <Form.Control
+            ref={uploadInputRef}
+            type="file"
+            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+            multiple
+            onChange={handleChangeUploadFile}
+            disabled={loading}
+            className="d-none"
+          />
+
+          <ConditionalRender cond={!hasBiometricPhotos && files.length === 0}>
+            <div className="text-muted mt-2">
+              Aún no has registrado ninguna imagen.
+            </div>
+          </ConditionalRender>
+        </Card.Body>
+      </Card>
+
+      {cameraOpen && (
+        <Card className="border rounded-4 mb-3">
+          <Card.Body>
+            <div className="d-flex align-items-center gap-2 mb-4">
+              <i className="bi bi-camera-video text-success" />
+              <h6 className="mb-0 fw-bold">Cámara</h6>
+            </div>
+
+            <div className="border rounded-3 p-2 text-center">
+              <video
+                ref={videoRef}
+                className="w-100 rounded"
+                style={{ maxHeight: 360, objectFit: "cover" }}
+                autoPlay
+                playsInline
+                muted
+              />
+
+              <div className="d-flex justify-content-center gap-2 mt-3">
+                <Button
+                  variant="success"
+                  onClick={handleTakePhoto}
+                  disabled={files.length >= MAX_FILES || loading}
+                >
+                  <i className="bi bi-camera-fill me-2" />
+                  Capturar foto
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  onClick={stopCamera}
+                  disabled={loading}
+                >
+                  Cancelar cámara
+                </Button>
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
       )}
 
-      <ConditionalRender cond={!hasBiometricPhotos}>
-        <div className="text-secondary mb-3">
-          Aún no has registrado ninguna imagen.
-        </div>
-      </ConditionalRender>
-
-      {/* <ConditionalRender cond={hasBiometricPhotos}>
-        <div className="text-secondary mb-3">
-          El registro biométrico está completo.
-        </div>
-      </ConditionalRender> */}
-
       {files.length > 0 && (
-        <div className="mb-3">
-          <div className="row g-3">
-            {files.map((item, index) => (
-              <div className="col-md-4" key={item.id}>
-                <div className="border rounded p-2 h-100">
-                  <div className="small fw-semibold mb-2">
-                    Foto {index + 1}
-                  </div>
+        <Card className="border rounded-4 mb-3">
+          <Card.Body>
+            <div className="d-flex align-items-center gap-2 mb-4">
+              <i className="bi bi-images text-warning" />
+              <h6 className="mb-0 fw-bold">Fotografías capturadas</h6>
+            </div>
 
-                  <Image
-                    src={item.preview}
-                    alt={`Vista previa ${index + 1}`}
-                    rounded
-                    fluid
-                    style={{
-                      width: "100%",
-                      height: 220,
-                      objectFit: "cover",
-                    }}
-                  />
+            <Row className="g-3">
+              {files.map((item, index) => (
+                <Col md={4} key={item.id}>
+                  <div className="border rounded-3 p-2 h-100">
+                    <div className="small fw-semibold mb-2">
+                      Foto {index + 1}
+                    </div>
 
-                  <div className="mt-2 d-grid">
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => handleRemoveFile(item.id)}
-                      disabled={loading}
-                    >
-                      <i className="bi bi-trash me-2" />
-                      Quitar
-                    </Button>
+                    <Image
+                      src={item.preview}
+                      alt={`Vista previa ${index + 1}`}
+                      rounded
+                      fluid
+                      style={{
+                        width: "100%",
+                        height: 220,
+                        objectFit: "cover",
+                      }}
+                    />
+
+                    <div className="mt-2 d-grid">
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => handleRemoveFile(item.id)}
+                        disabled={loading}
+                      >
+                        <i className="bi bi-trash me-2" />
+                        Quitar
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                </Col>
+              ))}
+            </Row>
+          </Card.Body>
+        </Card>
       )}
 
       <canvas ref={canvasRef} className="d-none" />
 
-      <div className="d-flex justify-content-end gap-2">
+      <div className="d-flex justify-content-end gap-2 mt-4">
         <Button variant="secondary" onClick={onClose} disabled={loading}>
           Cancelar
         </Button>
 
         <ConditionalRender cond={!hasBiometricPhotos}>
           <Button
-            variant="primary"
+            variant="success"
             onClick={handleSubmit}
             disabled={loading || files.length < MIN_FILES}
           >
@@ -433,10 +451,7 @@ export default function RegisterBiometricModal({
         </ConditionalRender>
 
         <ConditionalRender cond={hasBiometricPhotos}>
-          <Button
-            variant="primary"
-            onClick={handleActiveBiometrics}
-          >
+          <Button variant="success" onClick={handleActiveBiometrics}>
             Actualizar biométricos
           </Button>
         </ConditionalRender>

@@ -13,7 +13,7 @@ import {
 } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useEffect, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
@@ -128,89 +128,163 @@ export default function FormUpdateInability({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message="Cargando..." />
+      <ConditionalRender cond={loading || isSubmitting}>
+        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
       </ConditionalRender>
 
-      <ConditionalRender cond={isSubmitting}>
-        <Loading message="Guardando..." />
-      </ConditionalRender>
+      <div className="p-2">
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 className="mb-1 fw-bold">Incapacidad</h4>
+            <p className="text-muted mb-0">
+              Registra una nueva incapacidad indicando empleado, tipo y vigencia.
+            </p>
+          </div>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={loading || isSubmitting}>
-          <FieldGroupFluid>
-            <RelationField
-              callBackMode="id"
-              control={control}
-              label="Empleado"
-              options={employees.map((em) => ({
-                id: Number(em.id),
-                displayName: `${em.lastName} ${em.name}`.toUpperCase(),
-                name: `${em.lastName} ${em.name}`.toUpperCase(),
-              }))}
-              register={register("idEmployee", { required: true })}
-              readonly={session?.uid?.role === "EMPLOYEE"}
-            />
+          <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+            Nuevo
+          </span>
+        </div>
 
-            <FieldGroup.Stack>
-              <FieldSelect
-                label="Categoría:"
-                options={[
-                  { label: "Enfermedad general", value: "enfermedad general" },
-                  { label: "Riesgo de trabajo", value: "riesgo de trabajo" },
-                  { label: "Maternidad", value: "maternidad" },
-                ]}
-                register={register("disabilityCategory", { required: true })}
-                readonly={session?.uid?.role === "EMPLOYEE"}
-                invalid={!!errors.disabilityCategory}
-              />
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <fieldset disabled={loading || isSubmitting}>
 
-              <FieldSelect
-                label="Tipo:"
-                options={[
-                  { label: "Inicial", value: "inicial" },
-                  { label: "Subsecuente", value: "subsecuente" },
-                  { label: "Alta", value: "alta" },
-                ]}
-                register={register("typeOfDisability", { required: true })}
-                readonly={session?.uid?.role === "EMPLOYEE"}
-                invalid={!!errors.typeOfDisability}
-              />
-            </FieldGroup.Stack>
+            <Card className="border rounded-4 mb-3">
+              <Card.Body>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <i className="bi bi-person text-primary" />
+                  <h6 className="mb-0 fw-bold">Empleado</h6>
+                </div>
 
-            <FieldGroup.Stack>
-              <Entry
-                label="Fecha inicio:"
-                type="date"
-                register={register("dateInit", { required: true })}
-                readonly={session?.uid?.role === "EMPLOYEE"}
-                invalid={!!errors.dateInit}
-              />
-              <Entry
-                label="Fecha fin:"
-                type="date"
-                min={onChangeDateInit}
-                register={register("dateEnd", { required: true })}
-                readonly={session?.uid?.role === "EMPLOYEE"}
-                invalid={!!errors.dateEnd}
-              />
-            </FieldGroup.Stack>
+                <Row className="g-3">
+                  <Col md={12}>
+                    <RelationField
+                      callBackMode="id"
+                      control={control}
+                      label="Empleado"
+                      options={employees.map((em) => ({
+                        id: Number(em.id),
+                        displayName: `${em.lastName} ${em.name}`.toUpperCase(),
+                        name: `${em.lastName} ${em.name}`.toUpperCase(),
+                      }))}
+                      register={register("idEmployee", { required: true })}
+                      readonly={session?.uid?.role === "EMPLOYEE"}
+                    />
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
 
-            <Entry
-              register={register("folio")}
-              label="Folio CITT:"
-              className="text-uppercase"
-            />
+            <Card className="border rounded-4 mb-3">
+              <Card.Body>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <i className="bi bi-tags text-warning" />
+                  <h6 className="mb-0 fw-bold">Clasificación</h6>
+                </div>
 
-            <FieldGroup.Stack>
-              <Button type="submit">Guardar</Button>
-              <Button type="button" variant="secondary" onClick={onHide}>
+                <Row className="g-3">
+                  <Col md={6}>
+                    <FieldSelect
+                      label="Categoría:"
+                      options={[
+                        { label: "Enfermedad general", value: "enfermedad general" },
+                        { label: "Riesgo de trabajo", value: "riesgo de trabajo" },
+                        { label: "Maternidad", value: "maternidad" },
+                      ]}
+                      register={register("disabilityCategory", { required: true })}
+                      readonly={session?.uid?.role === "EMPLOYEE"}
+                      invalid={!!errors.disabilityCategory}
+                    />
+                  </Col>
+
+                  <Col md={6}>
+                    <FieldSelect
+                      label="Tipo:"
+                      options={[
+                        { label: "Inicial", value: "inicial" },
+                        { label: "Subsecuente", value: "subsecuente" },
+                        { label: "Alta", value: "alta" },
+                      ]}
+                      register={register("typeOfDisability", { required: true })}
+                      readonly={session?.uid?.role === "EMPLOYEE"}
+                      invalid={!!errors.typeOfDisability}
+                    />
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+
+            <Card className="border rounded-4 mb-3">
+              <Card.Body>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <i className="bi bi-calendar-range text-success" />
+                  <h6 className="mb-0 fw-bold">Vigencia</h6>
+                </div>
+
+                <Row className="g-3">
+                  <Col md={6}>
+                    <Entry
+                      label="Fecha inicio:"
+                      type="date"
+                      register={register("dateInit", { required: true })}
+                      readonly={session?.uid?.role === "EMPLOYEE"}
+                      invalid={!!errors.dateInit}
+                      className="border"
+                    />
+                  </Col>
+
+                  <Col md={6}>
+                    <Entry
+                      label="Fecha fin:"
+                      type="date"
+                      min={onChangeDateInit}
+                      register={register("dateEnd", { required: true })}
+                      readonly={session?.uid?.role === "EMPLOYEE"}
+                      invalid={!!errors.dateEnd}
+                      className="border"
+                    />
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+
+            <Card className="border rounded-4">
+              <Card.Body>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <i className="bi bi-upc-scan text-info" />
+                  <h6 className="mb-0 fw-bold">Folio</h6>
+                </div>
+
+                <Row className="g-3">
+                  <Col md={12}>
+                    <Entry
+                      register={register("folio")}
+                      label="Folio CITT:"
+                      className="text-uppercase border"
+                    />
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onHide}
+                disabled={loading || isSubmitting}
+              >
                 Cancelar
               </Button>
-            </FieldGroup.Stack>
-          </FieldGroupFluid>
-        </fieldset>
-      </Form>
+
+              <Button type="submit" variant="success" disabled={loading || isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar"}
+              </Button>
+            </div>
+
+          </fieldset>
+        </Form>
+      </div>
     </>
   );
 }

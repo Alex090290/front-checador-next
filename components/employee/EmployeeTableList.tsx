@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Employee } from "@/lib/definitions";
 import ListView from "../templates/ListView";
@@ -40,12 +40,10 @@ export default function EmployeeTableClient({
   const isClearingSelectionRef = useRef(false);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
 
-  // useEffect(() => {
-  //   if (loading) {
-  //     setLoading(false);
-  //     setMessageLoading("");
-  //   }
-  // }, [searchParamsString]);
+  useEffect(() => {
+    setLoading(false);
+    setMessageLoading("");
+  }, [searchParamsString]);
 
   const handleCreate = () => {
     setLoading(true);
@@ -106,7 +104,6 @@ export default function EmployeeTableClient({
       } else {
         params.delete("search");
       }
-
       clearSelectedIds();
       router.push(`/app/employee?${params.toString()}`);
     },
@@ -115,51 +112,12 @@ export default function EmployeeTableClient({
 
   const columns: TableTemplateColumn<Employee>[] = [
     {
-      key: "name",
-      label: "Nombre",
-      accessor: (u) => u.name,
+      key: "employeeName",
+      label: "Empleado",
+      accessor: (u) => `${u.lastName} ${u.name}`,
       filterable: false,
       type: "string",
-      render: (u) => <div className="text-uppercase">{u.name}</div>,
-    },
-    {
-      key: "lastName",
-      label: "Apellidos",
-      accessor: (u) => u.lastName,
-      filterable: false,
-      type: "string",
-      render: (u) => <div className="text-uppercase">{u.lastName}</div>,
-    },
-    {
-      key: "status",
-      label: "Estado",
-      accessor: (u) => employeeStatus[u.status as keyof typeof employeeStatus] ?? "",
-      filterable: false,
-      type: "string",
-      render: (u) => {
-        const estado = u.status
-        switch (estado) {
-          case 1:
-            return (
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                ACTIVO
-              </span>
-            );
-          case 2:
-            return (
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                BAJA
-              </span>
-            );
-        }
-      }
-    },
-    {
-      key: "phonePersonal.internationalNumber",
-      label: "Teléfono",
-      accessor: (u) => u.phonePersonal?.internationalNumber,
-      filterable: false,
-      type: "string",
+      render: (u) => <div className="text-uppercase">{u.lastName} {u.name}</div>,
     },
     {
       key: "department.nameDepartment",
@@ -194,14 +152,28 @@ export default function EmployeeTableClient({
       ),
     },
     {
-      key: "branch.name",
-      label: "Sucursal",
-      accessor: (u) => u.branch?.name,
+      key: "status",
+      label: "Estatus",
+      accessor: (u) => employeeStatus[u.status as keyof typeof employeeStatus] ?? "",
       filterable: false,
       type: "string",
-      render: (u) => (
-        <div className="text-uppercase">{u.branch?.name}</div>
-      ),
+      render: (u) => {
+        const estado = u.status
+        switch (estado) {
+          case 1:
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                ACTIVO
+              </span>
+            );
+          case 2:
+            return (
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                BAJA
+              </span>
+            );
+        }
+      }
     },
   ];
 

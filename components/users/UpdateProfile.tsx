@@ -9,7 +9,7 @@ import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps, User } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import { useEffect, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { loadAvatar } from "@/app/actions/user-actions";
 
@@ -98,95 +98,136 @@ export default function FormUpdateProfile({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message="Cargando..." />
+      <ConditionalRender cond={loading || isSubmitting}>
+        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
       </ConditionalRender>
 
-      <ConditionalRender cond={isSubmitting}>
-        <Loading message="Guardando..." />
-      </ConditionalRender>
+      <div className="p-2">
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 className="mb-1 fw-bold">Mi perfil</h4>
+            <p className="text-muted mb-0">
+              Actualiza tu información personal y foto de perfil.
+            </p>
+          </div>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={loading || isSubmitting}>
-          <FieldGroupFluid>
-            <Entry
-              register={register("name", {
-                required: "Nombre requerido",
-              })}
-              label="Nombre:"
-              invalid={!!errors.name}
-              feedBack={errors.name?.message}
-              className="text-uppercase"
-            />
+          <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+            Editar
+          </span>
+        </div>
 
-            <Entry
-              register={register("lastName", {
-                required: "Apellidos requeridos",
-              })}
-              label="Apellidos:"
-              invalid={!!errors.lastName}
-              feedBack={errors.lastName?.message}
-              className="text-uppercase"
-            />
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <fieldset disabled={loading || isSubmitting}>
 
-            <Entry
-              register={register("email", {
-                required: "Correo requerido",
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Correo electrónico inválido",
-                },
-              })}
-              label="Correo:"
-              invalid={!!errors.email}
-              feedBack={errors.email?.message}
-              type="email"
-            />
+            <Card className="border rounded-4 mb-3">
+              <Card.Body>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <i className="bi bi-person-circle text-primary" />
+                  <h6 className="mb-0 fw-bold">Foto de perfil</h6>
+                </div>
 
-            <Entry
-              register={register("phone", {
-                required: "Teléfono requerido",
-              })}
-              label="Teléfono:"
-              invalid={!!errors.phone}
-              feedBack={errors.phone?.message as string}
-            />
+                <div className="text-center">
+                  <ImageField
+                    {...register("imageUrl")}
+                    width={150}
+                    height={150}
+                    control={control}
+                    editable={true}
+                  />
+                </div>
+              </Card.Body>
+            </Card>
 
-            <FieldSelect
-              register={register("gender", {
-                required: "Este campo es requerido",
-              })}
-              options={[
-                { value: "MASCULINO", label: "Masculino" },
-                { value: "FEMENINO", label: "Femenino" },
-              ]}
-              label="Género:"
-              invalid={!!errors.gender}
-              feedBack={errors.gender?.message}
-            />
+            <Card className="border rounded-4 mb-3">
+              <Card.Body>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <i className="bi bi-person text-warning" />
+                  <h6 className="mb-0 fw-bold">Datos personales</h6>
+                </div>
 
-            <div className="text-center">
-              <ImageField
-                {...register("imageUrl")}
-                width={150}
-                height={150}
-                control={control}
-                editable={true}
-              />
-            </div>
+                <Row className="g-3">
+                  <Col md={6}>
+                    <Entry
+                      register={register("name", { required: "Nombre requerido" })}
+                      label="Nombre:"
+                      invalid={!!errors.name}
+                      feedBack={errors.name?.message}
+                      className="text-uppercase border"
+                    />
+                  </Col>
 
-            <FieldGroup.Stack>
-              <Button type="submit">
-                Guardar
-              </Button>
+                  <Col md={6}>
+                    <Entry
+                      register={register("lastName", { required: "Apellidos requeridos" })}
+                      label="Apellidos:"
+                      invalid={!!errors.lastName}
+                      feedBack={errors.lastName?.message}
+                      className="text-uppercase border"
+                    />
+                  </Col>
 
-              <Button type="button" variant="secondary" onClick={onHide}>
+                  <Col md={6}>
+                    <Entry
+                      register={register("email", {
+                        required: "Correo requerido",
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Correo electrónico inválido",
+                        },
+                      })}
+                      label="Correo:"
+                      invalid={!!errors.email}
+                      feedBack={errors.email?.message}
+                      type="email"
+                      className="border"
+                    />
+                  </Col>
+
+                  <Col md={6}>
+                    <Entry
+                      register={register("phone", { required: "Teléfono requerido" })}
+                      label="Teléfono:"
+                      invalid={!!errors.phone}
+                      feedBack={errors.phone?.message as string}
+                      className="border"
+                    />
+                  </Col>
+
+                  <Col md={6}>
+                    <FieldSelect
+                      register={register("gender", { required: "Este campo es requerido" })}
+                      options={[
+                        { value: "MASCULINO", label: "Masculino" },
+                        { value: "FEMENINO", label: "Femenino" },
+                      ]}
+                      label="Género:"
+                      invalid={!!errors.gender}
+                      feedBack={errors.gender?.message}
+                      className="border"
+                    />
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onHide}
+                disabled={loading || isSubmitting}
+              >
                 Cancelar
               </Button>
-            </FieldGroup.Stack>
-          </FieldGroupFluid>
-        </fieldset>
-      </Form>
+
+              <Button type="submit" variant="success" disabled={loading || isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar"}
+              </Button>
+            </div>
+
+          </fieldset>
+        </Form>
+      </div>
     </>
   );
 }

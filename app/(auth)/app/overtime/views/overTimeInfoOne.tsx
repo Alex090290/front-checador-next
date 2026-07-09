@@ -8,7 +8,7 @@ export default async function OverTimeInfoOne ({ id }: { id: string }) {
     const [overtime, departments, configSystem] = await Promise.all([
         findOvertimeById({ id: Number(id) }),
         fetchDepartments(),
-        getConfigSystem()
+        getConfigSystem(),
     ]);
 
     return <OvertimeOne overtime={overtime} departments={departments} connfigSystem={configSystem}/>;

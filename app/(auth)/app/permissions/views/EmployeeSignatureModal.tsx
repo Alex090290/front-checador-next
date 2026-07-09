@@ -1,11 +1,14 @@
 "use client";
 
 import { signatureDohPermission } from "@/app/actions/permissions-actions";
+import ConditionalRender from "@/components/ConditionalRender";
 import { SignatureInput } from "@/components/fields";
+import Loading from "@/components/LoadingSpinner";
 import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { Button, Form, Modal, Spinner } from "react-bootstrap";
+import { useState } from "react";
+import { Button, Form, Modal } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -27,61 +30,86 @@ function EmployeeSignatureModal({
   } = useForm<TInputs>();
 
   const { modalError, modalConfirm } = useModals();
-  const router = useRouter();
+  const router = useRouter(); const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
-    const res = await signatureDohPermission({
-      data: { id, signature: data.signature },
-    });
-
-    if (!res.success) return modalError(res.message);
-
-    toast.success(res.message);
     onHide();
-    router.back();
+
+    modalConfirm("¿Seguro que quieres guardar la firma?", async () => {
+      try {
+
+        setLoading(true);
+        setMessageLoading("Enviando firma...");
+
+        const res = await signatureDohPermission({
+          data: { id, signature: data.signature },
+        });
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
+        }
+
+        toast.success(res.message);
+        onHide();
+        router.refresh();
+
+      } finally {
+
+        setLoading(false);
+        setMessageLoading("");
+
+      }
+    });
   };
 
   const handleOnExited = () => {
     reset({ signature: "" });
   };
 
-  const handleConfirm = () => modalConfirm("Confirmar", handleSubmit(onSubmit));
-
   return (
-    <Modal
-      show={show}
-      onHide={onHide}
-      backdrop="static"
-      onExited={handleOnExited}
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Firma del Empleado</Modal.Title>
-      </Modal.Header>
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <Modal.Body>
-          <Form.Group className="mb-2 border border-2">
-            <SignatureInput
-              control={control}
-              name="signature"
-              register={register}
-            />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={onHide}>
-            Cancelar
-          </Button>
-          <Button type="button" onClick={handleConfirm}>
-            {isSubmitting ? (
-              <Spinner size="sm" animation="border" />
-            ) : (
-              <span>Enviar</span>
-            )}
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
+    <>
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading || "Enviando firma..."} />
+      </ConditionalRender>
+      
+      <Modal
+        show={show}
+        onHide={onHide}
+        backdrop="static"
+        onExited={handleOnExited}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Firma del Empleado</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <Modal.Body>
+            <Form.Group className="mb-2">
+              <SignatureInput
+                control={control}
+                name="signature"
+                register={register}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={onHide}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="bg-success border-success"
+              disabled={isSubmitting}
+            >
+              Enviar
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </>
   );
 }
 

@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { getCurrentPeriod } from "@/app/actions/periods-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import moment from "moment-timezone";
+import ConditionalRender from "../ConditionalRender";
 
 function NavUserInfo() {
   const { data: session } = useSession();
@@ -62,6 +63,10 @@ function NavUserInfo() {
     })
   }
 
+  const singOutHanddle = ()=>{
+    localStorage.removeItem("menu-data");
+    signOut()
+  }
   const [profileOpen, setProfileOpen] = useState(false);
 
   const periodText = `${currentPeriod?.description ?? "—"} · ${currentPeriod?.dateInit
@@ -119,6 +124,7 @@ function NavUserInfo() {
               zIndex: 2000,
             }}
           >
+            
             <Dropdown.Item
               as={Link}
               href={`/app/users/profile?id=${session?.user?.id}`}
@@ -126,8 +132,9 @@ function NavUserInfo() {
               <i className="bi bi-person-circle me-2"></i>
               <span>Perfil</span>
             </Dropdown.Item>
+            
 
-            <Dropdown.Item onClick={() => signOut()}>
+            <Dropdown.Item onClick={() =>singOutHanddle()}>
               <i className="bi bi-box-arrow-right me-2"></i>
               <span>Cerrar sesión</span>
             </Dropdown.Item>

@@ -6,7 +6,6 @@ import Loading from "@/components/LoadingSpinner";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import { Employee } from "@/lib/definitions";
-import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
@@ -200,7 +199,7 @@ export default function CreateInabilityComponent({
                               { label: "Maternidad", value: "maternidad" },
                             ]}
                             register={register("disabilityCategory", { required: true })}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             invalid={!!errors.disabilityCategory}
                             className="border"
                           />
@@ -215,7 +214,7 @@ export default function CreateInabilityComponent({
                               { label: "Alta", value: "alta" },
                             ]}
                             register={register("typeOfDisability", { required: true })}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             invalid={!!errors.typeOfDisability}
                             className="border"
                           />
@@ -238,8 +237,8 @@ export default function CreateInabilityComponent({
                             type="date"
                             register={register("dateInit", { required: true })}
                             invalid={!!errors.dateInit}
-                            min={formatDate(new Date(), "yyyy-MM-dd")}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             className="border"
                           />
                         </Col>
@@ -251,7 +250,7 @@ export default function CreateInabilityComponent({
                             min={onChangeDateInit}
                             register={register("dateEnd", { required: true })}
                             invalid={!!errors.dateEnd}
-                            readonly={session?.uid?.role === "EMPLOYEE"}
+                            // readonly={session?.uid?.role === "EMPLOYEE"}
                             className="border"
                           />
                         </Col>

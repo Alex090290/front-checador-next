@@ -205,7 +205,7 @@ export default function InfoOneDepartment({
               >
                 <i className="bi bi-plus-lg" />
 
-                <span className="d-none d-md-inline">
+                <span className="d-none d-md-inline ms-2">
                   Crear Departamento
                 </span>
               </Button>
@@ -220,7 +220,7 @@ export default function InfoOneDepartment({
               >
                 <i className="bi bi-pencil" />
 
-                <span className="d-none d-md-inline">
+                <span className="d-none d-md-inline ms-2">
                   Actualizar Departamento
                 </span>
               </Button>

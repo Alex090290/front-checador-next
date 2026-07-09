@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { IPermissionRequest } from "@/lib/definitions";
-import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
@@ -12,35 +12,44 @@ import ApproveLeaderModal from "@/app/(auth)/app/permissions/views/ApproveLeader
 import SignatureDohModal from "@/app/(auth)/app/permissions/views/SignatureDohModal";
 import EmployeeSignatureModal from "@/app/(auth)/app/permissions/views/EmployeeSignatureModal";
 import PermissionPDFownload from "@/app/(auth)/app/permissions/views/PermissionPDFownload";
+import ConditionalRender from "../ConditionalRender";
+import OverLay from "../templates/OverLay";
+import Loading from "../LoadingSpinner";
+import { useRouter } from "next/navigation";
+import { ISignatures } from "@/lib/overTime/interface";
+import PermissionsOneError from "./permissionsMessageError";
+
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
   return `${p.lastName ?? ""} ${p.name ?? ""}`.trim().toUpperCase();
 }
 
-function statusLabel(status?: string | null) {
-  switch ((status ?? "").toUpperCase()) {
-    case "APPROVED":
-      return "APROBADO";
-    case "PENDING":
-      return "PENDIENTE";
-    case "REFUSED":
-      return "RECHAZADO";
-    default:
-      return status ? status.toUpperCase() : "—";
-  }
-}
-
 function statusVariant(status?: string | null) {
   switch ((status ?? "").toUpperCase()) {
     case "APPROVED":
-      return "success";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+          APROBADO
+        </span>
+      )
+
     case "PENDING":
-      return "warning";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+          PENDIENTE
+        </span>
+      )
     case "REFUSED":
-      return "danger";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+          RECHAZADO
+        </span>
+      )
     default:
-      return "secondary";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+      )
   }
 }
 
@@ -60,8 +69,10 @@ export default function ShowInfoPermissionRequest({
   permission: IPermissionRequest | null;
   id: string;
 }) {
+  const router = useRouter();
   const session = useSessionSnapshot();
-
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
   const [approveModal, setApproveModal] = useState(false);
   const [signatureModal, setSignatureModal] = useState(false);
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
@@ -71,6 +82,24 @@ export default function ShowInfoPermissionRequest({
     ? permission!.signatures
     : [];
 
+  // ID del empleado con sesión activa
+  const idEmployee = Number(session?.uid?.idEmployee);
+
+  // ID del empleado al que pertenece el registro de overtime
+  const overtimeEmployeeId = Number(permission?.employee?.id);
+
+  // Indica si el registro aún está pendiente de aprobación
+  const isPending = permission?.status === 'PENDING';
+
+  // Busca la firma correspondiente al empleado con sesión activa
+  // Solo recalcula si cambia el array de firmas o el id del empleado en sesión
+  const currentSignature = useMemo(() => {
+    return signatures.find((i: ISignatures) => i.idSignatory === idEmployee) ?? null;
+  }, [signatures, idEmployee]);
+
+  // Indica si el firmante actual aún no ha firmado (url vacía = sin firma)
+  const hasNotSigned = currentSignature?.url === '';
+
   const getSignatureEmployee = () => {
     const sign = permission?.signatures?.filter(
       (f) => f.idSignatory === Number(session?.uid?.idEmployee)
@@ -78,10 +107,16 @@ export default function ShowInfoPermissionRequest({
 
     return sign?.url !== "";
   };
+  
+  const showLeaderApprove = useMemo(() => {
+    return (!!session?.uid?.roles?.isLeader || !!session?.uid?.roles?.isExtra)
+      && idEmployee !== overtimeEmployeeId
+      && !!currentSignature
+      && hasNotSigned
+      && isPending;
+  }, [session, idEmployee, overtimeEmployeeId, currentSignature, hasNotSigned, isPending]);
 
-  const showLeaderApprove =
-    permission?.leader.id === Number(session?.uid?.idEmployee) &&
-    permission.leaderApproval !== "APPROVED";
+
 
   const showDohApprove =
     session?.uid?.idEmployee === permission?.personDoh.id &&
@@ -91,19 +126,13 @@ export default function ShowInfoPermissionRequest({
     session?.uid?.idEmployee === permission?.employee.id &&
     !getSignatureEmployee();
 
-  const showAnyActions = useMemo(() => {
-    return showLeaderApprove || showDohApprove || showEmployeeSign || true;
-  }, [showLeaderApprove, showDohApprove, showEmployeeSign]);
+  // const showAnyActions = useMemo(() => {
+  //   return showLeaderApprove || showDohApprove || showEmployeeSign || true;
+  // }, [showLeaderApprove, showDohApprove, showEmployeeSign]);
 
   if (!permission) {
     return (
-      <Card className="border-0">
-        <Card.Body className="py-3">
-          <div className="text-muted">
-            Selecciona una solicitud para ver el detalle.
-          </div>
-        </Card.Body>
-      </Card>
+      <PermissionsOneError/> 
     );
   }
 
@@ -115,215 +144,285 @@ export default function ShowInfoPermissionRequest({
   const handleEmployeeSignature = () => setEmployeeSignatureModal(true);
   const handleDownloadPDF = () => setPermissionPDFModal(true);
 
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/permissions/create");
+  };
+
+
+  const handleBack = () => {
+    setLoading(true);
+    setMessageLoading("Cargando datos...");
+    router.push("/app/permissions");
+  }
+
   return (
     <>
-    
-      <Card className="border-0 h-100">
-        <Card.Body className="p-3 p-md-4">
-          <Container fluid className="px-0">
-            {/* Header */}
-            <Row className="g-3 align-items-start align-items-md-center">
-              <Col xs={12} md={8}>
-                <div className="d-flex flex-wrap align-items-center gap-2">
-                  <h5 className="m-0 fw-bold text-uppercase">
-                    Solicitud #{permission.id}
-                  </h5>
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
 
-                  <Badge bg={statusVariant(overallStatus)}>
-                    {statusLabel(overallStatus)}
-                  </Badge>
-                </div>
+      <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
 
-                <div className="text-muted mt-2">
-                  <div className="text-uppercase fw-semibold">
-                    {permission.type ?? "PERMISO"}
-                  </div>
-                  <div className="small">Creada: {createdAt}</div>
-                </div>
-              </Col>
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
-              <Col xs={12} md={4}>
-                <Card className="border-0 table-active">
-                  <Card.Body className="py-2 px-3">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="text-muted small text-uppercase">
-                        Vigencia
-                      </div>
-                      <div className="fw-semibold text-uppercase">
-                        {safeDate(permission.dateInit)} -{" "}
-                        {safeDate(permission.dateEnd)}
-                      </div>
+
+          <div className="d-flex gap-2 flex-wrap">
+            <OverLay string="Crear registro">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={handleCreate}
+                disabled={loading}
+              >
+                <i className="bi bi-plus-lg" />
+
+                <span className="d-none d-md-inline ms-2">
+                  Crear permiso
+                </span>
+              </Button>
+            </OverLay>
+
+            <ConditionalRender cond={showEmployeeSign}>
+              <OverLay string="Firmar">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="warning"
+                  onClick={handleEmployeeSignature}
+                >
+                  <i className="bi bi-pen-fill" />
+                  <span className="d-none d-md-inline ms-2">Firmar</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
+
+            <ConditionalRender cond={showLeaderApprove}>
+              <OverLay string="Aprobar">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="success"
+                  onClick={handleApprove}
+                >
+                  <i className="bi bi-check-circle" />
+                  <span className="d-none d-md-inline ms-2">Aprobar</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
+
+            <ConditionalRender cond={showDohApprove}>
+              <OverLay string="Aprobar">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="secondary"
+                  onClick={handleSignatureDoh}
+                >
+                  <i className="bi bi-card-checklist" />
+                  <span className="d-none d-md-inline ms-2">Firmar de enterado</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
+
+            <OverLay string="Descargar PDF">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
+                variant="dark"
+                onClick={handleDownloadPDF}
+              >
+                <i className="bi bi-filetype-pdf" />
+                <span className="d-none d-md-inline ms-2">Descargar</span>
+              </Button>
+            </OverLay>
+          </div>
+
+          <div className=" d-md-flex flex-wrap">
+            <Button
+              variant="outline-secondary"
+              onClick={handleBack}
+              disabled={loading}
+              className="d-inline-flex align-items-center gap-2 fw-semibold px-2 px-md-3"
+            >
+              <i className="bi bi-arrow-left" />
+              Regresar
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <h1 className="mb-1 ms-1 text-uppercase">{permission.employee.lastName} {permission.employee.name}</h1>
+          <p className="text-muted mb-0 ms-1">
+            Información de la solicitud de permiso.
+          </p>
+        </div>
+
+        <Card className="border shadow-sm rounded-4 mt-2">
+          <Card.Body className="p-4">
+            <div className="d-flex align-items-center justify-content-between mb-4">
+              <div>
+                <h5 className="mb-1 fw-bold">
+                  Solicitud #{permission.id}
+                </h5>
+
+                <p className="text-muted mb-0">
+                  {permission.type ?? "Permiso"}
+                </p>
+              </div>
+
+              {statusVariant(overallStatus)}
+
+            </div>
+
+
+            <Row className="g-4 mb-4">
+              {/* RESUMEN */}
+              <Col xs={12} lg={4}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <h6 className="mb-0 fw-bold">Resumen</h6>
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        General
+                      </span>
                     </div>
 
-                    {showAnyActions && (
-                      <div className="d-flex justify-content-end gap-2 flex-wrap mt-2">
-                        {showLeaderApprove && (
-                          <Button
-                            size="sm"
-                            variant="warning"
-                            className="fw-semibold"
-                            onClick={handleApprove}
-                          >
-                            Aprobar
-                          </Button>
-                        )}
-
-                        {showDohApprove && (
-                          <Button
-                            size="sm"
-                            variant="success"
-                            className="fw-semibold"
-                            onClick={handleSignatureDoh}
-                          >
-                            Aprobar
-                          </Button>
-                        )}
-
-                        {showEmployeeSign && (
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            className="fw-semibold"
-                            onClick={handleEmployeeSignature}
-                          >
-                            Firmar
-                          </Button>
-                        )}
-
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          className="fw-semibold"
-                          onClick={handleDownloadPDF}
-                        >
-                          <i className="bi bi-filetype-pdf me-2" />
-                          Descargar
-                        </Button>
+                    <div className="d-flex flex-column gap-3">
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-calendar-plus text-primary" />
+                          <span className="text-muted">Creada</span>
+                        </div>
+                        <span className="fw-semibold text-end">{createdAt}</span>
                       </div>
-                    )}
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person text-success" />
+                          <span className="text-muted">Creada por</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {fullName(permission.createForPerson)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-workspace text-warning" />
+                          <span className="text-muted">Líder</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(permission.leader)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-check text-info" />
+                          <span className="text-muted">D.O.H.</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(permission.personDoh)}
+                        </span>
+                      </div>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
-            </Row>
 
-            {/* Main info */}
-            <Row className="g-3 mt-1">
+
+              {/* DETALLES */}
               <Col xs={12} lg={8}>
-                <Card className="border-0">
-                  <Card.Body className="p-0">
-                    <Row className="g-3">
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="text-muted small text-uppercase">
-                              Empleado
-                            </div>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <div>
+                        <h6 className="mb-1 fw-bold">Detalles del registro</h6>
+                        <p className="text-muted mb-0 small">
+                          Consulta el tipo, vigencia y motivo registrado.
+                        </p>
+                      </div>
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        Registro
+                      </span>
+                    </div>
+
+                    <div className="d-flex flex-column gap-4">
+                      <div className="border rounded-3 p-3">
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <i className="bi bi-chat-left-text text-primary" />
+                          <span className="text-muted fw-semibold">Motivo</span>
+                        </div>
+                        <div className="text-uppercase">
+                          {permission.motive ?? "—"}
+                        </div>
+                      </div>
+
+                      <Row className="g-3">
+                        <Col xs={12} md={6} xl={3}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Fecha inicio</div>
                             <div className="fw-semibold">
-                              {fullName(permission.employee)}
+                              {safeDate(permission.dateInit)}
                             </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+                          </div>
+                        </Col>
 
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="text-muted small text-uppercase">
-                              Creada por
-                            </div>
+                        <Col xs={12} md={6} xl={3}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Fecha fin</div>
                             <div className="fw-semibold">
-                              {fullName(permission.createForPerson)}
+                              {safeDate(permission.dateEnd)}
                             </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+                          </div>
+                        </Col>
 
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="text-muted small text-uppercase">
-                              Líder
-                            </div>
+                        <Col xs={12} md={6} xl={3}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-clock text-warning fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Hora inicio</div>
                             <div className="fw-semibold">
-                              {fullName(permission.leader)}
+                              {permission.hourInt ?? "—"}
                             </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+                          </div>
+                        </Col>
 
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="text-muted small text-uppercase">
-                              D.O.H.
-                            </div>
+                        <Col xs={12} md={6} xl={3}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-clock-history text-info fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Hora fin</div>
                             <div className="fw-semibold">
-                              {fullName(permission.personDoh)}
+                              {permission.hourEnd ?? "—"}
                             </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-
-                      <Col xs={12}>
-                        <Card className="border-0 table-active">
-                          <Card.Body className="py-3 px-3">
-                            <Row className="g-3">
-                              <Col xs={12} md={4}>
-                                <div className="text-muted small text-uppercase">
-                                  Tipo
-                                </div>
-                                <div className="fw-semibold text-uppercase">
-                                  {permission.type ?? "—"}
-                                </div>
-                              </Col>
-
-                              <Col xs={12} md={8}>
-                                <div className="text-muted small text-uppercase">
-                                  Motivo
-                                </div>
-                                <div className="fw-semibold">
-                                  {permission.motive ?? "—"}
-                                </div>
-                              </Col>
-
-                              <Col xs={12} md={6}>
-                                <div className="text-muted small text-uppercase">
-                                  Fecha inicio / fin
-                                </div>
-                                <div className="fw-semibold">
-                                  {safeDate(permission.dateInit)} -{" "}
-                                  {safeDate(permission.dateEnd)}
-                                </div>
-                              </Col>
-
-                              <Col xs={12} md={6}>
-                                <div className="text-muted small text-uppercase">
-                                  Hora inicio / fin
-                                </div>
-                                <div className="fw-semibold">
-                                  {permission.hourInt ?? "—"} -{" "}
-                                  {permission.hourEnd ?? "—"}
-                                </div>
-                              </Col>
-                            </Row>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    </Row>
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
             </Row>
 
-            {/* Firmas */}
-            <FormBook dKey="signatures">
-              {signatures.length > 0 && (
-                <FormPage title="Firmas" eventKey="signatures">
-                  <Container>
-                    <Row className="g-2 py-2">
+            {/* FIRMAS */}
+            <Card className="border rounded-4">
+              <Card.Body>
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                  <h6 className="mb-0 fw-bold">
+                    Firmas
+                  </h6>
+
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                    Autorizaciones
+                  </span>
+                </div>
+
+                <FormBook dKey="newArray">
+                  <FormPage title="" eventKey="newArray">
+                    <Row className="g-3">
                       {signatures.map((sign) => (
                         <SignaturesView
-                          key={sign._id}
+                          key={`${sign.id}-${sign.url}`}
                           idPermission={String(permission.id)}
                           idEmployee={String(sign.idSignatory)}
                           name={sign.name}
@@ -331,21 +430,24 @@ export default function ShowInfoPermissionRequest({
                           status={sign.status}
                           dateApprove={permission.dateApprove}
                           dateApproveDoh={permission.dateApproveDoh}
+                          label={sign.label}
                         />
                       ))}
                     </Row>
-                  </Container>
-                </FormPage>
-              )}
-            </FormBook>
-          </Container>
-        </Card.Body>
-      </Card>
+                  </FormPage>
+                </FormBook>
+              </Card.Body>
+            </Card >
+          </Card.Body>
+        </Card>
+      </Container >
+
 
       {/* Modales */}
-      <ApproveLeaderModal
+      < ApproveLeaderModal
         show={approveModal}
-        onHide={() => setApproveModal(false)}
+        onHide={() => setApproveModal(false)
+        }
         id={id}
       />
 

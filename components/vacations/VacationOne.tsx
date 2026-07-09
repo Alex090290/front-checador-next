@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PeriodVacation, Vacations } from "@/lib/definitions";
 import {
-  Badge,
   Button,
   Card,
   Col,
@@ -21,37 +20,47 @@ import SignatureVacationDohModal from "@/app/(auth)/app/vacations/views/Signatur
 import VacationPDFownload from "@/app/(auth)/app/vacations/views/VacationPDFownload";
 
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { fetchPeriods } from "@/app/actions/vacations-actions";
-import DeleteleVacation from "./DeleteVacation";
+import { deleteVacation, fetchPeriods } from "@/app/actions/vacations-actions";
+import ConditionalRender from "../ConditionalRender";
+import OverLay from "../templates/OverLay";
+import Loading from "../LoadingSpinner";
+import { useRouter } from "next/navigation";
+import { useModals } from "@/context/ModalContext";
+import toast from "react-hot-toast";
+import { ISignatures } from "@/lib/overTime/interface";
+import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
+import VacationsOneError from "./vacationsMessageError";
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
   return `${p.lastName ?? ""} ${p.name ?? ""}`.trim().toUpperCase();
 }
 
-function statusLabel(status?: string | null) {
-  switch ((status ?? "").toUpperCase()) {
-    case "APPROVED":
-      return "APROBADO";
-    case "PENDING":
-      return "PENDIENTE";
-    case "REFUSED":
-      return "RECHAZADO";
-    default:
-      return status ? status.toUpperCase() : "—";
-  }
-}
-
 function statusVariant(status?: string | null) {
   switch ((status ?? "").toUpperCase()) {
     case "APPROVED":
-      return "success";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+          APROBADO
+        </span>
+      )
+
     case "PENDING":
-      return "warning";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+          PENDIENTE
+        </span>
+      )
     case "REFUSED":
-      return "danger";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+          RECHAZADO
+        </span>
+      )
     default:
-      return "secondary";
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+      )
   }
 }
 
@@ -75,20 +84,43 @@ export default function ShowInfoVacation({
 }: {
   vacation: Vacations | null;
 }) {
+  const router = useRouter();
   const session = useSessionSnapshot();
-
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
   const [approveModal, setApproveModal] = useState(false);
   const [signatureDohModal, setSignatureDohModal] = useState(false);
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
+  const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [, setPeriods] = useState<PeriodVacation[]>([]);
+  const { modalError, modalConfirm } = useModals();
+
+  const signatures = Array.isArray(vacation?.signatures)
+    ? vacation!.signatures
+    : [];
+
+  // ID del empleado con sesión activa
+  const idEmployee = Number(session?.uid?.idEmployee);
+
+  // ID del empleado al que pertenece el registro de overtime
+  const overtimeEmployeeId = Number(vacation?.employee?.id);
+
+  // Indica si el registro aún está pendiente de aprobación
+  const isPending = vacation?.status === 'PENDING';
+
+  // Busca la firma correspondiente al empleado con sesión activa
+  // Solo recalcula si cambia el array de firmas o el id del empleado en sesión
+  const currentSignature = useMemo(() => {
+    return signatures.find((i: ISignatures) => i.idSignatory === idEmployee) ?? null;
+  }, [signatures, idEmployee]);
+
+  // Indica si el firmante actual aún no ha firmado (url vacía = sin firma)
+  const hasNotSigned = currentSignature?.url === '';
+
 
   // ✅ Estos cálculos quedan ANTES del early return para no romper hooks
   const daysList: DayBreakdown[] = Array.isArray(vacation?.daysdaysBrokenDown)
     ? (vacation?.daysdaysBrokenDown as DayBreakdown[])
-    : [];
-
-  const signatures = Array.isArray(vacation?.signatures)
-    ? vacation!.signatures
     : [];
 
   const getSignatureEmployee = () => {
@@ -99,9 +131,13 @@ export default function ShowInfoVacation({
     return sign?.url !== "";
   };
 
-  const showLeaderApprove =
-    vacation?.idLeader === Number(session?.uid?.idEmployee) &&
-    vacation?.leaderApproval !== "APPROVED";
+  const showLeaderApprove = useMemo(() => {
+    return (!!session?.uid?.roles?.isLeader || !!session?.uid?.roles?.isExtra)
+      && idEmployee !== overtimeEmployeeId
+      && !!currentSignature
+      && hasNotSigned
+      && isPending;
+  }, [session, idEmployee, overtimeEmployeeId, currentSignature, hasNotSigned, isPending]);
 
   const showDohApprove =
     session?.uid?.idEmployee === vacation?.idPersonDoh &&
@@ -140,296 +176,410 @@ export default function ShowInfoVacation({
     getPeriods();
   }, [getPeriods]);
 
-  // ✅ Early return ahora va DESPUÉS de los hooks
-  if (!vacation) {
-    return (
-      <Card className="border-0">
-        <Card.Body className="py-3">
-          <div className="text-muted">
-            Selecciona una solicitud para ver el detalle.
-          </div>
-        </Card.Body>
-      </Card>
-    );
-  }
-
-  const overallStatus = vacation.status ?? "PENDING";
-  const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy HH:mm");
 
   const handleApprove = () => setApproveModal(true);
   const handleSignatureDoh = () => setSignatureDohModal(true);
   const handleDownloadPDF = () => setVacationPDFModal(true);
 
   // si tienes modal/flujo de firma empleado, aquí lo conectas
-  const handleEmployeeSignature = () => {
-    // TODO: conectar flujo de firma empleado
+  const handleEmployeeSignature = () => setEmployeeSignatureModal(true);
+
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading('Cargando...');
+    router.push("/app/vacationList/create");
   };
+
+  const handleBack = () => {
+    setLoading(true);
+    setMessageLoading("Cargando datos...");
+    router.push("/app/vacationList");
+  }
+
+  //Borrar
+  const handleDeleteOvertime = async () => {
+    if (!vacation?.id) {
+      modalError("No se encontró el registro");
+      return;
+    }
+
+    modalConfirm("¿Deseas eliminar este registro?", async () => {
+      try {
+        setLoading(true);
+        setMessageLoading("Eliminando registro...");
+
+        const res = await deleteVacation(Number(vacation.idPeriod), Number(vacation.id));
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
+        }
+
+        toast.success(res.message);
+        router.push("/app/vacations");
+      } finally {
+        setLoading(false);
+        setMessageLoading("");
+      }
+    });
+  };
+
+
+  if (!vacation || !vacation.id || !vacation.period){
+    return (
+      <VacationsOneError />
+    );
+  }
+  const overallStatus = vacation.status ?? "PENDING";
+  const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy HH:mm");
+
+  console.log("LLEGA:", vacation);
+  console.log("Firmas:", signatures);
+  
 
   return (
     <>
-      <Card className="border-0 h-100">
-        <Card.Body className="p-3 p-md-4">
-          <Container fluid className="px-0">
-            {/* Header */}
-            <Row className="g-3 align-items-start align-items-md-center">
-              <Col xs={12} md={8}>
-                <div className="d-flex flex-wrap align-items-center gap-2">
-                  <h5 className="m-0 fw-bold text-uppercase">
-                    Solicitud #{vacation.id}
-                  </h5>
+      <ConditionalRender cond={loading}>
+        <Loading message={messageLoading} />
+      </ConditionalRender>
 
-                  <Badge bg={statusVariant(overallStatus)}>
-                    {statusLabel(overallStatus)}
-                  </Badge>
-                </div>
+      <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
 
-                <div className="text-muted mt-2">
-                  <div className="text-uppercase fw-semibold">
-                    {vacation.holidayName ?? "Solicitada por el empleado"}
-                  </div>
-                  <div className="small">Creada: {createdAt}</div>
-                </div>
-              </Col>
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
-              <Col xs={12} md={4}>
-                <Card className="border-0 table-active">
-                  <Card.Body className="py-2 px-3">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="text-muted small text-uppercase">
-                        Periodo Vacacional
-                      </div>
-                      <div className="fw-semibold text-uppercase">
-                        {formatDate(vacation.period.dateInitPeriod, "dd/MM/yyyy")}{" "}
-                        -{" "}
-                        {formatDate(vacation.period.dateEndPeriod, "dd/MM/yyyy")}
-                      </div>
-                    </div>
+          {/* Izquierda: acciones */}
+          <div className="d-flex gap-2 flex-wrap">
+            <OverLay string="Crear registro">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={handleCreate}
+                disabled={loading}
+              >
+                <i className="bi bi-plus-lg" />
 
-                    {showAnyActions && (
-                      <div className="d-flex justify-content-end gap-2 flex-wrap mt-2">
-                        {showLeaderApprove && (
-                          <Button
-                            size="sm"
-                            variant="warning"
-                            className="fw-semibold"
-                            onClick={handleApprove}
-                          >
-                            Aprobar
-                          </Button>
-                        )}
+                <span className="d-none d-md-inline ms-2">
+                  Crear registro
+                </span>
+              </Button>
+            </OverLay>
 
-                        {showDohApprove && (
-                          <Button
-                            size="sm"
-                            variant="success"
-                            className="fw-semibold"
-                            onClick={handleSignatureDoh}
-                          >
-                            Aprobar
-                          </Button>
-                        )}
+            <ConditionalRender cond={showAnyActions}>
+              <OverLay string="Eliminar registro">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  variant="danger"
+                  onClick={handleDeleteOvertime}
+                  disabled={loading}
+                >
+                  <i className="bi bi-trash" />
 
-                        {showEmployeeSign && (
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            className="fw-semibold"
-                            onClick={handleEmployeeSignature}
-                          >
-                            Firmar
-                          </Button>
-                        )}
+                  <span className="d-none d-md-inline ms-2">
+                    Eliminar registro
+                  </span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
 
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          className="fw-semibold"
-                          onClick={handleDownloadPDF}
-                        >
-                          <i className="bi bi-filetype-pdf me-2" />
-                          Descargar
-                        </Button>
+            <ConditionalRender cond={showEmployeeSign}>
+              <OverLay string="Firmar">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="warning"
+                  onClick={handleEmployeeSignature}
+                >
+                  <i className="bi bi-pen-fill" />
+                  <span className="d-none d-md-inline ms-2">Firmar</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
 
-                        <DeleteleVacation
-                          idRequest={vacation.id}
-                          idPeriod={Number(vacation.idPeriod)}
-                        />
-                      </div>
-                    )}
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+            <ConditionalRender cond={showLeaderApprove}>
+              <OverLay string="Aprobar">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="success"
+                  onClick={handleApprove}
+                >
+                  <i className="bi bi-check-circle" />
+                  <span className="d-none d-md-inline ms-2">Aprobar</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
 
-            {/* Main info */}
-            <Row className="g-3 mt-1">
-              {/* izquierda */}
-              <Col xs={12} lg={8}>
-                <Card className="border-0">
-                  <Card.Body className="p-0">
-                    <Row className="g-3">
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="text-muted small text-uppercase">
-                              Empleado
-                            </div>
-                            <div className="fw-semibold">
-                              {fullName(vacation.employee)}
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+            <ConditionalRender cond={showDohApprove}>
+              <OverLay string="Aprobar">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
+                  variant="secondary"
+                  onClick={handleSignatureDoh}
+                >
+                  <i className="bi bi-card-checklist" />
+                  <span className="d-none d-md-inline ms-2">Firmar de enterado</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
 
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="text-muted small text-uppercase">
-                              Creada por
-                            </div>
-                            <div className="fw-semibold">
-                              {fullName(vacation.createForPerson)}
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+            <OverLay string="Descargar PDF">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
+                variant="dark"
+                onClick={handleDownloadPDF}
+              >
+                <i className="bi bi-filetype-pdf" />
+                <span className="d-none d-md-inline ms-2">Descargar</span>
+              </Button>
+            </OverLay>
+          </div>
 
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="d-flex justify-content-between align-items-center">
-                              <div>
-                                <div className="text-muted small text-uppercase">
-                                  Líder
-                                </div>
-                                <div className="fw-semibold">
-                                  {fullName(vacation.leader)}
-                                </div>
-                              </div>
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+          <div className=" d-md-flex flex-wrap">
+            <Button
+              variant="outline-secondary"
+              onClick={handleBack}
+              disabled={loading}
+              className="d-inline-flex align-items-center gap-2 fw-semibold px-2 px-md-3"
+            >
+              <i className="bi bi-arrow-left" />
+              Regresar
+            </Button>
+          </div>
+        </div>
 
-                      <Col xs={12} md={6}>
-                        <Card className="border-0 table-active h-100">
-                          <Card.Body className="py-3 px-3">
-                            <div className="d-flex justify-content-between align-items-center">
-                              <div>
-                                <div className="text-muted small text-uppercase">
-                                  D.O.H.
-                                </div>
-                                <div className="fw-semibold">
-                                  {fullName(vacation.personDoh)}
-                                </div>
-                              </div>
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+        <div>
+          <h1 className="mb-1 ms-1 text-uppercase"> {fullName(vacation.employee)}</h1>
+          <p className="text-muted mb-0 ms-1">
+            Información de la solicitud de vacaciones.
+          </p>
+        </div>
 
-                      <Col xs={12}>
-                        <Card className="border-0 table-active">
-                          <Card.Body className="py-3 px-3">
-                            <Row className="g-3">
-                              <Col xs={12} md={4}>
-                                <div className="text-muted small text-uppercase">
-                                  Días solicitados
-                                </div>
-                                <div className="fw-bold fs-5">
-                                  {vacation.daysRequest ?? 0}
-                                </div>
-                              </Col>
 
-                              <Col xs={12} md={4}>
-                                <div className="text-muted small text-uppercase">
-                                  Inicio
-                                </div>
-                                <div className="fw-semibold">
-                                  {safeDate(vacation.dateInit)}
-                                </div>
-                              </Col>
+        {/* Título */}
+        <Card className="border shadow-sm rounded-4 mt-2">
+          <Card.Body className="p-4">
 
-                              <Col xs={12} md={4}>
-                                <div className="text-muted small text-uppercase">
-                                  Fin
-                                </div>
-                                <div className="fw-semibold">
-                                  {safeDate(vacation.dateEnd)}
-                                </div>
-                              </Col>
-                            </Row>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    </Row>
-                  </Card.Body>
-                </Card>
-              </Col>
+            <div className="d-flex align-items-center justify-content-between mb-4">
+              <div>
+                <h5 className="mb-1 fw-bold">
+                  Solicitud #{vacation.id}
+                </h5>
 
-              {/* derecha */}
+                <p className="text-muted mb-0 text-uppercase">
+                  {vacation.holidayName ?? "Solicitada por el empleado"}
+                </p>
+              </div>
+
+              {statusVariant(overallStatus)}
+
+            </div>
+
+            <Row className="g-4 mb-4">
+              {/* RESUMEN */}
               <Col xs={12} lg={4}>
-                <Card className="border-0 h-100">
-                  <Card.Header className="table-active border-0">
-                    <div className="fw-semibold text-uppercase">
-                      Días solicitados
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <h6 className="mb-0 fw-bold">Resumen</h6>
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        General
+                      </span>
                     </div>
-                  </Card.Header>
-                  <Card.Body className="p-0">
-                    {daysList.length === 0 ? (
-                      <div className="p-3 text-muted">Sin desglose.</div>
-                    ) : (
-                      <Table responsive hover borderless className="m-0">
-                        <thead className="text-uppercase">
-                          <tr>
-                            <th className="text-muted small">Día</th>
-                            <th className="text-muted small text-end">
-                              Periodo catorcenal
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {daysList.map((d) => (
-                            <tr key={d.id}>
-                              <td className="fw-semibold">{safeDate(d.day)}</td>
-                              <td className="text-end">
-                                {d.fortnightlyPeriod ?? "—"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    )}
+
+                    <div className="d-flex flex-column gap-3">
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-calendar-plus text-primary" />
+                          <span className="text-muted">Creada</span>
+                        </div>
+                        <span className="fw-semibold text-end">{createdAt}</span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person text-success" />
+                          <span className="text-muted">Creada por</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(vacation.createForPerson)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-workspace text-warning" />
+                          <span className="text-muted">Líder</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(vacation.leader)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-person-check text-info" />
+                          <span className="text-muted">D.O.H.</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {fullName(vacation.personDoh)}
+                        </span>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              {/* DETALLES */}
+              <Col xs={12} lg={8}>
+                <Card className="border rounded-4 h-100">
+                  <Card.Body>
+                    <div className="d-flex align-items-center justify-content-between mb-4">
+                      <div>
+                        <h6 className="mb-1 fw-bold">Detalles del registro</h6>
+                        <p className="text-muted mb-0 small">
+                          Consulta el periodo vacacional y los días solicitados.
+                        </p>
+                      </div>
+                      <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                        Registro
+                      </span>
+                    </div>
+
+                    <div className="d-flex flex-column gap-4">
+                      <div className="border rounded-3 p-3">
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <i className="bi bi-calendar-range text-primary" />
+                          <span className="text-muted fw-semibold">
+                            Periodo vacacional
+                          </span>
+                        </div>
+                        <div className="text-uppercase">
+                          {vacation.period.periodDescription ?? "-----"}
+                        </div>
+                      </div>
+
+                      <Row className="g-3">
+                        <Col xs={12} md={6} xl={4}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Inicio</div>
+                            <div className="fw-semibold">
+                              {safeDate(vacation.dateInit)}
+                            </div>
+                          </div>
+                        </Col>
+
+                        <Col xs={12} md={6} xl={4}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Fin</div>
+                            <div className="fw-semibold">
+                              {safeDate(vacation.dateEnd)}
+                            </div>
+                          </div>
+                        </Col>
+
+                        <Col xs={12} md={6} xl={4}>
+                          <div className="border rounded-3 p-3 text-center h-100">
+                            <i className="bi bi-hourglass-split text-info fs-5 mb-2 d-block" />
+                            <div className="text-muted small">Días solicitados</div>
+                            <div className="fw-bold fs-5">
+                              {vacation.daysRequest ?? 0}
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
             </Row>
 
-            {/* Firmas */}
-            <FormBook dKey="signatures">
-              {signatures.length > 0 && (
-                <FormPage title="Firmas" eventKey="signatures">
-                  <Container>
+            {/* DESGLOSE DE DÍAS */}
+            <Card className="border rounded-4 mb-4">
+              <Card.Body>
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                  <h6 className="mb-0 fw-bold">Días solicitados</h6>
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                    Desglose
+                  </span>
+                </div>
+
+                <ConditionalRender cond={daysList.length === 0}>
+                  <div className="text-center py-4 text-muted">
+                    <i className="bi bi-calendar-minus fs-4 d-block mb-2" />
+                    Sin desgloce de días solicitados.
+                  </div>
+                </ConditionalRender>
+
+                <ConditionalRender cond={daysList.length > 0}>
+                  <Table responsive hover borderless className="m-0">
+                    <thead className="text-uppercase">
+                      <tr>
+                        <th className="text-muted small">Día</th>
+                        <th className="text-muted small text-end">
+                          Periodo catorcenal
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {daysList.map((d) => (
+                        <tr key={d.id}>
+                          <td className="fw-semibold">{safeDate(d.day)}</td>
+                          <td className="text-end">
+                            {d.fortnightlyPeriod ?? "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </ConditionalRender>
+
+              </Card.Body>
+            </Card>
+
+            {/* FIRMAS */}
+            <Card className="border rounded-4">
+              <Card.Body>
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                  <h6 className="mb-0 fw-bold">
+                    Firmas
+                  </h6>
+
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                    Autorizaciones
+                  </span>
+                </div>
+
+                <FormBook dKey="newArray">
+                  <FormPage title="" eventKey="newArray">
                     <Row className="g-2 py-2">
                       {signatures.map((sign) => (
                         <SignaturesVacationView
-                          key={sign.id}
+                          key={`${sign.id}-${sign.url}`}
                           idSolicitud={vacation.id}
                           idPeriod={vacation.period.id}
                           idEmployee={sign.idSignatory}
                           name={sign.name}
                           status={sign.status}
+                          label={sign.label}
                         />
                       ))}
                     </Row>
-                  </Container>
-                </FormPage>
-              )}
-            </FormBook>
-          </Container>
-        </Card.Body>
-      </Card>
+                  </FormPage>
+                </FormBook>
+              </Card.Body>
+            </Card >
 
+          </Card.Body>
+        </Card >
+      </Container >
+
+      <SignatureEmployeeModal
+        show={employeeSignatureModal}
+        idPeriod={Number(vacation?.idPeriod)}
+        onHide={() => setEmployeeSignatureModal(false)}
+        id={String(vacation.id)}
+        idEmployee={vacation.idEmployee}
+      />
       <ApproveVacationLeaderModal
         id={String(vacation.id)}
         idPeriod={Number(vacation?.idPeriod)}

@@ -49,7 +49,7 @@ export const authOptions = {
   session: {
     strategy: "jwt",
     maxAge: 10 * 365 * 24 * 60 * 60,
-    updateAge: 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
   secret: process.env.AUTH_SECRET,
   trustHost: true,

@@ -98,6 +98,7 @@ export default function EmployeeDetailsView({
   const [showRegisterBiometricModal, setShowRegisterBiometricModal] = useState(false);
   const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
   const [showUnsubscribeEmployeeModal, setShowUnsubscribeEmployeeModal] = useState(false);
   const [showNewDocumentEmployeeModal, setShowNewDocumentEmployeeModal] = useState(false);
   const statusOne = employee?.status === 1;
@@ -179,9 +180,13 @@ export default function EmployeeDetailsView({
     router.push("/app/employee");
   }
 
-  // if (!hasBiometricPhotos) return (
-  //   <AlertBiometrics onClose={() => setHasBiometricPhotos(true)} />
-  // )
+  const handleCreate = () => {
+    setLoading(true);
+    setMessageLoading("Cargando...");
+    router.push("/app/employee/create");
+  };
+
+
 
   return (
     <>
@@ -191,7 +196,7 @@ export default function EmployeeDetailsView({
       </ConditionalRender>
 
       <ConditionalRender cond={loading}>
-        <Loading message="Cargando..." />
+        <Loading message={messageLoading} />
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
@@ -199,6 +204,20 @@ export default function EmployeeDetailsView({
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
           <div className="d-flex gap-2 flex-wrap">
+            <OverLay string="Crear incapacidad">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="primary"
+                onClick={handleCreate}
+                disabled={loading}
+              >
+                <i className="bi bi-plus-lg" />
+                <span className="d-none d-md-inline ms-2">
+                  Crear Empleado
+                </span>
+              </Button>
+            </OverLay>
+
             <OverLay string="Actualizar empleado">
               <Button
                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
@@ -1333,7 +1352,7 @@ export default function EmployeeDetailsView({
                           ) && (
                               <div className="d-flex justify-content-end mb-4">
                                 <Button
-                                  variant="primary"
+                                  variant="success"
                                   onClick={() => setShowNewDocumentEmployeeModal(true)}
                                 >
                                   <i className="bi bi-file-earmark-plus me-2" />

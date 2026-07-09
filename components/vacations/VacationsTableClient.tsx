@@ -35,11 +35,8 @@ export default function VacationsTableClient({
 
 
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setLoading(false);
+    setMessageLoading("");
   }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
@@ -69,7 +66,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-left fs-6 fw-semibold">{row.holidayName}</div>
+        <div className="text-left">{row.holidayName}</div>
       ),
     },
     {
@@ -79,7 +76,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-left fs-6 fw-semibold">
+        <div className="text-left">
           {row.period.periodDescription}
         </div>
       ),
@@ -91,7 +88,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-left fs-6 fw-semibold">
+        <div className="text-left">
           {formatDate(row.dateInit, "dd/MM/yyyy")}
         </div>
       ),
@@ -103,7 +100,7 @@ export default function VacationsTableClient({
       filterable: true,
       type: "string",
       render: (row) => (
-        <div className="text-left fs-6 fw-semibold">
+        <div className="text-left">
           {formatDate(row.dateEnd, "dd/MM/yyyy")}
         </div>
       ),
@@ -180,22 +177,6 @@ export default function VacationsTableClient({
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">
                 <div className="mb-4">
-                  {/* <Col xs={12} md={6} lg={4}>
-                    <InputGroup>
-                      <InputGroup.Text
-                        className="bg-gray"
-                        style={{ color: "#6c757d" }}
-                      >
-                        <i className="bi bi-search" />
-                      </InputGroup.Text>
-
-                      <GenericSearchInput
-                        initialValue={search}
-                        onSearch={handleSearch}
-                        placeholder="Buscar vacaciones..."
-                      />
-                    </InputGroup>
-                  </Col> */}
                 </div>
 
                 <ListView>

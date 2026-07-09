@@ -3,30 +3,34 @@
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { Button, Card } from "react-bootstrap";
 
+type Employee = {
+  name: string;
+  lastName: string
+};
+
 const upperCase = (text?: string) => {
   return text?.toUpperCase() || "";
 };
 
-function fullName(emp?: { name: string; lastName: string }) {
+function fullName(emp?: Employee) {
   if (!emp) return "-";
-  return ` ${upperCase(emp.lastName ?? "")} ${upperCase(emp.name ?? "")}`.trim();
-}
-
-function fullNames(list?: { name: string; lastName: string }[]) {
-  if (!list || list.length === 0) return "-";
-  return list.map(fullName).filter(Boolean).join(", ");
+  return `${upperCase(emp.lastName ?? "")} ${upperCase(emp.name ?? "")}`.trim();
 }
 
 function BlockView({
   title,
   doh,
-  extras}: {
-  title: string;
-  doh?: { employee?: { name: string; lastName: string } };
-  leaders?: { employee?: { name: string; lastName: string } };
-  management?: { employee?: { name: string; lastName: string } };
-  extras?: { employees?: { name: string; lastName: string }[] };
-}) {
+  extras }: {
+    title: string;
+    doh?: { employee?: { name: string; lastName: string } };
+    leaders?: { employee?: { name: string; lastName: string } };
+    management?: { employee?: { name: string; lastName: string } };
+    extras?: { employees?: { name: string; lastName: string }[] };
+
+  }) {
+
+
+  console.log("extras:", extras);
   return (
     <Card className="border shadow-sm rounded-4">
       <Card.Body className="p-4">
@@ -46,7 +50,7 @@ function BlockView({
               <span className="text-muted">Revisión DOH</span>
             </div>
 
-            <span className="fw-semibold">
+            <span className="fw-semibold me-5">
               {fullName(doh?.employee)}
             </span>
           </div>
@@ -80,17 +84,17 @@ function BlockView({
           <div className="d-flex align-items-start justify-content-between">
             <div className="d-flex align-items-center gap-2">
               <i className="bi bi-building text-warning" />
-              <span className="text-muted">
-                Dirección
-              </span>
+              <span className="text-muted">Dirección</span>
             </div>
 
-            <span
-              className="fw-semibold text-end"
-              style={{ maxWidth: "250px" }}
-            >
-              {fullNames(extras?.employees)}
-            </span>
+            <div className="d-flex flex-column gap-1">
+              {extras?.employees?.map((el: Employee, index: number) => (
+                <div key={index} className="d-flex align-items-center gap-1 fw-semibold">
+                  <i className="bi bi bi-check2 me-1" style={{ fontSize: "0.5rem" }} />
+                  <span>{`${upperCase(el.lastName ?? "")} ${upperCase(el.name ?? "")}`.trim()}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>

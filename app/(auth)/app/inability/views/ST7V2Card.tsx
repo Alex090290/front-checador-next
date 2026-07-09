@@ -102,8 +102,8 @@ function ST7V2Card({
   };
 
   return (
-    <Col md="2">
-      <Card className="rounded shadow-sm bg-body-tertiary">
+    <Col xs={12} sm={6} md={4} xl={2}>
+      <Card className="rounded shadow-sm bg-body-tertiary h-100">
         <Card.Header className="d-flex justify-content-between align-items-end">
           <Card.Title
             className="text-center text-uppercase mb-0"
@@ -113,7 +113,7 @@ function ST7V2Card({
           </Card.Title>
           <DropdownButton
             size="sm"
-            variant="info"
+            variant="secondary"
             title={<i className="bi bi-gear-fill"></i>}
           >
             <Dropdown.Item>
@@ -169,11 +169,9 @@ function ST7V2Card({
                       {st2v2Doc?.urlDocument ? "Reemplazar" : "Cargar"}
                     </Button>
                     {st2v2Doc?.urlDocument && (
-                      <>
-                        <Button variant="warning" onClick={handleGetDocument}>
-                          Visualizar
-                        </Button>
-                      </>
+                      <Button variant="warning" onClick={handleGetDocument}>
+                        Visualizar
+                      </Button>
                     )}
                   </>
                 ) : (

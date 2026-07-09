@@ -1,26 +1,32 @@
-"use client"
+"use client";
 
+import { fetchVacationSignature, sendSignatureVacations } from "@/app/actions/vacations-actions";
+import ConditionalRender from "@/components/ConditionalRender";
+import { SignatureInput } from "@/components/fields";
+import Loading from "@/components/LoadingSpinner";
 import { useModals } from "@/context/ModalContext";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { Button, Modal, Form } from "react-bootstrap";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { SignatureInput } from "../fields";
-import toast from "react-hot-toast";
-import ConditionalRender from "../ConditionalRender";
-import Loading from "../LoadingSpinner";
 import { useState } from "react";
-import { sendSignatureOverTime } from "@/app/actions/overtime-actions";
+import { Button, Form, Modal } from "react-bootstrap";
+import { useForm, SubmitHandler } from "react-hook-form";
+import toast from "react-hot-toast";
 
 type TInputs = {
     signature: string;
 };
 
-function OvertimeSignatureModal({
+function SignatureEmployeeModal({
     show,
     onHide,
     id,
-}: ModalBasicProps & { id: string }) {
+    idEmployee,
+    idPeriod,
+}: ModalBasicProps & {
+    id: string;
+    idPeriod: number | null;
+    idEmployee: number | null;
+}) {
     const {
         reset,
         register,
@@ -30,7 +36,9 @@ function OvertimeSignatureModal({
     } = useForm<TInputs>();
 
     const { modalError, modalConfirm } = useModals();
-    const router = useRouter();
+    const router = useRouter(); const [loading, setLoading] = useState(false);
+    const [messageLoading, setMessageLoading] = useState("");
+
 
     const onSubmit: SubmitHandler<TInputs> = async (data) => {
         onHide();
@@ -41,9 +49,10 @@ function OvertimeSignatureModal({
                 setLoading(true);
                 setMessageLoading("Enviando firma...");
 
-                const res = await sendSignatureOverTime({
+                const res = await sendSignatureVacations({
                     id: id ? Number(id) : null,
-                    signature: data.signature,
+                    idPeriod: idPeriod ? Number(idPeriod) : null,
+                    signature: data.signature
                 });
 
                 if (!res.success) {
@@ -68,9 +77,6 @@ function OvertimeSignatureModal({
         reset({ signature: "" });
     };
 
-    const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
-
     return (
         <>
             <ConditionalRender cond={loading}>
@@ -89,18 +95,12 @@ function OvertimeSignatureModal({
                 </Modal.Header>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
-                        <Form.Group>
-                            <Form.Label className="fw-semibold">
-                                Dibuja tu firma
-                            </Form.Label>
-
-                            <div>
-                                <SignatureInput
-                                    control={control}
-                                    name="signature"
-                                    register={register}
-                                />
-                            </div>
+                        <Form.Group className="mb-2">
+                            <SignatureInput
+                                control={control}
+                                name="signature"
+                                register={register}
+                            />
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -121,4 +121,4 @@ function OvertimeSignatureModal({
     );
 }
 
-export default OvertimeSignatureModal;
+export default SignatureEmployeeModal;

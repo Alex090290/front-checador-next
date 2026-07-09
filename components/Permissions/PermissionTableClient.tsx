@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
@@ -11,6 +11,9 @@ import { TableTemplateColumn } from "../templates/TableTemplate";
 import { IPermissionRequest } from "@/lib/definitions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import AlertSignaturesP from "./AlertSignatures";
+import { ISignatures } from "@/lib/overTime/interface";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
 export const leaderApproval = {
   APPROVED: "APROBADO",
@@ -32,14 +35,31 @@ export default function PermissionsTableClient({
   page: number;
   limit: number;
 }) {
-
+  const session = useSessionSnapshot();
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
-
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState('');
+  const [hideSignatures, setHideSignatures] = useState(false);
+  const idEmployee = Number(session?.uid?.idEmployee);
 
+  const pendingOvertimes = useMemo(() => {
+    return (permissions ?? []).filter((o: IPermissionRequest) => {
+      const signatures: ISignatures[] = o.signatures ?? [];
+      const mySignature = signatures.find(
+        (i: ISignatures) => Number(i.idSignatory) === idEmployee
+      );
+      if (!mySignature) return false;
+      return mySignature.url === '';
+    });
+  }, [permissions, idEmployee]);
+
+  const hasPendingSignature = pendingOvertimes.length > 0;
+
+  useEffect(() => {
+    setHideSignatures(hasPendingSignature);
+  }, [hasPendingSignature]);
 
   useEffect(() => {
     if (loading) {
@@ -61,6 +81,18 @@ export default function PermissionsTableClient({
   };
 
   const columns: TableTemplateColumn<IPermissionRequest>[] = [
+    {
+      key: "id",
+      label: "ID",
+      accessor: (e) => e.id,
+      filterable: true,
+      type: "string",
+      render: (e) => (
+        <div className="text-uppercase">
+          {`#${e.id}` || "-"}
+        </div>
+      )
+    },
     {
       key: "employeeName",
       label: "Nombre",
@@ -87,41 +119,22 @@ export default function PermissionsTableClient({
       render: (row) => <div className="text-uppercase">{row.motive}</div>,
     },
     {
-      key: "createforPerson",
-      label: "Creado por",
-      accessor: (row) =>
-        `${row.createForPerson.lastName} ${row.createForPerson.lastName}`,
-      type: "string",
-      filterable: true,
-      render: (row) => (
-        <div className="text-uppercase">
-          {`${row.createForPerson.lastName} ${row.createForPerson.lastName}`}
-        </div>
-      ),
-    },
-    {
-      key: "leader",
-      label: "Gerente",
-      accessor: (row) =>
-        `${row.leader.lastName} ${row.leader.name}`.toUpperCase(),
-    },
-    {
       key: "createdAt",
       label: "Fecha de creación",
       accessor: (row) => row.createdAt,
+      filterable: true,
       render: (row) => (
-        <div className="text-center">
+        <div className="text-start">
           {row.createdAt
             ? formatDate(row.createdAt, "dd-MM-yyyy HH:mm")
             : "No Definido"}
         </div>
       ),
-      groupFormat: "MM-dd",
       type: "date",
     },
     {
       key: "leaderApproval",
-      label: "Estado",
+      label: "Estatus",
       accessor: (row) => leaderApproval[row.status],
       render: (e) => {
         const estado = e.status
@@ -157,6 +170,13 @@ export default function PermissionsTableClient({
 
   return (
     <>
+      <ConditionalRender cond={hideSignatures}>
+        <AlertSignaturesP
+          onClose={() => setHideSignatures(false)}
+          pendingIds={pendingOvertimes.map((o) => o.id)}
+        />
+      </ConditionalRender>
+
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>
@@ -169,7 +189,7 @@ export default function PermissionsTableClient({
           disabled={loading}
         >
           <i className="bi bi-plus-lg" />
-          Registrar permiso
+          Crear permiso
         </Button>
 
         <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
@@ -186,24 +206,6 @@ export default function PermissionsTableClient({
           <Col xs={12} xl={12} xxl={12}>
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">
-                {/* <div className="mb-4">
-                  <Col xs={12} md={6} lg={4}>
-                    <InputGroup>
-                      <InputGroup.Text
-                        className="bg-gray"
-                        style={{ color: "#6c757d" }}
-                      >
-                        <i className="bi bi-search" />
-                      </InputGroup.Text>
-
-                      <GenericSearchInput
-                        initialValue={search}
-                        onSearch={handleSearch}
-                        placeholder="Buscar permiso..."
-                      />
-                    </InputGroup>
-                  </Col>
-                </div> */}
 
                 <ListView>
                   <ListView.Body>
@@ -214,7 +216,7 @@ export default function PermissionsTableClient({
                             {columns.map((column) => (
                               <th
                                 key={String(column.key)}
-                                className="fw-bold text-left"
+                                className="fw-bold text-start"
                               >
                                 {column.label}
                               </th>

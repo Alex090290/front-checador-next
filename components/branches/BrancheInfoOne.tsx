@@ -192,10 +192,6 @@ export default function BrancheOne({
               <h5 className="mb-0 fw-bold">
                 Sucursal
               </h5>
-
-              <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-                Información General
-              </span>
             </div>
 
             <Row className="g-4">
@@ -207,7 +203,7 @@ export default function BrancheOne({
                         Información general
                       </h6>
 
-                      <span className="badge rounded-pill px-3 py-2 fw-semibold bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+                      <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                         Datos
                       </span>
                     </div>
@@ -247,7 +243,7 @@ export default function BrancheOne({
                         Coordenadas
                       </h6>
 
-                      <span className="badge rounded-pill px-3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                      <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                         Ubicación
                       </span>
                     </div>
