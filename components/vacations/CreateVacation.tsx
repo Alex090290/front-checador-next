@@ -184,7 +184,7 @@ function CreateVacationComponent({
       return e.id !== undefined;
     }
 
-    const isLeaderNotExtra = session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra;
+    const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
     const ownId = Number(session?.uid?.idEmployee);
     const selectedId = Number(idEmployeeSelected);
 
@@ -218,7 +218,7 @@ function CreateVacationComponent({
     if (!employeeId) return;
 
 
-    if (session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra) {
+    if (roles?.isLeader && !roles?.isExtra) {
       const values: TInputs = {
         ...DEFAULT_VALUES,
         idEmployee: employeeId,
@@ -229,7 +229,7 @@ function CreateVacationComponent({
       return
     }
 
-    if (session?.uid?.roles.isExtra || session?.uid?.roles.isDoh && !session.uid.roles.isLeader) {
+    if (roles?.isExtra || roles?.isDoh && !roles?.isLeader) {
       const values: TInputs = {
         ...DEFAULT_VALUES,
         idEmployee: null,
