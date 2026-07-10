@@ -106,16 +106,16 @@ function CreateVacationComponent({
 
   // Este sirve para filtrar el empleado al que se le asignara el registro
   useEffect(() => {
-    if (session?.uid?.roles?.isLeader) {
+    if (roles?.isLeader) {
 
       const filtrados = employees.filter(
-        (el: Employee) => Number(el.department?.idLeader) === Number(session.uid?.idEmployee)
+        (el: Employee) => Number(el.department?.idLeader) === Number(session?.uid?.idEmployee)
       );
       setFilteredEmployees(filtrados);
     } else {
       setFilteredEmployees(employees);
     }
-  }, [session, idEmployee, employees]);
+  }, [idEmployee, employees,roles]);
 
   useEffect(() => {
     if (!idEmployeeSelected) return;
@@ -128,7 +128,7 @@ function CreateVacationComponent({
         if (!employeeId || Number.isNaN(employeeId)) return;
 
         const ownId = Number(session?.uid?.idEmployee);
-        const isLeaderNotExtra = session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra;
+        const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
 
         // Caso: el líder vuelve a seleccionarse a sí mismo -> default a la posición 0 de directionList
         if (isLeaderNotExtra && employeeId === ownId) {
