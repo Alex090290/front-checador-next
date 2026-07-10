@@ -146,7 +146,7 @@ export default function CreatePermissionComponent({
         if (!employeeId || Number.isNaN(employeeId)) return;
 
         const ownId = Number(session?.uid?.idEmployee);
-        const isLeaderNotExtra = roles?.isLeader && !session?.uid?.roles.isExtra;
+        const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
 
         // Caso: el líder vuelve a seleccionarse a sí mismo -> default a la posición 0 de directionList
         if (isLeaderNotExtra && employeeId === ownId) {
@@ -203,7 +203,7 @@ export default function CreatePermissionComponent({
       return e.id !== undefined;
     }
 
-    const isLeaderNotExtra = roles?.isLeader && !session?.uid?.roles.isExtra;
+    const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
     const ownId = Number(session?.uid?.idEmployee);
     const selectedId = Number(idEmployeeSelected);
 
@@ -237,7 +237,7 @@ export default function CreatePermissionComponent({
     if (!employeeId) return;
 
 
-    if (roles?.isLeader && !session?.uid?.roles.isExtra) {
+    if (roles?.isLeader && !roles?.isExtra) {
       const values: TInputs = {
         ...DEFAULT_VALUES,
         idEmployee: employeeId,
@@ -248,7 +248,7 @@ export default function CreatePermissionComponent({
       return
     }
 
-    if (roles?.isExtra || session?.uid?.roles.isDoh && !roles?.isLeader){
+    if (roles?.isExtra || roles?.isDoh && !roles?.isLeader){
       const values: TInputs = {
         ...DEFAULT_VALUES,
         idEmployee: null,
