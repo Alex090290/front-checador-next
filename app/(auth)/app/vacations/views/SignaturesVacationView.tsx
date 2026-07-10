@@ -2,9 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Badge, Card, Col, Spinner } from "react-bootstrap";
+import { Card, Col } from "react-bootstrap";
 import { VacationRequestStatus } from "@/lib/definitions";
-import { vacationStatus } from "./VacationsListView";
 import { fetchVacationSignature } from "@/app/actions/vacations-actions";
 
 function SignaturesVacationView({

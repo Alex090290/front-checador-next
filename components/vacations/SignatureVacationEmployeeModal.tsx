@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchVacationSignature, sendSignatureVacations } from "@/app/actions/vacations-actions";
+import { sendSignatureVacations } from "@/app/actions/vacations-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import { SignatureInput } from "@/components/fields";
 import Loading from "@/components/LoadingSpinner";
@@ -20,12 +20,10 @@ function SignatureEmployeeModal({
     show,
     onHide,
     id,
-    idEmployee,
     idPeriod,
 }: ModalBasicProps & {
     id: string;
     idPeriod: number | null;
-    idEmployee: number | null;
 }) {
     const {
         reset,

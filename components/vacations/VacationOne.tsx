@@ -95,9 +95,10 @@ export default function ShowInfoVacation({
   const [, setPeriods] = useState<PeriodVacation[]>([]);
   const { modalError, modalConfirm } = useModals();
 
-  const signatures = Array.isArray(vacation?.signatures)
-    ? vacation!.signatures
-    : [];
+  const signatures = useMemo(() => 
+    Array.isArray(vacation?.signatures) ? vacation.signatures : [],
+    [vacation?.signatures]
+);
 
   // ID del empleado con sesión activa
   const idEmployee = Number(session?.uid?.idEmployee);
@@ -232,10 +233,6 @@ export default function ShowInfoVacation({
   }
   const overallStatus = vacation.status ?? "PENDING";
   const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy HH:mm");
-
-  console.log("LLEGA:", vacation);
-  console.log("Firmas:", signatures);
-  
 
   return (
     <>
@@ -578,7 +575,6 @@ export default function ShowInfoVacation({
         idPeriod={Number(vacation?.idPeriod)}
         onHide={() => setEmployeeSignatureModal(false)}
         id={String(vacation.id)}
-        idEmployee={vacation.idEmployee}
       />
       <ApproveVacationLeaderModal
         id={String(vacation.id)}

@@ -10,7 +10,6 @@ import { useSearchParams } from "next/navigation";
 import { getCurrentPeriod } from "@/app/actions/periods-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import moment from "moment-timezone";
-import ConditionalRender from "../ConditionalRender";
 
 function NavUserInfo() {
   const { data: session } = useSession();
