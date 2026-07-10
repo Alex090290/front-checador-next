@@ -94,8 +94,21 @@ export default function CreatePermissionComponent({
 
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
   const idEmployeeSelected = watch("idEmployee");
-  const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
-  const readOnlyDoh = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh && Number(session.uid.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+  const roles = session?.uid?.roles;
+  
+  const readInput = !roles?.isLeader 
+  && !roles?.isExtra 
+  && !roles?.isDoh 
+  && !roles?.isApproverLeaders 
+  && !roles?.isApproverDoh;
+
+  const readOnlyDoh = !roles?.isLeader 
+  && !roles?.isExtra 
+  && roles?.isDoh 
+  && !roles?.isApproverLeaders 
+  && !roles?.isApproverDoh
+  && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+  
   const idEmployee = Number(session?.uid?.idEmployee);
 
 

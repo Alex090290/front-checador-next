@@ -47,8 +47,16 @@ export default function CreateOvertimeComponent({
     const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
 
     const router = useRouter();
+    
+    const roles = session?.uid?.roles;
 
-    const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
+
+    const readInput = !roles?.isLeader 
+    && !roles?.isExtra 
+    && !roles?.isDoh 
+    && !roles?.isApproverLeaders 
+    && !roles?.isApproverDoh;
+
     const idEmployee = Number(session?.uid?.idEmployee);
 
 

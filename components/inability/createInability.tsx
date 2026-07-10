@@ -51,6 +51,8 @@ export default function CreateInabilityComponent({
   });
 
   const session = useSessionSnapshot();
+  const roles = session?.uid?.roles;
+
   const sessionEmployeeId = Number(session?.uid?.idEmployee);
 
   const { modalError, modalConfirm } = useModals();
@@ -61,8 +63,12 @@ export default function CreateInabilityComponent({
 
   const onChangeDateInit = watch("dateInit");
 
-  const readInput = !session?.uid?.roles.isLeader && !session?.uid?.roles.isExtra && !session?.uid?.roles.isDoh && !session?.uid?.roles.isApproverLeaders && !session?.uid?.roles.isApproverDoh;
-
+  const readInput = !roles?.isLeader 
+  && !roles?.isExtra 
+  && !roles?.isDoh 
+  && !roles?.isApproverLeaders 
+  && !roles?.isApproverDoh;
+  
   useEffect(() => {
     const values: TInputs = {
       ...DEFAULT_VALUES,
