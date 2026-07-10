@@ -62,7 +62,6 @@ export default function UserTableClient({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-  const [, setSelectedIds] = useState<Array<string | number>>([]);
   const isClearingSelectionRef = useRef(false);
   const [, setTableResetKey] = useState(0);
 

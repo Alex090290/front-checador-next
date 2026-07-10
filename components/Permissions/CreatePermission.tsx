@@ -127,7 +127,7 @@ export default function CreatePermissionComponent({
     } else {
       setFilteredEmployees(employees);
     }
-  }, [roles, idEmployee, employees]);
+  }, [session,roles, idEmployee, employees]);
 
   useEffect(() => {
     if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
@@ -190,7 +190,7 @@ export default function CreatePermissionComponent({
     return () => {
       cancelled = true;
     };
-  }, [idEmployeeSelected, config, setValue, session, directionList]);
+  }, [idEmployeeSelected, config, setValue, session, directionList,roles]);
 
   const leaderOptions = useMemo(() => {
     const mapToOption = (e: Employee | EmployeeRef) => ({
@@ -230,7 +230,7 @@ export default function CreatePermissionComponent({
     }
 
     return employees.filter(hasId).map(mapToOption);
-  }, [session, directionList, employees, idEmployeeSelected]);
+  }, [session, directionList, employees, idEmployeeSelected,roles]);
 
   useEffect(() => {
     const employeeId = Number(session?.uid?.id);
@@ -265,7 +265,7 @@ export default function CreatePermissionComponent({
     };
 
     reset(values);
-  }, [reset, employees, session, directionList]);
+  }, [reset, employees, session, directionList,roles]);
 
   useEffect(() => {
     if (dateInit) {

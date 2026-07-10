@@ -115,7 +115,7 @@ function CreateVacationComponent({
     } else {
       setFilteredEmployees(employees);
     }
-  }, [idEmployee, employees,roles]);
+  }, [idEmployee, employees,roles,session]);
 
   useEffect(() => {
     if (!idEmployeeSelected) return;
@@ -171,7 +171,7 @@ function CreateVacationComponent({
     return () => {
       cancelled = true;
     };
-  }, [idEmployeeSelected, config, setValue, session, directionList]);
+  }, [idEmployeeSelected, config, setValue, session, directionList,roles]);
 
   const leaderOptions = useMemo(() => {
     const mapToOption = (e: Employee | EmployeeRef) => ({
@@ -211,7 +211,7 @@ function CreateVacationComponent({
     }
 
     return employees.filter(hasId).map(mapToOption);
-  }, [session, directionList, employees, idEmployeeSelected]);
+  }, [session, directionList, employees, idEmployeeSelected,roles]);
 
   useEffect(() => {
     const employeeId = Number(session?.uid?.id);
@@ -246,7 +246,7 @@ function CreateVacationComponent({
     };
 
     reset(values);
-  }, [reset, employees, session, directionList]);
+  }, [reset, employees, session, directionList,roles]);
 
   // ✅ periodo seleccionado para mostrar stats
   const selectedPeriod = useMemo(() => {
