@@ -78,9 +78,11 @@ export default function ShowInfoPermissionRequest({
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [permissionPDFModal, setPermissionPDFModal] = useState(false);
 
-  const signatures = Array.isArray(permission?.signatures)
-    ? permission!.signatures
-    : [];
+
+  const signatures = useMemo(() => 
+      Array.isArray(permission?.signatures) ? permission.signatures : [],
+      [permission?.signatures]
+  );
 
   // ID del empleado con sesión activa
   const idEmployee = Number(session?.uid?.idEmployee);
