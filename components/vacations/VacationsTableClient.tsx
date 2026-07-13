@@ -12,6 +12,9 @@ import { Vacations } from "@/lib/definitions";
 import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import AlertSignaturesV from "./AlertSignatures";
+import { ISignatures } from "@/lib/overTime/interface";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
 export default function VacationsTableClient({
   vacations,
@@ -25,13 +28,32 @@ export default function VacationsTableClient({
   page: number;
   limit: number;
 }) {
-
+  const session = useSessionSnapshot();
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState('');
+  const [hideSignatures, setHideSignatures] = useState(false);
+  const idEmployee = Number(session?.uid?.idEmployee);
+
+  const pendingOvertimes = useMemo(() => {
+    return (vacations ?? []).filter((o: Vacations) => {
+      const signatures: ISignatures[] = o.signatures ?? [];
+      const mySignature = signatures.find(
+        (i: ISignatures) => Number(i.idSignatory) === idEmployee
+      );
+      if (!mySignature) return false;
+      return mySignature.url === '';
+    });
+  }, [vacations, idEmployee]);
+
+  const hasPendingSignature = pendingOvertimes.length > 0;
+
+  useEffect(() => {
+    setHideSignatures(hasPendingSignature);
+  }, [hasPendingSignature]);
 
 
   useEffect(() => {
@@ -51,6 +73,18 @@ export default function VacationsTableClient({
   };
 
   const columns: TableTemplateColumn<Vacations>[] = useMemo(() => [
+    {
+      key: "id",
+      label: "ID",
+      accessor: (e) => e.id,
+      filterable: true,
+      type: "string",
+      render: (e) => (
+        <div className="text-uppercase">
+          {`#${e.id}` || "-"}
+        </div>
+      )
+    },
     {
       key: "employee",
       label: "Empleado",
@@ -147,6 +181,13 @@ export default function VacationsTableClient({
 
   return (
     <>
+      <ConditionalRender cond={hideSignatures}>
+        <AlertSignaturesV
+          onClose={() => setHideSignatures(false)}
+          pendingIds={pendingOvertimes.map((o) => o.id)}
+        />
+      </ConditionalRender>
+
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
       </ConditionalRender>

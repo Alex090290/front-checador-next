@@ -88,14 +88,14 @@ function InhabilityDocCard({
 
   const handleGetDocument = async () => {
     setLoading(true);
-    const res = await getInhabilityDocument({
-      idDoc,
-      selfId,
-    });
+
+    const res = await getInhabilityDocument({ idDoc, selfId });
+
     if (!res.success) {
       setLoading(false);
       return modalError(res.message);
     }
+
     setPdfUrl(res.data || "");
     setShowPdfModal(true);
     setLoading(false);
@@ -107,6 +107,8 @@ function InhabilityDocCard({
       fileInputRef.current.value = "";
     }
   };
+
+ 
 
   return (
     <Col xs={12} sm={6} md={4} xl={2}>

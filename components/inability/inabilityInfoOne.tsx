@@ -69,7 +69,7 @@ export default function InfoOneInability({
 
   if (!inhability) {
     return (
-      <InabilityOneError/>
+      <InabilityOneError />
     );
   }
 
@@ -95,31 +95,31 @@ export default function InfoOneInability({
   }
 
   const handleDeleteInability = async () => {
-        if (!inhability?.id) {
-            modalError("No se encontró el registro");
-            return;
+    if (!inhability?.id) {
+      modalError("No se encontró el registro");
+      return;
+    }
+
+    modalConfirm("¿Deseas eliminar este registro?", async () => {
+      try {
+        setLoading(true);
+        setMessageLoading("Eliminando registro...");
+
+        const res = await deleteInability({ id: Number(inhability.id) });
+
+        if (!res.success) {
+          modalError(res.message);
+          return;
         }
 
-        modalConfirm("¿Deseas eliminar este registro?", async () => {
-            try {
-                setLoading(true);
-                setMessageLoading("Eliminando registro...");
-
-                const res = await deleteInability({ id: Number(inhability.id) });
-
-                if (!res.success) {
-                    modalError(res.message);
-                    return;
-                }
-
-                toast.success(res.message);
-                router.push("/app/inability");
-            } finally {
-                setLoading(false);
-                setMessageLoading("");
-            }
-        });
-    };
+        toast.success(res.message);
+        router.push("/app/inability");
+      } finally {
+        setLoading(false);
+        setMessageLoading("");
+      }
+    });
+  };
 
   const handleUpdateInability = async (
     data: TInputs
@@ -150,7 +150,7 @@ export default function InfoOneInability({
       message: res.message,
       data: true,
     };
-  };
+  }
 
   return (
     <>
@@ -441,16 +441,17 @@ export default function InfoOneInability({
 
                   <Row className="g-2">
                     {inhability?.documentsInability?.map((doc) => (
-                      <InhabilityDocCard
-                        key={doc.id}
-                        selfId={String(doc.id)}
-                        idDoc={id}
-                        urlDocument={doc.urlDocument}
-                        dateInit={doc.dateInit}
-                        dateEnd={doc.dateEnd}
-                        folio={doc.folio}
-                      />
-                    ))}
+
+                        <InhabilityDocCard
+                          key={doc.id}
+                          selfId={String(doc.id)}
+                          idDoc={id}
+                          urlDocument={doc.urlDocument}
+                          dateInit={doc.dateInit}
+                          dateEnd={doc.dateEnd}
+                          folio={doc.folio}
+                        />
+                      ))}
                   </Row>
                 </Card.Body>
               </Card>

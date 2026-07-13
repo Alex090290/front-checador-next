@@ -102,6 +102,7 @@ export default function CreateInabilityComponent({
   };
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
+    
     modalConfirm("¿Seguro que quieres guardar esta incapacidad?", async () => {
       try {
         setLoading(true);
@@ -116,6 +117,7 @@ export default function CreateInabilityComponent({
 
         toast.success(res.message);
         router.push("/app/inability?view_type=list&id=null");
+        
       } finally {
         setLoading(false);
         setMessageLoading("");

@@ -150,6 +150,7 @@ export async function createInability(
             formData: document,
             id: res.data.data.id,
             idDoc: res.data.data.idDocument,
+            folio: data.folio
           });
         }
         return res.data;
@@ -188,6 +189,7 @@ export async function uploadFirstInhabilityDocument({
   id: string;
   idDoc: string;
   formData: FormData;
+  folio: string;
 }): Promise<ActionResponse<boolean>> {
   try {
     const { apiToken, API_URL: apiUrl } = await storeAction();

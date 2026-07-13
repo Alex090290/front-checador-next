@@ -156,6 +156,7 @@ export default function CreateEmployeeComponent({
 
   //Alerta para antes de guardar 
   const onSubmit: SubmitHandler<TInputsEmployee> = async (data) => {
+    
     modalConfirm("¿Seguro que quieres guardar el empleado?", async () => {
       try {
         setLoading(true);
@@ -512,32 +513,38 @@ export default function CreateEmployeeComponent({
                               />
                               <Entry
                                 register={register("entryOffice", { required: true })}
-                                label="Entrada:"
+                                label="Hora Entrada:"
+                                type="time"
                                 invalid={!!errors.entryOffice}
                               />
                               <Entry
                                 register={register("exitOffice", { required: true })}
-                                label="Salida:"
+                                label="Hola Salida:"
+                                type="time"
                                 invalid={!!errors.exitOffice}
                               />
                               <Entry
                                 register={register("entryLunch", { required: true })}
-                                label="Salida comedor:"
+                                label="Hora Salida comedor:"
+                                type="time"
                                 invalid={!!errors.entryLunch}
                               />
                               <Entry
                                 register={register("exitLunch", { required: true })}
-                                label="Entrada comedor:"
+                                label="Hora Entrada comedor:"
+                                type="time"
                                 invalid={!!errors.exitLunch}
                               />
                               <Entry
                                 register={register("entrySaturdayOffice", { required: true })}
-                                label="Entrada sabatina:"
+                                label="Hora Entrada sabatina:"
+                                type="time"
                                 invalid={!!errors.entrySaturdayOffice}
                               />
                               <Entry
                                 register={register("exitSaturdayOffice", { required: true })}
-                                label="Salida sabatina:"
+                                label="Hora Salida sabatina:"
+                                type="time"
                                 invalid={!!errors.exitSaturdayOffice}
                               />
                               <Entry
