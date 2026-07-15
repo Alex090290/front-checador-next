@@ -14,7 +14,6 @@ import {
 import { useModals } from "@/context/ModalContext";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { Employee } from "@/lib/definitions";
-import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
@@ -558,7 +557,7 @@ export default function CreatePermissionComponent({
                             label="Fecha inicio:"
                             type="date"
                             register={register("dateInit")}
-                            min={formatDate(new Date(), "yyyy-MM-dd")}
+                            
                             className="border text-left"
                           />
                         </Col>
@@ -581,7 +580,7 @@ export default function CreatePermissionComponent({
                               <Entry
                                 register={register("hourInit")}
                                 label="Hora inicial:"
-                                className="text-left"
+                                className="text-left border"
                                 type="time"
                               />
                             </Col>
@@ -590,7 +589,7 @@ export default function CreatePermissionComponent({
                               <Entry
                                 label="Hora final:"
                                 register={register("hourEnd")}
-                                className="text-left"
+                                className="text-left border"
                                 type="time"
                               />
                             </Col>

@@ -44,7 +44,7 @@ export default function PermissionsTableClient({
   const [hideSignatures, setHideSignatures] = useState(false);
   const idEmployee = Number(session?.uid?.idEmployee);
 
-  const pendingOvertimes = useMemo(() => {
+  const pendingPermissions = useMemo(() => {
     return (permissions ?? []).filter((o: IPermissionRequest) => {
       const signatures: ISignatures[] = o.signatures ?? [];
       const mySignature = signatures.find(
@@ -55,7 +55,7 @@ export default function PermissionsTableClient({
     });
   }, [permissions, idEmployee]);
 
-  const hasPendingSignature = pendingOvertimes.length > 0;
+  const hasPendingSignature = pendingPermissions.length > 0;
 
   useEffect(() => {
     setHideSignatures(hasPendingSignature);
@@ -173,7 +173,7 @@ export default function PermissionsTableClient({
       <ConditionalRender cond={hideSignatures}>
         <AlertSignaturesP
           onClose={() => setHideSignatures(false)}
-          pendingIds={pendingOvertimes.map((o) => o.id)}
+          pendingIds={pendingPermissions.map((o) => o.id)}
         />
       </ConditionalRender>
 

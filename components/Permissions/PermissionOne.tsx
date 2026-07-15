@@ -139,7 +139,8 @@ export default function ShowInfoPermissionRequest({
   }
 
   const overallStatus = permission.status ?? "PENDING";
-  const createdAt = safeDate(permission.createdAt, "dd/MM/yyyy HH:mm");
+  const createdAt = safeDate(permission.createdAt, "dd/MM/yyyy");
+  const createdHour = safeDate(permission.createdAt, "HH:mm")
 
   const handleApprove = () => setApproveModal(true);
   const handleSignatureDoh = () => setSignatureModal(true);
@@ -295,6 +296,14 @@ export default function ShowInfoPermissionRequest({
                         </div>
                         <span className="fw-semibold text-end">{createdAt}</span>
                       </div>
+                      
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-clock" />
+                          <span className="text-muted">Hora de creación</span>
+                        </div>
+                        <span className="fw-semibold text-end">{createdHour}</span>
+                      </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2">
@@ -365,7 +374,7 @@ export default function ShowInfoPermissionRequest({
                             <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
                             <div className="text-muted small">Fecha inicio</div>
                             <div className="fw-semibold">
-                              {safeDate(permission.dateInit)}
+                              {safeDate(permission.informationDate.dateInit)}
                             </div>
                           </div>
                         </Col>
@@ -375,7 +384,7 @@ export default function ShowInfoPermissionRequest({
                             <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
                             <div className="text-muted small">Fecha fin</div>
                             <div className="fw-semibold">
-                              {safeDate(permission.dateEnd)}
+                              {safeDate(permission.informationDate.dateEnd)}
                             </div>
                           </div>
                         </Col>
@@ -385,7 +394,7 @@ export default function ShowInfoPermissionRequest({
                             <i className="bi bi-clock text-warning fs-5 mb-2 d-block" />
                             <div className="text-muted small">Hora inicio</div>
                             <div className="fw-semibold">
-                              {permission.hourInt ?? "—"}
+                              {permission.informationDate.hourInit ?? "—"}
                             </div>
                           </div>
                         </Col>
@@ -395,7 +404,7 @@ export default function ShowInfoPermissionRequest({
                             <i className="bi bi-clock-history text-info fs-5 mb-2 d-block" />
                             <div className="text-muted small">Hora fin</div>
                             <div className="fw-semibold">
-                              {permission.hourEnd ?? "—"}
+                              {permission.informationDate.hourEnd ?? "—"}
                             </div>
                           </div>
                         </Col>

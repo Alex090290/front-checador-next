@@ -6,7 +6,8 @@ export default async function ListAllOverTime({
     id,
     page = "1",
     limit = "20",
-    search = "", }: {
+    search = "", 
+}: {
         id: string;
         page?: string;
         limit?: string;

@@ -26,7 +26,7 @@ export default function OverTimeTableClient({
     search?: string;
     overtime?: OverTime[];
     overtimes?: OverTime | null;
-}) {
+}) { 
     //Aqui van los const 
 
     const session = useSessionSnapshot();

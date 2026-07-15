@@ -38,7 +38,7 @@ export default function VacationsTableClient({
   const [hideSignatures, setHideSignatures] = useState(false);
   const idEmployee = Number(session?.uid?.idEmployee);
 
-  const pendingOvertimes = useMemo(() => {
+  const pendingVacations = useMemo(() => {
     return (vacations ?? []).filter((o: Vacations) => {
       const signatures: ISignatures[] = o.signatures ?? [];
       const mySignature = signatures.find(
@@ -49,7 +49,7 @@ export default function VacationsTableClient({
     });
   }, [vacations, idEmployee]);
 
-  const hasPendingSignature = pendingOvertimes.length > 0;
+  const hasPendingSignature = pendingVacations.length > 0;
 
   useEffect(() => {
     setHideSignatures(hasPendingSignature);
@@ -184,7 +184,7 @@ export default function VacationsTableClient({
       <ConditionalRender cond={hideSignatures}>
         <AlertSignaturesV
           onClose={() => setHideSignatures(false)}
-          pendingIds={pendingOvertimes.map((o) => o.id)}
+          pendingIds={pendingVacations.map((o) => o.id)}
         />
       </ConditionalRender>
 

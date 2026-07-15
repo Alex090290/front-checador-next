@@ -1,5 +1,7 @@
 import { Button } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 type Props = {
     onClose: () => void;
@@ -7,6 +9,18 @@ type Props = {
 };
 
 export default function AlertSignaturesP({ onClose, pendingIds }: Props) {
+
+    const [message, setMessage] = useState("");
+
+
+    useMemo(() => {
+        if (pendingIds.length > 1) {
+            setMessage("Tienes registros pendientes de firmar")
+        } else if (pendingIds.length === 1) {
+            setMessage("Tienes un registro pendiente de firmar")
+        }
+    }, [pendingIds]);
+
     return (
         <div
             className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
@@ -18,23 +32,23 @@ export default function AlertSignaturesP({ onClose, pendingIds }: Props) {
             <div className="bg-white rounded p-4 text-center shadow">
                 <i className="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
 
-                <ConditionalRender cond={pendingIds.length > 1}>
+                <ConditionalRender cond={pendingIds.length >= 1}>
 
-                    <h4 className="mt-3 text-dark">Tienes permisos pendientes de firmar</h4>
+                    <h4 className="mt-3 text-dark">{message}</h4>
 
                     <p className="text-dark mb-3">
-                        Registros: {pendingIds.join(", ")}
+                        Registros: {" "}
+                        {pendingIds.map((id, index) => (
+                            <span key={id}>
+                                <Link href={`/app/permissions?view_type=form&id=${id}`} onClick={onClose}>
+                                    {id}
+                                </Link>
+                                {index < pendingIds.length - 1 && ", "}
+                            </span>
+                        ))}
                     </p>
                 </ConditionalRender>
 
-                <ConditionalRender cond={pendingIds.length === 1}>
-
-                    <h4 className="mt-3 text-dark"> Tienes un permiso pendiente de firmar</h4>
-
-                    <p className="text-dark mb-3">
-                        Registro: {pendingIds.join(", ")}
-                    </p>
-                </ConditionalRender>
 
                 <Button variant="warning" onClick={onClose}>
                     Entendido

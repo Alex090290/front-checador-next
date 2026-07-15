@@ -68,7 +68,7 @@ export async function fetchOverTimeQueries(args: FetchUsersArgs & { search?: str
   }
 }
 
-//Funcion para listar todas las constancias 
+//Funcion para listar todas las horas extra
 export async function fetchOverTime(): Promise<OverTime[]> {
   try {
     const { apiToken, API_URL } = await storeAction();
