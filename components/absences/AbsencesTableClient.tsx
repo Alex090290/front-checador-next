@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 import moment from "moment";
-import { Button, Card, Col, Container, Dropdown, DropdownButton, InputGroup, Overlay, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Dropdown, InputGroup, Overlay, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
@@ -213,7 +213,7 @@ export default function AbsencesTableClient({
         const [start, end] = dates;
         setDateInitValue(start ? moment(start).format("YYYY-MM-DD") : "");
         setDateEndValue(end ? moment(end).format("YYYY-MM-DD") : "");
-        if (start && end) setShowCalendar(false);
+        if (start && end) setShowCalendar(true);
     };
 
     const rangeLabel =
@@ -407,7 +407,10 @@ export default function AbsencesTableClient({
                                                                         <Button
                                                                             variant="primary"
                                                                             className="w-100"
-                                                                            onClick={handleDateFilter}
+                                                                            onClick={() => {
+                                                                                handleDateFilter();
+                                                                                setShowCalendar(false);
+                                                                            }}
                                                                         >
                                                                             Filtrar fechas
                                                                         </Button>
@@ -417,7 +420,10 @@ export default function AbsencesTableClient({
                                                                         <Button
                                                                             variant="secondary"
                                                                             className="w-100"
-                                                                            onClick={handleClear}
+                                                                            onClick={() => {
+                                                                                handleClear();
+                                                                                setShowCalendar(false);
+                                                                            }}
                                                                         >
                                                                             <i className="bi bi-arrow-counterclockwise" />
                                                                         </Button>
@@ -438,46 +444,38 @@ export default function AbsencesTableClient({
                                                         <span className="fw-semibold small">Filtrar por tipo</span>
                                                     </div>
 
-                                                    <DropdownButton
-                                                        variant="outline-secondary"
-                                                        className="w-100"
-                                                        title={
-                                                            currentType === "asistencia"
-                                                                ? "Asistencia"
-                                                                : currentType === "falta"
-                                                                    ? "Falta"
-                                                                    : "Todos"
-                                                        }
-                                                    >
-                                                        <Dropdown.Item
-                                                            active={currentType === ""}
-                                                            onClick={() => handleTypeFilter("")}
-                                                            className="w-100"
+                                                    <Dropdown className="w-100">
+                                                        <Dropdown.Toggle
+                                                            as={Button}
+                                                            variant="outline-secondary"
+                                                            className="w-100 d-flex align-items-center justify-content-between"
                                                         >
-                                                            Todos
-                                                        </Dropdown.Item>
-                                                        <Dropdown.Item
-                                                            active={currentType === "asistencia"}
-                                                            onClick={() => handleTypeFilter("asistencia")}
-                                                            className="w-100"
-                                                        >
-                                                            Asistencia
-                                                        </Dropdown.Item>
-                                                        <Dropdown.Item
-                                                            active={currentType === "falta"}
-                                                            onClick={() => handleTypeFilter("falta")}
-                                                            className="w-100"
-                                                        >
-                                                            Falta
-                                                        </Dropdown.Item>
-                                                    </DropdownButton>
+                                                            {currentType === "asistencia" ? "Asistencia" : currentType === "falta" ? "Falta" : "Todos"}
+                                                        </Dropdown.Toggle>
+
+                                                        <Dropdown.Menu className="w-100">
+                                                            <Dropdown.Item
+                                                                active={currentType === ""}
+                                                                onClick={() => handleTypeFilter("")}
+                                                            >
+                                                                Todos
+                                                            </Dropdown.Item>
+                                                            <Dropdown.Item
+                                                                active={currentType === "asistencia"}
+                                                                onClick={() => handleTypeFilter("asistencia")}
+                                                            >
+                                                                Asistencia
+                                                            </Dropdown.Item>
+                                                            <Dropdown.Item
+                                                                active={currentType === "falta"}
+                                                                onClick={() => handleTypeFilter("falta")}
+                                                            >
+                                                                Falta
+                                                            </Dropdown.Item>
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
                                                 </Card.Body>
                                             </Card>
-                                        </Col>
-
-                                        <Col xs={12} md={6} lg={2}>
-
-
                                         </Col>
                                     </Row>
                                 </div>
