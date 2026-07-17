@@ -7,5 +7,5 @@ export default async function OverTimeInfoOne ({ id }: { id: string }) {
         findAbsence({ id: Number(id) })
     ]);
 
-    return <AbsenceOne absence={absence}/>;
+    return <AbsenceOne absence={absence!}/>;
 }

@@ -1,7 +1,7 @@
 "use client"
 
-import { IAbsence, IChecks } from "@/lib/absences/interface";
-import { Accordion, Button, Card, Col, Collapse, Container, Row } from "react-bootstrap";
+import { IAbsence } from "@/lib/absences/interface";
+import { Button, Card, Col, Collapse, Container, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
