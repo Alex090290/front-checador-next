@@ -22,9 +22,9 @@ const DEFAULT_VALUES: Branch = {
   country: "México",
   neighborhood: "",
   municipality: "",
-  zipCode: 0,
-  lng: 0,
-  lat: 0,
+  zipCode: null,
+  lng: null,
+  lat: null,
 };
 
 export default function CreateBranchComponent() {
@@ -63,7 +63,7 @@ export default function CreateBranchComponent() {
         }
 
         toast.success(res.message);
-        router.back();
+        router.push("/app/branches");
       } finally {
         setLoading(false);
         setMessageLoading("");

@@ -267,8 +267,8 @@ export default function CreateUserComponent({
                           <RelationField
                             options={employees.map((e) => ({
                               id: e.id || 0,
-                              displayName: e.name?.toUpperCase() || "",
-                              name: e.name?.toUpperCase(),
+                              displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                              name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                             }))}
                             register={register("idEmployee")}
                             control={control}

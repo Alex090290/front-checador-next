@@ -327,6 +327,7 @@ export default function FormUpdateEmployee({
                           label="Género:"
                           invalid={!!errors.gender}
                           feedBack={errors.gender?.message}
+                          className="border"
                         />
                       </Col>
                     </Row>
@@ -655,7 +656,8 @@ export default function FormUpdateEmployee({
                       <Col md={6}>
                         <Entry
                           register={register("entryOffice", { required: "Entrada requerida" })}
-                          label="Entrada Oficina:"
+                          label="Hora Entrada:"
+                          type="time"
                           invalid={!!errors.entryOffice}
                           feedBack={errors.entryOffice?.message}
                           className="border"
@@ -664,7 +666,8 @@ export default function FormUpdateEmployee({
                       <Col md={6}>
                         <Entry
                           register={register("exitOffice", { required: "Salida requerida" })}
-                          label="Salida Oficina:"
+                          label="Hora Salida:"
+                          type="time"
                           invalid={!!errors.exitOffice}
                           feedBack={errors.exitOffice?.message}
                           className="border"
@@ -673,7 +676,8 @@ export default function FormUpdateEmployee({
                       <Col md={6}>
                         <Entry
                           register={register("entryLunch", { required: "Entrada comedor requerida" })}
-                          label="Entrada comedor:"
+                          label="Hora Entrada Comedor:"
+                          type="time"
                           invalid={!!errors.entryLunch}
                           feedBack={errors.entryLunch?.message}
                           className="border"
@@ -682,7 +686,8 @@ export default function FormUpdateEmployee({
                       <Col md={6}>
                         <Entry
                           register={register("exitLunch", { required: "Salida comedor requerida" })}
-                          label="Salida comedor:"
+                          label="Hora Salida Comedor:"
+                          type="time"
                           invalid={!!errors.exitLunch}
                           feedBack={errors.exitLunch?.message}
                           className="border"
@@ -691,7 +696,8 @@ export default function FormUpdateEmployee({
                       <Col md={6}>
                         <Entry
                           register={register("entrySaturdayOffice", { required: "Entrada sabatina requerida" })}
-                          label="Entrada sabatina:"
+                          label="Hora Entrada Sabatina:"
+                          type="time"
                           invalid={!!errors.entrySaturdayOffice}
                           feedBack={errors.entrySaturdayOffice?.message}
                           className="border"
@@ -700,7 +706,8 @@ export default function FormUpdateEmployee({
                       <Col md={6}>
                         <Entry
                           register={register("exitSaturdayOffice", { required: "Salida sabatina requerida" })}
-                          label="Salida sabatina:"
+                          label="Hora Salida Sabatina:"
+                          type="time"
                           invalid={!!errors.exitSaturdayOffice}
                           feedBack={errors.exitSaturdayOffice?.message}
                           className="border"
@@ -736,6 +743,7 @@ export default function FormUpdateEmployee({
                             { value: 2, label: "Baja" },
                           ]}
                           label="Status:"
+                          className="border"
                         />
                       </Col>
                       <Col md={6}>
@@ -746,6 +754,7 @@ export default function FormUpdateEmployee({
                             { label: "Entregada", value: "ENTREGADA" },
                           ]}
                           label="Carta de aniversario:"
+                          className="border"
                         />
                       </Col>
                       <Col md={6}>
@@ -806,28 +815,28 @@ export default function FormUpdateEmployee({
                             <td className="border-bottom">
                               <Form.Control
                                 {...register(`emergencyContacts.${index}.name`, { required: true })}
-                                size="sm"
+
                                 className="border-0 shadow-none"
                               />
                             </td>
                             <td className="border-bottom">
                               <Form.Control
                                 {...register(`emergencyContacts.${index}.kinship`, { required: true })}
-                                size="sm"
+
                                 className="border-0 shadow-none"
                               />
                             </td>
                             <td className="border-bottom">
                               <Form.Control
                                 {...register(`emergencyContacts.${index}.phone.internationalNumber`, { required: true })}
-                                size="sm"
+
                                 className="border-0 shadow-none"
                               />
                             </td>
                             <td className="border-bottom text-center">
                               <Button
                                 type="button"
-                                
+
                                 variant="danger"
                                 onClick={() => removeContact(index)}
                               >

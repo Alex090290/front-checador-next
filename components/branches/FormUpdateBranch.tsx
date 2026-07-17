@@ -5,6 +5,7 @@ import Loading from "@/components/LoadingSpinner";
 import { Entry } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import { ActionResponse, Branch, ModalBasicProps } from "@/lib/definitions";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -45,8 +46,10 @@ export default function FormUpdateBranch({
     defaultValues: getDefaultValues(branch),
   });
 
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { modalError } = useModals();
+  const { modalError, modalConfirm } = useModals();
+  const [, setMessageLoading] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -61,14 +64,30 @@ export default function FormUpdateBranch({
   }, [branch, reset, modalError]);
 
   const onSubmit: SubmitHandler<Branch> = async (data) => {
-    const res = await sendData(data);
-
-    if (!res.success) {
-      modalError(res.message);
-      return;
-    }
-
     onHide();
+
+    modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
+
+      try {
+        setLoading(true);
+        setMessageLoading("Actualizando cambios...");
+        const res = await sendData(data);
+
+        if (!res.success) {
+          modalError(res.message);
+          console.log(res.message);
+
+          return;
+        }
+        onHide();
+        router.refresh();
+
+      } finally {
+
+        setLoading(false);
+        setMessageLoading("");
+      }
+    })
   };
 
   return (

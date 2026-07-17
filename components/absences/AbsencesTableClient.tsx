@@ -301,13 +301,6 @@ export default function AbsencesTableClient({
 
     return (
         <>
-            {/* <ConditionalRender cond={hideSignatures}>
-                <AlertSignatures
-                    onClose={() => setHideSignatures(false)}
-                    pendingIds={pendingOvertimes.map((o) => o.id)}
-                />
-            </ConditionalRender> */}
-
             <ConditionalRender cond={loading}>
                 <Loading message={messageLoading} />
             </ConditionalRender>
@@ -324,7 +317,7 @@ export default function AbsencesTableClient({
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
-                        <h1 className="mb-0">Faltas</h1>
+                        <h1 className="mb-0">Faltas y Asistencias</h1>
 
                         <span className="text-muted">
                             {total} registro{total !== 1 ? "s" : ""}

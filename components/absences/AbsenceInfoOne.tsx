@@ -1,7 +1,7 @@
 "use client"
 
-import { IAbsence } from "@/lib/absences/interface";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { IAbsence, IChecks } from "@/lib/absences/interface";
+import { Accordion, Button, Card, Col, Collapse, Container, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
@@ -11,7 +11,77 @@ import { deleteAbsence } from "@/app/actions/absences-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { formatDate } from "date-fns";
+import React from "react";
+import CheckLocationMap from "./AbsenceMap";
 
+function formatText(value?: string | number | null) {
+    if (value === null || value === undefined || value === "") return "-";
+    return String(value);
+}
+
+function statusVariant(type: string | null) {
+    switch ((type ?? "").toLowerCase()) {
+        case "asistencia":
+            return (
+                <span className="badge rounded-pill px2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                    ASISTENCIA
+                </span>
+            )
+
+        case "falta":
+            return (
+                <span className="badge rounded-pill px2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                    FALTA
+                </span>
+            )
+        default:
+            return (
+                <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+            )
+    }
+}
+
+function checksVariant(type: string | null) {
+    switch ((type ?? "").toLowerCase()) {
+        case "entrada_oficina":
+            return (
+                <div>
+                    <i className="bi bi-box-arrow-in-right text-success me-2" />
+                    <span>
+                        Entrada Oficina
+                    </span>
+                </div>
+            )
+
+        case "sale_a_comer":
+            return (
+                <div>
+                    <i className="bi bi-cup-hot text-success me-2" />
+                    <span>
+                        Entrada Comedor
+                    </span>
+                </div>
+            )
+        case "regresa_de_comer":
+            return (
+                <div>
+                    <i className="bi bi-cup-straw text-danger me-2" />
+                    <span>
+                        Salida Comedor
+                    </span>
+                </div>
+            )
+        case "salida_oficina":
+            return (
+                <div>
+                    <i className="bi bi-box-arrow-right text-danger me-2" />
+                    <span>
+                        Salida Oficina
+                    </span>
+                </div>
+            )
+    }
+}
 
 function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
     if (!date) return "—";
@@ -22,18 +92,27 @@ function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
     }
 }
 
-export function AbsenceOne({
-    absence
-}: {
-    absence: IAbsence | null;
-}) {
+type Props = {
+    absence: IAbsence;
+}
 
+export function AbsenceOne({
+    absence,
+}: Props
+) {
     //Aqui los const
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
-    const createdAt = safeDate(absence?.createdAt ?? "dd/MM/yyyy HH:mm");
+    const createdAt = safeDate(absence?.createdAt ?? "dd/MM/yyyy");
+    const createdHour = safeDate(absence?.createdAt, "HH:mm");
+    const overallStatus = absence?.type ?? "";
+    const hasChecks = absence?.checks.length > 0;
+    const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
+    const activeCheck = absence.checks.find((c) => String(c.id) === activeCheckId);
+
+    console.log("AQUI:", absence.checks.find((C) => C.coordinates.lat));
 
     //========== Helpers =============
 
@@ -46,8 +125,6 @@ export function AbsenceOne({
             ? `${upperCase(u.employee.lastName)} ${upperCase(u.employee.name)} `
             : `EMPLEADO #${u.idEmployee}`;
     };
-
-
 
     //Borrar
     const handleDeleteOvertime = async () => {
@@ -136,22 +213,17 @@ export function AbsenceOne({
 
                 <div>
                     <h1 className="mb-1 ms-1">{getEmployeeName(absence)}</h1>
-                    <p className="text-muted mb-0 ms-1">
-                        Información de la falta.
-                    </p>
+                    <p className="text-muted mb-1 ms-1"> Informacion de la {absence.type}.</p>
                 </div>
 
                 <Card className="border shadow-sm rounded-4 mt-2">
                     <Card.Body className="p-4">
                         <div className="d-flex align-items-center justify-content-between mb-4">
                             <div>
-                                <h5 className="mb-1 fw-bold">
-                                    Falta #{absence.id}
+                                <h5 className="mb-1 fw-bold text-capitalize">
+                                    {absence.type} #{absence.id}
                                 </h5>
 
-                                <p className="text-muted mb-0">
-                                    FALTAS
-                                </p>
                             </div>
                         </div>
 
@@ -174,11 +246,22 @@ export function AbsenceOne({
                                             <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                                                 <div className="d-flex align-items-center gap-2">
                                                     <i className="bi bi-calendar-plus text-primary" />
-                                                    <span className="text-muted">Registrada</span>
+                                                    <span className="text-muted">Fecha de Registro</span>
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
                                                     {createdAt}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-clock" />
+                                                    <span className="text-muted">Hora de Registro</span>
+                                                </div>
+
+                                                <span className="fw-semibold text-end">
+                                                    {createdHour}
                                                 </span>
                                             </div>
 
@@ -189,29 +272,7 @@ export function AbsenceOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {fullName(overtime.createForPerson)}
-                                                </span>
-                                            </div> */}
 
-                                            {/* <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <i className="bi bi-person-workspace text-warning" />
-                                                    <span className="text-muted">Líder</span>
-                                                </div>
-
-                                                <span className="fw-semibold text-end">
-                                                    {fullName()}
-                                                </span>
-                                            </div> */}
-
-                                            {/* <div className="d-flex align-items-center justify-content-between">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <i className="bi bi-person-check text-info" />
-                                                    <span className="text-muted">D.O.H.</span>
-                                                </div>
-
-                                                <span className="fw-semibold text-end">
-                                                    {fullName(overtime.personDoh)}
                                                 </span>
                                             </div> */}
                                         </div>
@@ -226,86 +287,58 @@ export function AbsenceOne({
                                         <div className="d-flex align-items-center justify-content-between mb-4">
                                             <div>
                                                 <h6 className="mb-1 fw-bold">
-                                                    Detalles de la falta
+                                                    Detalles de la {absence.type}
                                                 </h6>
 
                                                 <p className="text-muted mb-0 small">
-                                                    Consulta la fecha, horario y motivo de la falta.
+                                                    Consulta los detalles de la {absence.type}.
                                                 </p>
                                             </div>
 
-                                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-                                                Falta
-                                            </span>
+                                            {statusVariant(overallStatus)}
                                         </div>
 
                                         <div className="d-flex flex-column gap-4">
-                                            <div className="border rounded-3 p-3">
-                                                <div className="d-flex align-items-center gap-2 mb-2">
-                                                    <i className="bi bi-chat-left-text text-primary" />
-                                                    <span className="text-muted fw-semibold">
-                                                        Categoría
-                                                    </span>
-                                                </div>
-
-                                                <div className="text-uppercase">
-                                                    {absence.category ?? "—"}
-                                                </div>
-                                            </div>
 
                                             <Row className="g-3">
-                                                <Col xs={12} md={6} xl={3}>
+                                                <Col xs={12} sm={6} md={4} lg={4} xl={4}>
                                                     <div className="border rounded-3 p-3 text-center h-100">
-                                                        <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
+                                                        <i className="bi bi-patch-check text-info fs-5 mb-2 d-block" />
 
                                                         <div className="text-muted small">
-                                                            Fecha
+                                                            Categoría
                                                         </div>
 
-                                                        <div className="fw-semibold">
-                                                            {/* {getDate(overtime)} */}
+                                                        <div className="fw-semibold text-capitalize">
+                                                            {formatText(absence.category)}
                                                         </div>
                                                     </div>
                                                 </Col>
 
-                                                <Col xs={12} md={6} xl={3}>
+                                                <Col xs={12} sm={6} md={4} lg={4} xl={4}>
                                                     <div className="border rounded-3 p-3 text-center h-100">
-                                                        <i className="bi bi-clock text-warning fs-5 mb-2 d-block" />
+                                                        <i className="bi bi-file-earmark-check text-warning fs-5 mb-2 d-block" />
 
                                                         <div className="text-muted small">
-                                                            Hora inicio
+                                                            Subcategoría
                                                         </div>
 
                                                         <div className="fw-semibold">
-                                                            {/* {getHourInit(overtime)} */}
+                                                            {formatText(absence.subCategory)}
                                                         </div>
                                                     </div>
                                                 </Col>
 
-                                                <Col xs={12} md={6} xl={3}>
+                                                <Col xs={12} sm={6} md={4} lg={4} xl={4}>
                                                     <div className="border rounded-3 p-3 text-center h-100">
-                                                        <i className="bi bi-clock-history text-danger fs-5 mb-2 d-block" />
+                                                        <i className="bi bi-funnel text-danger fs-5 mb-2 d-block" />
 
                                                         <div className="text-muted small">
-                                                            Hora fin
+                                                            Tipo
                                                         </div>
 
-                                                        <div className="fw-semibold">
-                                                            {/* {getHourEnd(overtime)} */}
-                                                        </div>
-                                                    </div>
-                                                </Col>
-
-                                                <Col xs={12} md={6} xl={3}>
-                                                    <div className="border rounded-3 p-3 text-center h-100">
-                                                        <i className="bi bi-hourglass-split text-info fs-5 mb-2 d-block" />
-
-                                                        <div className="text-muted small">
-                                                            Total horas
-                                                        </div>
-
-                                                        <div className="fw-bold fs-5">
-                                                            {/* {overtime.informationDate?.totalHours ?? "—"} */}
+                                                        <div className="fw-semibold text-capitalize">
+                                                            {formatText(absence.type)}
                                                         </div>
                                                     </div>
                                                 </Col>
@@ -315,9 +348,142 @@ export function AbsenceOne({
                                 </Card>
                             </Col>
                         </Row>
+                        <Card className="border p-3 shadow-sm rounded-4">
+                            <div className="d-flex align-items-center justify-content-between">
+                                <h6 className="mb-0 fw-bold">Checadas del día</h6>
+
+                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                                    Historial
+                                </span>
+                            </div>
+                            <Row>
+
+                                <ConditionalRender cond={hasChecks}>
+                                    <Row className="g-3">
+                                        {absence.checks.map((c) => {
+                                            const key = String(c.id);
+                                            const isActive = activeCheckId === key;
+
+                                            return (
+                                                <Col key={key} xs={12} sm={12} md={6} lg={6} xl={3}>
+                                                    <div
+                                                        role="button"
+                                                        onClick={() => setActiveCheckId(isActive ? null : key)}
+                                                        className={`border rounded-3 p-3 h-100 ms-2 ${isActive ? "border-primary bg-light" : ""
+                                                            }`}
+                                                    >
+                                                        <div className="d-flex align-items-between gap-2">
+                                                            {checksVariant(c.type)}
+                                                            <i
+                                                                className={`bi ms-auto ${isActive ? "bi-chevron-up" : "bi-chevron-down"
+                                                                    }`}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            );
+                                        })}
+                                    </Row>
+
+                                    <Collapse in={!!activeCheck}>
+                                        <div>
+                                            {activeCheck && (
+
+                                                <div className="border rounded-3 p-3 mt-3 me-2 ms-1">
+                                                    <Row className="g-3">
+                                                        {/* Columna de estadísticas */}
+                                                        <Col xs={12} lg={4}>
+                                                            <div className="d-flex flex-column gap-2 h-100">
+                                                                <div className="border rounded-3 p-3 d-flex align-items-center gap-3">
+                                                                    <i className="bi bi-upc-scan text-primary fs-5" />
+                                                                    <div>
+                                                                        <div className="text-muted small">Checador</div>
+                                                                        <div className="fw-bold text-capitalize">{activeCheck.user.name}</div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="border rounded-3 p-3 d-flex align-items-center gap-3">
+                                                                    <i className="bi bi-clock text-primary fs-5" />
+                                                                    <div>
+                                                                        <div className="text-muted small">Hora de registro</div>
+                                                                        <div className="fw-semibold">
+                                                                            {formatDate(activeCheck.createdAt, "HH:mm")}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="border rounded-3 p-3 d-flex align-items-center gap-3">
+                                                                    <i className="bi bi-geo-alt text-primary fs-5" />
+                                                                    <div>
+                                                                        <div className="text-muted small">Lugar de registro</div>
+                                                                        <div className="fw-semibold text-capitalize">
+                                                                            {activeCheck.user.lastName}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="border rounded-3 p-3 d-flex align-items-center gap-3">
+                                                                    <i className="bi bi-hourglass-split text-primary fs-5" />
+                                                                    <div>
+                                                                        <div className="text-muted small">Minutos de diferencia</div>
+                                                                        <div className="fw-semibold">
+                                                                            {activeCheck.minutesDifference || "-"}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </Col>
+
+                                                        {/* Columna de comentarios */}
+                                                        <Col xs={12} lg={4}>
+                                                            <div className="border rounded-3 p-3 h-100 d-flex flex-column">
+                                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                                    <i className="bi bi-chat-left-text text-primary fs-5" />
+                                                                    <span className="text-muted small">Comentarios registrados</span>
+                                                                </div>
+
+                                                                <div
+                                                                    className="flex-grow-1 p-3 rounded-3 bg-light"
+                                                                    style={{ whiteSpace: "pre-wrap", minHeight: "180px" }}
+                                                                >
+                                                                    {activeCheck.message || "Sin comentarios"}
+                                                                </div>
+                                                            </div>
+                                                        </Col>
+
+                                                        {/* Columna de mapa (placeholder) */}
+                                                        <Col xs={12} lg={4}>
+                                                            <div className="border rounded-3 h-100 d-flex flex-column">
+                                                                <div className="d-flex align-items-center gap-2 p-3 pb-2">
+                                                                    <i className="bi bi-map text-primary fs-5" />
+                                                                    <span className="text-muted small">Ubicación del registro</span>
+                                                                </div>
+
+                                                                <div className="m-2 h-100">
+                                                                    <CheckLocationMap lat={activeCheck.coordinates.lat} lng={activeCheck.coordinates.lng} />
+                                                                </div>
+
+                                                            </div>
+                                                        </Col>
+                                                    </Row>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Collapse>
+                                </ConditionalRender>
+
+                                <ConditionalRender cond={!hasChecks}>
+                                    <p> No tiene checadas</p>
+                                </ConditionalRender>
+
+                            </Row>
+
+                        </Card>
                     </Card.Body>
-                </Card>
-            </Container>
+
+
+                </Card >
+            </Container >
         </>
     )
 }

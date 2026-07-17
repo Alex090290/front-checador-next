@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { deleteBranch, updateBranch } from "@/app/actions/branches-actionst";
 import { useModals } from "@/context/ModalContext";
 import OverLay from "../templates/OverLay";
+import BranchesOneError from "./branchesMessageError";
 
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
@@ -32,9 +33,7 @@ export default function BrancheOne({
   const router = useRouter();
   if (!branch) {
     return (
-      <div className="py-4">
-        <h4 className="mb-0">Sucursal no encontrada</h4>
-      </div>
+      <BranchesOneError/>
     );
   }
 
@@ -220,7 +219,7 @@ export default function BrancheOne({
                         </span>
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between gap-3">
+                      {/* <div className="d-flex align-items-center justify-content-between gap-3">
                         <div className="d-flex align-items-center gap-2">
                           <i className="bi bi-person-badge text-success" />
                           <span className="text-muted">ID Manager</span>
@@ -229,7 +228,7 @@ export default function BrancheOne({
                         <span className="fw-semibold text-end">
                           {formatText(branch.idManager)}
                         </span>
-                      </div>
+                      </div> */}
                     </div>
                   </Card.Body>
                 </Card>

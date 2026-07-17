@@ -333,16 +333,16 @@ export function ImageField({
               e.stopPropagation();
               handleRemoveImage();
             }}
-            className="btn btn-danger btn-sm rounded-circle position-absolute"
+            className="btn btn-danger rounded-circle position-absolute"
             style={{
-              top: "-8px",
+              top: "0px",
               right: "-8px",
               width: "25px",
               height: "25px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: 0,
+              padding: 10,
             }}
           >
             <i className="bi bi-trash-fill" />

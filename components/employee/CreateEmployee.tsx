@@ -525,13 +525,13 @@ export default function CreateEmployeeComponent({
                               />
                               <Entry
                                 register={register("entryLunch", { required: true })}
-                                label="Hora Salida comedor:"
+                                label="Hora Entrada Comedor:"
                                 type="time"
                                 invalid={!!errors.entryLunch}
                               />
                               <Entry
                                 register={register("exitLunch", { required: true })}
-                                label="Hora Entrada comedor:"
+                                label="Hora Salida Comedor:"
                                 type="time"
                                 invalid={!!errors.exitLunch}
                               />

@@ -98,7 +98,7 @@ export interface Branch {
   street?: string;
   numberOut?: string;
   numberIn?: string | null;
-  zipCode?: number;
+  zipCode?: number | null;
   neighborhood?: string;
 }
 

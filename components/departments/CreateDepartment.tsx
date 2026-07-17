@@ -60,7 +60,7 @@ export default function CreateDepartmentComponent({
         }
 
         toast.success(res.message);
-        router.back();
+        router.push("/app/departments");
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -147,8 +147,8 @@ export default function CreateDepartmentComponent({
                             className="text-uppercase border"
                             options={employees.map((emp) => ({
                               id: emp.id ?? 0,
-                              displayName: `${emp.name} ${emp.lastName}`,
-                              name: `${emp.name} ${emp.lastName}`,
+                              displayName: `${emp.lastName?.toUpperCase()} ${emp.name?.toUpperCase()}`,
+                              name: `${emp.lastName?.toUpperCase()} ${emp.name?.toUpperCase()}`,
                             }))}
                           />
                         </Col>

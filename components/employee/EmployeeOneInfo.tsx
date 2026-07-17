@@ -105,7 +105,7 @@ export default function EmployeeDetailsView({
   const statusTwo = employee?.status === 2;
   const [hideBiometricAlert, setHideBiometricAlert] = useState(false);
   const hasBiometricPhotos = (employee?.biometricPhotos?.length ?? 0) > 0;
-
+  const hasVacations = vacations?.length > 0;
 
 
   const department =
@@ -116,11 +116,6 @@ export default function EmployeeDetailsView({
   const branch =
     branches.find((b) => b.id === employee?.branch?.id) || employee?.branch;
 
-  const leader = employees.find(
-    (em) => em.id === (employee?.department as unknown as Department)?.idLeader
-  );
-
-  const departmentLeader = (employee?.department as Department | null)?.leader;
 
   const handleUpdateEmployee = async (
     data: TInputsEmployee
@@ -805,15 +800,11 @@ export default function EmployeeDetailsView({
                           <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                             <div className="d-flex align-items-center gap-2">
                               <i className="bi bi-person-workspace text-primary" />
-                              <span className="text-muted">Gerente</span>
+                              <span className="text-muted">Líder</span>
                             </div>
 
                             <span className="fw-semibold text-end text-uppercase">
-                              {leader
-                                ? `${leader.name} ${leader.lastName}`
-                                : departmentLeader
-                                  ? `${departmentLeader.name} ${departmentLeader.lastName}`
-                                  : "-"}
+                              {employee?.leader?.name}
                             </span>
                           </div>
 
@@ -996,7 +987,7 @@ export default function EmployeeDetailsView({
                                   }`}
                               />
 
-                              <span className="text-muted">Status</span>
+                              <span className="text-muted">Estatus</span>
                             </div>
 
                             <span
@@ -1421,7 +1412,7 @@ export default function EmployeeDetailsView({
                           </span>
                         </div>
 
-                        {vacations?.length ? (
+                        <ConditionalRender cond={hasVacations}>
                           <Accordion flush>
                             {vacations.map((v) => (
                               <Accordion.Item
@@ -1576,7 +1567,9 @@ export default function EmployeeDetailsView({
                               </Accordion.Item>
                             ))}
                           </Accordion>
-                        ) : (
+                        </ConditionalRender>
+
+                        <ConditionalRender cond={!hasVacations}>
                           <div className="text-center py-5 text-muted">
                             <i className="bi bi-calendar-x fs-1 d-block mb-3" />
 
@@ -1588,7 +1581,7 @@ export default function EmployeeDetailsView({
                               No existen periodos vacacionales registrados para este empleado.
                             </small>
                           </div>
-                        )}
+                        </ConditionalRender>
                       </Card.Body>
                     </Card>
                   </Col>

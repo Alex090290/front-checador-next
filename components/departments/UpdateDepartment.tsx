@@ -10,6 +10,7 @@ import {
   Employee,
   ModalBasicProps,
 } from "@/lib/definitions";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -45,8 +46,10 @@ export default function FormUpdateDepartment({
     defaultValues: getDefaultValues(department),
   });
 
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { modalError, modalConfirm } = useModals();
+  const [, setMessageLoading] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -60,16 +63,30 @@ export default function FormUpdateDepartment({
   }, [department, reset, modalError]);
 
   const onSubmit: SubmitHandler<Department> = async (data) => {
-    modalConfirm("¿Deseas guardar los cambios de este departamento?", async () => {
-      const res = await sendData(data);
+    onHide();
 
-      if (!res.success) {
-        modalError(res.message);
-        return;
+    modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
+
+      try {
+        setLoading(true);
+        setMessageLoading("Actualizando cambios...");
+        const res = await sendData(data);
+
+        if (!res.success) {
+          modalError(res.message);
+          console.log(res.message);
+
+          return;
+        }
+        onHide();
+        router.refresh();
+
+      } finally {
+
+        setLoading(false);
+        setMessageLoading("");
       }
-
-      onHide();
-    });
+    })
   };
 
   return (

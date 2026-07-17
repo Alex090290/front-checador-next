@@ -116,24 +116,6 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
           <Col xs={12} xl={12} xxl={12}>
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">
-                {/* <div className="mb-4">
-                  <Col xs={12} md={6} lg={4}>
-                    <InputGroup>
-                      <InputGroup.Text
-                        className="bg-gray"
-                        style={{ color: "#6c757d" }}
-                      >
-                        <i className="bi bi-search" />
-                      </InputGroup.Text>
-
-                      <GenericSearchInput
-                        initialValue={search}
-                        onSearch={handleSearch}
-                        placeholder="Buscar anuncio..."
-                      />
-                    </InputGroup>
-                  </Col>
-                </div> */}
 
                 <ListView>
                   <ListView.Body>
@@ -157,7 +139,7 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
                         <tbody>
                           {(newsletters ?? []).map((row) => (
                             <tr key={row.id}
-                              className={selectedIds.includes(String(row.id)) ? "table-primary" : ""}>
+                              className={selectedIds.includes(String(row.id)) ? "table-secondary" : ""}>
                               {colums.map((column) => (
                                 <td key={String(column.key)}>
                                   {column.render
@@ -168,7 +150,7 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
 
                               <td>
                                 <button
-                                  className="btn btn-sm btn-outline-info"
+                                  className={selectedIds.includes(String(row.id)) ? "btn btn-info btn-sm" : "btn btn-sm btn-outline-info"}
                                   onClick={() => {
                                     setSelectedIds((prev) =>
                                       prev.includes(String(row.id))

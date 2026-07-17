@@ -12,9 +12,12 @@ import {
   User,
   Employee,
 } from "@/lib/definitions";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { Form, Button, Row, Col, Card } from "react-bootstrap";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import toast from "react-hot-toast";
+
 
 
 
@@ -74,10 +77,10 @@ export default function FormUpdateUser({
       idEmployee: null,
     },
   });
-
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { modalError } = useModals();
-
+  const { modalError, modalConfirm } = useModals();
+  const [, setMessageLoading] = useState("");
   const permisosSeleccionados = watch("permissions") || [];
 
   const isPermSelected = (id: number) =>
@@ -122,14 +125,32 @@ export default function FormUpdateUser({
   }, [handleFetchResources]);
 
   const onSubmit: SubmitHandler<TInputsUser> = async (data) => {
-    const res = await sendData(data);
-
-    if (!res.success) {
-      modalError(res.message);
-      return;
-    }
-
     onHide();
+
+    modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
+
+      try {
+        setLoading(true);
+        setMessageLoading("Actualizando cambios...");
+        const res = await sendData(data);
+
+        if (!res.success) {
+          modalError(res.message);
+          console.log(res.message);
+
+          return;
+        }
+        toast.success(res.message);
+        onHide();
+        router.refresh();
+
+      } finally {
+
+        setLoading(false);
+        setMessageLoading("");
+      }
+
+    })
   };
 
   return (
@@ -289,8 +310,8 @@ export default function FormUpdateUser({
                     <RelationField
                       options={employees.map((e) => ({
                         id: e.id || 0,
-                        displayName: e.name?.toUpperCase() || "",
-                        name: e.name?.toUpperCase(),
+                        displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                        name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                       }))}
                       register={register("idEmployee")}
                       control={control}
