@@ -71,7 +71,48 @@ function formatPhone(
   return value.internationalNumber || "-";
 }
 
+function anniversaryLetterVariant(type: string | null) {
+  switch ((type ?? "").toLowerCase()) {
+    case "pending":
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+          PENDIENTE
+        </span>
+      )
+    case "entregada":
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" >
+          ENTREGADA
+        </span >
+      )
+    default:
+      return (
+        <span> --- </span>
+      )
+  }
+}
 
+function statusVariant(type: number | null) {
+  switch ((type ?? 0)) {
+    case 1:
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+          ACTIVO
+        </span>
+      )
+
+    case 2:
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+          BAJA
+        </span>
+      )
+    default:
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+      )
+  }
+}
 
 type Props = {
   employee: Employee | null;
@@ -106,6 +147,8 @@ export default function EmployeeDetailsView({
   const [hideBiometricAlert, setHideBiometricAlert] = useState(false);
   const hasBiometricPhotos = (employee?.biometricPhotos?.length ?? 0) > 0;
   const hasVacations = vacations?.length > 0;
+  const aniversaryLetterStatus = employee?.anniversaryLetter ?? "";
+  const statusEmployee = employee?.status ?? 0;
 
 
   const department =
@@ -972,7 +1015,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold text-uppercase">
-                              {formatText(employee?.anniversaryLetter)}
+                              {anniversaryLetterVariant(aniversaryLetterStatus)}
                             </span>
                           </div>
 
@@ -990,20 +1033,11 @@ export default function EmployeeDetailsView({
                               <span className="text-muted">Estatus</span>
                             </div>
 
-                            <span
-                              className={`fw-semibold text-uppercase ${employee?.status === 1
-                                ? "text-success"
-                                : employee?.status === 2
-                                  ? "text-danger"
-                                  : ""
-                                }`}
-                            >
-                              {employee?.status === 1
-                                ? "Activo"
-                                : employee?.status === 2
-                                  ? "Baja"
-                                  : "-"}
-                            </span>
+
+                            <div className="d-flex align-items-center gap-2">
+                              {statusVariant(statusEmployee)}
+                            </div>
+
                           </div>
 
                           <div className="d-flex align-items-center justify-content-between border-bottom pb-2">

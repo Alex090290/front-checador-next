@@ -10,9 +10,9 @@ import { useModals } from "@/context/ModalContext";
 import { deleteAbsence } from "@/app/actions/absences-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { formatDate } from "date-fns";
 import React from "react";
 import CheckLocationMap from "./AbsenceMap";
+import { formatCreatedAt, formatCreatedAtOnlyHours, formatScheduleTime } from "@/lib/helpers";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
@@ -80,15 +80,24 @@ function checksVariant(type: string | null) {
                     </span>
                 </div>
             )
-    }
-}
-
-function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
-    if (!date) return "—";
-    try {
-        return formatDate(new Date(date), fmt);
-    } catch {
-        return "—";
+        case "entrada_sabado":
+            return (
+                <div>
+                    <i className="bi bi-box-arrow-in-right text-danger me-2" />
+                    <span>
+                        Entrada Sábado
+                    </span>
+                </div>
+            )
+        case "salida_sabado":
+            return (
+                <div>
+                    <i className="bi bi-box-arrow-right text-danger me-2" />
+                    <span>
+                        Salida Sábado
+                    </span>
+                </div>
+            )
     }
 }
 
@@ -105,14 +114,10 @@ export function AbsenceOne({
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
-    const createdAt = safeDate(absence?.createdAt ?? "dd/MM/yyyy");
-    const createdHour = safeDate(absence?.createdAt, "HH:mm");
     const overallStatus = absence?.type ?? "";
     const hasChecks = absence?.checks.length > 0;
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = absence.checks.find((c) => String(c.id) === activeCheckId);
-
-    console.log("AQUI:", absence.checks.find((C) => C.coordinates.lat));
 
     //========== Helpers =============
 
@@ -250,7 +255,7 @@ export function AbsenceOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {createdAt}
+                                                    {formatCreatedAt(absence.createdAt)}
                                                 </span>
                                             </div>
 
@@ -261,7 +266,7 @@ export function AbsenceOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {createdHour}
+                                                    {formatCreatedAtOnlyHours(absence.createdAt)}
                                                 </span>
                                             </div>
 
@@ -369,7 +374,7 @@ export function AbsenceOne({
                                                     <div
                                                         role="button"
                                                         onClick={() => setActiveCheckId(isActive ? null : key)}
-                                                        className={`border rounded-3 p-3 h-100 ms-2 ${isActive ? "border-primary bg-light" : ""
+                                                        className={`border rounded-3 p-3 h-100 ms-2 ${isActive ? "border-primary" : ""
                                                             }`}
                                                     >
                                                         <div className="d-flex align-items-between gap-2">
@@ -395,10 +400,10 @@ export function AbsenceOne({
                                                         <Col xs={12} lg={4}>
                                                             <div className="d-flex flex-column gap-2 h-100">
                                                                 <div className="border rounded-3 p-3 d-flex align-items-center gap-3">
-                                                                    <i className="bi bi-upc-scan text-primary fs-5" />
+                                                                    <i className="bi bi-geo-alt text-primary fs-5" />
                                                                     <div>
-                                                                        <div className="text-muted small">Checador</div>
-                                                                        <div className="fw-bold text-capitalize">{activeCheck.user.name}</div>
+                                                                        <div className="text-muted small">Usuario Checador</div>
+                                                                        <div className="fw-bold text-capitalize">{activeCheck.user.name} {activeCheck.user.lastName}</div>
                                                                     </div>
                                                                 </div>
 
@@ -407,17 +412,20 @@ export function AbsenceOne({
                                                                     <div>
                                                                         <div className="text-muted small">Hora de registro</div>
                                                                         <div className="fw-semibold">
-                                                                            {formatDate(activeCheck.createdAt, "HH:mm")}
+                                                                            {formatCreatedAtOnlyHours(activeCheck.createdAt)}
                                                                         </div>
                                                                     </div>
                                                                 </div>
 
                                                                 <div className="border rounded-3 p-3 d-flex align-items-center gap-3">
-                                                                    <i className="bi bi-geo-alt text-primary fs-5" />
+                                                                    <i className="bi bi-signpost-split text-primary fs-5" />
                                                                     <div>
-                                                                        <div className="text-muted small">Lugar de registro</div>
+                                                                        <div className="text-muted small">Horario preestablecido del Empleado</div>
                                                                         <div className="fw-semibold text-capitalize">
-                                                                            {activeCheck.user.lastName}
+                                                                            Entrada: <span className="text-muted">{formatScheduleTime(activeCheck?.schedule?.entry)} </span>
+                                                                        </div>
+                                                                        <div className="fw-semibold text-capitalize">
+                                                                            Salida: <span className="text-muted"> {formatScheduleTime(activeCheck?.schedule?.exit)} </span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -443,7 +451,7 @@ export function AbsenceOne({
                                                                 </div>
 
                                                                 <div
-                                                                    className="flex-grow-1 p-3 rounded-3 bg-light"
+                                                                    className="flex-grow-1 p-3 rounded-3 border"
                                                                     style={{ whiteSpace: "pre-wrap", minHeight: "180px" }}
                                                                 >
                                                                     {activeCheck.message || "Sin comentarios"}

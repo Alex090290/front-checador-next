@@ -29,8 +29,6 @@ export default async function ListAllUsers({
     fetchPermissions(),
     fetchEmployees(),
   ]);
-
-  console.log("getUsers: ",getUsers);
   
   return (
     <UserTableClient

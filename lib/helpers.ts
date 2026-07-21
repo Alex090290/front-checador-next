@@ -1,3 +1,5 @@
+import moment from "moment-timezone";
+
 export const hourClock = (): string => {
   const time = new Date();
   return time.toLocaleString("es-MX", {
@@ -38,3 +40,20 @@ export function base64ToBlob(base64Data: string, contentType = "image/png") {
 
   return new Blob(byteArrays, { type: contentType });
 }
+//Esta funcion sirve para recibir horas en formato 24 ej: 18:00 y regresa en AM o PM
+export function formatScheduleTime(value?: string) {
+  const m = moment(String(value), "HH:mm", true);
+  return m.isValid() ? m.format("hh:mm A") : "—";
+};
+
+//Esta funcion sirve para recibir fechas y horas en formato ISO, ej: 2026-07-20T17:50:52.120Z y regresa en AM o PM
+
+export function formatCreatedAtOnlyHours(value?: string) {
+  const m = moment.utc(value).tz("America/Mexico_City");
+  return m.isValid() ? m.format("hh:mm A") : "—";
+};
+
+export function formatCreatedAt(value?: string) {
+  const m = moment.utc(value).tz("America/Mexico_City");
+  return m.isValid() ? m.format("DD/MM/YYYY") : "—";
+};

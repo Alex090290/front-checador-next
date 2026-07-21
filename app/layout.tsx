@@ -1,3 +1,4 @@
+//Layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import "bootswatch/dist/litera/bootstrap.css";

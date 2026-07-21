@@ -14,6 +14,21 @@ export interface IAbsence {
         id: number;
         name: string;
         lastName: string;
+
+        scheduleOffice?: {
+            entry: string;
+            exit: string;
+        }
+
+        scheduleSaturday?: {
+            entry: string;
+            exit: string;
+        }
+
+        scheduleLunch?: {
+            entry: string;
+            exit: string;
+        }
     };
 
     checks: IChecks[];
@@ -42,6 +57,10 @@ export interface IChecks {
         name: string;
         lastName: string;
         branch: number;
+    }
+    schedule: {
+        entry: string;
+        exit: string;
     }
 }
 

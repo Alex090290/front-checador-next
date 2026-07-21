@@ -81,3 +81,7 @@
 .react-datepicker__navigation {
   top: 1.1rem;
 }
+
+.table-row-selected > * {
+    color: var(--bs-black) !important;
+}

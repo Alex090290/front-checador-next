@@ -10,6 +10,9 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import DatePicker from "react-datepicker";
+import { useModals } from "@/context/ModalContext";
+import ModalBlur from "../ModalBlur";
+import CreatePenaltyComponent from "./CreatePenaltyModal";
 
 
 export default function AbsencesTableClient({
@@ -29,7 +32,6 @@ export default function AbsencesTableClient({
     dateEnd?: string;
     type?: string;
     absence?: IAbsence[];
-    absences?: IAbsence | null;
 }) {
     //Aqui los const 
     const router = useRouter();
@@ -40,7 +42,6 @@ export default function AbsencesTableClient({
     const currentSearch = sp.get("search") ?? "";
     const currentType = sp.get("type") ?? "";
     const isClearingSelectionRef = useRef(false);
-    const [, setSelectedIds] = useState<Array<string | number>>([]);
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const [, setTableResetKey] = useState(0);
 
@@ -53,6 +54,10 @@ export default function AbsencesTableClient({
     const dateButtonRef = useRef(null);
     const parsedStart = dateInitValue ? moment(dateInitValue, "YYYY-MM-DD").toDate() : null;
     const parsedEnd = dateEndValue ? moment(dateEndValue, "YYYY-MM-DD").toDate() : null;
+    const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
+    const { modalError } = useModals();
+    const [showModalPenalty, setShowModalPenalty] = useState(false);
+
 
     useEffect(() => {
         setDateInitValue(dateInit ?? "");
@@ -221,6 +226,58 @@ export default function AbsencesTableClient({
             ? `${moment(parsedStart).format("DD/MM/YYYY")} - ${moment(parsedEnd).format("DD/MM/YYYY")}`
             : "Selecciona un rango de fechas";
 
+    const actionCreatePenalty = () => {
+        const selectedRows = (absence ?? []).filter((row) =>
+            selectedIds.includes(String(row.id))
+        );
+
+        const hasAsistencia = selectedRows.some((row) => row.type === "asistencia");
+        const allFaltas = selectedRows.every((row) => row.type === "falta");
+        const sameEmployee = selectedRows.every((row) => row.idEmployee === selectedRows[0].idEmployee)
+
+        if (selectedRows.length < 3) {
+            return modalError("Debes seleccionar mínimo 3 FALTAS para generar una penalización");
+        }
+
+        if (hasAsistencia) {
+            return modalError("Para generar una penalización debes seleccionar únicamente FALTAS");
+        }
+
+        if (allFaltas && !sameEmployee) {
+            return modalError("La selección de faltas debe pertenecer al mismo empleado")
+        }
+
+        if (allFaltas && sameEmployee) {
+            setShowModalPenalty(true);
+        }
+    };
+
+    const handleToggleSelect = (row: IAbsence) => {
+        const rowId = String(row.id);
+        const isSelected = selectedIds.includes(rowId);
+
+        // Deseleccionar siempre se permite, sin validar nada
+        if (isSelected) {
+            setSelectedIds((prev) => prev.filter((id) => id !== rowId));
+            return;
+        }
+
+        const selectedRows = (absence ?? []).filter((r) =>
+            selectedIds.includes(String(r.id))
+        );
+
+        const sameEmployee = selectedRows.every(
+            (r) => r.employee?.id === row.employee?.id
+        );
+
+        if (!sameEmployee) {
+            modalError("Solo puedes seleccionar registros del mismo empleado");
+            return;
+        }
+
+        setSelectedIds((prev) => [...prev, rowId]);
+    };
+
 
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IAbsence>[] = [
@@ -261,7 +318,7 @@ export default function AbsencesTableClient({
         },
         {
             key: "type",
-            label: "Tipo de falta",
+            label: "Tipo",
             accessor: (e) => e.type,
             filterable: true,
             type: "string",
@@ -306,14 +363,15 @@ export default function AbsencesTableClient({
             </ConditionalRender>
 
             <Container className="py-3 " style={{ maxWidth: "1600px" }}>
-                {/* <Button
+                <Button
                     variant="primary"
                     className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-                    onClick={handleCreate}
+                    onClick={actionCreatePenalty}
+                    disabled={selectedIds.length === 0}
                 >
                     <i className="bi bi-plus-lg" />
-                    Crear registro
-                </Button> */}
+                    Crear Penalización
+                </Button>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
@@ -386,7 +444,7 @@ export default function AbsencesTableClient({
                                                         onHide={() => setShowCalendar(false)}
                                                     >
                                                         {({ ref, style }) => (
-                                                            <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden">
+                                                            <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light">
                                                                 <DatePicker
                                                                     selectsRange
                                                                     inline
@@ -395,33 +453,34 @@ export default function AbsencesTableClient({
                                                                     onChange={handleRangeChange}
                                                                     monthsShown={1}
                                                                 />
-                                                                <Row className="g-2">
-                                                                    <Col xs={12} md={6} lg={6}>
-                                                                        <Button
-                                                                            variant="primary"
-                                                                            className="w-100"
-                                                                            onClick={() => {
-                                                                                handleDateFilter();
-                                                                                setShowCalendar(false);
-                                                                            }}
-                                                                        >
-                                                                            Filtrar fechas
-                                                                        </Button>
-                                                                    </Col>
+                                                                    <Row className="g-2 m-2">
 
-                                                                    <Col xs={12} md={6} lg={6}>
-                                                                        <Button
-                                                                            variant="secondary"
-                                                                            className="w-100"
-                                                                            onClick={() => {
-                                                                                handleClear();
-                                                                                setShowCalendar(false);
-                                                                            }}
-                                                                        >
-                                                                            <i className="bi bi-arrow-counterclockwise" />
-                                                                        </Button>
-                                                                    </Col>
-                                                                </Row>
+                                                                        <Col xs={12} md={6} lg={6}>
+                                                                            <Button
+                                                                                variant="primary"
+                                                                                className="w-100"
+                                                                                onClick={() => {
+                                                                                    handleDateFilter();
+                                                                                    setShowCalendar(false);
+                                                                                }}
+                                                                            >
+                                                                                Filtrar fechas
+                                                                            </Button>
+                                                                        </Col>
+
+                                                                        <Col xs={12} md={6} lg={6}>
+                                                                            <Button
+                                                                                variant="secondary"
+                                                                                className="w-100"
+                                                                                onClick={() => {
+                                                                                    handleClear();
+                                                                                    setShowCalendar(false);
+                                                                                }}
+                                                                            >
+                                                                                <i className="bi bi-arrow-counterclockwise" />
+                                                                            </Button>
+                                                                        </Col>
+                                                                    </Row>
                                                             </div>
                                                         )}
                                                     </Overlay>
@@ -478,6 +537,7 @@ export default function AbsencesTableClient({
                                         <div className="table-responsive rounded-3 border overflow-auto">
                                             <table className="table table-hover align-middle mb-0">
                                                 <thead className="table-dark border-secondary">
+
                                                     <tr>
                                                         {columns.map((column) => (
                                                             <th
@@ -487,30 +547,40 @@ export default function AbsencesTableClient({
                                                                 {column.label}
                                                             </th>
                                                         ))}
-                                                        <th className=" fw-bold">
+                                                        <th className="text-center fw-bold">
                                                             Detalles
                                                         </th>
                                                     </tr>
                                                 </thead>
 
                                                 <tbody>
-                                                    {(absence ?? []).map((row) => (
-                                                        <tr key={row.id}>
-                                                            {columns.map((column) => (
-                                                                <td key={String(column.key)}>
-                                                                    {renderCell(row, column)}
+                                                    {(absence ?? []).map((row) => {
+                                                        const isSelected = selectedIds.includes(String(row.id));
+
+                                                        return (
+                                                            <tr key={row.id} className={isSelected ? "table-secondary table-row-selected" : ""}>
+                                                                {columns.map((column) => (
+                                                                    <td key={String(column.key)}>{renderCell(row, column)}</td>
+                                                                ))}
+                                                                <td className="align-middle">
+                                                                    <div className="d-flex justify-content-center align-items-center gap-2">
+
+
+                                                                        <button
+                                                                            className={isSelected ? "btn btn-info btn-sm" : "btn btn-sm btn-outline-info"}
+                                                                            onClick={() => handleToggleSelect(row)}
+                                                                        >
+                                                                            {isSelected ? "Seleccionado" : "Seleccionar"}
+                                                                        </button>
+
+                                                                        <a href={`/app/absences?view_type=form&id=${row.id}`} className="btn btn-sm btn-outline-info">
+                                                                            Ver
+                                                                        </a>
+                                                                    </div>
                                                                 </td>
-                                                            ))}
-                                                            <td>
-                                                                <a
-                                                                    href={`/app/absences?view_type=form&id=${row.id}`}
-                                                                    className="btn btn-sm btn-outline-info ms-3"
-                                                                >
-                                                                    Ver
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                            </tr>
+                                                        );
+                                                    })}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -546,6 +616,20 @@ export default function AbsencesTableClient({
                         </Card>
                     </Col>
                 </Row >
+
+                <ConditionalRender cond={showModalPenalty}>
+                    <ModalBlur onClose={() => setShowModalPenalty(false)}>
+                        <CreatePenaltyComponent
+                            onClose={() => setShowModalPenalty(false)}
+                            onSuccess={() => {
+                                setShowModalPenalty(false);
+                            }}
+                            absence={(absence ?? []).filter((row) =>
+                                selectedIds.includes(String(row.id))
+                            )}
+                        />
+                    </ModalBlur>
+                </ConditionalRender>
             </Container >
         </>
     )

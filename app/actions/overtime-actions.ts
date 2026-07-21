@@ -206,61 +206,6 @@ export async function createOverTime({
   }
 }
 
-//Funcion para actualizar horas extra
-// export async function updateOverTime({
-//   id,
-//   overtime,
-// }: {
-//   id: number;
-//   overtime: OverTime;
-// }): Promise<ActionResponse<boolean | null>> {
-
-//   try {
-//     if (!id) throw new Error("ID NO ESPECIFICADO");
-
-//     const { apiToken, API_URL } = await storeAction();
-//     await axios.put(
-//       `${API_URL}/overtime/${String(id)}`,
-//       {
-//         idEmployee: overtime.idEmployee,
-//         motive: overtime.motive,
-//         date: overtime.date,
-//         hourInit: overtime.hourInit,
-//         hourEnd: overtime.hourEnd
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${apiToken}`,
-//         },
-//       }
-//     );
-
-//     revalidatePath("/app/overtime");
-
-//     return {
-//       success: true,
-//       message: "Actualizacion exitosa",
-//       data: true,
-//     };
-//   } catch (error: unknown) {
-//     console.log(error);
-
-//     let message = "Error en la respuesta";
-
-//     if (axios.isAxiosError(error)) {
-//       message = error.response?.data?.message || error.message || message;
-//     } else if (error instanceof Error) {
-//       message = error.message;
-//     }
-
-//     return {
-//       success: false,
-//       message,
-//       data: null,
-//     };
-//   }
-// }
-
 //Funcion para borrar horas extra 
 export async function deleteOverTime({
   id,
