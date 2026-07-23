@@ -119,7 +119,6 @@ export default function FormUpdateEmployee({
   employee,
   departments = [],
   branches = [],
-  employees = [],
 }: ModalBasicProps & ModalAction) {
   const {
     reset,
@@ -171,22 +170,23 @@ export default function FormUpdateEmployee({
     setPuestos(positions);
   }, [departmentId, departments]);
 
-  const managerOptions = useMemo(
-    () =>
-      employees.map((em) => ({
-        id: em.id || 0,
-        displayName: `${em.name} ${em.lastName}`,
-        name: `${em.name} ${em.lastName}`,
-      })),
-    [employees]
-  );
+  // const managerOptions = useMemo(
+  //   () =>
+  //     employees.map((em) => ({
+  //       id: em.id || 0,
+  //       displayName: `${em.name.toUpperCase()} ${em.lastName.toUpperCase()}`,
+  //       name: `${em.name.toUpperCase} ${em.lastName.toUpperCase}`,
+  //     })),
+  //   [employees]
+  // );
+  
 
   const branchOptions = useMemo(
     () =>
       branches.map((b) => ({
         id: b.id || 0,
-        displayName: b.name,
-        name: b.name,
+        displayName: `${b.name.toUpperCase()}`,
+        name: `${b.name.toUpperCase()}`,
       })),
     [branches]
   );
@@ -195,8 +195,8 @@ export default function FormUpdateEmployee({
     () =>
       departments.map((d) => ({
         id: d.id || 0,
-        displayName: d.nameDepartment,
-        name: d.nameDepartment,
+        displayName: `${d.nameDepartment.toUpperCase()}`,
+        name: `${d.nameDepartment.toUpperCase()}`,
       })),
     [departments]
   );
@@ -205,8 +205,8 @@ export default function FormUpdateEmployee({
     () =>
       puestos.map((p) => ({
         id: p.id || 0,
-        displayName: p.namePosition,
-        name: p.namePosition,
+        displayName: `${p.namePosition.toUpperCase()}`,
+        name: `${p.namePosition.toUpperCase()}`,
       })),
     [puestos]
   );
@@ -530,7 +530,7 @@ export default function FormUpdateEmployee({
                           <Form.Control
                             as="textarea"
                             rows={5}
-                            className="border"
+                            className="border text-uppercase"
                             {...register("comments")}
                           />
                         </Form.Group>
@@ -559,6 +559,7 @@ export default function FormUpdateEmployee({
                           control={control}
                           callBackMode="id"
                           invalid={!!errors.idDepartment}
+                          className="text-uppercase"
                         />
                       </Col>
                       <Col md={6}>
@@ -569,17 +570,19 @@ export default function FormUpdateEmployee({
                           control={control}
                           callBackMode="id"
                           invalid={!!errors.idPosition}
+                          className="text-uppercase"
                         />
                       </Col>
-                      <Col md={6}>
+                      {/* <Col md={6}>
                         <RelationField
                           register={register("idDepartment.idLeader")}
                           options={managerOptions}
-                          label="Gerente:"
+                          label="Líder:"
                           control={control}
                           callBackMode="id"
+                          className="text-uppercase"
                         />
-                      </Col>
+                      </Col> */}
                       <Col md={6}>
                         <RelationField
                           register={register("branch", { required: "Sucursal requerida" })}
@@ -588,6 +591,7 @@ export default function FormUpdateEmployee({
                           control={control}
                           callBackMode="id"
                           invalid={!!errors.branch}
+                          className="text-uppercase"
                         />
                       </Col>
                     </Row>
@@ -739,8 +743,8 @@ export default function FormUpdateEmployee({
                         <FieldSelect
                           register={register("status")}
                           options={[
-                            { value: 1, label: "Activo" },
-                            { value: 2, label: "Baja" },
+                            { value: 1, label: "ACTIVO" },
+                            { value: 2, label: "BAJA" },
                           ]}
                           label="Status:"
                           className="border"
@@ -750,8 +754,8 @@ export default function FormUpdateEmployee({
                         <FieldSelect
                           register={register("anniversaryLetter")}
                           options={[
-                            { label: "Pendiente", value: "pending" },
-                            { label: "Entregada", value: "ENTREGADA" },
+                            { label: "PENDIENTE", value: "pending" },
+                            { label: "ENTREGADA", value: "ENTREGADA" },
                           ]}
                           label="Carta de aniversario:"
                           className="border"

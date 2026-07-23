@@ -563,6 +563,7 @@ export async function updateEmploye({
     };
   }
 }
+
 export async function deleteEmployee({
   id,
 }: {

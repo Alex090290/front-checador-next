@@ -11,14 +11,12 @@ function SignaturesViewPenalty({
     idEmployee,
     name,
     label,
-    status,
 }: {
     id: number | null;
     idEmployee: string | null;
     name: string;
     url?: string;
     label?: string;
-    status?: string | null;
 }) {
     const [imgUrl, setImgUrl] = useState<string | null>(null);
     const [loadingSignature, setLoadingSignature] = useState(true);
@@ -59,8 +57,6 @@ function SignaturesViewPenalty({
             ?.normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
             .toLowerCase();
-
-        const normalizedStatus = status?.toUpperCase();
 
 
 

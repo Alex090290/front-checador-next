@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import CheckLocationMap from "./AbsenceMap";
 import { formatCreatedAt, formatCreatedAtOnlyHours, formatScheduleTime } from "@/lib/helpers";
+import AbsenceOneError from "./absencesMessageError";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
@@ -117,9 +118,7 @@ export function AbsenceOne({
     const overallStatus = absence?.type ?? "";
     const hasChecks = absence?.checks.length > 0;
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
-    const activeCheck = absence.checks.find((c) => String(c.id) === activeCheckId);
-
-    console.log("CHECADAS", absence.checks);
+    const activeCheck = absence?.checks.find((c) => String(c.id) === activeCheckId);
     
     //========== Helpers =============
 
@@ -170,7 +169,7 @@ export function AbsenceOne({
 
     if (!absence) {
         return (
-            null
+            <AbsenceOneError/>
         )
     }
 

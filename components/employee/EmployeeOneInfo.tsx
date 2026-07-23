@@ -149,7 +149,7 @@ export default function EmployeeDetailsView({
   const hasVacations = vacations?.length > 0;
   const aniversaryLetterStatus = employee?.anniversaryLetter ?? "";
   const statusEmployee = employee?.status ?? 0;
-
+  
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||

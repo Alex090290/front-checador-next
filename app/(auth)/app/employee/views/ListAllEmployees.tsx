@@ -21,6 +21,7 @@ export default async function ListAllEmployees({
   const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
 
   const [employees, departments, branches] = await Promise.all([
+
     fetchEmployees({
       page: pageParse,
       limit: limitParse,
@@ -29,6 +30,7 @@ export default async function ListAllEmployees({
     fetchDepartments(),
     fetchBranches(),
   ]);
+
 
   if (id && id !== "null") {
     const [employee, documents, vacations] = await Promise.all([
