@@ -1,6 +1,6 @@
 import { IChecks } from "../absences/interface";
 
-export interface IPenaltyForOffeses{
+export interface IPenaltyForOffeses {
     _id?: string;
     id: number;
     idEmployee: number;
@@ -9,18 +9,19 @@ export interface IPenaltyForOffeses{
     type: string;
     dateOfAbsence: string[];
     motive?: string;
-    signatures: ISignaturesPenalties[]; 
+    signatures: ISignaturesPenalties[];
     createdAt: string;
     updatedAt: string;
+    PenaltyForOffensesType?: string;
 
-    createForPerson: {
+    createForPerson?: {
         _id?: string;
         id: number;
         name: string;
         lastName: string;
     }
 
-    employee: {
+    employee?: {
         _id?: string;
         id: number;
         name: string;
@@ -28,9 +29,18 @@ export interface IPenaltyForOffeses{
     }
 
     absencesAndAttendances: IAbsencesAndAttendances[];
+    status?: string;
 }
 
-interface ISignaturesPenalties{
+export interface IPenalty {
+    idEmployee: number,
+    idsAbsencesAndAttendances: number[];
+    PenaltyForOffensesType: string;
+    dateOfAbsence: string[];
+    motive?: string;
+}
+
+export interface ISignaturesPenalties {
     _id?: string;
     id: number;
     idSignatory: number;
@@ -42,7 +52,7 @@ interface ISignaturesPenalties{
     sendNotify: boolean;
 }
 
-interface IAbsencesAndAttendances{
+interface IAbsencesAndAttendances {
     _id?: string;
     id: number;
     idEmployee: number;

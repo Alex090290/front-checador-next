@@ -1,15 +1,19 @@
+"use server"
+
 import { ActionResponse } from "@/lib/definitions";
-import { IPenaltyAxios, IPenaltyForOffeses } from "@/lib/penalties/interface";
+import { IPenalty, IPenaltyAxios, IPenaltyForOffeses } from "@/lib/penalties/interface";
 import { storeAction } from "./storeActions";
 import { auth } from "@/lib/auth";
 import axios from "axios";
 import { FetchUsersArgs } from "@/lib/constancy/interface";
+import { storeToken } from "@/lib/useToken";
+import { base64ToBlob } from "@/lib/helpers";
 
 //Funcion para crear penalizacion
 export async function createPenalty({
     data,
 }: {
-    data: IPenaltyForOffeses;
+    data: IPenalty;
 }): Promise<ActionResponse<IPenaltyAxios>> {
 
     try {
@@ -17,13 +21,6 @@ export async function createPenalty({
         const session = await auth();
         const apiToken = session?.user?.apiToken;
 
-        const dataSave = {
-            idEmployee: data.idEmployee,
-            idsAbsencesAndAttendances: data.absencesAndAttendances,
-            PenaltyForOffensesType: data.type,
-            dateOfAbsence: data.dateOfAbsence,
-            motive: data.motive,
-        }
 
         const headers = {
             headers: {
@@ -31,11 +28,10 @@ export async function createPenalty({
             },
         }
 
-
         try {
             const res = await axios.post<{ data: IPenaltyAxios }>(
-                `${API_URL}/penalties`,
-                dataSave,
+                `${API_URL}/penaltyForOffeses`,
+                data,
                 headers
             );
 
@@ -133,7 +129,7 @@ export async function fetchPenaltiesQueries(args: FetchUsersArgs & {
 }
 
 //Funcion para listar una penalizacion
-export async function findAbsence({
+export async function findPenalty({
     id,
 }: {
     id?: number | null;
@@ -145,19 +141,19 @@ export async function findAbsence({
         const { apiToken, API_URL } = await storeAction();
 
         const response = await axios
-            .get(`${API_URL}/penaltyForOffesesOne/${id}`, {
+            .get(`${API_URL}/penaltyForOffesesInfoOne/${id}`, {
                 headers: {
                     Authorization: `Bearer ${apiToken}`,
                 },
             })
 
             .then((res) => {
-                console.log("Respuesta correcta: ", res.data);
+
                 return res.data;
             })
 
             .catch((err) => {
-                console.log("Respuesta incorrecta: ", err);
+
 
                 throw new Error(
                     err.response.data.message
@@ -166,7 +162,7 @@ export async function findAbsence({
                 );
             });
 
-        return response.data?.data ?? response.data ?? null;
+        return response.data ?? response.data ?? null;
 
     } catch (error) {
 
@@ -174,4 +170,104 @@ export async function findAbsence({
         return null;
     }
 }
+
+//Post de firmas
+export async function sendSignaturePenalty({
+    id,
+    signature,
+}: {
+
+    id: number | null;
+    signature: string;
+
+}): Promise<ActionResponse<boolean>> {
+    try {
+        if (!id) throw new Error("ID NOT DEFINED");
+        if (!signature) throw new Error("No se recibió la firma");
+
+        const { apiToken, apiUrl } = await storeToken();
+
+        const formData = new FormData();
+
+        const blob = base64ToBlob(signature, "image/png");
+
+        formData.append("img", blob, "signature.png");
+
+        const firma = await axios.post(`${apiUrl}/penaltyForOffeses/signature/${id}`, formData, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+        });
+        console.log("firma: ", firma);
+
+        return {
+            success: true,
+            message: "Firma enviada correctamente",
+            data: true,
+        };
+    } catch (error: unknown) {
+        const err = error as Error;
+
+        return {
+            success: false,
+            message: err.message ? err.message : "Error al obtener información",
+            data: false,
+        };
+    }
+}
+
+//Obtener firmas
+export async function fetchSignaturePenalties({
+    id,
+    idEmployee,
+}: {
+    id: number | null;
+    idEmployee: string | null;
+}): Promise<ActionResponse<string>> {
+    try {
+        const { apiToken, apiUrl } = await storeToken();
+
+        // Obtener imagen en binario
+        const resImg = await axios
+            .get(
+                `${apiUrl}/penaltyForOffeses/signature/${id}/${idEmployee}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${apiToken}`,
+                    },
+                    responseType: "arraybuffer",
+                }
+            )
+            .then((res) => {
+                return res.data;
+            })
+            .catch((err) => {
+                throw new Error(
+                    err?.response?.data?.message
+                        ? err.response.data.message
+                        : err?.message || "Error en la respuesta"
+                );
+            });
+
+        // Convertir a base64
+        const base64 = Buffer.from(resImg, "binary").toString("base64");
+        const imageBase64Url = `data:image/jpeg;base64,${base64}`;
+
+        return {
+            success: true,
+            message: "Imagen subida correctamente",
+            data: imageBase64Url,
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        console.log(error);
+        return {
+            success: false,
+            message: error.message,
+        };
+    }
+}
+
+
 

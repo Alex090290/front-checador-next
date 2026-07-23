@@ -13,7 +13,11 @@ import DatePicker from "react-datepicker";
 import { useModals } from "@/context/ModalContext";
 import ModalBlur from "../ModalBlur";
 import CreatePenaltyComponent from "./CreatePenaltyModal";
+import { generateFault } from "@/app/actions/eventos-actions";
+import useSWR from "swr";
+import { ICheckInFeedback } from "@/lib/definitions";
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AbsencesTableClient({
     total,
@@ -22,7 +26,8 @@ export default function AbsencesTableClient({
     search = "",
     absence,
     dateInit,
-    dateEnd
+    dateEnd,
+    eventos
 }: {
     total: number;
     page: number;
@@ -32,6 +37,7 @@ export default function AbsencesTableClient({
     dateEnd?: string;
     type?: string;
     absence?: IAbsence[];
+    eventos?: ICheckInFeedback[];
 }) {
     //Aqui los const 
     const router = useRouter();
@@ -55,9 +61,18 @@ export default function AbsencesTableClient({
     const parsedStart = dateInitValue ? moment(dateInitValue, "YYYY-MM-DD").toDate() : null;
     const parsedEnd = dateEndValue ? moment(dateEndValue, "YYYY-MM-DD").toDate() : null;
     const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-    const { modalError } = useModals();
+    const { modalError, modalConfirm } = useModals();
     const [showModalPenalty, setShowModalPenalty] = useState(false);
+    const [, setStatusUpdate] = useState("");
+    const [, setTypeUpdate] = useState("");
 
+    const { mutate } = useSWR<ICheckInFeedback[]>(
+        "/api/eventos",
+        fetcher,
+        {
+            fallbackData: eventos,
+        }
+    );
 
     useEffect(() => {
         setDateInitValue(dateInit ?? "");
@@ -92,6 +107,7 @@ export default function AbsencesTableClient({
             ? moment.utc(e.dateOfAbsence).format("DD/MM/YYYY")
             : `${e.idEmployee}`
     }
+
 
     const renderCell = (row: IAbsence, column: TableTemplateColumn<IAbsence>) => {
         if (column.render) {
@@ -278,6 +294,29 @@ export default function AbsencesTableClient({
         setSelectedIds((prev) => [...prev, rowId]);
     };
 
+    const handleGenerateFaults = () => {
+        modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
+            setMessageLoading(`Generando registros...`);
+            setLoading(true);
+
+            await generateFault()
+                .then(() => {
+                    mutate();
+                    setStatusUpdate("");
+                    setTypeUpdate("");
+                    clearSelectedIds();
+                    router.refresh();
+                    setLoading(false);
+                })
+                .catch(() => {
+                    setStatusUpdate("");
+                    setTypeUpdate("");
+                    clearSelectedIds();
+                    setLoading(false);
+                });
+        });
+    };
+
 
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IAbsence>[] = [
@@ -373,6 +412,15 @@ export default function AbsencesTableClient({
                     Crear Penalización
                 </Button>
 
+                <Button
+                    variant="warning"
+                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
+                    onClick={handleGenerateFaults}
+                >
+                    <i className="bi bi-person-x" />
+                    Generar faltas
+                </Button>
+
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
                         <h1 className="mb-0">Faltas y Asistencias</h1>
@@ -453,34 +501,34 @@ export default function AbsencesTableClient({
                                                                     onChange={handleRangeChange}
                                                                     monthsShown={1}
                                                                 />
-                                                                    <Row className="g-2 m-2">
+                                                                <Row className="g-2 m-2">
 
-                                                                        <Col xs={12} md={6} lg={6}>
-                                                                            <Button
-                                                                                variant="primary"
-                                                                                className="w-100"
-                                                                                onClick={() => {
-                                                                                    handleDateFilter();
-                                                                                    setShowCalendar(false);
-                                                                                }}
-                                                                            >
-                                                                                Filtrar fechas
-                                                                            </Button>
-                                                                        </Col>
+                                                                    <Col xs={12} md={6} lg={6}>
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            className="w-100"
+                                                                            onClick={() => {
+                                                                                handleDateFilter();
+                                                                                setShowCalendar(false);
+                                                                            }}
+                                                                        >
+                                                                            Filtrar fechas
+                                                                        </Button>
+                                                                    </Col>
 
-                                                                        <Col xs={12} md={6} lg={6}>
-                                                                            <Button
-                                                                                variant="secondary"
-                                                                                className="w-100"
-                                                                                onClick={() => {
-                                                                                    handleClear();
-                                                                                    setShowCalendar(false);
-                                                                                }}
-                                                                            >
-                                                                                <i className="bi bi-arrow-counterclockwise" />
-                                                                            </Button>
-                                                                        </Col>
-                                                                    </Row>
+                                                                    <Col xs={12} md={6} lg={6}>
+                                                                        <Button
+                                                                            variant="secondary"
+                                                                            className="w-100"
+                                                                            onClick={() => {
+                                                                                handleClear();
+                                                                                setShowCalendar(false);
+                                                                            }}
+                                                                        >
+                                                                            <i className="bi bi-arrow-counterclockwise" />
+                                                                        </Button>
+                                                                    </Col>
+                                                                </Row>
                                                             </div>
                                                         )}
                                                     </Overlay>
@@ -620,10 +668,8 @@ export default function AbsencesTableClient({
                 <ConditionalRender cond={showModalPenalty}>
                     <ModalBlur onClose={() => setShowModalPenalty(false)}>
                         <CreatePenaltyComponent
-                            onClose={() => setShowModalPenalty(false)}
-                            onSuccess={() => {
-                                setShowModalPenalty(false);
-                            }}
+                            show={showModalPenalty}
+                            onHide={() => setShowModalPenalty(false)}
                             absence={(absence ?? []).filter((row) =>
                                 selectedIds.includes(String(row.id))
                             )}
@@ -634,4 +680,5 @@ export default function AbsencesTableClient({
         </>
     )
 }
+
 

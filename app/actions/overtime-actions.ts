@@ -43,7 +43,6 @@ export async function fetchOverTimeQueries(args: FetchUsersArgs & { search?: str
         return res.data;
       })
       .catch((err) => {
-        console.log(err);
         throw new Error(
           err.response.data.message
             ? err.response.data.message
@@ -79,11 +78,9 @@ export async function fetchOverTime(): Promise<OverTime[]> {
       },
     })
       .then((res) => {
-        console.log("Respuesta correcta: ", res.data)
         return res.data;
       })
       .catch((err) => {
-        console.log("Respuestas incorrecta: ", err);
 
         throw new Error(
           err.response.message
@@ -119,12 +116,10 @@ export async function findOvertimeById({
       })
 
       .then((res) => {
-        console.log("Respuesta correcta: ", res.data);
         return res.data;
       })
 
       .catch((err) => {
-        console.log("Respuesta incorrecta: ", err);
 
         throw new Error(
           err.response.data.message

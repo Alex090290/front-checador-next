@@ -1,8 +1,9 @@
 import { fetchPenaltiesQueries } from "@/app/actions/penalties-actions";
 import PenaltiesTableClient from "@/components/penalties/PenaltiesTableClient";
+import PenaltyInfoOne from "./PenaltyInfoOne";
 
 export default async function ListAllPenalties({
-    // id,
+    id,
     page = "1",
     limit = "20",
     search = "",
@@ -12,11 +13,11 @@ export default async function ListAllPenalties({
     limit?: string;
     search?: string;
 }) {
-    // if (id && id !== "null") {
-    //     return (
-    //         <PenaltyInfoOne id={id} />
-    //     );
-    // }
+    if (id && id !== "null") {
+        return (
+            <PenaltyInfoOne id={id} />
+        );
+    }
     
     const pageParse = Math.max(Number(page || "1") || 1, 1);
     const limitParse = Math.min(Math.max(Number(limit || "20") || 2, 1), 100);

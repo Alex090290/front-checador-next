@@ -119,6 +119,8 @@ export function AbsenceOne({
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = absence.checks.find((c) => String(c.id) === activeCheckId);
 
+    console.log("CHECADAS", absence.checks);
+    
     //========== Helpers =============
 
     const upperCase = (text?: string) => {
@@ -377,7 +379,7 @@ export function AbsenceOne({
                                                         className={`border rounded-3 p-3 h-100 ms-2 ${isActive ? "border-primary" : ""
                                                             }`}
                                                     >
-                                                        <div className="d-flex align-items-between gap-2">
+                                                        <div className="d-flex gap-2">
                                                             {checksVariant(c.type)}
                                                             <i
                                                                 className={`bi ms-auto ${isActive ? "bi-chevron-up" : "bi-chevron-down"

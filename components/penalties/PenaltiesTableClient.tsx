@@ -153,32 +153,6 @@ export default function PenaltiesTableClient({
             )
         },
         {
-            key: "type",
-            label: "Tipo",
-            accessor: (e) => e.type,
-            filterable: true,
-            type: "string",
-            render: (e) => {
-                const estado = e.type
-                switch (estado) {
-                    case "":
-                        return (
-                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                                ASISTENCIA
-                            </span>
-                        );
-                    case "faltas_injustificadas":
-                        return (
-                            <div className="justify-content-left">
-                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                                    FALTA INJUSTIFICADA
-                                </span>
-                            </div>
-                        );
-                }
-            }
-        },
-        {
             key: "createdAt",
             label: "Fecha de creación",
             accessor: (e) => e.dateOfAbsence,
@@ -189,8 +163,42 @@ export default function PenaltiesTableClient({
                     {formatCreatedAt(e.createdAt)}
                 </div>
             )
-        }
+        },
+        {
+            key: "type",
+            label: "Tipo",
+            accessor: (e) => e.type,
+            filterable: true,
+            type: "string",
+            render: (e) => {
+                const estado = e.type
+                switch (estado) {
+                    case "retardos":
+                        return (
+                            <div>
+                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                    RETARDO
+                                </span>
+                            </div>
+                        );
+                    case "faltas_injustificadas":
+                        return (
+                            <div>
+                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                    FALTA INJUSTIFICADA
+                                </span>
+                            </div>
+                        );
+                }
+            }
+        },
     ];
+
+     if (!penalty) {
+        return (
+            null
+        )
+    }
 
     return (
         <>
@@ -264,7 +272,7 @@ export default function PenaltiesTableClient({
                                                             ))}
                                                             <td>
                                                                 <a
-                                                                    href={`/app/overtime?view_type=form&id=${row.id}`}
+                                                                    href={`/app/penalties?view_type=form&id=${row.id}`}
                                                                     className="btn btn-sm btn-outline-info ms-3"
                                                                 >
                                                                     Ver

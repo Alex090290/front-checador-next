@@ -1,6 +1,5 @@
 "use client";
 
-import { createNewDocumentEmployee } from "@/app/actions/employee-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { useModals } from "@/context/ModalContext";
@@ -10,10 +9,10 @@ import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { formatDate } from "date-fns";
-
-type TInputs = {
-    nameDocument: string;
-};
+import { createPenalty } from "@/app/actions/penalties-actions";
+import { IPenalty, IPenaltyForOffeses } from "@/lib/penalties/interface";
+import { ModalBasicProps } from "@/lib/definitions";
+import { useRouter } from "next/navigation";
 
 const upperCase = (text?: string) => {
     return text?.toUpperCase() || "";
@@ -26,56 +25,57 @@ function fullName(emp?: IAbsence) {
 
 
 export default function CreatePenaltyComponent({
-    onClose,
-    onSuccess,
-    absence
-}: {
-    onClose: () => void;
-    onSuccess?: () => void;
-    absence: IAbsence[];
-}) {
+    absence,
+    onHide,
+}: ModalBasicProps & { absence: IAbsence[] }) {
     const {
+        register,
         handleSubmit,
-        formState: { isSubmitting },
-    } = useForm<TInputs>({
-        defaultValues: {
-            nameDocument: "",
-        },
-    });
+        formState: { errors, isSubmitting },
+    } = useForm<IPenalty>();
 
-
-    const { modalError } = useModals();
-
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
+    const { modalError, modalConfirm } = useModals();
 
     const getDate = (date?: string | number | Date) => {
         if (!date) return "-";
         return formatDate(date, "dd/MM/yyyy");
     };
 
+    const onSubmit: SubmitHandler<IPenalty> = async (data) => {
+        onHide();
 
-    const onSubmit: SubmitHandler<TInputs> = async (data) => {
-        try {
-            setLoading(true);
-            setMessageLoading("Creando nueva plantilla...");
+        const payload: IPenalty = {
+            idEmployee: absence[0]?.employee?.id ?? 0,
+            idsAbsencesAndAttendances: absence.map((row) => row.id),
+            dateOfAbsence: absence.map((row) =>
+                formatDate(row.createdAt as string | number | Date, "yyyy-MM-dd")
+            ),
+            PenaltyForOffensesType: String(data.PenaltyForOffensesType),
+            motive: String(data.motive),
+        };
 
-            const res = await createNewDocumentEmployee({
-                nameDocument: data.nameDocument,
-            });
+        modalConfirm("¿Seguro que quieres guardar la penalización?", async () => {
+            try {
+                setLoading(true);
+                setMessageLoading("Guardando Penalización...");
 
-            if (!res.success) {
-                modalError(res.message);
-                return;
+                const res = await createPenalty({ data: payload });
+
+                if (!res.success) {
+                    modalError(res.message);
+                    return;
+                }
+
+                toast.success(res.message);
+                router.push("/app/penalties");
+            } finally {
+                setLoading(false);
+                setMessageLoading("");
             }
-
-            toast.success(res.message || "Nueva plantilla creada correctamente");
-            onSuccess?.();
-            onClose();
-        } finally {
-            setLoading(false);
-            setMessageLoading("");
-        }
+        });
     };
 
     return (
@@ -88,7 +88,8 @@ export default function CreatePenaltyComponent({
                 <div>
                     <h4 className="mb-1 fw-bold">Penalización</h4>
                     <p className="text-muted mb-0">
-                        Crea una nueva penalización a <span className="fw-bold text-primary"> {fullName(absence[0])}. </span>
+                        Crea una nueva penalización a{" "}
+                        <span className="fw-bold text-primary">{fullName(absence[0])}.</span>
                     </p>
                 </div>
 
@@ -96,12 +97,6 @@ export default function CreatePenaltyComponent({
                     Nuevo
                 </span>
             </div>
-
-            {/* <Alert variant="info" className="rounded-4">
-                Las faltas de las cuales crearas penalización son las siguientes: {absence.map((row) => (
-                    <li className="ms-4" key={row.id}>{getDate(row.createdAt)}</li>
-                ))}
-            </Alert> */}
 
             <Form onSubmit={handleSubmit(onSubmit)}>
                 <fieldset disabled={loading || isSubmitting}>
@@ -115,7 +110,7 @@ export default function CreatePenaltyComponent({
 
                             <Row className="g-3">
                                 {absence.map((row) => (
-                                    <Col key={row.id} md={4} >
+                                    <Col key={row.id} md={4}>
                                         <Card className="m-1 p-2 d-flex flex-row align-items-center gap-2">
                                             <i className="bi bi-calendar text-danger" />
                                             {getDate(row.createdAt)}
@@ -126,18 +121,65 @@ export default function CreatePenaltyComponent({
                         </Card.Body>
                     </Card>
 
+                    <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                            <div className="d-flex align-items-center gap-2 mb-4">
+                                <i className="bi bi-tag text-danger" />
+                                <h6 className="mb-0 fw-bold">Tipo y motivo</h6>
+                            </div>
+
+                            <Row className="g-3">
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Tipo de penalización</Form.Label>
+                                        <Form.Select
+                                            {...register("PenaltyForOffensesType", {
+                                                required: "Selecciona un tipo de penalización",
+                                            })}
+                                            isInvalid={!!errors.PenaltyForOffensesType}
+                                        >
+                                            <option value="">Selecciona...</option>
+                                            <option value="retardos">Retardos</option>
+                                            <option value="faltas_injustificadas">Faltas</option>
+                                        </Form.Select>
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.PenaltyForOffensesType?.message}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
+
+                                <Col md={12}>
+                                    <Form.Group>
+                                        <Form.Label>Motivo</Form.Label>
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={3}
+                                            {...register("motive", {
+                                                required: "El motivo es obligatorio",
+                                            })}
+                                            isInvalid={!!errors.motive}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.motive?.message}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                        </Card.Body>
+                    </Card>
+
                     <div className="d-flex justify-content-end gap-2 mt-4">
                         <Button
                             type="button"
                             variant="secondary"
-                            onClick={onClose}
+                            onClick={onHide}
                             disabled={loading || isSubmitting}
                         >
                             Cancelar
                         </Button>
 
                         <Button type="submit" variant="success" disabled={loading || isSubmitting}>
-                            {isSubmitting ? "Guardando..." : "Crear plantilla"}
+                            {isSubmitting ? "Guardando..." : "Crear penalización"}
                         </Button>
                     </div>
 

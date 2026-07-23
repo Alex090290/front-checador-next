@@ -17,7 +17,6 @@ import { useEffect, useRef, useState } from "react";
 import ModifyModalForm from "./ModifyModalForm";
 import {
   deleteRegristrosChecador,
-  generateFault,
   searchEventosParams,
   updateRegristrosChecador,
 } from "@/app/actions/eventos-actions";
@@ -285,27 +284,27 @@ function EventosListView({
     },
   ];
 
-const handleGenerateFaults = () => {
-  modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
-    setMessageLoading(`Generando registros...`);
-    setLoading(true);
+// const handleGenerateFaults = () => {
+//   modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
+//     setMessageLoading(`Generando registros...`);
+//     setLoading(true);
 
-    await generateFault()
-      .then(() => {
-        mutate();
-        setStatusUpdate("");
-        setTypeUpdate("");
-        clearSelectedIds();
-        setLoading(false);
-      })
-      .catch(() => {
-        setStatusUpdate("");
-        setTypeUpdate("");
-        clearSelectedIds();
-        setLoading(false);
-      });
-  });
-};
+//     await generateFault()
+//       .then(() => {
+//         mutate();
+//         setStatusUpdate("");
+//         setTypeUpdate("");
+//         clearSelectedIds();
+//         setLoading(false);
+//       })
+//       .catch(() => {
+//         setStatusUpdate("");
+//         setTypeUpdate("");
+//         clearSelectedIds();
+//         setLoading(false);
+//       });
+//   });
+// };
 
 
   const onSubmitData = async (
@@ -485,15 +484,15 @@ const handleGenerateFaults = () => {
                 </>
               ),
             },
-            {
-              action: handleGenerateFaults,
-              string: (
-                <>
-                  <i className="bi bi-calendar-x-fill me-1"></i>
-                  <span>Generar faltas</span>
-                </>
-              ),
-            },
+            // {
+            //   action: handleGenerateFaults,
+            //   string: (
+            //     <>
+            //       <i className="bi bi-calendar-x-fill me-1"></i>
+            //       <span>Generar faltas</span>
+            //     </>
+            //   ),
+            // },
             {
               action: modalDelete,
               string: (

@@ -150,13 +150,10 @@ export default function CreateConstancyComponent({
 
     //Alerta para antes de guardar 
     const onSubmit: SubmitHandler<Constancy> = async (data) => {
-        console.log("DATA:", data)
         modalConfirm("¿Seguro que quieres guardar la constancia?", async () => {
             try {
                 setLoading(true);
                 setMessageLoading("Guardando constancia...");
-
-                console.log("DATA:", data);
 
                 const res = await createConstancy({ data });
 

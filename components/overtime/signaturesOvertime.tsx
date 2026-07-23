@@ -23,9 +23,10 @@ function SignaturesViewOvertime({
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [loadingSignature, setLoadingSignature] = useState(true);
 
-
+  
   useEffect(() => {
     const handleFetchSignature = async () => {
+      
       if (!id || !idEmployee) {
         setLoadingSignature(false);
         return;
