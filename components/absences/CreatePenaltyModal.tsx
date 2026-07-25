@@ -10,7 +10,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { formatDate } from "date-fns";
 import { createPenalty } from "@/app/actions/penalties-actions";
-import { IPenalty, IPenaltyForOffeses } from "@/lib/penalties/interface";
+import { IPenalty } from "@/lib/penalties/interface";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 
@@ -105,7 +105,7 @@ export default function CreatePenaltyComponent({
                         <Card.Body>
                             <div className="d-flex align-items-center gap-2 mb-4">
                                 <i className="bi bi-exclamation-octagon text-danger" />
-                                <h6 className="mb-0 fw-bold">Detalles de la penalización</h6>
+                                <h6 className="mb-0 fw-bold">Fechas por penalizar</h6>
                             </div>
 
                             <Row className="g-3">
@@ -131,7 +131,7 @@ export default function CreatePenaltyComponent({
                             <Row className="g-3">
                                 <Col md={6}>
                                     <Form.Group>
-                                        <Form.Label>Tipo de penalización</Form.Label>
+                                        <Form.Label className="fw-semibold">Tipo de penalización</Form.Label>
                                         <Form.Select
                                             {...register("PenaltyForOffensesType", {
                                                 required: "Selecciona un tipo de penalización",
@@ -150,18 +150,12 @@ export default function CreatePenaltyComponent({
 
                                 <Col md={12}>
                                     <Form.Group>
-                                        <Form.Label>Motivo</Form.Label>
+                                        <Form.Label className="fw-semibold">Motivo</Form.Label>
                                         <Form.Control
                                             as="textarea"
                                             rows={3}
-                                            {...register("motive", {
-                                                required: "El motivo es obligatorio",
-                                            })}
-                                            isInvalid={!!errors.motive}
+                                            {...register("motive")}
                                         />
-                                        <Form.Control.Feedback type="invalid">
-                                            {errors.motive?.message}
-                                        </Form.Control.Feedback>
                                     </Form.Group>
                                 </Col>
                             </Row>

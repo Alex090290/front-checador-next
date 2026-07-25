@@ -6,14 +6,13 @@ import Loading from "../LoadingSpinner"
 import { Button, Card, Col, Collapse, Container, Row } from "react-bootstrap"
 import { useSessionSnapshot } from "@/hooks/useSessionStore"
 import { useRouter } from "next/navigation"
-import { useModals } from "@/context/ModalContext"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import OverLay from "../templates/OverLay"
-import { formatCreatedAt, formatCreatedAtOnlyHours, formatScheduleTime } from "@/lib/helpers"
+import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers"
 import Link from "next/link"
-import { FormBook, FormPage } from "../templates/FormView"
 import SignaturesViewPenalty from "./signaturesPenalties"
 import PenaltySignatureModal from "./PenaltySignatureModal"
+import PenaltyOneError from "./penaltiesMessageError"
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -48,17 +47,33 @@ export function PenaltyOne({
     }, [signatures, idEmployee]);
     const hasNotSigned = currentSignature?.url === '';
 
+    const normalizeLabel = (label?: string) =>
+        label
+            ?.normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+
+    const extraGroupAlreadySigned = useMemo(() => {
+        return signatures.some(
+            (s) => normalizeLabel(s.label) === "direccion" && s.url !== ""
+        );
+    }, [signatures]);
 
     const showCurrentUser = useMemo(() => {
+        const isExtraUser = !!session?.uid?.roles?.isExtra;
+
+        if (isExtraUser) {
+            return !!currentSignature && hasNotSigned && !extraGroupAlreadySigned;
+        }
+
         const isRelevantUser =
             idEmployee === penaltyEmployeeId ||
             !!session?.uid?.roles?.isLeader ||
-            !!session?.uid?.roles?.isExtra ||
             !!session?.uid?.roles?.isDoh;
 
         return isRelevantUser && !!currentSignature && hasNotSigned;
-    }, [idEmployee, penaltyEmployeeId, currentSignature, hasNotSigned, session]);
-    
+    }, [idEmployee, penaltyEmployeeId, currentSignature, hasNotSigned, session, extraGroupAlreadySigned]);
+
     //Helpers
     const handleBack = () => {
         setLoading(true);
@@ -79,6 +94,12 @@ export function PenaltyOne({
             ? `${upperCase(u.employee.lastName)} ${upperCase(u.employee.name)}`
             : `EMPLEADO #${u.idEmployee}`;
     };
+
+    if (!penalty) {
+        return (
+            <PenaltyOneError/>
+        )
+    }
 
 
     return (
@@ -428,7 +449,6 @@ export function PenaltyOne({
                                             name={sign.name}
                                             url={sign.url}
                                             label={sign.label}
-                                            status={penalty?.status}
                                         />
                                     ))}
                                 </Row>

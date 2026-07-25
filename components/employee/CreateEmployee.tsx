@@ -108,7 +108,6 @@ const DEFAULT_VALUES: TInputsEmployee = {
 export default function CreateEmployeeComponent({
   departments,
   branches,
-  employees,
 }: Props) {
   const {
     watch,
@@ -470,7 +469,7 @@ export default function CreateEmployeeComponent({
                                 invalid={!!errors.idPosition}
                               />
 
-                              <RelationField
+                              {/* <RelationField
                                 register={register("idDepartment.idLeader")}
                                 options={employees.map((em) => ({
                                   id: em.id || 0,
@@ -481,7 +480,7 @@ export default function CreateEmployeeComponent({
                                 callBackMode="id"
                                 label="Gerente:"
                                 className="text-uppercase"
-                              />
+                              /> */}
 
                               <RelationField
                                 control={control}

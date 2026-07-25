@@ -1,15 +1,17 @@
 "use client"
 
-import { IPenaltyForOffeses } from "@/lib/penalties/interface";
+import { IPenaltyForOffeses, ISignaturesPenalties } from "@/lib/penalties/interface";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 import { formatCreatedAt } from "@/lib/helpers";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import ListView from "../templates/ListView";
+import AlertSignaturesPenalty from "./AlertSignatures";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
 export default function PenaltiesTableClient({
     total,
@@ -25,6 +27,7 @@ export default function PenaltiesTableClient({
     penalty: IPenaltyForOffeses[];
 }) {
     //Aqui los const
+    const session = useSessionSnapshot();
     const router = useRouter();
     const sp = useSearchParams();
     const [loading, setLoading] = useState(false);
@@ -35,11 +38,33 @@ export default function PenaltiesTableClient({
     const [, setSelectedIds] = useState<Array<string | number>>([]);
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const [, setTableResetKey] = useState(0);
+    const [hideSignatures, setHideSignatures] = useState(false);
+    const idEmployee = Number(session?.uid?.idEmployee);
+
+
 
     useEffect(() => {
         setLoading(false);
         setMessageLoading("");
     }, [searchParamsString]);
+
+    const pendingOvertimes = useMemo(() => {
+        return (penalty ?? []).filter((o: IPenaltyForOffeses) => {
+            const signatures: ISignaturesPenalties[] = o.signatures ?? [];
+            const mySignature = signatures.find(
+                (i: ISignaturesPenalties) => Number(i.idSignatory) === idEmployee
+            );
+            if (!mySignature) return false;
+            return mySignature.url === '';
+        });
+    }, [penalty, idEmployee]);
+
+    const hasPendingSignature = pendingOvertimes.length > 0;
+
+     useEffect(() => {
+        setHideSignatures(hasPendingSignature);
+    }, [hasPendingSignature]);
+
 
     //Helpers
 
@@ -194,14 +219,15 @@ export default function PenaltiesTableClient({
         },
     ];
 
-     if (!penalty) {
-        return (
-            null
-        )
-    }
-
     return (
         <>
+            <ConditionalRender cond={hideSignatures}>
+                <AlertSignaturesPenalty
+                    onClose={() => setHideSignatures(false)}
+                    pendingIds={pendingOvertimes.map((o) => o.id)}
+                />
+            </ConditionalRender>
+
             <ConditionalRender cond={loading}>
                 <Loading message={messageLoading} />
             </ConditionalRender>
