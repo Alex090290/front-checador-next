@@ -177,9 +177,7 @@ export async function createNewsletter({
   try {
     const { apiToken, apiUrl } = await storeToken();
 
-    const response = await axios
-      .post(
-        `${apiUrl}/notice`,
+    const response = await axios.post(`${apiUrl}/notice`,
         {
           title: data.title,
           text: data.text,
@@ -193,8 +191,9 @@ export async function createNewsletter({
             Authorization: `Bearer ${apiToken}`,
           },
         }
-      )
-      .then(async (res) => {
+      ).then(async (res) => {
+        console.log("RES NOTICE: ", res);
+        
         console.log("IMAGEN DE NOTICIA" + data.img);
         const file = data.img || "";
         const formData = new FormData();
@@ -202,21 +201,21 @@ export async function createNewsletter({
 
         if (!res.data.data.id && !file) throw new Error("Error de imagen");
 
-        await axios
-          .put(`${apiUrl}/notice/img/${res.data.data.id}`, formData, {
+        await axios.put(`${apiUrl}/notice/img/${res.data.data.id}`, formData, {
             headers: {
               Authorization: `Bearer ${apiToken}`,
             },
           })
           .then((resImg) => {
+            console.log("resImg: ",resImg);
+            
             return resImg;
           });
         return res;
-      });
-    // .catch((err) => {
-    //   console.log("ERROR DE CATCH:", err);
-    //   throw new Error("Error en la respuesta");
-    // });
+      }).catch((err) => {
+      console.log("ERROR DE CATCH:", err);
+      throw new Error("Error en la respuesta");
+    });
 
     revalidatePath("/app/newsletter");
 
