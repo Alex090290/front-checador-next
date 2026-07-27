@@ -199,3 +199,78 @@ export async function deleteAbsence({
         };
     }
 }
+
+//Funcion para actualizar falta
+export async function updateAbsence({
+    id,
+    documents,
+    data
+}: {
+    id: number;
+    documents?: IAbsence["documents"];
+    data: IAbsence;
+}): Promise<
+    ActionResponse<
+        IAbsence | null>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        if (!id) {
+            throw new Error("No se ha definido ID");
+        }
+
+        const response = await axios
+            .put(
+                `${API_URL}/absencesAndAttendances/${id}`,
+                {
+                    category: data.category,
+                    motiveJustify: data.motiveJustify,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${apiToken}`,
+                    },
+                }
+            )
+            .then((firstRes) =>
+                axios
+                    .put(
+                        `${API_URL}/absencesAndAttendances/document/${id}`,
+                        { documents },
+                        {
+                            headers: {
+                                Authorization: `Bearer ${apiToken}`,
+                            },
+                        }
+                    )
+                    .then((secondRes) => ({
+                        ...firstRes.data,
+                        ...secondRes.data,
+                    }))
+            )
+            .catch((err) => {
+                throw new Error(
+                    err.response?.data?.message
+                        ? err.response.data.message
+                        : "Error en la respuesta"
+                );
+            });
+
+        revalidatePath("/app/absences");
+
+        return {
+            success: true,
+            message: response.message || "Actualizada correctamente",
+            data: response.data || null,
+        };
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.log(err);
+
+        return {
+            success: false,
+            message: err.message,
+            data: null,
+        };
+    }
+}

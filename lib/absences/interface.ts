@@ -9,6 +9,8 @@ export interface IAbsence {
     dateOfAbsence: string;
     createdAt: string;
     updatedAt: string;
+    motiveJustify?: string;
+    documents?: listDocuments[];
 
     employee?: {
         id: number;
@@ -69,4 +71,12 @@ interface IDaysBrokenDown {
     year: string;
     fortnightlyPeriod: number;
     day: string;
+}
+
+interface listDocuments{
+    id: number;
+    whoUploadId: number;
+    urlDocument: string;
+    createdAt: string;
+    updatedAt: string;
 }

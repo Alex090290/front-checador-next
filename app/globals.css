@@ -85,3 +85,8 @@
 .table-row-selected > * {
     color: var(--bs-black) !important;
 }
+
+/* Paraa el calendario de crear penalizacion */
+.date-multi-popover {
+    z-index: 2090; /* por encima de .modal (1055) y .modal-backdrop (1050) */
+}

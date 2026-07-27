@@ -13,6 +13,7 @@ import Link from "next/link"
 import SignaturesViewPenalty from "./signaturesPenalties"
 import PenaltySignatureModal from "./PenaltySignatureModal"
 import PenaltyOneError from "./penaltiesMessageError"
+import { formatDate } from "date-fns"
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -36,6 +37,7 @@ export function PenaltyOne({
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = penalty?.absencesAndAttendances.find((c) => String(c.id) === activeCheckId);
     const handlePenaltySignature = () => setPenaltySignatureModal(true);
+    const fechas = penalty?.dateOfAbsence ?? [];
 
 
     const signatures: ISignaturesPenalties[] = useMemo(() => penalty?.signatures ?? [], [penalty?.signatures]);
@@ -97,7 +99,7 @@ export function PenaltyOne({
 
     if (!penalty) {
         return (
-            <PenaltyOneError/>
+            <PenaltyOneError />
         )
     }
 
@@ -161,41 +163,6 @@ export function PenaltyOne({
                                 </Button>
                             </ConditionalRender>
                         </OverLay>
-
-                        {/* <OverLay string="Aprobar">
-                            <ConditionalRender cond={showCurrentLeader}>
-                                <Button
-                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
-                                    variant="success"
-                                    onClick={handleSignatureLeader}
-                                    disabled={loading}
-                                >
-                                    <i className="bi bi-check-circle" />
-
-                                    <span className="d-none d-md-inline ms-2">
-                                        Aprobar
-                                    </span>
-                                </Button>
-                            </ConditionalRender>
-                        </OverLay>
-
-                        <OverLay string="Firmar de enterado">
-                            <ConditionalRender cond={showCurrentDoh}>
-                                <Button
-                                    className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
-                                    variant="secondary"
-                                    onClick={handleSignatureDoh}
-                                    disabled={loading}
-                                >
-                                    <i className="bi bi-card-checklist" />
-
-                                    <span className="d-none d-md-inline ms-2">
-                                        Firmar de enterado
-                                    </span>
-                                </Button>
-                            </ConditionalRender>
-                        </OverLay> */}
-
                     </div>
 
                     {/* Derecha */}
@@ -429,6 +396,33 @@ export function PenaltyOne({
                                 </Card>
                             </Col>
                         </Row>
+
+                        <Card className="border rounded-4 mb-4">
+                            <Card.Body>
+                                <div className="d-flex align-items-center justify-content-between mb-4">
+                                    <h6 className="mb-0 fw-bold">Fecha(s) de penalización:</h6>
+                                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                                        Fecha(s)
+                                    </span>
+                                </div>
+
+                                <Row>
+                                    <Col md={12}>
+                                        <div className="d-flex flex-wrap gap-2">
+                                            {fechas.map((d) => (
+                                                <span
+                                                    key={d.toString()}
+                                                    className="badge rounded-pill bg-danger-subtle text-danger-emphasis border border-danger-subtle gap-2"
+                                                >
+                                                    {formatCreatedAt(d)}
+                                                </span>
+                                            ))
+                                            }
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </Card.Body>
+                        </Card>
 
                         {/* FIRMAS */}
                         <Card className="border rounded-4">

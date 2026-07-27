@@ -7,13 +7,16 @@ import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
 import { useState } from "react";
 import { useModals } from "@/context/ModalContext";
-import { deleteAbsence } from "@/app/actions/absences-actions";
+import { deleteAbsence, updateAbsence } from "@/app/actions/absences-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import React from "react";
 import CheckLocationMap from "./AbsenceMap";
 import { formatCreatedAt, formatCreatedAtOnlyHours, formatScheduleTime } from "@/lib/helpers";
 import AbsenceOneError from "./absencesMessageError";
+import ModalBlur from "../ModalBlur";
+import FormUpdateAbsence from "./AbsenceUpdate";
+import { ActionResponse } from "@/lib/definitions";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
@@ -119,7 +122,9 @@ export function AbsenceOne({
     const hasChecks = absence?.checks.length > 0;
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = absence?.checks.find((c) => String(c.id) === activeCheckId);
-    
+    const [showUpdateAbsenceModal, setShowUpdateAbsenceModal] = useState(false);
+    const isAbsence = absence.type === "falta";
+
     //========== Helpers =============
 
     const upperCase = (text?: string) => {
@@ -160,6 +165,7 @@ export function AbsenceOne({
         });
     };
 
+
     //Regresar a pagina principal
     const handleBack = () => {
         setLoading(true);
@@ -169,7 +175,7 @@ export function AbsenceOne({
 
     if (!absence) {
         return (
-            <AbsenceOneError/>
+            <AbsenceOneError />
         )
     }
 
@@ -186,6 +192,19 @@ export function AbsenceOne({
                     {/* Izquierda */}
                     <div className="d-flex gap-2 flex-wrap">
 
+                        <ConditionalRender cond={isAbsence}>
+                            <OverLay string="Actualizar falta">
+                                <Button
+                                    className="d-inline-flex align-items-center fw-semibold px-3"
+                                    variant="primary"
+                                    onClick={() => setShowUpdateAbsenceModal(true)}
+                                >
+                                    <i className="bi bi-pencil me-2" />
+                                    Actualizar Falta
+                                </Button>
+                            </OverLay>
+                        </ConditionalRender>
+
 
                         <OverLay string="Eliminar registro">
                             <Button
@@ -197,7 +216,7 @@ export function AbsenceOne({
                                 <i className="bi bi-trash" />
 
                                 <span className="d-none d-md-inline ms-2">
-                                    Eliminar falta
+                                    Eliminar Registro
                                 </span>
                             </Button>
                         </OverLay>
@@ -484,14 +503,20 @@ export function AbsenceOne({
                                 <ConditionalRender cond={!hasChecks}>
                                     <p> No tiene checadas</p>
                                 </ConditionalRender>
-
                             </Row>
-
                         </Card>
                     </Card.Body>
-
-
                 </Card >
+
+                <ConditionalRender cond={showUpdateAbsenceModal}>
+                    <ModalBlur onClose={() => setShowUpdateAbsenceModal(false)}>
+                        <FormUpdateAbsence
+                            show={showUpdateAbsenceModal}
+                            onHide={() => setShowUpdateAbsenceModal(false)}
+                            id={Number(absence.id)}
+                        />
+                    </ModalBlur>
+                </ConditionalRender>
             </Container >
         </>
     )

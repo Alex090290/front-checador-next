@@ -55,7 +55,7 @@ export default function ShowInfoOneUser({
 
   if (!user) {
     return (
-      <UserOneError/>
+      <UserOneError />
     );
   }
 
@@ -116,6 +116,9 @@ export default function ShowInfoOneUser({
     router.push("/app/users");
 
   }
+
+  console.log("ID:", user);
+
 
   return (
     <>

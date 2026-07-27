@@ -251,9 +251,9 @@ export default function AbsencesTableClient({
         const allFaltas = selectedRows.every((row) => row.type === "falta");
         const sameEmployee = selectedRows.every((row) => row.idEmployee === selectedRows[0].idEmployee)
 
-        if (selectedRows.length < 3) {
-            return modalError("Debes seleccionar mínimo 3 FALTAS para generar una penalización");
-        }
+        // if (selectedRows.length < 3) {
+        //     return modalError("Debes seleccionar mínimo 3 FALTAS para generar una penalización");
+        // }
 
         if (hasAsistencia) {
             return modalError("Para generar una penalización debes seleccionar únicamente FALTAS");

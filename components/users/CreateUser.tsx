@@ -65,6 +65,8 @@ export default function CreateUserComponent({
     defaultValues: DEFAULT_VALUES,
   });
 
+  
+
   const { modalConfirm, modalError } = useModals();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -88,7 +90,7 @@ export default function CreateUserComponent({
     router.push("/app/users");
   };
 
-  const onSubmit: SubmitHandler<TInputs> = async (data) => {
+  const onSubmit: SubmitHandler<TInputs> = async (data) => {    
     modalConfirm("¿Seguro que quieres guardar el usuario?", async () => {
       try {
         setLoading(true);

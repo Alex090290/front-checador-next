@@ -148,8 +148,8 @@ export async function getUserData({
             : "Error en la respuesta"
         );
       });
-      console.log("response: ",response);
-      
+    console.log("response: ", response);
+
     return {
       success: true,
       message: response.data.mesaage,
@@ -172,7 +172,7 @@ export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
   page: number;
   limit: number;
   pages: number;
-}>  {
+}> {
   try {
     const { apiToken, API_URL: apiUrl } = await storeAction();
 
@@ -186,12 +186,12 @@ export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
     if (args.search?.trim()) {
       params.set("search", args.search.trim());
     }
-    
+
     const response = await axios.get(`${apiUrl}/allUsers?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      })
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    })
       .then((res) => {
         return res.data;
       })
@@ -203,16 +203,16 @@ export async function fetchUsersPages(args: FetchUsersArgs = {}): Promise<{
         );
       });
 
-      const total = Number(response.total ?? 0);
-      const pages = Math.max(Math.ceil(total / limitNum), 1);
-      
-      return {
-        data: response.data ?? [],
-        total,
-        page: pageNum,
-        limit: limitNum,
-        pages,
-      };
+    const total = Number(response.total ?? 0);
+    const pages = Math.max(Math.ceil(total / limitNum), 1);
+
+    return {
+      data: response.data ?? [],
+      total,
+      page: pageNum,
+      limit: limitNum,
+      pages,
+    };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -437,6 +437,7 @@ export async function updateUser({
       }
 
       revalidatePath("/app/users");
+      console.log("IdEmpleado:", idEmployee);
 
       return {
         success: true,

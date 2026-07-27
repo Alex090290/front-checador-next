@@ -45,21 +45,26 @@ export async function createPenalty({
                 message: "Registro creado correctamente",
                 data: dataResponse,
             };
-        } catch (err) {
-            const error = err as Error;
+        } catch (err: unknown) {
+            const message =
+                axios.isAxiosError<{ message?: string }>(err)
+                    ? err.response?.data?.message || err.message
+                    : err instanceof Error
+                        ? err.message
+                        : "Error en endpoint";
+
             return {
                 success: false,
-                message: error.message ? error.message : "Error en endpoint",
+                message,
             };
         }
     } catch (error: unknown) {
-
-        const err = error as Error;
+        const message =
+            error instanceof Error ? error.message : "Error desconocido";
 
         return {
             success: false,
-            message: err.message
-
+            message,
         };
     }
 }
