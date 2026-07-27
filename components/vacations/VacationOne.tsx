@@ -30,6 +30,7 @@ import toast from "react-hot-toast";
 import { ISignatures } from "@/lib/overTime/interface";
 import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
 import VacationsOneError from "./vacationsMessageError";
+import { formatCreatedAt } from "@/lib/helpers";
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
@@ -94,7 +95,7 @@ export default function ShowInfoVacation({
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [, setPeriods] = useState<PeriodVacation[]>([]);
   const { modalError, modalConfirm } = useModals();
-
+  
   const signatures = useMemo(() => 
     Array.isArray(vacation?.signatures) ? vacation.signatures : [],
     [vacation?.signatures]
@@ -459,7 +460,7 @@ export default function ShowInfoVacation({
                             <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
                             <div className="text-muted small">Inicio</div>
                             <div className="fw-semibold">
-                              {safeDate(vacation.dateInit)}
+                              {formatCreatedAt(vacation.dateInit)} 
                             </div>
                           </div>
                         </Col>
@@ -469,7 +470,7 @@ export default function ShowInfoVacation({
                             <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
                             <div className="text-muted small">Fin</div>
                             <div className="fw-semibold">
-                              {safeDate(vacation.dateEnd)}
+                              {formatCreatedAt(vacation.dateEnd)}
                             </div>
                           </div>
                         </Col>
@@ -520,7 +521,7 @@ export default function ShowInfoVacation({
                     <tbody>
                       {daysList.map((d) => (
                         <tr key={d.id}>
-                          <td className="fw-semibold">{safeDate(d.day)}</td>
+                          <td className="fw-semibold">{formatCreatedAt(String(d.day))}</td>
                           <td className="text-end">
                             {d.fortnightlyPeriod ?? "—"}
                           </td>
