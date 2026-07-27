@@ -12,7 +12,9 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { SubmitHandler, useForm } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import toast from "react-hot-toast";
+
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
 
 const DEFAULT_VALUES: TInputsOvertime = {
     idEmployee: 0,
@@ -22,6 +24,7 @@ const DEFAULT_VALUES: TInputsOvertime = {
     hourEnd: "",
 };
 
+type FeedbackState = "loading" | "success" | "error" | null;
 
 export default function CreateOvertimeComponent({
     employees = []
@@ -39,103 +42,102 @@ export default function CreateOvertimeComponent({
         defaultValues: DEFAULT_VALUES,
     });
 
-    // Aqwi los const
     const session = useSessionSnapshot();
-    const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
+    const [feedbackMsg, setFeedbackMsg] = useState("");
     const { modalError, modalConfirm } = useModals();
     const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
-
     const router = useRouter();
-    
     const roles = session?.uid?.roles;
 
-
-    const readInput = !roles?.isLeader 
-    && !roles?.isExtra 
-    && !roles?.isDoh 
-    && !roles?.isApproverLeaders 
-    && !roles?.isApproverDoh;
+    const readInput = !roles?.isLeader
+        && !roles?.isExtra
+        && !roles?.isDoh
+        && !roles?.isApproverLeaders
+        && !roles?.isApproverDoh;
 
     const idEmployee = Number(session?.uid?.idEmployee);
 
-
     useEffect(() => {
-        if (session?.uid?.roles?.isLeader) {
-
+        if (roles?.isLeader) {
             const filtrados = employees.filter(
-                (el: Employee) => Number(el.department?.idLeader) === Number(session.uid?.idEmployee)
+                (el: Employee) => Number(el.department?.idLeader) === idEmployee
             );
             setFilteredEmployees(filtrados);
         } else {
             setFilteredEmployees(employees);
         }
-    }, [session, idEmployee, employees]);
+    }, [roles, idEmployee, employees]);
 
-
-    //Helpers
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
-
-        if (!data.signature || data.signature && data.signature === "") {
+        if (!data.signature || data.signature === "") {
             modalError("La firma es obligatoria");
             return;
         }
 
-
         modalConfirm("¿Seguro que quieres guardar el registro?", async () => {
             try {
-                setLoading(true);
-                setMessageLoading("Guardando registro...");
+                setFeedback("loading");
+                setFeedbackMsg("Guardando registro...");
 
-                await createOverTime({ data })
-                    .then(async (rescrate: ActionResponse<OverTimeAxios>) => {
-                        if (!rescrate.success || !rescrate.data?.id) {
-                            modalError(rescrate.message || "No se pudo crear el registro");
-                            return;
-                        }
+                const rescrate: ActionResponse<OverTimeAxios> = await createOverTime({ data });
 
-                        await sendSignatureOverTime({
-                            id: Number(rescrate.data.id),
-                            signature: String(data.signature),
-                        });
+                if (!rescrate.success || !rescrate.data?.id) {
+                    setFeedbackMsg(rescrate.message || "No se pudo crear el registro");
+                    setFeedback("error");
+                    return;
+                }
 
-                        toast.success(rescrate.message || "Registro creado correctamente");
+                await sendSignatureOverTime({
+                    id: Number(rescrate.data.id),
+                    signature: String(data.signature),
+                });
 
-                        setTimeout(() => {
-                            router.push("/app/overtime");
-                        }, 1200);
-                    })
-                    .catch((errData) => {
-                        console.log("errData:", errData);
-                        modalError(errData.message || "Error al crear el registro");
-                    });
-            } finally {
-                setLoading(false);
-                setMessageLoading("");
+                setFeedbackMsg(rescrate.message || "Registro creado correctamente");
+                setFeedback("success");
+
+            } catch (err: any) {
+                console.log("err:", err);
+                setFeedbackMsg(err?.message || "Error al crear el registro");
+                setFeedback("error");
             }
         });
     };
 
-
     useEffect(() => {
         if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
-
     }, [session, setValue]);
 
     const handleBack = () => {
-        setLoading(true);
-        setMessageLoading("Cargando...");
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...");
         router.push("/app/overtime");
     };
 
     return (
         <>
-            <ConditionalRender cond={loading}>
-                <Loading message={messageLoading} />
+            {/* Loading */}
+            <ConditionalRender cond={feedback === "loading" || isSubmitting}>
+                <Loading message={feedbackMsg || "Guardando..."} />
             </ConditionalRender>
 
-            <ConditionalRender cond={isSubmitting}>
-                <Loading message="Guardando..." />
+            {/* Éxito — redirige al terminar la animación */}
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => {
+                        setFeedback(null);
+                        router.push("/app/overtime");
+                    }}
+                />
+            </ConditionalRender>
+
+            {/* Error — solo cierra el overlay */}
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
             </ConditionalRender>
 
             <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
@@ -164,7 +166,7 @@ export default function CreateOvertimeComponent({
                                     <Button
                                         type="button"
                                         variant="secondary"
-                                        disabled={isSubmitting || loading || !isDirty}
+                                        disabled={isSubmitting || feedback === "loading" || !isDirty}
                                         onClick={() => reset(DEFAULT_VALUES)}
                                     >
                                         Limpiar
