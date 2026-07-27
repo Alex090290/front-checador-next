@@ -203,11 +203,11 @@ export async function deleteAbsence({
 //Funcion para actualizar falta
 export async function updateAbsence({
     id,
-    document,
+    documents,
     data
 }: {
     id: number;
-    document?: FormData; 
+    documents?: FormData[];
     data: IAbsence;
 }): Promise<
     ActionResponse<
@@ -229,16 +229,15 @@ export async function updateAbsence({
                         Authorization: `Bearer ${apiToken}`,
                     },
                 }).then(async(firstRes) => {                
-                await axios.put(`${API_URL}/absencesAndAttendances/document/${id}`, document,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${apiToken}`,
-                        },
+                    if (documents && documents.length > 0) {
+                        for (const formData of documents) {
+                            await axios.put(
+                                `${API_URL}/absencesAndAttendances/document/${id}`,
+                                formData,
+                                { headers: { Authorization: `Bearer ${apiToken}` } }
+                            );
+                        }
                     }
-                ).then((secondRes) => ({
-                    ...firstRes.data,
-                    ...secondRes.data,
-                }))
             }).catch((err) => {
                 throw new Error(
                     err.response?.data?.message

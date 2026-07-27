@@ -24,15 +24,23 @@ type ModalAction = {
     id: number;
 };
 
+// Cada slot de archivo tiene su propio File y su ref
+type FileSlot = {
+    id: number;
+    file: File | null;
+};
+
 export default function FormUpdateAbsence({
     id,
     onHide,
     absence,
 }: ModalBasicProps & ModalAction) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
+
+    // Slots de archivos — inicia con uno vacío
+    const [fileSlots, setFileSlots] = useState<FileSlot[]>([{ id: 1, file: null }]);
+    const fileRefs = useRef<Map<number, HTMLInputElement | null>>(new Map());
 
     const {
         register,
@@ -45,73 +53,58 @@ export default function FormUpdateAbsence({
         },
     });
 
-    // Manejo de archivos
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (files && files.length > 0) {
-            setSelectedFiles(Array.from(files));
-        }
-    };
-
-    const handleClearFiles = () => {
-        setSelectedFiles([]);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    // Convertir archivos a base64 para enviar al action
-    const filesToDocuments = async (files: File[]) => {
-        return Promise.all(
-            files.map(
-                (file) =>
-                    new Promise<{ name: string; base64: string; type: string }>(
-                        (resolve, reject) => {
-                            const reader = new FileReader();
-                            reader.onload = () =>
-                                resolve({
-                                    name: file.name,
-                                    base64: (reader.result as string).split(",")[1],
-                                    type: file.type,
-                                });
-                            reader.onerror = reject;
-                            reader.readAsDataURL(file);
-                        }
-                    )
-            )
+    // Asignar archivo a un slot
+    const handleFileChange = (slotId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null;
+        setFileSlots((prev) =>
+            prev.map((s) => (s.id === slotId ? { ...s, file } : s))
         );
+    };
+
+    // Agregar nuevo slot vacío
+    const handleAddSlot = () => {
+        const newId = Date.now();
+        setFileSlots((prev) => [...prev, { id: newId, file: null }]);
+    };
+
+    // Quitar un slot
+    const handleRemoveSlot = (slotId: number) => {
+        setFileSlots((prev) => prev.filter((s) => s.id !== slotId));
+        fileRefs.current.delete(slotId);
     };
 
     const onSubmit: SubmitHandler<TInputsAbsence> = async (data) => {
         if (!id) return;
-    
+
         try {
             setFeedback("loading");
             setFeedbackMsg("Actualizando ausencia...");
-    
-            // Armar FormData con el campo "document"
-            let formData: FormData | undefined;
-            if (selectedFiles.length > 0) {
-                formData = new FormData();
-                selectedFiles.forEach((file) => {
-                    formData!.append("document", file);
+
+            // Construir un FormData por cada archivo seleccionado
+            const documents: FormData[] = fileSlots
+                .filter((s) => s.file !== null)
+                .map((s) => {
+                    const fd = new FormData();
+                    fd.append("document", s.file!);
+                    return fd;
                 });
-            }
-    
+
             const res = await updateAbsence({
                 id,
-                document: formData,
+                documents: documents.length > 0 ? documents : undefined,
                 data: {
                     ...absence,
                     category: data.category,
                     motiveJustify: data.motiveJustify,
                 } as IAbsence,
             });
-    
+
             if (!res.success) {
                 setFeedbackMsg(res.message || "No se pudo actualizar");
                 setFeedback("error");
                 return;
             }
-    
+
             setFeedbackMsg(res.message || "Actualizado correctamente");
             setFeedback("success");
         } catch {
@@ -185,61 +178,81 @@ export default function FormUpdateAbsence({
                         </Col>
                     </Row>
 
-                    {/* Carga de documentos */}
+                    {/* Documentos */}
                     <div className="mb-4">
-                        <label className="fw-semibold mb-2 d-block">Documento (opcional):</label>
+                        <label className="fw-semibold mb-2 d-block">
+                            Documentos (opcional):
+                        </label>
 
-                        <div className="d-flex align-items-center gap-2">
-                            <Button
-                                variant="outline-primary"
-                                size="sm"
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <i className="bi bi-upload me-1" />
-                                Seleccionar archivo
-                            </Button>
-
-                            {selectedFiles.length > 0 && (
-                                <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    type="button"
-                                    onClick={handleClearFiles}
+                        <div className="d-flex flex-column gap-2">
+                            {fileSlots.map((slot, index) => (
+                                <div
+                                    key={slot.id}
+                                    className="border rounded-3 p-3 d-flex align-items-center gap-2"
                                 >
-                                    <i className="bi bi-x me-1" />
-                                    Quitar
-                                </Button>
-                            )}
+                                    <span className="text-muted small" style={{ minWidth: 24 }}>
+                                        {index + 1}.
+                                    </span>
+
+                                    <input
+                                        type="file"
+                                        ref={(el) => { fileRefs.current.set(slot.id, el); }}
+                                        onChange={(e) => handleFileChange(slot.id, e)}
+                                        accept=".jpg,.jpeg,.png,.pdf,.webp"
+                                        style={{ display: "none" }}
+                                    />
+
+                                    <Button
+                                        variant="outline-primary"
+                                        size="sm"
+                                        type="button"
+                                        onClick={() => fileRefs.current.get(slot.id)?.click()}
+                                    >
+                                        <i className="bi bi-upload me-1" />
+                                        {slot.file ? "Cambiar" : "Seleccionar"}
+                                    </Button>
+
+                                    <ConditionalRender cond={!!slot.file}>
+                                        <span className="small text-truncate text-secondary flex-grow-1">
+                                            <i className="bi bi-file-earmark me-1" />
+                                            {slot.file?.name}
+                                        </span>
+                                    </ConditionalRender>
+
+                                    <ConditionalRender cond={!slot.file}>
+                                        <span className="small text-muted flex-grow-1">
+                                            Sin archivo seleccionado
+                                        </span>
+                                    </ConditionalRender>
+
+                                    {/* Solo muestra quitar si hay más de un slot */}
+                                    <ConditionalRender cond={fileSlots.length > 1}>
+                                        <Button
+                                            variant="outline-danger"
+                                            size="sm"
+                                            type="button"
+                                            onClick={() => handleRemoveSlot(slot.id)}
+                                        >
+                                            <i className="bi bi-x" />
+                                        </Button>
+                                    </ConditionalRender>
+                                </div>
+                            ))}
                         </div>
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            accept=".jpg,.jpeg,.png,.pdf,.webp"
-                            multiple
-                            style={{ display: "none" }}
-                        />
-
-                        {selectedFiles.length > 0 && (
-                            <div className="mt-2">
-                                <small className="text-muted d-block mb-1">
-                                    {selectedFiles.length} archivo(s) seleccionado(s)
-                                </small>
-                                {selectedFiles.slice(0, 2).map((file, i) => (
-                                    <div key={i} className="small text-truncate text-secondary">
-                                        <i className="bi bi-file-earmark me-1" />
-                                        {file.name}
-                                    </div>
-                                ))}
-                                {selectedFiles.length > 2 && (
-                                    <small className="text-muted">
-                                        +{selectedFiles.length - 2} más
-                                    </small>
-                                )}
-                            </div>
-                        )}
+                        {/* Botón agregar otro — solo si el último slot ya tiene archivo */}
+                        <ConditionalRender cond={!!fileSlots[fileSlots.length - 1]?.file}>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                type="button"
+                                className="mt-2"
+                                onClick={handleAddSlot}
+                            >
+                                <i className="bi bi-plus me-1" />
+                                Agregar otro documento
+                            </Button>
+                        </ConditionalRender>
                     </div>
 
                     {/* Acciones */}

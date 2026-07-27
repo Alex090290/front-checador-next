@@ -600,15 +600,17 @@ const handleViewDocument = async (idDocument: number) => {
                     </Card>
 
                     {/* Modal visor PDF — fuera del Card, una sola instancia */}
-                    <PDFViewerModal
-                        show={showPdfModal}
-                        onHide={() => {
-                            setShowPdfModal(false);
-                            setActiveDocId(null);
-                            setDocumentUrl(null);
-                        }}
-                        pdfBase64Url={documentUrl ?? ""}
-                    />
+                    <ConditionalRender cond={showPdfModal && !!documentUrl}>
+                        <PDFViewerModal
+                            show={showPdfModal}
+                            onHide={() => {
+                                setShowPdfModal(false);
+                                setActiveDocId(null);
+                                setDocumentUrl(null);
+                            }}
+                            pdfBase64Url={documentUrl ?? ""}
+                        />
+                    </ConditionalRender>
                 </ConditionalRender>
 
                 <ConditionalRender cond={showUpdateAbsenceModal}>
