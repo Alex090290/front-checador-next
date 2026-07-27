@@ -96,7 +96,7 @@ export async function fetchAbsences(): Promise<IAbsence[]> {
             },
         })
             .then((res) => {
-                console.log("Respuesta correcta: ", res.data)
+                // console.log("Respuesta correcta: ", res.data)
                 return res.data;
             })
             .catch((err) => {
@@ -136,7 +136,7 @@ export async function findAbsence({
             })
 
             .then((res) => {
-                console.log("Respuesta correcta: ", res.data);
+                // console.log("Respuesta correcta: ", res.data);
                 return res.data;
             })
 
@@ -203,11 +203,11 @@ export async function deleteAbsence({
 //Funcion para actualizar falta
 export async function updateAbsence({
     id,
-    documents,
+    document,
     data
 }: {
     id: number;
-    documents?: IAbsence["documents"];
+    document?: FormData; 
     data: IAbsence;
 }): Promise<
     ActionResponse<
@@ -219,9 +219,7 @@ export async function updateAbsence({
             throw new Error("No se ha definido ID");
         }
 
-        const response = await axios
-            .put(
-                `${API_URL}/absencesAndAttendances/${id}`,
+      await axios.put(`${API_URL}/absencesAndAttendances/${id}`,
                 {
                     category: data.category,
                     motiveJustify: data.motiveJustify,
@@ -230,25 +228,18 @@ export async function updateAbsence({
                     headers: {
                         Authorization: `Bearer ${apiToken}`,
                     },
-                }
-            )
-            .then((firstRes) =>
-                axios
-                    .put(
-                        `${API_URL}/absencesAndAttendances/document/${id}`,
-                        { documents },
-                        {
-                            headers: {
-                                Authorization: `Bearer ${apiToken}`,
-                            },
-                        }
-                    )
-                    .then((secondRes) => ({
-                        ...firstRes.data,
-                        ...secondRes.data,
-                    }))
-            )
-            .catch((err) => {
+                }).then(async(firstRes) => {                
+                await axios.put(`${API_URL}/absencesAndAttendances/document/${id}`, document,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${apiToken}`,
+                        },
+                    }
+                ).then((secondRes) => ({
+                    ...firstRes.data,
+                    ...secondRes.data,
+                }))
+            }).catch((err) => {
                 throw new Error(
                     err.response?.data?.message
                         ? err.response.data.message
@@ -260,8 +251,8 @@ export async function updateAbsence({
 
         return {
             success: true,
-            message: response.message || "Actualizada correctamente",
-            data: response.data || null,
+            message: "Actualizada correctamente",
+            data:  null,
         };
     } catch (error: unknown) {
         const err = error as Error;
@@ -272,5 +263,36 @@ export async function updateAbsence({
             message: err.message,
             data: null,
         };
+    }
+}
+
+// absences-actions.ts
+export async function getAbsenceDocument({
+    idAbsence,
+    idDocument,
+}: {
+    idAbsence: number;
+    idDocument: number;
+}): Promise<ActionResponse<{ url: string } | null>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const res = await axios.get(
+            `${API_URL}/absencesAndAttendances/document/${idAbsence}/${idDocument}`,
+            {
+                headers: { Authorization: `Bearer ${apiToken}` },
+                responseType: "arraybuffer", // para recibir el PDF/imagen como binario
+            }
+        );
+
+        // Convertir a base64 para poder mostrarlo en el cliente
+        const base64 = Buffer.from(res.data).toString("base64");
+        const contentType = res.headers["content-type"] || "application/pdf";
+        const url = `data:${contentType};base64,${base64}`;
+
+        return { success: true, message: "OK", data: { url } };
+    } catch (error: unknown) {
+        const err = error as Error;
+        return { success: false, message: err.message, data: null };
     }
 }

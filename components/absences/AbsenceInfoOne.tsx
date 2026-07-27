@@ -1,13 +1,13 @@
 "use client"
 
 import { IAbsence } from "@/lib/absences/interface";
-import { Button, Card, Col, Collapse, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Collapse, Container, ProgressBar, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
 import { useState } from "react";
 import { useModals } from "@/context/ModalContext";
-import { deleteAbsence, updateAbsence } from "@/app/actions/absences-actions";
+import { deleteAbsence, getAbsenceDocument, updateAbsence } from "@/app/actions/absences-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -17,6 +17,7 @@ import AbsenceOneError from "./absencesMessageError";
 import ModalBlur from "../ModalBlur";
 import FormUpdateAbsence from "./AbsenceUpdate";
 import { ActionResponse } from "@/lib/definitions";
+import PDFViewerModal from "@/app/(auth)/app/employee/views/PDFViewer";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
@@ -124,6 +125,10 @@ export function AbsenceOne({
     const activeCheck = absence?.checks.find((c) => String(c.id) === activeCheckId);
     const [showUpdateAbsenceModal, setShowUpdateAbsenceModal] = useState(false);
     const isAbsence = absence.type === "falta";
+    const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+    const [loadingDoc, setLoadingDoc] = useState(false);
+    const [activeDocId, setActiveDocId] = useState<number | null>(null);
+    const [showPdfModal, setShowPdfModal] = useState(false);
 
     //========== Helpers =============
 
@@ -137,6 +142,34 @@ export function AbsenceOne({
             : `EMPLEADO #${u.idEmployee}`;
     };
 
+const handleViewDocument = async (idDocument: number) => {
+    if (activeDocId === idDocument && showPdfModal) {
+        setShowPdfModal(false);
+        setActiveDocId(null);
+        setDocumentUrl(null);
+        return;
+    }
+
+    try {
+        setLoadingDoc(true);
+        setActiveDocId(idDocument);
+
+        const res = await getAbsenceDocument({
+            idAbsence: Number(absence.id),
+            idDocument,
+        });
+
+        if (!res.success || !res.data) {
+            modalError(res.message);
+            return;
+        }
+
+        setDocumentUrl(res.data.url);
+        setShowPdfModal(true);
+    } finally {
+        setLoadingDoc(false);
+    }
+};
     //Borrar
     const handleDeleteOvertime = async () => {
         if (!absence?.id) {
@@ -507,10 +540,80 @@ export function AbsenceOne({
                         </Card>
                     </Card.Body>
                 </Card >
+                {/* DOCUMENTOS */}
+                <ConditionalRender cond={isAbsence && (absence.documents?.length ?? 0) >= 1}>
+                    <Card className="border shadow-sm rounded-4 mt-3">
+                        <Card.Body className="p-4">
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <h6 className="mb-1 fw-bold">Documentos adjuntos</h6>
+                                    <p className="text-muted small mb-0">
+                                        Documentos cargados para justificar la falta.
+                                    </p>
+                                </div>
+                                <span className="badge rounded-pill px-3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                    {absence.documents?.length ?? 0} archivo(s)
+                                </span>
+                            </div>
+
+                            <Row className="g-3">
+                                {absence.documents?.map((doc) => (
+                                    <Col key={doc.id} md={3}>
+                                        <Card
+                                            className="rounded shadow-sm bg-body-tertiary"
+                                            style={{ height: "200px" }}
+                                        >
+                                            <Card.Header
+                                                className="d-flex justify-content-between align-items-center"
+                                                style={{ height: "50px" }}
+                                            >
+                                                <Card.Title
+                                                    className="text-center text-uppercase mb-0"
+                                                    style={{ fontSize: "0.9rem" }}
+                                                >
+                                                    Documento #{doc.id}
+                                                </Card.Title>
+                                            </Card.Header>
+
+                                            <ConditionalRender cond={loadingDoc && activeDocId === doc.id}>
+                                                <div className="text-center h-100 align-content-center">
+                                                    <ProgressBar variant="primary" striped now={100} animated />
+                                                </div>
+                                            </ConditionalRender>
+
+                                            <ConditionalRender cond={!(loadingDoc && activeDocId === doc.id)}>
+                                                <Card.Body className="d-flex flex-column justify-content-center gap-1">
+                                                    <Button
+                                                        variant="secondary"
+                                                        onClick={() => handleViewDocument(doc.id)}
+                                                        disabled={loadingDoc}
+                                                    >
+                                                        Visualizar
+                                                    </Button>
+                                                </Card.Body>
+                                            </ConditionalRender>
+                                        </Card>
+                                    </Col>
+                                ))}
+                            </Row>
+                        </Card.Body>
+                    </Card>
+
+                    {/* Modal visor PDF — fuera del Card, una sola instancia */}
+                    <PDFViewerModal
+                        show={showPdfModal}
+                        onHide={() => {
+                            setShowPdfModal(false);
+                            setActiveDocId(null);
+                            setDocumentUrl(null);
+                        }}
+                        pdfBase64Url={documentUrl ?? ""}
+                    />
+                </ConditionalRender>
 
                 <ConditionalRender cond={showUpdateAbsenceModal}>
                     <ModalBlur onClose={() => setShowUpdateAbsenceModal(false)}>
-                        <FormUpdateAbsence
+                        <FormUpdateAbsence 
                             show={showUpdateAbsenceModal}
                             onHide={() => setShowUpdateAbsenceModal(false)}
                             id={Number(absence.id)}
