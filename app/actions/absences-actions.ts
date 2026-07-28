@@ -228,7 +228,7 @@ export async function updateAbsence({
                     headers: {
                         Authorization: `Bearer ${apiToken}`,
                     },
-                }).then(async(firstRes) => {                
+                }).then(async() => {                
                     if (documents && documents.length > 0) {
                         for (const formData of documents) {
                             await axios.put(

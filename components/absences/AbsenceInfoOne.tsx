@@ -7,7 +7,7 @@ import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
 import { useState } from "react";
 import { useModals } from "@/context/ModalContext";
-import { deleteAbsence, getAbsenceDocument, updateAbsence } from "@/app/actions/absences-actions";
+import { deleteAbsence, getAbsenceDocument } from "@/app/actions/absences-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -16,7 +16,6 @@ import { formatCreatedAt, formatCreatedAtOnlyHours, formatScheduleTime } from "@
 import AbsenceOneError from "./absencesMessageError";
 import ModalBlur from "../ModalBlur";
 import FormUpdateAbsence from "./AbsenceUpdate";
-import { ActionResponse } from "@/lib/definitions";
 import PDFViewerModal from "@/app/(auth)/app/employee/views/PDFViewer";
 
 function formatText(value?: string | number | null) {

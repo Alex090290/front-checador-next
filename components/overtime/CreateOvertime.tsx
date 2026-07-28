@@ -96,9 +96,10 @@ export default function CreateOvertimeComponent({
                 setFeedbackMsg(rescrate.message || "Registro creado correctamente");
                 setFeedback("success");
 
-            } catch (err: any) {
-                console.log("err:", err);
-                setFeedbackMsg(err?.message || "Error al crear el registro");
+            } catch (err: unknown) {
+                const error = err as Error;
+                console.log("err:", error);
+                setFeedbackMsg(error?.message || "Error al crear el registro");
                 setFeedback("error");
             }
         });

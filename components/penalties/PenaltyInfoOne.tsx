@@ -13,7 +13,6 @@ import Link from "next/link"
 import SignaturesViewPenalty from "./signaturesPenalties"
 import PenaltySignatureModal from "./PenaltySignatureModal"
 import PenaltyOneError from "./penaltiesMessageError"
-import { formatDate } from "date-fns"
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
