@@ -19,6 +19,39 @@ import { ICheckInFeedback } from "@/lib/definitions";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+function statusVariant(type: string, category?: string) {
+    switch ((type ?? "").toLowerCase()) {
+        case "asistencia":
+            return (
+                <span className="ms-3 badge rounded-pill px-2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                    ASISTENCIA
+                </span>
+            )
+
+        case "falta":
+            if (category === "injustificada") {
+                return (
+                    <span className="ms-4 badge rounded-pill px-2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                        FALTA
+                    </span>
+                )
+            } else if (category === "justificada") {
+                return (
+                    <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                        FALTA JUSTIFICADA
+                    </span>
+                )
+            }
+
+        case "retardo":
+            return (
+                <span className="ms-3 badge rounded-pill px-2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                    RETARDO
+                </span>
+            )
+    }
+}
+
 export default function AbsencesTableClient({
     total,
     page,
@@ -361,25 +394,7 @@ export default function AbsencesTableClient({
             accessor: (e) => e.type,
             filterable: true,
             type: "string",
-            render: (e) => {
-                const estado = e.type
-                switch (estado) {
-                    case "asistencia":
-                        return (
-                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                                ASISTENCIA
-                            </span>
-                        );
-                    case "falta":
-                        return (
-                            <div className="ms-3">
-                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                                    FALTA
-                                </span>
-                            </div>
-                        );
-                }
-            }
+            render: (e) => statusVariant(e.type, e.category),
         },
         {
             key: "dateOfAbsence",
@@ -548,9 +563,9 @@ export default function AbsencesTableClient({
                                                         <Dropdown.Toggle
                                                             as={Button}
                                                             variant="outline-secondary"
-                                                            className="w-100 d-flex align-items-center justify-content-between"
+                                                            className="w-100 d-flex align-items-center justify-content-between text-uppercase"
                                                         >
-                                                            {currentType === "asistencia" ? "Asistencia" : currentType === "falta" ? "Falta" : "Todos"}
+                                                            {currentType === "asistencia" ? "Asistencia" : currentType === "falta" ? "Falta" : currentType === "retardo" ? "Retardo" : "Todos"}
                                                         </Dropdown.Toggle>
 
                                                         <Dropdown.Menu className="w-100">
@@ -558,19 +573,25 @@ export default function AbsencesTableClient({
                                                                 active={currentType === ""}
                                                                 onClick={() => handleTypeFilter("")}
                                                             >
-                                                                Todos
+                                                                TODOS
                                                             </Dropdown.Item>
                                                             <Dropdown.Item
                                                                 active={currentType === "asistencia"}
                                                                 onClick={() => handleTypeFilter("asistencia")}
                                                             >
-                                                                Asistencia
+                                                                ASISTENCIA
                                                             </Dropdown.Item>
                                                             <Dropdown.Item
                                                                 active={currentType === "falta"}
                                                                 onClick={() => handleTypeFilter("falta")}
                                                             >
-                                                                Falta
+                                                                FALTA
+                                                            </Dropdown.Item>
+                                                            <Dropdown.Item
+                                                                active={currentType === "retardo"}
+                                                                onClick={() => handleTypeFilter("retardo")}
+                                                            >
+                                                                RETARDO
                                                             </Dropdown.Item>
                                                         </Dropdown.Menu>
                                                     </Dropdown>

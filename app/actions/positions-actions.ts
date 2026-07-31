@@ -1,6 +1,6 @@
 "use server";
 
-import { ActionResponse } from "@/lib/definitions";
+import { ActionResponse, Position } from "@/lib/definitions";
 import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { storeAction } from "./storeActions";
@@ -150,5 +150,34 @@ export async function deletePosition({
       success: false,
       message: error.message,
     };
+  }
+}
+
+export async function fetchDepartments(): Promise<Position[]> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const response = await axios
+      .get(`${API_URL}/department/listAll`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    return response.data || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return [];
   }
 }

@@ -29,8 +29,6 @@ function BlockView({
 
   }) {
 
-
-  console.log("extras:", extras);
   return (
     <Card className="border shadow-sm rounded-4">
       <Card.Body className="p-4">
@@ -89,7 +87,7 @@ function BlockView({
 
             <div className="d-flex flex-column gap-1">
               {extras?.employees?.map((el: Employee, index: number) => (
-                <div key={index} className="d-flex align-items-center gap-1 fw-semibold">
+                <div key={index} className="d-flex align-items-center gap-1 fw-semibold text-left">
                   <i className="bi bi bi-check2 me-1" style={{ fontSize: "0.5rem" }} />
                   <span>{`${upperCase(el.lastName ?? "")} ${upperCase(el.name ?? "")}`.trim()}</span>
                 </div>

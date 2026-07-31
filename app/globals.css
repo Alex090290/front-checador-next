@@ -24,6 +24,29 @@
   }
 }
 
+@keyframes collapseFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes flashHighlight {
+    0% {
+        background-color: rgba(9, 131, 245, 0.5); /* amarillo, más llamativo que azul */
+    }
+    50% {
+        background-color: rgba(89, 158, 223, 0.15);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
 .btn-needs-signature {
   animation: pulse-warning 1.8s infinite;
   position: relative;
@@ -82,11 +105,25 @@
   top: 1.1rem;
 }
 
-.table-row-selected > * {
-    color: var(--bs-black) !important;
+.table-row-selected>* {
+  color: var(--bs-black) !important;
 }
 
 /* Paraa el calendario de crear penalizacion */
 .date-multi-popover {
-    z-index: 2090; /* por encima de .modal (1055) y .modal-backdrop (1050) */
+  z-index: 2090;
+  /* por encima de .modal (1055) y .modal-backdrop (1050) */
 }
+
+.confirm-modal-backdrop {
+  z-index: 2100 !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  background: rgba(5, 0, 0, 0.25) !important;
+  /* opcional: mismo tono que ModalBlur en vez del gris más oscuro de Bootstrap */
+}
+
+.collapse-detail-enter {
+    animation: collapseFadeIn 0.25s ease-out, flashHighlight 0.5s ease-out;
+}
+

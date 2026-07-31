@@ -42,6 +42,8 @@ import NewDocumentEmployeeComponent from "./NewDocument";
 import AlertBiometrics from "../AlertBiometrics";
 import { useRouter } from "next/navigation";
 import OverLay from "../templates/OverLay";
+import { formatScheduleTime } from "@/lib/helpers";
+import moment from "moment";
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
   if (!value) return "-";
@@ -149,7 +151,9 @@ export default function EmployeeDetailsView({
   const hasVacations = vacations?.length > 0;
   const aniversaryLetterStatus = employee?.anniversaryLetter ?? "";
   const statusEmployee = employee?.status ?? 0;
-  
+  const saturdatEntry = moment(employee?.scheduleSaturday?.entry, "HH:mm").format("hh:mm A");
+  const saturdayExit = moment(employee?.scheduleSaturday?.exit, "HH:mm").format("hh:mm A");
+    
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||
@@ -225,10 +229,8 @@ export default function EmployeeDetailsView({
   };
 
 
-
   return (
     <>
-
       <ConditionalRender cond={!hasBiometricPhotos && !hideBiometricAlert}>
         <AlertBiometrics onClose={() => setHideBiometricAlert(true)} />
       </ConditionalRender>
@@ -907,7 +909,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatText(employee?.scheduleOffice?.entry)}
+                              {formatScheduleTime(employee?.scheduleOffice?.entry)}
                             </span>
                           </div>
 
@@ -918,7 +920,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatText(employee?.scheduleOffice?.exit)}
+                              {formatScheduleTime(employee?.scheduleOffice?.exit)}
                             </span>
                           </div>
 
@@ -929,7 +931,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatText(employee?.scheduleLunch?.entry)}
+                              {formatScheduleTime(employee?.scheduleLunch?.entry)}
                             </span>
                           </div>
 
@@ -940,7 +942,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatText(employee?.scheduleLunch?.exit)}
+                              {formatScheduleTime(employee?.scheduleLunch?.exit)}
                             </span>
                           </div>
 
@@ -951,7 +953,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatText(employee?.scheduleSaturday?.entry)}
+                              {saturdatEntry}
                             </span>
                           </div>
 
@@ -962,7 +964,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatText(employee?.scheduleSaturday?.exit)}
+                              {saturdayExit}
                             </span>
                           </div>
 

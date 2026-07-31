@@ -34,6 +34,8 @@ function DocumentsGrid({
 
   const [pdfUrl, setPdfUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingDoc] = useState(false);
+
 
   const { modalError } = useModals();
 
@@ -83,16 +85,22 @@ function DocumentsGrid({
   };
 
   const handleGetDocument = async () => {
-    setLoading(true);
-    const res = await getViewDocument({
-      idDocument: doc.id,
-      idEmployee,
-      idPeriod: doc.idPeriod,
-    });
-    if (!res.success) return modalError(res.message);
-    setPdfUrl(res.data || "");
-    setShowPdfModal(true);
-    setLoading(false);
+
+    try {
+      setLoading(true);
+      const res = await getViewDocument({
+        idDocument: doc.id,
+        idEmployee,
+        idPeriod: doc.idPeriod,
+      });
+      if (!res.success) return modalError(res.message)
+      setPdfUrl(res.data || "");
+      setShowPdfModal(true);
+      setLoading(false);
+
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -101,6 +109,9 @@ function DocumentsGrid({
       fileInputRef.current.value = "";
     }
   };
+
+
+
 
   return (
     <>
@@ -180,21 +191,25 @@ function DocumentsGrid({
                     {/* <Button variant="success" onClick={handleButtonClick}>
                       {doc.exist ? "Reemplazar" : "Cargar"}
                     </Button> */}
-                    <ConditionalRender cond={doc.exist}> 
+                    <ConditionalRender cond={doc.exist}>
                       <Button variant="primary" onClick={handleButtonClick}> Reemplazar </Button>
 
-                      <Button variant="secondary" onClick={handleGetDocument}>
-                          Visualizar
-                        </Button>
-                        {doc.dateExpiration && (
-                          <div
-                            className="fw-semibold text-center"
-                            style={{ fontSize: "0.9rem" }}
-                          >
-                            Expira:{" "}
-                            {formatDate(doc.dateExpiration, "dd/MM/yyyy")}
-                          </div>
-                        )}
+                      <Button
+                        variant="secondary"
+                        onClick={handleGetDocument}
+                        disabled={loadingDoc}
+                        >
+                        Visualizar
+                      </Button>
+                      {doc.dateExpiration && (
+                        <div
+                          className="fw-semibold text-center"
+                          style={{ fontSize: "0.9rem" }}
+                        >
+                          Expira:{" "}
+                          {formatDate(doc.dateExpiration, "dd/MM/yyyy")}
+                        </div>
+                      )}
                     </ConditionalRender>
 
                     <ConditionalRender cond={!doc.exist}>

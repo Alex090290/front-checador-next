@@ -82,8 +82,8 @@ export function Many2one<T extends Many2OneOption>({
           ? option.id
           : option.id
         : typeof value === "object"
-        ? option
-        : option;
+          ? option
+          : option;
     onChange(newValue);
     setQuery(option.name ?? option.displayName ?? "");
     setIsOpen(false);

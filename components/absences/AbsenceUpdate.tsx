@@ -9,8 +9,9 @@ import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { useRef, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { Entry, FieldSelect } from "../fields";
+import { useModals } from "@/context/ModalContext";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -41,6 +42,7 @@ export default function FormUpdateAbsence({
     // Slots de archivos — inicia con uno vacío
     const [fileSlots, setFileSlots] = useState<FileSlot[]>([{ id: 1, file: null }]);
     const fileRefs = useRef<Map<number, HTMLInputElement | null>>(new Map());
+    const { modalConfirm } = useModals();
 
     const {
         register,
@@ -76,41 +78,44 @@ export default function FormUpdateAbsence({
     const onSubmit: SubmitHandler<TInputsAbsence> = async (data) => {
         if (!id) return;
 
-        try {
-            setFeedback("loading");
-            setFeedbackMsg("Actualizando ausencia...");
+        modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
 
-            // Construir un FormData por cada archivo seleccionado
-            const documents: FormData[] = fileSlots
-                .filter((s) => s.file !== null)
-                .map((s) => {
-                    const fd = new FormData();
-                    fd.append("document", s.file!);
-                    return fd;
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Actualizando falta...");
+
+                // Construir un FormData por cada archivo seleccionado
+                const documents: FormData[] = fileSlots
+                    .filter((s) => s.file !== null)
+                    .map((s) => {
+                        const fd = new FormData();
+                        fd.append("document", s.file!);
+                        return fd;
+                    });
+
+                const res = await updateAbsence({
+                    id,
+                    documents: documents.length > 0 ? documents : undefined,
+                    data: {
+                        ...absence,
+                        category: data.category,
+                        motiveJustify: data.motiveJustify,
+                    } as IAbsence,
                 });
 
-            const res = await updateAbsence({
-                id,
-                documents: documents.length > 0 ? documents : undefined,
-                data: {
-                    ...absence,
-                    category: data.category,
-                    motiveJustify: data.motiveJustify,
-                } as IAbsence,
-            });
+                if (!res.success) {
+                    setFeedbackMsg(res.message || "No se pudo actualizar");
+                    setFeedback("error");
+                    return;
+                }
 
-            if (!res.success) {
-                setFeedbackMsg(res.message || "No se pudo actualizar");
+                setFeedbackMsg(res.message || "Actualizado correctamente");
+                setFeedback("success");
+            } catch {
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
                 setFeedback("error");
-                return;
             }
-
-            setFeedbackMsg(res.message || "Actualizado correctamente");
-            setFeedback("success");
-        } catch {
-            setFeedbackMsg("Error inesperado, intenta de nuevo");
-            setFeedback("error");
-        }
+        })
     };
 
     return (
@@ -152,111 +157,126 @@ export default function FormUpdateAbsence({
                         </span>
                     </div>
 
-                    {/* Campos del formulario */}
-                    <Row className="g-3 mb-4">
-                        <Col xs={12}>
-                            <FieldSelect
-                                register={register("category", { required: "La categoría es requerida" })}
-                                label="Categoría:"
-                                invalid={!!errors.category}
-                                options={[
-                                    { label: "Justificada", value: "justificada" },
-                                    { label: "Injustificada", value: "injustificada" },
-                                ]}
-                                className="border"
-                            />
-                        </Col>
+                    {/* Datos de la ausencia */}
+                    <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                            <div className="d-flex align-items-center gap-2 mb-3">
+                                <i className="bi bi-info-circle text-primary" />
+                                <h6 className="mb-0 fw-bold">Datos de la ausencia</h6>
+                            </div>
 
-                        <Col xs={12}>
-                            <Entry
-                                register={register("motiveJustify", { required: "El motivo es requerido" })}
-                                label="Motivo:"
-                                invalid={!!errors.motiveJustify}
-                                feedBack={errors.motiveJustify?.message}
-                                className="border"
-                            />
-                        </Col>
-                    </Row>
+                            <Row className="g-3">
+                                <Col md={12}>
+                                    <FieldSelect
+                                        register={register("category", { required: "La categoría es requerida" })}
+                                        label="Categoría:"
+                                        invalid={!!errors.category}
+                                        options={[
+                                            { label: "JUSTIFICADA", value: "justificada" },
+                                            { label: "INJUSTIFICADA", value: "injustificada" },
+                                        ]}
+                                        className="border"
+                                    />
+                                </Col>
+
+                                <Col md={12}>
+                                    <Entry
+                                        register={register("motiveJustify", { required: "El motivo es requerido" })}
+                                        label="Motivo:"
+                                        invalid={!!errors.motiveJustify}
+                                        feedBack={errors.motiveJustify?.message}
+                                        className="border"
+                                        as="textarea"
+                                        rows={2}
+                                    />
+                                </Col>
+                            </Row>
+                        </Card.Body>
+                    </Card>
 
                     {/* Documentos */}
-                    <div className="mb-4">
-                        <label className="fw-semibold mb-2 d-block">
-                            Documentos (opcional):
-                        </label>
-
-                        <div className="d-flex flex-column gap-2">
-                            {fileSlots.map((slot, index) => (
-                                <div
-                                    key={slot.id}
-                                    className="border rounded-3 p-3 d-flex align-items-center gap-2"
-                                >
-                                    <span className="text-muted small" style={{ minWidth: 24 }}>
-                                        {index + 1}.
-                                    </span>
-
-                                    <input
-                                        type="file"
-                                        ref={(el) => { fileRefs.current.set(slot.id, el); }}
-                                        onChange={(e) => handleFileChange(slot.id, e)}
-                                        accept=".jpg,.jpeg,.png,.pdf,.webp"
-                                        style={{ display: "none" }}
-                                    />
-
-                                    <Button
-                                        variant="outline-primary"
-                                        size="sm"
-                                        type="button"
-                                        onClick={() => fileRefs.current.get(slot.id)?.click()}
-                                    >
-                                        <i className="bi bi-upload me-1" />
-                                        {slot.file ? "Cambiar" : "Seleccionar"}
-                                    </Button>
-
-                                    <ConditionalRender cond={!!slot.file}>
-                                        <span className="small text-truncate text-secondary flex-grow-1">
-                                            <i className="bi bi-file-earmark me-1" />
-                                            {slot.file?.name}
-                                        </span>
-                                    </ConditionalRender>
-
-                                    <ConditionalRender cond={!slot.file}>
-                                        <span className="small text-muted flex-grow-1">
-                                            Sin archivo seleccionado
-                                        </span>
-                                    </ConditionalRender>
-
-                                    {/* Solo muestra quitar si hay más de un slot */}
-                                    <ConditionalRender cond={fileSlots.length > 1}>
-                                        <Button
-                                            variant="outline-danger"
-                                            size="sm"
-                                            type="button"
-                                            onClick={() => handleRemoveSlot(slot.id)}
-                                        >
-                                            <i className="bi bi-x" />
-                                        </Button>
-                                    </ConditionalRender>
+                    <Card className="border rounded-4 mb-4">
+                        <Card.Body>
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <div className="d-flex align-items-center gap-2">
+                                    <i className="bi bi-paperclip text-primary" />
+                                    <h6 className="mb-0 fw-bold">Documentos</h6>
                                 </div>
-                            ))}
-                        </div>
+                                <span className="text-muted small">
+                                    {fileSlots.filter((s) => s.file).length}/{fileSlots.length} cargado(s)
+                                </span>
+                            </div>
 
-                        {/* Botón agregar otro — solo si el último slot ya tiene archivo */}
-                        <ConditionalRender cond={!!fileSlots[fileSlots.length - 1]?.file}>
-                            <Button
-                                variant="outline-secondary"
-                                size="sm"
-                                type="button"
-                                className="mt-2"
-                                onClick={handleAddSlot}
-                            >
-                                <i className="bi bi-plus me-1" />
-                                Agregar otro documento
-                            </Button>
-                        </ConditionalRender>
-                    </div>
+                            <div className="d-flex flex-column gap-2">
+                                {fileSlots.map((slot, index) => (
+                                    <div
+                                        key={slot.id}
+                                        className="border rounded-3 p-3 d-flex align-items-center gap-2"
+                                    >
+                                        <span className="text-muted small" style={{ minWidth: 24 }}>
+                                            {index + 1}.
+                                        </span>
+
+                                        <input
+                                            type="file"
+                                            ref={(el) => { fileRefs.current.set(slot.id, el); }}
+                                            onChange={(e) => handleFileChange(slot.id, e)}
+                                            accept=".jpg,.jpeg,.png,.pdf,.webp"
+                                            style={{ display: "none" }}
+                                        />
+
+                                        <Button
+                                            variant="outline-primary"
+                                            type="button"
+                                            onClick={() => fileRefs.current.get(slot.id)?.click()}
+                                        >
+                                            <i className="bi bi-upload me-1" />
+                                            {slot.file ? "Cambiar" : "Seleccionar"}
+                                        </Button>
+
+                                        <ConditionalRender cond={!!slot.file}>
+                                            <span className="small text-truncate text-secondary flex-grow-1">
+                                                <i className="bi bi-file-earmark me-1" />
+                                                {slot.file?.name}
+                                            </span>
+                                        </ConditionalRender>
+
+                                        <ConditionalRender cond={!slot.file}>
+                                            <span className="small text-muted flex-grow-1">
+                                                Sin archivo seleccionado
+                                            </span>
+                                        </ConditionalRender>
+
+                                        <ConditionalRender cond={fileSlots.length > 1}>
+                                            <Button
+                                                variant="outline-danger"
+                                                type="button"
+                                                onClick={() => handleRemoveSlot(slot.id)}
+                                            >
+                                                <i className="bi bi-x" />
+                                            </Button>
+                                        </ConditionalRender>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <ConditionalRender cond={!!fileSlots[fileSlots.length - 1]?.file}>
+                                <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    type="button"
+                                    className="mt-2"
+                                    onClick={handleAddSlot}
+                                >
+                                    <i className="bi bi-plus me-1" />
+                                    Agregar otro documento
+                                </Button>
+                            </ConditionalRender>
+                        </Card.Body>
+                    </Card>
 
                     {/* Acciones */}
-                    <div className="d-flex justify-content-end gap-2">
+                    <div className="d-flex justify-content-end gap-2 mt-4">
                         <Button
                             variant="outline-secondary"
                             type="button"

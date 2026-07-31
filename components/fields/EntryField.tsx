@@ -19,6 +19,7 @@ type FieldEntryProps = {
   max?: string;
   cols?: number;
   rows?: number;
+  prefix?: React.ReactNode;
 };
 
 export const Entry = ({
@@ -37,27 +38,44 @@ export const Entry = ({
   max,
   cols,
   rows,
+  prefix,
 }: FieldEntryProps) => {
   if (invisible) return null;
   return (
     <Form.Group controlId={label} className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>
-      <Form.Control
-        className={`text-uppercase w-100 ${className}`}
-        size="sm"
-        {...register}
-        type={type}
-        autoComplete="off"
-        disabled={readonly}
-        required={required}
-        isInvalid={invalid}
-        autoFocus={autoFocus}
-        as={as}
-        cols={cols}
-        rows={rows}
-        min={min}
-        max={max}
-      />
+      <div className="position-relative">
+        {prefix && (
+          <span
+            className="position-absolute text-muted"
+            style={{
+              left: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          >
+            {prefix}
+          </span>
+        )}
+        <Form.Control
+          className={`text-uppercase w-100 ${prefix ? "ps-4" : ""} ${className}`}
+          size="sm"
+          {...register}
+          type={type}
+          autoComplete="off"
+          disabled={readonly}
+          required={required}
+          isInvalid={invalid}
+          autoFocus={autoFocus}
+          as={as}
+          cols={cols}
+          rows={rows}
+          min={min}
+          max={max}
+        />
+      </div>
       {feedBack && (
         <Form.Control.Feedback type="invalid">{feedBack}</Form.Control.Feedback>
       )}

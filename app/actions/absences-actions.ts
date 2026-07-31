@@ -219,25 +219,25 @@ export async function updateAbsence({
             throw new Error("No se ha definido ID");
         }
 
-      await axios.put(`${API_URL}/absencesAndAttendances/${id}`,
-                {
-                    category: data.category,
-                    motiveJustify: data.motiveJustify,
+        await axios.put(`${API_URL}/absencesAndAttendances/${id}`,
+            {
+                category: data.category,
+                motiveJustify: data.motiveJustify,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${apiToken}`,
-                    },
-                }).then(async() => {                
-                    if (documents && documents.length > 0) {
-                        for (const formData of documents) {
-                            await axios.put(
-                                `${API_URL}/absencesAndAttendances/document/${id}`,
-                                formData,
-                                { headers: { Authorization: `Bearer ${apiToken}` } }
-                            );
-                        }
+            }).then(async () => {
+                if (documents && documents.length > 0) {
+                    for (const formData of documents) {
+                        await axios.put(
+                            `${API_URL}/absencesAndAttendances/document/${id}`,
+                            formData,
+                            { headers: { Authorization: `Bearer ${apiToken}` } }
+                        );
                     }
+                }
             }).catch((err) => {
                 throw new Error(
                     err.response?.data?.message
@@ -251,7 +251,7 @@ export async function updateAbsence({
         return {
             success: true,
             message: "Actualizada correctamente",
-            data:  null,
+            data: null,
         };
     } catch (error: unknown) {
         const err = error as Error;
@@ -293,5 +293,45 @@ export async function getAbsenceDocument({
     } catch (error: unknown) {
         const err = error as Error;
         return { success: false, message: err.message, data: null };
+    }
+}
+
+export async function deleteDocument({
+    idAbsence,
+    idDocument
+}: {
+    idAbsence: number;
+    idDocument: number;
+}): Promise<ActionResponse<{ url: string } | null>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const res = await axios.delete(
+            `${API_URL}/absencesAndAttendances/document/${idAbsence}/${idDocument}`,
+            {
+                headers: { Authorization: `Bearer ${apiToken}` },
+                responseType: "arraybuffer", // para recibir el PDF/imagen como binario
+            }
+        );
+
+        // Convertir a base64 para poder mostrarlo en el cliente
+        const base64 = Buffer.from(res.data).toString("base64");
+        const contentType = res.headers["content-type"] || "application/pdf";
+        const url = `data:${contentType};base64,${base64}`;
+
+        return {
+            success: true,
+            message: "Eliminado Correctamente",
+            data: { url},
+        };
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.log(err);
+
+        return {
+            success: false,
+            message: err.message,
+            data: null,
+        };
     }
 }

@@ -317,7 +317,10 @@ export function PenaltyOne({
                                                             <div>
                                                                 {activeCheck && (
 
-                                                                    <div className="border rounded-3 p-3 mt-3 me-2 ms-1">
+                                                                    <div
+                                                                    key={activeCheck.id} 
+                                                                    className="border rounded-3 p-3 mt-3 me-2 ms-1 collapse-detail-enter"
+                                                                    >
                                                                         <Row className="g-3">
                                                                             {/* Columna de estadísticas */}
                                                                             <Col xs={12} lg={12}>

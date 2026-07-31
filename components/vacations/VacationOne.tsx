@@ -31,6 +31,7 @@ import { ISignatures } from "@/lib/overTime/interface";
 import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
 import VacationsOneError from "./vacationsMessageError";
 import { formatCreatedAt } from "@/lib/helpers";
+import moment from "moment";
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
@@ -95,11 +96,11 @@ export default function ShowInfoVacation({
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [, setPeriods] = useState<PeriodVacation[]>([]);
   const { modalError, modalConfirm } = useModals();
-  
-  const signatures = useMemo(() => 
+
+  const signatures = useMemo(() =>
     Array.isArray(vacation?.signatures) ? vacation.signatures : [],
     [vacation?.signatures]
-);
+  );
 
   // ID del empleado con sesión activa
   const idEmployee = Number(session?.uid?.idEmployee);
@@ -227,13 +228,14 @@ export default function ShowInfoVacation({
   };
 
 
-  if (!vacation || !vacation.id || !vacation.period){
+  if (!vacation || !vacation.id || !vacation.period) {
     return (
       <VacationsOneError />
     );
   }
   const overallStatus = vacation.status ?? "PENDING";
-  const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy HH:mm");
+  const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy");
+  const createdHour = moment.utc(vacation.createdAt).format("HH:mm A");  
 
   return (
     <>
@@ -318,16 +320,18 @@ export default function ShowInfoVacation({
               </OverLay>
             </ConditionalRender>
 
-            <OverLay string="Descargar PDF">
-              <Button
-                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
-                variant="dark"
-                onClick={handleDownloadPDF}
-              >
-                <i className="bi bi-filetype-pdf" />
-                <span className="d-none d-md-inline ms-2">Descargar</span>
-              </Button>
-            </OverLay>
+            <ConditionalRender cond={vacation.status === "APPROVED"}>
+              <OverLay string="Descargar PDF">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
+                  variant="dark"
+                  onClick={handleDownloadPDF}
+                >
+                  <i className="bi bi-filetype-pdf" />
+                  <span className="d-none d-md-inline ms-2">Descargar</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
           </div>
 
           <div className=" d-md-flex flex-wrap">
@@ -390,6 +394,14 @@ export default function ShowInfoVacation({
                         </div>
                         <span className="fw-semibold text-end">{createdAt}</span>
                       </div>
+                      
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-clock" />
+                          <span className="text-muted">Hora de creación</span>
+                        </div>
+                        <span className="fw-semibold text-end">{createdHour}</span>
+                      </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2">
@@ -450,7 +462,7 @@ export default function ShowInfoVacation({
                           </span>
                         </div>
                         <div className="text-uppercase">
-                          {vacation.period.periodDescription ?? "-----"}
+                          {`${safeDate(vacation.period.dateInitPeriod)} - ${safeDate(vacation.period.dateEndPeriod)}`}
                         </div>
                       </div>
 
@@ -460,7 +472,7 @@ export default function ShowInfoVacation({
                             <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
                             <div className="text-muted small">Inicio</div>
                             <div className="fw-semibold">
-                              {formatCreatedAt(vacation.dateInit)} 
+                              {formatCreatedAt(vacation.dateInit)}
                             </div>
                           </div>
                         </Col>

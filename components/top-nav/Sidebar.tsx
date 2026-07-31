@@ -5,6 +5,7 @@ import { Offcanvas, Button } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import TopNavItems from "../top-nav/TopNavItems";
 import ConditionalRender from "../ConditionalRender";
+import Image from "next/image";
 
 export default function Sidebar() {
   const { data: session } = useSession();
@@ -33,7 +34,7 @@ export default function Sidebar() {
             zIndex: 1050,
             width: "38px",
             height: "38px",
-            
+
           }}
         >
           <i className="bi bi-list" />
@@ -46,8 +47,16 @@ export default function Sidebar() {
         placement="start"
         style={{ width: collapsed ? "48px" : "180px" }}
       >
+
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>
+          <Offcanvas.Title className="d-flex align-items-center gap-2">
+            <Image
+              src="/image/icon.svg"
+              alt="GAMA"
+              width={28}
+              height={28}
+              style={{ objectFit: "contain" }}
+            />
             {!collapsed && "Menú"}
           </Offcanvas.Title>
         </Offcanvas.Header>

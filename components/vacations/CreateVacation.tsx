@@ -84,23 +84,24 @@ function CreateVacationComponent({
 
   const [periods, setPeriods] = useState<PeriodVacation[]>([]);
 
+
   const originalValuesRef = useRef<TInputs | null>(null);
   const roles = session?.uid?.roles;
 
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
-  const readInput = !roles?.isLeader 
-  && !roles?.isExtra 
-  && !roles?.isDoh 
-  && !roles?.isApproverLeaders 
-  && !roles?.isApproverDoh;
+  const readInput = !roles?.isLeader
+    && !roles?.isExtra
+    && !roles?.isDoh
+    && !roles?.isApproverLeaders
+    && !roles?.isApproverDoh;
 
-  const readOnlyDoh = !roles?.isLeader 
-  && !roles?.isExtra 
-  && roles?.isDoh 
-  && !roles?.isApproverLeaders 
-  && !roles?.isApproverDoh
-  && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
-  
+  const readOnlyDoh = !roles?.isLeader
+    && !roles?.isExtra
+    && roles?.isDoh
+    && !roles?.isApproverLeaders
+    && !roles?.isApproverDoh
+    && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+
   const directionList: EmployeeRef[] | undefined = config?.permissions.extra?.employees;
   const idEmployee = Number(session?.uid?.idEmployee);
 
@@ -115,7 +116,7 @@ function CreateVacationComponent({
     } else {
       setFilteredEmployees(employees);
     }
-  }, [idEmployee, employees,roles,session]);
+  }, [idEmployee, employees, roles, session]);
 
   useEffect(() => {
     if (!idEmployeeSelected) return;
@@ -171,7 +172,7 @@ function CreateVacationComponent({
     return () => {
       cancelled = true;
     };
-  }, [idEmployeeSelected, config, setValue, session, directionList,roles]);
+  }, [idEmployeeSelected, config, setValue, session, directionList, roles]);
 
   const leaderOptions = useMemo(() => {
     const mapToOption = (e: Employee | EmployeeRef) => ({
@@ -211,7 +212,7 @@ function CreateVacationComponent({
     }
 
     return employees.filter(hasId).map(mapToOption);
-  }, [session, directionList, employees, idEmployeeSelected,roles]);
+  }, [session, directionList, employees, idEmployeeSelected, roles]);
 
   useEffect(() => {
     const employeeId = Number(session?.uid?.id);
@@ -246,7 +247,7 @@ function CreateVacationComponent({
     };
 
     reset(values);
-  }, [reset, employees, session, directionList,roles]);
+  }, [reset, employees, session, directionList, roles]);
 
   // ✅ periodo seleccionado para mostrar stats
   const selectedPeriod = useMemo(() => {
@@ -371,6 +372,8 @@ function CreateVacationComponent({
       return;
     }
 
+    console.log("SE MANDA:", data);
+
     modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
       try {
         setLoading(true);
@@ -382,6 +385,8 @@ function CreateVacationComponent({
           modalError(res.message);
           return;
         }
+
+        console.log("LLEGA AQUI:", data);
 
         toast.success(res.message);
         router.push("/app/vacationList");
@@ -464,16 +469,20 @@ function CreateVacationComponent({
                           label="Empleado"
                           callBackMode="id"
                           control={control}
+                          className="text-uppercase"
                         />
                       </Col>
 
                       <Col xs={12} md={4}>
-                        <RelationField
-                          register={register("idLeader")}
-                          options={leaderOptions}
+                        <FieldSelect
+                          register={register("idLeader", {
+                            setValueAs: (v) => (v === "" ? null : Number(v)),
+                          })}
+                          options={leaderOptions.map((o) => ({
+                            value: Number(o.id),
+                            label: o.displayName ?? o.name ?? "",
+                          }))}
                           label="Líder"
-                          callBackMode="id"
-                          control={control}
                           readonly={readInput}
                         />
                       </Col>
@@ -498,20 +507,18 @@ function CreateVacationComponent({
                             required: periods.length > 0,
                           })}
                           className="border"
+                          readonly={readInput || readOnlyDoh}
                         />
                       </Col>
 
                       <Col xs={12} md={4}>
-                        <RelationField
+                        <FieldSelect
                           register={register("idPersonDoh")}
                           options={employees.map((e) => ({
-                            id: Number(e.id),
-                            displayName: `${e.lastName} ${e.name}`.toUpperCase(),
-                            name: `${e.lastName} ${e.name}`.toUpperCase(),
+                            value: Number(e.id),
+                            label: `${e.lastName} ${e.name}`.toUpperCase(),
                           }))}
                           label="D.O.H."
-                          callBackMode="id"
-                          control={control}
                           readonly={!readOnlyDoh}
                         />
                       </Col>

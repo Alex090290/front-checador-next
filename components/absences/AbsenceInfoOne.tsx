@@ -5,9 +5,9 @@ import { Button, Card, Col, Collapse, Container, ProgressBar, Row } from "react-
 import ConditionalRender from "../ConditionalRender";
 import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useModals } from "@/context/ModalContext";
-import { deleteAbsence, getAbsenceDocument } from "@/app/actions/absences-actions";
+import { deleteAbsence, deleteDocument, getAbsenceDocument, updateAbsence } from "@/app/actions/absences-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -17,13 +17,15 @@ import AbsenceOneError from "./absencesMessageError";
 import ModalBlur from "../ModalBlur";
 import FormUpdateAbsence from "./AbsenceUpdate";
 import PDFViewerModal from "@/app/(auth)/app/employee/views/PDFViewer";
+import ErrorOverlay from "../ErrorOverlay";
+import SuccessOverlay from "../SuccessOverlay";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
     return String(value);
 }
 
-function statusVariant(type: string | null) {
+function statusVariant(type: string | null, category?: string) {
     switch ((type ?? "").toLowerCase()) {
         case "asistencia":
             return (
@@ -33,11 +35,20 @@ function statusVariant(type: string | null) {
             )
 
         case "falta":
-            return (
-                <span className="badge rounded-pill px2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                    FALTA
-                </span>
-            )
+            if (category === "injustificada") {
+                return (
+                    <span className="badge rounded-pill px2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                        FALTA
+                    </span>
+                )
+            } else if (category === "justificada") {
+                return (
+                    <span className="badge rounded-pill px2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                        FALTA JUSTIFICADA
+                    </span>
+                )
+            }
+
         default:
             return (
                 <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
@@ -109,6 +120,9 @@ type Props = {
     absence: IAbsence;
 }
 
+type FeedbackState = "loading" | "success" | "error" | null;
+
+
 export function AbsenceOne({
     absence,
 }: Props
@@ -116,18 +130,25 @@ export function AbsenceOne({
     //Aqui los const
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
+    const [, setMessageLoading] = useState("");
     const { modalError, modalConfirm } = useModals();
     const overallStatus = absence?.type ?? "";
+    const overallCategory = absence?.category ?? "";
     const hasChecks = absence?.checks.length > 0;
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = absence?.checks.find((c) => String(c.id) === activeCheckId);
     const [showUpdateAbsenceModal, setShowUpdateAbsenceModal] = useState(false);
-    const isAbsence = absence.type === "falta";
+    const isAbsence = absence.type === "falta" && absence.category === "justificada";
+    const isAbsenceA = absence.type === "falta";
     const [documentUrl, setDocumentUrl] = useState<string | null>(null);
     const [loadingDoc, setLoadingDoc] = useState(false);
     const [activeDocId, setActiveDocId] = useState<number | null>(null);
     const [showPdfModal, setShowPdfModal] = useState(false);
+    const hasDocuments = (absence.documents?.length ?? 0) >= 1;
+    const uploadInputRef = useRef<HTMLInputElement | null>(null);
+    const [feedbackMsg, setFeedbackMsg] = useState("");
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
+
 
     //========== Helpers =============
 
@@ -141,45 +162,90 @@ export function AbsenceOne({
             : `EMPLEADO #${u.idEmployee}`;
     };
 
-const handleViewDocument = async (idDocument: number) => {
-    if (activeDocId === idDocument && showPdfModal) {
-        setShowPdfModal(false);
-        setActiveDocId(null);
-        setDocumentUrl(null);
-        return;
-    }
+    //Reemplazar documento
+    // Cambia la firma para aceptar null cuando no hay doc existente
+    const handleReplaceFile = async (docId: number | null, e: React.ChangeEvent<HTMLInputElement>) => {
 
-    try {
-        setLoadingDoc(true);
-        setActiveDocId(idDocument);
+        modalConfirm("¿Deseasn agregar este documento?", async () => {
+            const file = e.target.files?.[0];
+            if (!file) return;
 
-        const res = await getAbsenceDocument({
-            idAbsence: Number(absence.id),
-            idDocument,
-        });
+            setActiveDocId(docId);
+            setLoadingDoc(true);
 
-        if (!res.success || !res.data) {
-            modalError(res.message);
+            const fd = new FormData();
+            fd.append("document", file);
+
+
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Actualizando registro de falta...");
+
+                const res = await updateAbsence({
+                    id: Number(absence.id),
+                    documents: [fd],
+                    data: absence as IAbsence,
+                });
+
+                if (!res.success) {
+                    setFeedbackMsg(res.message || "No se pudo actualizar");
+                    setFeedback("error");
+                    return;
+                }
+                setFeedbackMsg(res.message || "Actualizado correctamente");
+                setFeedback("success");
+                router.refresh();
+            } catch {
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
+                setFeedback("error");
+            } finally {
+                setLoadingDoc(false);
+                setActiveDocId(null);
+                e.target.value = "";
+            }
+        })
+    };
+
+    //Ver Documento
+    const handleViewDocument = async (idDocument: number) => {
+        if (activeDocId === idDocument && showPdfModal) {
+            setShowPdfModal(false);
+            setActiveDocId(null);
+            setDocumentUrl(null);
             return;
         }
 
-        setDocumentUrl(res.data.url);
-        setShowPdfModal(true);
-    } finally {
-        setLoadingDoc(false);
-    }
-};
+        try {
+            setLoadingDoc(true);
+            setActiveDocId(idDocument);
+
+            const res = await getAbsenceDocument({
+                idAbsence: Number(absence.id),
+                idDocument,
+            });
+
+            if (!res.success || !res.data) {
+                modalError(res.message);
+                return;
+            }
+
+            setDocumentUrl(res.data.url);
+            setShowPdfModal(true);
+        } finally {
+            setLoadingDoc(false);
+        }
+    };
     //Borrar
-    const handleDeleteOvertime = async () => {
+    const handleDeleteAbsence = async () => {
         if (!absence?.id) {
             modalError("No se encontró el registro");
             return;
         }
 
-        modalConfirm("¿Deseas eliminar la falta?", async () => {
+        modalConfirm("¿Deseas eliminar el registro?", async () => {
             try {
                 setLoading(true);
-                setMessageLoading("Eliminando falta...");
+                setMessageLoading("Eliminando registro...");
 
                 const res = await deleteAbsence({ id: Number(absence.id) });
 
@@ -193,6 +259,31 @@ const handleViewDocument = async (idDocument: number) => {
             } finally {
                 setLoading(false);
                 setMessageLoading("");
+            }
+        });
+    };
+
+    //Borrar documento
+    const handleDeleteDocument = async (idDocument: number) => {
+
+        modalConfirm("¿Deseas eliminar este documento?", async () => {
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Eliminando documento...");
+
+                const res = await deleteDocument({ idAbsence: absence.id, idDocument: idDocument });
+
+                if (!res.success) {
+                    setFeedbackMsg(res.message || "No se pudo eliminar");
+                    setFeedback("error");
+                    return;
+                }
+
+                setFeedbackMsg(res.message || "Eliminado correctamente");
+                setFeedback("success");
+                router.refresh();
+            } finally {
+                setLoading(false);
             }
         });
     };
@@ -213,8 +304,25 @@ const handleViewDocument = async (idDocument: number) => {
 
     return (
         <>
-            <ConditionalRender cond={loading}>
-                <Loading message={messageLoading} />
+            <ConditionalRender cond={feedback === "loading"}>
+                <Loading message={feedbackMsg || "Actualizando..."} />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => {
+                        setFeedback(null);
+
+                    }}
+                />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
             </ConditionalRender>
 
             <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
@@ -224,7 +332,7 @@ const handleViewDocument = async (idDocument: number) => {
                     {/* Izquierda */}
                     <div className="d-flex gap-2 flex-wrap">
 
-                        <ConditionalRender cond={isAbsence}>
+                        <ConditionalRender cond={isAbsenceA}>
                             <OverLay string="Actualizar falta">
                                 <Button
                                     className="d-inline-flex align-items-center fw-semibold px-3"
@@ -242,7 +350,7 @@ const handleViewDocument = async (idDocument: number) => {
                             <Button
                                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                                 variant="danger"
-                                onClick={handleDeleteOvertime}
+                                onClick={handleDeleteAbsence}
                                 disabled={loading}
                             >
                                 <i className="bi bi-trash" />
@@ -321,17 +429,6 @@ const handleViewDocument = async (idDocument: number) => {
                                                     {formatCreatedAtOnlyHours(absence.createdAt)}
                                                 </span>
                                             </div>
-
-                                            {/* <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <i className="bi bi-person text-success" />
-                                                    <span className="text-muted">Creada por</span>
-                                                </div>
-
-                                                <span className="fw-semibold text-end">
-
-                                                </span>
-                                            </div> */}
                                         </div>
                                     </Card.Body>
                                 </Card>
@@ -352,7 +449,7 @@ const handleViewDocument = async (idDocument: number) => {
                                                 </p>
                                             </div>
 
-                                            {statusVariant(overallStatus)}
+                                            {statusVariant(overallStatus, overallCategory)}
                                         </div>
 
                                         <div className="d-flex flex-column gap-4">
@@ -487,7 +584,7 @@ const handleViewDocument = async (idDocument: number) => {
                                                                     <div>
                                                                         <div className="text-muted small">Minutos de diferencia</div>
                                                                         <div className="fw-semibold">
-                                                                            {activeCheck.minutesDifference || "-"}
+                                                                            {activeCheck.minutesDifference || "0"}
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -540,61 +637,126 @@ const handleViewDocument = async (idDocument: number) => {
                     </Card.Body>
                 </Card >
                 {/* DOCUMENTOS */}
-                <ConditionalRender cond={isAbsence && (absence.documents?.length ?? 0) >= 1}>
+                <ConditionalRender cond={isAbsence}>
                     <Card className="border shadow-sm rounded-4 mt-3">
                         <Card.Body className="p-4">
-                            <div className="d-flex align-items-center justify-content-between mb-3">
-                                <div>
-                                    <h6 className="mb-1 fw-bold">Documentos adjuntos</h6>
-                                    <p className="text-muted small mb-0">
-                                        Documentos cargados para justificar la falta.
-                                    </p>
+                            <div className="mb-3">
+                                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                    <div>
+                                        <ConditionalRender cond={hasDocuments}>
+                                            <div>
+                                                <h5 className="mb-1 fw-bold">Documentos adjuntos</h5>
+                                                <p className="text-muted small mb-0">
+                                                    Documentos cargados para justificar la falta.
+                                                </p>
+                                            </div>
+                                        </ConditionalRender>
+
+                                        <ConditionalRender cond={!hasDocuments}>
+                                            <div>
+                                                <h5 className="mb-1 fw-bold">Sin documentos adjuntos</h5>
+                                                <p className="text-muted small mb-0">
+                                                    Cargar documentos para justificar la falta.
+                                                </p>
+                                            </div>
+                                        </ConditionalRender>
+                                    </div>
+
+                                    <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                                        {absence.documents?.length ?? 0} archivo(s)
+                                    </span>
                                 </div>
-                                <span className="badge rounded-pill px-3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                                    {absence.documents?.length ?? 0} archivo(s)
-                                </span>
                             </div>
 
-                            <Row className="g-3">
-                                {absence.documents?.map((doc) => (
-                                    <Col key={doc.id} md={3}>
-                                        <Card
-                                            className="rounded shadow-sm bg-body-tertiary"
-                                            style={{ height: "200px" }}
-                                        >
-                                            <Card.Header
-                                                className="d-flex justify-content-between align-items-center"
-                                                style={{ height: "50px" }}
-                                            >
-                                                <Card.Title
-                                                    className="text-center text-uppercase mb-0"
-                                                    style={{ fontSize: "0.9rem" }}
+                            <Card className="border rounded-4 p-3">
+                                <div className="d-flex justify-content-end gap-2">
+                                    <input
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.pdf,.webp"
+                                        ref={uploadInputRef}
+                                        onChange={(e) => handleReplaceFile(null, e)}
+                                        style={{ display: "none" }}
+                                    />
+
+                                    <Button
+                                        variant="success"
+                                        type="button"
+                                        onClick={() => uploadInputRef.current?.click()}
+                                    >
+                                        <i className="bi bi-plus-lg me-2" />
+                                        Cargar documento
+                                    </Button>
+                                </div>
+
+
+                                <ConditionalRender cond={hasDocuments}>
+                                    <Row className="g-3">
+                                        {absence.documents?.map((doc) => (
+                                            <Col key={doc.id} md={3}>
+                                                <Card
+                                                    className="rounded shadow-sm bg-body-tertiary"
+                                                    style={{ height: "200px" }}
                                                 >
-                                                    Documento #{doc.id}
-                                                </Card.Title>
-                                            </Card.Header>
-
-                                            <ConditionalRender cond={loadingDoc && activeDocId === doc.id}>
-                                                <div className="text-center h-100 align-content-center">
-                                                    <ProgressBar variant="primary" striped now={100} animated />
-                                                </div>
-                                            </ConditionalRender>
-
-                                            <ConditionalRender cond={!(loadingDoc && activeDocId === doc.id)}>
-                                                <Card.Body className="d-flex flex-column justify-content-center gap-1">
-                                                    <Button
-                                                        variant="secondary"
-                                                        onClick={() => handleViewDocument(doc.id)}
-                                                        disabled={loadingDoc}
+                                                    <Card.Header
+                                                        className="d-flex justify-content-between align-items-center"
+                                                        style={{ height: "50px" }}
                                                     >
-                                                        Visualizar
-                                                    </Button>
-                                                </Card.Body>
-                                            </ConditionalRender>
-                                        </Card>
-                                    </Col>
-                                ))}
-                            </Row>
+                                                        <Card.Title
+                                                            className="text-center text-uppercase mb-0"
+                                                            style={{ fontSize: "0.9rem" }}
+                                                        >
+                                                            Documento #{doc.id}
+                                                        </Card.Title>
+                                                    </Card.Header>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteDocument(doc.id)}
+                                                        className="btn btn-danger rounded-circle position-absolute"
+                                                        style={{
+                                                            top: "-5px",
+                                                            right: "-8px",
+                                                            width: "25px",
+                                                            height: "25px",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            padding: 10,
+                                                        }}
+                                                    >
+                                                        <i className="bi bi-trash-fill" />
+                                                    </button>
+
+                                                    <ConditionalRender cond={loadingDoc && activeDocId === doc.id}>
+                                                        <div className="text-center h-100 align-content-center">
+                                                            <ProgressBar variant="primary" striped now={100} animated />
+                                                        </div>
+                                                    </ConditionalRender>
+
+                                                    <ConditionalRender cond={!(loadingDoc && activeDocId === doc.id)}>
+                                                        <Card.Body className="d-flex flex-column justify-content-center gap-1">
+                                                            <Button
+                                                                variant="secondary"
+                                                                onClick={() => handleViewDocument(doc.id)}
+                                                                disabled={loadingDoc}
+                                                            >
+                                                                Visualizar
+                                                            </Button>
+                                                        </Card.Body>
+                                                    </ConditionalRender>
+                                                </Card>
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                </ConditionalRender>
+
+                                <ConditionalRender cond={!hasDocuments}>
+                                    <div className="text-center py-4 text-muted">
+                                        <i className="bi bi-file-x fs-1 d-block mb-2" />
+                                        Este registro no cuenta con documentos
+                                    </div>
+                                </ConditionalRender>
+                            </Card>
                         </Card.Body>
                     </Card>
 
@@ -614,7 +776,7 @@ const handleViewDocument = async (idDocument: number) => {
 
                 <ConditionalRender cond={showUpdateAbsenceModal}>
                     <ModalBlur onClose={() => setShowUpdateAbsenceModal(false)}>
-                        <FormUpdateAbsence 
+                        <FormUpdateAbsence
                             show={showUpdateAbsenceModal}
                             onHide={() => setShowUpdateAbsenceModal(false)}
                             id={Number(absence.id)}

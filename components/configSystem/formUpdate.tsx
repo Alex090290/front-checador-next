@@ -71,11 +71,17 @@ export type EmployeeLite = {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const empName = (e: EmployeeLite) => `${e.name ?? ""} ${e.lastName ?? ""}`.trim();
+const upperCase = (text?: string) => {
+    return text?.toUpperCase() || "";
+  };
+
+const empName = (e: EmployeeLite) => `${upperCase(e.name ?? "")} ${upperCase(e.lastName ?? "")}`.trim();
+
+
 
 const fullNameFromConfig = (emp?: { name: string; lastName: string }) => {
   if (!emp) return "";
-  return `${emp.name ?? ""} ${emp.lastName ?? ""}`.trim();
+  return `${upperCase(emp.name ?? "")} ${upperCase(emp.lastName ?? "")}`.trim();
 };
 
 /** ======================

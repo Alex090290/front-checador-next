@@ -43,6 +43,7 @@ export async function fetchDepartments(): Promise<Department[]> {
     return [];
   }
 }
+
 export async function fetchDepartmentsQuery(args: FetchUsersArgs = {}): Promise<{
   data: Department[];
   total: number;
