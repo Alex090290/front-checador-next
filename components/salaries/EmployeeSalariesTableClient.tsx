@@ -167,6 +167,7 @@ export default function EmployeeSalariesTableClient({
 
         const params = new URLSearchParams(searchParamsString);
         params.delete("id");
+        params.delete("branch")
         params.set("view_type", "list");
         params.set("page", "1");
         params.set("limit", String(limit));
@@ -174,6 +175,7 @@ export default function EmployeeSalariesTableClient({
         if (value && value.trim() !== "") {
             params.set("idDepartment", value.trim());
         } else {
+            params.delete("branch");
             params.delete("idDepartment");
             params.delete("idPosition")
             setPositions([]);
@@ -294,7 +296,7 @@ export default function EmployeeSalariesTableClient({
             filterable: false,
             type: "string",
             render: (u) => (
-                <div className="text-uppercase">{u.dailyWage}</div>
+                <div className="text-uppercase">${u.dailyWage}</div>
             ),
         }
     ];
@@ -313,7 +315,7 @@ export default function EmployeeSalariesTableClient({
                     disabled={selectedIds.length === 0 || loading}
                 >
                     <i className="bi bi-pencil" />
-                    Actualizar Salario
+                    Actualizar Salario Diario
                 </Button>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
@@ -480,7 +482,7 @@ export default function EmployeeSalariesTableClient({
                                                         </Dropdown.Toggle>
 
 
-                                                        <Dropdown.Menu className="w-100">
+                                                        <Dropdown.Menu className="w-100 text-truncate">
 
                                                             <Dropdown.Item
                                                                 active={!currentPosition}
@@ -493,7 +495,7 @@ export default function EmployeeSalariesTableClient({
                                                                 <Dropdown.Item
                                                                     key={pos.id}
                                                                     onClick={() => handlePositionFilter(String(pos.id))}>
-                                                                    <span className="text-uppercase">
+                                                                    <span className="text-uppercase text-truncate">
                                                                         {pos.namePosition}
                                                                     </span>
                                                                 </Dropdown.Item>

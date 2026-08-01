@@ -33,6 +33,11 @@ function HealthCheck() {
     fetchHealth();
   }, [pathname]);
 
+   const singOutHanddle = ()=>{
+    localStorage.removeItem("menu-data");
+    signOut()
+  }
+
   if (!response) return null; 
 
     return (
@@ -62,7 +67,7 @@ function HealthCheck() {
 
             <button
               className="btn btn-outline-danger"
-              onClick={() => signOut()}
+              onClick={() => singOutHanddle()}
             >
               Cerrar sesión
             </button>

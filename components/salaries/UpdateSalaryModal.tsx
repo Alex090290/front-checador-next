@@ -85,7 +85,7 @@ export default function UpdateSalaryModal({
 
             <div className="p-2">
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                    <h4 className="mb-0 fw-bold">Actualizar Salario</h4>
+                    <h4 className="mb-0 fw-bold">Actualizar Salario Diario</h4>
 
                     <Badge
                         bg="info-subtle"
@@ -144,7 +144,7 @@ export default function UpdateSalaryModal({
                                     <Entry
                                         register={register("salary", { required: "El nuevo salario es requerido" })}
                                         invalid={!!errors.salary}
-                                        label="Nuevo salario"
+                                        label="Nuevo salario Diario"
                                         feedBack={errors.salary?.message}
                                         className="border rounded-3"
                                         prefix="$"
@@ -155,7 +155,7 @@ export default function UpdateSalaryModal({
                     </Card>
 
                     {/* Acciones */}
-                    <div className="d-flex justify-content-end gap-2 mt-4">
+                    <div className="d-flex justify-content-end gap-2 mt-2">
                         <Button
                             variant="outline-secondary"
                             type="button"
