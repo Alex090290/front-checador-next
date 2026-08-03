@@ -11,11 +11,17 @@ export default async function ListAllEmployees({
   page = "1",
   limit = "20",
   search = "",
+  idDepartment,
+  idPosition,
+  branch,
 }: {
   id: string;
   page?: string;
   limit?: string;
   search?: string;
+  idDepartment?: string;
+  idPosition?: string;
+  branch?: string;
 }) {
   const pageParse = Math.max(Number(page || "1") || 1, 1);
   const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
@@ -26,6 +32,9 @@ export default async function ListAllEmployees({
       page: pageParse,
       limit: limitParse,
       search,
+      idDepartment,
+      idPosition,
+      branch
     }),
     fetchDepartments(),
     fetchBranches(),
@@ -59,6 +68,11 @@ export default async function ListAllEmployees({
       limit={limitParse}
       employees={employees.data ?? []}
       search={search}
+       departments={departments}
+      branches={branches}
+      idDepartment={idDepartment}
+      idPosition={idPosition}
+      branch={branch}
     />
   );
 }

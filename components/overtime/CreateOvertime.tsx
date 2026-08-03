@@ -5,9 +5,9 @@ import { useModals } from "@/context/ModalContext";
 import { ActionResponse, Employee } from "@/lib/definitions"
 import { OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Card, Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
-import { Entry, RelationField, SignatureInput } from "../fields";
+import { Entry, FieldSelect, RelationField, SignatureInput } from "../fields";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { SubmitHandler, useForm } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
@@ -15,9 +15,16 @@ import Loading from "../LoadingSpinner";
 
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import useSWR from "swr";
+import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
+import { findEmployeeById } from "@/app/actions/employee-actions";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const DEFAULT_VALUES: TInputsOvertime = {
-    idEmployee: 0,
+    idEmployee: null,
+    idLeader: null,
+    idPersonDoh: null,
     motive: "",
     date: "",
     hourInit: "",
@@ -36,6 +43,7 @@ export default function CreateOvertimeComponent({
         reset,
         control,
         handleSubmit,
+        watch,
         setValue,
         formState: { errors, isSubmitting, isDirty },
     } = useForm<TInputsOvertime>({
@@ -46,9 +54,21 @@ export default function CreateOvertimeComponent({
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const { modalError, modalConfirm } = useModals();
-    const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
     const router = useRouter();
+    const currentDoh = watch("idPersonDoh");
+    const { data } = useSWR("/api/configsystem", fetcher);
+    const config: IConfigSystem | null = useMemo(() => {
+        const maybe = data?.data?.[0];
+        return maybe ?? null;
+    }, [data]);
+
+    const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
+    const idEmployeeSelected = watch("idEmployee");
     const roles = session?.uid?.roles;
+    const dohMap = config?.permissions.approvalDoh;
+    const idEmployee = Number(session?.uid?.idEmployee);
+
+
 
     const readInput = !roles?.isLeader
         && !roles?.isExtra
@@ -56,7 +76,13 @@ export default function CreateOvertimeComponent({
         && !roles?.isApproverLeaders
         && !roles?.isApproverDoh;
 
-    const idEmployee = Number(session?.uid?.idEmployee);
+    const readOnlyDoh = !roles?.isLeader
+        && !roles?.isExtra
+        && roles?.isDoh
+        && !roles?.isApproverLeaders
+        && !roles?.isApproverDoh
+        && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+
 
     useEffect(() => {
         if (roles?.isLeader) {
@@ -69,13 +95,180 @@ export default function CreateOvertimeComponent({
         }
     }, [roles, idEmployee, employees]);
 
+
+    const directionList: EmployeeRef[] | undefined = config?.permissions.extra?.employees;
+
+
+    // Este sirve para filtrar el empleado al que se le asignara el registro
+    useEffect(() => {
+        if (roles?.isLeader && !roles?.isExtra) {
+
+            const filtrados = employees.filter(
+                (el: Employee) => Number(el.department?.idLeader) === Number(session?.uid?.idEmployee)
+            );
+            setFilteredEmployees(filtrados);
+        } else {
+            setFilteredEmployees(employees);
+        }
+    }, [session, roles, idEmployee, employees]);
+
+    useEffect(() => {
+        if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
+
+    }, [session, setValue]);
+
+    // Este sirve para filtrar las opciones de idLeader
+    useEffect(() => {
+        if (!idEmployeeSelected) return;
+
+        let cancelled = false;
+
+        const run = async () => {
+            try {
+                const employeeId = Number(idEmployeeSelected);
+                if (!employeeId || Number.isNaN(employeeId)) return;
+
+                const isDohSession = !!roles?.isDoh;
+                const ownId = Number(session?.uid?.idEmployee);
+                const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
+
+                if (isLeaderNotExtra && !isDohSession && employeeId === ownId) {
+                    setValue("idLeader", Number(directionList?.[0]?.id) || null, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                    });
+                    return;
+                }
+
+                const emp = await findEmployeeById({ id: employeeId });
+
+                if (cancelled || !emp) return;
+
+                const empIsLeader = !!emp?.role?.includes("LEADER");
+
+                if (empIsLeader) {
+                    if (isDohSession) {
+                        setValue("idLeader", Number(directionList?.[0]?.id) || null, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                        });
+                        return;
+                    }
+
+                    const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+                    if (!leaderFromConfig) return;
+
+                    setValue("idLeader", Number(leaderFromConfig), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                    });
+                    return;
+                }
+
+                const leaderId = emp?.leader?.id ?? null;
+
+                setValue("idLeader", leaderId ? Number(leaderId) : null, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        run();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [idEmployeeSelected, config, setValue, session, directionList, roles]);
+
+    const leaderOptions = useMemo(() => {
+        const mapToOption = (e: Employee | EmployeeRef) => ({
+            value: Number(e.id!),
+            label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+        });
+
+        function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
+            return e.id !== undefined;
+        }
+
+        const directionOptions = (directionList ?? []).filter(hasId).map(mapToOption);
+        const isDohSession = !!roles?.isDoh;
+        const selectedId = Number(idEmployeeSelected);
+
+
+        if (isDohSession) {
+            if (!selectedId) return [];
+
+            const selectedEmployee = employees.find((e) => Number(e.id) === selectedId);
+            const selectedIsLeader = !!selectedEmployee?.role?.includes("LEADER");
+
+            if (selectedIsLeader) {
+                return directionOptions;
+            }
+
+            const leaderId = selectedEmployee?.leader?.id;
+            if (!leaderId) return [];
+
+            const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
+            return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
+        }
+
+        const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
+        const ownId = Number(session?.uid?.idEmployee);
+
+        if (isLeaderNotExtra) {
+            if (selectedId === ownId) {
+                return directionOptions;
+            }
+
+            if (selectedId) {
+                const subordinate = employees.find((e) => Number(e.id) === selectedId);
+                const leaderId = subordinate?.leader?.id;
+
+                if (!leaderId) return [];
+
+                const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
+
+                return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
+            }
+
+            return [];
+        }
+
+        return employees.filter(hasId).map(mapToOption);
+    }, [session, directionList, employees, idEmployeeSelected, roles]);
+
+    useEffect(() => {
+        const dohFromConfig = config?.permissions?.approvalDoh?.idPerson;
+        if (!dohFromConfig) return;
+        if (currentDoh) return;
+
+        setValue("idPersonDoh", Number(dohFromConfig), {
+            shouldDirty: false,
+            shouldValidate: false,
+        });
+    }, [config, currentDoh, setValue]);
+
+    const handleBack = () => {
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...");
+        router.push("/app/overtime");
+    };
+
+    console.log("ROL:", roles);
+    
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
         if (!data.signature || data.signature === "") {
             modalError("La firma es obligatoria");
             return;
         }
 
+        console.log("SE VA:", data);
+
         modalConfirm("¿Seguro que quieres guardar el registro?", async () => {
+
             try {
                 setFeedback("loading");
                 setFeedbackMsg("Guardando registro...");
@@ -103,16 +296,6 @@ export default function CreateOvertimeComponent({
                 setFeedback("error");
             }
         });
-    };
-
-    useEffect(() => {
-        if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
-    }, [session, setValue]);
-
-    const handleBack = () => {
-        setFeedback("loading");
-        setFeedbackMsg("Cargando...");
-        router.push("/app/overtime");
     };
 
     return (
@@ -191,56 +374,67 @@ export default function CreateOvertimeComponent({
                                             Selecciona el empleado y describe el motivo.
                                         </p>
 
-                                        <div className="mb-4">
-                                            <div className="d-flex align-items-center gap-2 mb-2">
-                                                <label className="fw-semibold">Empleado</label>
+                                        <Row className="g-4">
 
-                                                <OverlayTrigger
-                                                    placement="top"
-                                                    overlay={
-                                                        <Tooltip id="tooltip-info">
-                                                            Escribe el nombre del empleado que deseas seleccionar.
-                                                        </Tooltip>
+                                            <Col xs={12}>
+                                                <FieldSelect
+                                                    register={register("idEmployee", {
+                                                        required: true,
+                                                        setValueAs: (v) => (v === "" ? null : Number(v)),
+                                                    })}
+                                                    options={filteredEmployees.map((e) => ({
+                                                        value: e.id!,
+                                                        label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                                    }))}
+                                                    label="Empleado:"
+                                                    readonly={readInput}
+                                                />
+                                            </Col>
+
+                                            {/* Elegir lider */}
+                                            <Col xs={12} md={6}>
+                                                <FieldSelect
+                                                    readonly={readInput}
+                                                    register={register("idLeader", {
+                                                        required: true,
+                                                        setValueAs: (v) => (v === "" ? null : Number(v)),
+                                                    })}
+                                                    options={leaderOptions}
+                                                    label="Líder:"
+                                                />
+                                            </Col>
+
+                                            {/* Elegir DOH */}
+                                            <Col xs={12} md={6}>
+                                                <FieldSelect
+                                                    register={register("idPersonDoh", { required: true })}
+                                                    options={
+                                                        dohMap?.employee
+                                                            ? [{
+                                                                value: dohMap.employee.id,
+                                                                label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
+                                                            }]
+                                                            : []
                                                     }
-                                                >
-                                                    <span style={{ cursor: "pointer" }}>
-                                                        <i className="bi bi-info-circle-fill text-primary" />
-                                                    </span>
-                                                </OverlayTrigger>
-                                            </div>
+                                                    label="D.O.H."
+                                                    className="text-uppercase"
+                                                    readonly={!readInput || !readOnlyDoh}
+                                                />
+                                            </Col>
 
-                                            <RelationField
-                                                readonly={readInput}
-                                                register={register("idEmployee", {
-                                                    required: "El empleado es requerido",
-                                                    validate: (value) =>
-                                                        Number(value) > 0 || "El empleado es requerido",
-                                                })}
-                                                options={filteredEmployees.map((e) => ({
-                                                    id: e.id!,
-                                                    displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                                                    name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                                                }))}
-                                                label=""
-                                                callBackMode="id"
-                                                control={control}
-                                                invalid={!!errors.idEmployee}
-                                                feedBack={errors.idEmployee?.message}
-                                            />
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <Entry
-                                                register={register("motive",
-                                                    { required: "El motivo es requerido" }
-                                                )}
-                                                label="Motivo"
-                                                type="text"
-                                                invalid={!!errors.motive}
-                                                feedBack={errors.motive?.message}
-                                                className="text-uppercase border"
-                                            />
-                                        </div>
+                                            <Col xs={12}>
+                                                <Entry
+                                                    register={register("motive",
+                                                        { required: "El motivo es requerido" }
+                                                    )}
+                                                    label="Motivo"
+                                                    type="text"
+                                                    invalid={!!errors.motive}
+                                                    feedBack={errors.motive?.message}
+                                                    className="text-uppercase border"
+                                                />
+                                            </Col>
+                                        </Row>
                                     </div>
 
                                     <hr className="my-4" />

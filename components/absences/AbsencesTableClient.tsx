@@ -16,6 +16,7 @@ import CreatePenaltyComponent from "./CreatePenaltyModal";
 import { generateFault } from "@/app/actions/eventos-actions";
 import useSWR from "swr";
 import { ICheckInFeedback } from "@/lib/definitions";
+import { useSessionSnapshot } from "@/hooks/useSessionStore";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -74,6 +75,8 @@ export default function AbsencesTableClient({
 }) {
     //Aqui los const 
     const router = useRouter();
+    const session = useSessionSnapshot();
+    const roles = session?.uid?.roles;
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
     const sp = useSearchParams();
@@ -83,6 +86,8 @@ export default function AbsencesTableClient({
     const isClearingSelectionRef = useRef(false);
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const [, setTableResetKey] = useState(0);
+    const isLeader = roles?.isLeader && !roles.isExtra;
+
 
     //Filtro
     const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
@@ -351,6 +356,7 @@ export default function AbsencesTableClient({
     };
 
 
+
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IAbsence>[] = [
         {
@@ -417,24 +423,27 @@ export default function AbsencesTableClient({
             </ConditionalRender>
 
             <Container className="py-3 " style={{ maxWidth: "1600px" }}>
-                <Button
-                    variant="primary"
-                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-                    onClick={actionCreatePenalty}
-                    disabled={selectedIds.length === 0}
-                >
-                    <i className="bi bi-plus-lg" />
-                    Crear Penalización
-                </Button>
 
-                <Button
-                    variant="warning"
-                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
-                    onClick={handleGenerateFaults}
-                >
-                    <i className="bi bi-person-x" />
-                    Generar faltas
-                </Button>
+                <ConditionalRender cond={!isLeader}>
+                    <Button
+                        variant="primary"
+                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+                        onClick={actionCreatePenalty}
+                        disabled={selectedIds.length === 0}
+                    >
+                        <i className="bi bi-plus-lg" />
+                        Crear Penalización
+                    </Button>
+
+                    <Button
+                        variant="warning"
+                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
+                        onClick={handleGenerateFaults}
+                    >
+                        <i className="bi bi-person-x" />
+                        Generar faltas
+                    </Button>
+                </ConditionalRender>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
@@ -634,13 +643,14 @@ export default function AbsencesTableClient({
                                                                 <td className="align-middle">
                                                                     <div className="d-flex justify-content-center align-items-center gap-2">
 
-
-                                                                        <button
-                                                                            className={isSelected ? "btn btn-info btn-sm" : "btn btn-sm btn-outline-info"}
-                                                                            onClick={() => handleToggleSelect(row)}
-                                                                        >
-                                                                            {isSelected ? "Seleccionado" : "Seleccionar"}
-                                                                        </button>
+                                                                        <ConditionalRender cond={!isLeader}>
+                                                                            <button
+                                                                                className={isSelected ? "btn btn-info btn-sm" : "btn btn-sm btn-outline-info"}
+                                                                                onClick={() => handleToggleSelect(row)}
+                                                                            >
+                                                                                {isSelected ? "Seleccionado" : "Seleccionar"}
+                                                                            </button>
+                                                                        </ConditionalRender>
 
                                                                         <a href={`/app/absences?view_type=form&id=${row.id}`} className="btn btn-sm btn-outline-info">
                                                                             Ver

@@ -3,9 +3,12 @@
 import { identifyEmployeeByFace } from "@/app/actions/employee-actions";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Button, Col, Row, Spinner } from "react-bootstrap";
-import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+import Loading from "../LoadingSpinner";
 
+type FeedbackState = "loading" | "success" | "error" | null;
 type Props = {
   lat?: number;
   lng?: number;
@@ -28,6 +31,22 @@ export default function FaceCheckPanel({
   const [startingCamera, setStartingCamera] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState("Colócate frente a la cámara");
+
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const displayState = feedback ?? (processing || startingCamera ? "loading" : null);
+
+
+  useEffect(() => {
+    if (!feedback) return;
+
+    const timer = setTimeout(() => {
+      setFeedback(null);
+      setFeedbackMsg("");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -65,11 +84,12 @@ export default function FaceCheckPanel({
     } catch (error) {
       console.error(error);
       setMessage("No se pudo acceder a la cámara");
-      onEnableManual();
+      setFeedback("error");
+      setFeedbackMsg("No se pudo acceder a la cámara");
     } finally {
       setStartingCamera(false);
     }
-  }, [onEnableManual]);
+  }, []);
 
   useEffect(() => {
     handleOpenCamera();
@@ -131,9 +151,9 @@ export default function FaceCheckPanel({
       const file = await capturePhotoAsFile();
 
       if (!file) {
-        toast.error("No se pudo capturar la foto");
         setMessage("No se pudo capturar la foto");
-        onEnableManual();
+        setFeedback("error");
+        setFeedbackMsg("No se pudo capturar la foto");
         return;
       }
 
@@ -147,8 +167,8 @@ export default function FaceCheckPanel({
 
       if (!res.success) {
         setMessage(res.message || "No se pudo validar por rostro");
-        toast.error(res.message || "No se pudo validar por rostro");
-        onEnableManual();
+        setFeedback("error");
+        setFeedbackMsg(res.message || "No se pudo validar por rostro");
         return;
       }
 
@@ -156,15 +176,16 @@ export default function FaceCheckPanel({
         res.data?.checkMessage || res.message || "Checada registrada por rostro";
 
       setMessage(successMessage);
-      toast.success(successMessage);
+      setFeedback("success");
+      setFeedbackMsg(successMessage);
       onFaceSuccess(successMessage);
 
       resetForNextEmployee();
     } catch (error) {
       console.error(error);
       setMessage("Error al validar por rostro");
-      toast.error("Error al validar por rostro");
-      onEnableManual();
+      setFeedback("error");
+      setFeedbackMsg("Error al validar por rostro");
     } finally {
       setProcessing(false);
     }
@@ -172,6 +193,27 @@ export default function FaceCheckPanel({
 
   return (
     <>
+      <ConditionalRender cond={displayState === "loading"}>
+        <Loading message="Cargando..." />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onEnableManual();
+          }}
+        />
+      </ConditionalRender>
+
       <Row className="g-2">
 
         <Col md="6">

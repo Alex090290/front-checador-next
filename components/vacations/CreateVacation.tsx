@@ -102,12 +102,14 @@ function CreateVacationComponent({
     && !roles?.isApproverDoh
     && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
 
+  const dohMap = config?.vacations.approvalDoh;
+
   const directionList: EmployeeRef[] | undefined = config?.permissions.extra?.employees;
   const idEmployee = Number(session?.uid?.idEmployee);
 
   // Este sirve para filtrar el empleado al que se le asignara el registro
   useEffect(() => {
-    if (roles?.isLeader) {
+    if (roles?.isLeader && !roles?.isExtra) {
 
       const filtrados = employees.filter(
         (el: Employee) => Number(el.department?.idLeader) === Number(session?.uid?.idEmployee)
@@ -128,11 +130,11 @@ function CreateVacationComponent({
         const employeeId = Number(idEmployeeSelected);
         if (!employeeId || Number.isNaN(employeeId)) return;
 
+        const isDohSession = !!roles?.isDoh;
         const ownId = Number(session?.uid?.idEmployee);
         const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
 
-        // Caso: el líder vuelve a seleccionarse a sí mismo -> default a la posición 0 de directionList
-        if (isLeaderNotExtra && employeeId === ownId) {
+        if (isLeaderNotExtra && !isDohSession && employeeId === ownId) {
           setValue("idLeader", Number(directionList?.[0]?.id) || null, {
             shouldDirty: true,
             shouldValidate: true,
@@ -144,9 +146,18 @@ function CreateVacationComponent({
 
         if (cancelled || !emp) return;
 
-        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+        const empIsLeader = !!emp?.role?.includes("LEADER");
 
-        if (emp.isLeader) {
+        if (empIsLeader) {
+          if (isDohSession) {
+            setValue("idLeader", Number(directionList?.[0]?.id) || null, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+            return;
+          }
+
+          const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
           if (!leaderFromConfig) return;
 
           setValue("idLeader", Number(leaderFromConfig), {
@@ -176,33 +187,50 @@ function CreateVacationComponent({
 
   const leaderOptions = useMemo(() => {
     const mapToOption = (e: Employee | EmployeeRef) => ({
-      id: e.id!,
-      displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-      name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+      value: e.id!,
+      label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
     });
 
     function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
       return e.id !== undefined;
     }
 
-    const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
-    const ownId = Number(session?.uid?.idEmployee);
+    const directionOptions = (directionList ?? []).filter(hasId).map(mapToOption);
+    const isDohSession = !!roles?.isDoh;
     const selectedId = Number(idEmployeeSelected);
 
-    if (isLeaderNotExtra) {
-      // Caso 1: seleccionó a sí mismo -> puede elegir su propio líder (directionList)
-      if (selectedId === ownId) {
-        return (directionList ?? []).filter(hasId).map(mapToOption);
+
+    if (isDohSession) {
+      if (!selectedId) return [];
+
+      const selectedEmployee = employees.find((e) => Number(e.id) === selectedId);
+      const selectedIsLeader = !!selectedEmployee?.role?.includes("LEADER");
+
+      if (selectedIsLeader) {
+        return directionOptions;
       }
 
-      // Caso 2: seleccionó a un subordinado -> mostrar fijo el líder real de ese subordinado
+      const leaderId = selectedEmployee?.leader?.id;
+      if (!leaderId) return [];
+
+      const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
+      return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
+    }
+
+    const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
+    const ownId = Number(session?.uid?.idEmployee);
+
+    if (isLeaderNotExtra) {
+      if (selectedId === ownId) {
+        return directionOptions;
+      }
+
       if (selectedId) {
         const subordinate = employees.find((e) => Number(e.id) === selectedId);
         const leaderId = subordinate?.leader?.id;
 
         if (!leaderId) return [];
 
-        // Buscamos el registro completo del líder (para nombre/apellido) dentro de employees
         const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
 
         return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
@@ -372,8 +400,6 @@ function CreateVacationComponent({
       return;
     }
 
-    console.log("SE MANDA:", data);
-
     modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
       try {
         setLoading(true);
@@ -457,36 +483,50 @@ function CreateVacationComponent({
                     </p>
 
                     <Row className="g-4">
+
+                      {/* Elegir empleado */}
                       <Col xs={12}>
-                        <RelationField
+                        <FieldSelect
                           readonly={readInput}
                           register={register("idEmployee")}
                           options={filteredEmployees.map((e) => ({
-                            id: Number(e.id),
-                            displayName: `${e.lastName} ${e.name}`.toUpperCase(),
-                            name: `${e.lastName} ${e.name}`.toUpperCase(),
+                            value: Number(e.id),
+                            label: `${e.lastName} ${e.name}`.toUpperCase(),
                           }))}
                           label="Empleado"
-                          callBackMode="id"
-                          control={control}
                           className="text-uppercase"
                         />
                       </Col>
 
+                      {/* Elegir Lider */}
                       <Col xs={12} md={4}>
                         <FieldSelect
-                          register={register("idLeader", {
-                            setValueAs: (v) => (v === "" ? null : Number(v)),
-                          })}
-                          options={leaderOptions.map((o) => ({
-                            value: Number(o.id),
-                            label: o.displayName ?? o.name ?? "",
-                          }))}
-                          label="Líder"
                           readonly={readInput}
+                          register={register("idLeader", { required: true })}
+                          options={leaderOptions}
+                          label="Líder:"
                         />
                       </Col>
 
+                      {/* Elegir doh */}
+                      <Col xs={12} md={4}>
+                        <FieldSelect
+                          register={register("idPersonDoh")}
+                          className="text-uppercase"
+                          options={
+                            dohMap?.employee
+                              ? [{
+                                value: dohMap.employee.id,
+                                label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
+                              }]
+                              : []
+                          }
+                          label="D.O.H."
+                          readonly={!readInput}
+                        />
+                      </Col>
+
+                      {/* Elegir oeriodo */}
                       <Col xs={12} md={4}>
                         <FieldSelect
                           label="Periodo vacacional"
@@ -508,18 +548,6 @@ function CreateVacationComponent({
                           })}
                           className="border"
                           readonly={readInput || readOnlyDoh}
-                        />
-                      </Col>
-
-                      <Col xs={12} md={4}>
-                        <FieldSelect
-                          register={register("idPersonDoh")}
-                          options={employees.map((e) => ({
-                            value: Number(e.id),
-                            label: `${e.lastName} ${e.name}`.toUpperCase(),
-                          }))}
-                          label="D.O.H."
-                          readonly={!readOnlyDoh}
                         />
                       </Col>
                     </Row>

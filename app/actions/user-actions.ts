@@ -314,7 +314,7 @@ export async function createUser({
   status: number;
   phone: PhoneNumberFormat | string | null;
   password: string;
-  idEmployee: number | null;
+  idEmployee?: number | null;
 }): Promise<ActionResponse<UserAxios>> {
   try {
     const { apiToken, API_URL } = await storeAction();
@@ -333,7 +333,7 @@ export async function createUser({
       password,
       idEmployee,
     };
-
+    
     const headers = {
       headers: {
         Authorization: `Bearer ${apiToken}`,
@@ -341,9 +341,7 @@ export async function createUser({
     };
 
     try {
-      const res = await axios.post<{ data: UserAxios }>(
-        `${API_URL}/users`,
-        dataSave,
+      const res = await axios.post(`${API_URL}/users`,dataSave,
         headers
       );
 
@@ -400,7 +398,7 @@ export async function updateUser({
   status: number;
   phone: PhoneNumberFormat | string | null;
   id: number;
-  idEmployee: number | null;
+  idEmployee: number;
   imageUrl?: string | File | null;
 }): Promise<ActionResponse<UserAxios>> {
   try {

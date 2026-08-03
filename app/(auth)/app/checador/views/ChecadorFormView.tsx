@@ -40,6 +40,10 @@ export default function ChecadorFormView({
   const [message, setMessage] = useState<string>("");
 
   const [manualEnabled, setManualEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState("");
+  const [switchingToFace, setSwitchingToFace] = useState(false);
+
 
   const [showImg, setShowImg] = useState(false)
   const [showTitleNotice, setTitleNotice] = useState(false);
@@ -70,31 +74,22 @@ export default function ChecadorFormView({
 
 
 
-  const receiveCheckData = async (
-    data: TCheckData
-  ): Promise<ActionResponse<string>> => {
-    toastIdRef.current = toast.loading("Enviando datos...", {
-      position: "top-center",
-    });
+  const receiveCheckData = async (data: TCheckData): Promise<ActionResponse<string>> => {
+    toastIdRef.current = toast.loading("Enviando datos...", { position: "top-center" });
 
-    const newObj = {
-      ...data,
-      lat: location?.lat || 0,
-      lng: location?.lon || 0,
-    };
+    const newObj = { ...data, lat: location?.lat || 0, lng: location?.lon || 0 };
 
     const res = await checkIn(newObj);
-    mutate()
+    mutate();
+    toast.dismiss(toastIdRef.current);
+
     if (!res.success) {
-      toast.error(res.message, { id: toastIdRef.current });
       return res;
     }
 
-    setManualEnabled(false); // Este es para activar la camara
     setMessage(res?.data || "");
     await handleFetchFeedback();
-    toast.success(res.message, { id: toastIdRef.current });
-    
+
     return res;
   };
 
@@ -130,7 +125,7 @@ export default function ChecadorFormView({
       return;
     }
 
-    navigator.geolocation.getCurrentPosition( 
+    navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         setLocation({ lat: latitude, lon: longitude });
@@ -155,6 +150,11 @@ export default function ChecadorFormView({
     mutate()
     setMessage(faceMessage);
     await handleFetchFeedback();
+  };
+
+  const handleDisableManual = () => {
+    setManualEnabled(false);
+    setSwitchingToFace(true); 
   };
 
 
@@ -222,6 +222,7 @@ export default function ChecadorFormView({
     }
   }
 `}</style>
+
 
       <ConditionalRender cond={pageLoading}>
         <Loading message="Cargando..." />
@@ -346,6 +347,8 @@ export default function ChecadorFormView({
                             <ChecadorEntryForm
                               receiveCheckData={receiveCheckData}
                               disabled={false}
+                              onBack={handleDisableManual}
+                              onHide={handleDisableManual}
                             />
                           </div>
                         </ConditionalRender>

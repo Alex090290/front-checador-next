@@ -117,8 +117,6 @@ export default function ShowInfoOneUser({
 
   }
 
-  console.log("ID:", user);
-
 
   return (
     <>

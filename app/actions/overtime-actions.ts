@@ -151,6 +151,8 @@ export async function createOverTime({
 
     const dataSave = {
       idEmployee: data.idEmployee,
+      idLeader: data.idLeader,
+      idPersonDoh: data.idPersonDoh,
       motive: data.motive,
       date: data.date,
       hourInit: data.hourInit,

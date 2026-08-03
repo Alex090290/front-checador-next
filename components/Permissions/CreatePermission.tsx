@@ -8,7 +8,6 @@ import Loading from "@/components/LoadingSpinner";
 import {
   Entry,
   FieldSelect,
-  RelationField,
   SignatureInput,
 } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
@@ -94,30 +93,30 @@ export default function CreatePermissionComponent({
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
   const idEmployeeSelected = watch("idEmployee");
   const roles = session?.uid?.roles;
-  
-  const readInput = !roles?.isLeader 
-  && !roles?.isExtra 
-  && !roles?.isDoh 
-  && !roles?.isApproverLeaders 
-  && !roles?.isApproverDoh;
+  const dohMap = config?.permissions.approvalDoh;
 
-  const readOnlyDoh = !roles?.isLeader 
-  && !roles?.isExtra 
-  && roles?.isDoh 
-  && !roles?.isApproverLeaders 
-  && !roles?.isApproverDoh
-  && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
-  
+  const readInput = !roles?.isLeader
+    && !roles?.isExtra
+    && !roles?.isDoh
+    && !roles?.isApproverLeaders
+    && !roles?.isApproverDoh;
+
+  // const readOnlyDoh = !roles?.isLeader
+  //   && !roles?.isExtra
+  //   && roles?.isDoh
+  //   && !roles?.isApproverLeaders
+  //   && !roles?.isApproverDoh
+  //   && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+
   const idEmployee = Number(session?.uid?.idEmployee);
 
 
   const directionList: EmployeeRef[] | undefined = config?.permissions.extra?.employees;
 
 
-
   // Este sirve para filtrar el empleado al que se le asignara el registro
   useEffect(() => {
-    if (roles?.isLeader) {
+    if (roles?.isLeader && !roles.isExtra!) {
 
       const filtrados = employees.filter(
         (el: Employee) => Number(el.department?.idLeader) === Number(session?.uid?.idEmployee)
@@ -126,7 +125,7 @@ export default function CreatePermissionComponent({
     } else {
       setFilteredEmployees(employees);
     }
-  }, [session,roles, idEmployee, employees]);
+  }, [session, roles, idEmployee, employees]);
 
   useEffect(() => {
     if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
@@ -144,11 +143,11 @@ export default function CreatePermissionComponent({
         const employeeId = Number(idEmployeeSelected);
         if (!employeeId || Number.isNaN(employeeId)) return;
 
+        const isDohSession = !!roles?.isDoh;
         const ownId = Number(session?.uid?.idEmployee);
         const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
 
-        // Caso: el líder vuelve a seleccionarse a sí mismo -> default a la posición 0 de directionList
-        if (isLeaderNotExtra && employeeId === ownId) {
+        if (isLeaderNotExtra && !isDohSession && employeeId === ownId) {
           setValue("idLeader", Number(directionList?.[0]?.id) || null, {
             shouldDirty: true,
             shouldValidate: true,
@@ -160,9 +159,18 @@ export default function CreatePermissionComponent({
 
         if (cancelled || !emp) return;
 
-        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+        const empIsLeader = !!emp?.role?.includes("LEADER");
 
-        if (emp.isLeader) {
+        if (empIsLeader) {
+          if (isDohSession) {
+            setValue("idLeader", Number(directionList?.[0]?.id) || null, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+            return;
+          }
+
+          const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
           if (!leaderFromConfig) return;
 
           setValue("idLeader", Number(leaderFromConfig), {
@@ -173,7 +181,6 @@ export default function CreatePermissionComponent({
         }
 
         const leaderId = emp?.leader?.id ?? null;
-
 
         setValue("idLeader", leaderId ? Number(leaderId) : null, {
           shouldDirty: true,
@@ -189,37 +196,54 @@ export default function CreatePermissionComponent({
     return () => {
       cancelled = true;
     };
-  }, [idEmployeeSelected, config, setValue, session, directionList,roles]);
+  }, [idEmployeeSelected, config, setValue, session, directionList, roles]);
 
   const leaderOptions = useMemo(() => {
     const mapToOption = (e: Employee | EmployeeRef) => ({
-      id: e.id!,
-      displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-      name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+      value: e.id!,
+      label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
     });
 
     function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
       return e.id !== undefined;
     }
 
-    const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
-    const ownId = Number(session?.uid?.idEmployee);
+    const directionOptions = (directionList ?? []).filter(hasId).map(mapToOption);
+    const isDohSession = !!roles?.isDoh;
     const selectedId = Number(idEmployeeSelected);
 
-    if (isLeaderNotExtra) {
-      // Caso 1: seleccionó a sí mismo -> puede elegir su propio líder (directionList)
-      if (selectedId === ownId) {
-        return (directionList ?? []).filter(hasId).map(mapToOption);
+
+    if (isDohSession) {
+      if (!selectedId) return [];
+
+      const selectedEmployee = employees.find((e) => Number(e.id) === selectedId);
+      const selectedIsLeader = !!selectedEmployee?.role?.includes("LEADER");
+
+      if (selectedIsLeader) {
+        return directionOptions;
       }
 
-      // Caso 2: seleccionó a un subordinado -> mostrar fijo el líder real de ese subordinado
+      const leaderId = selectedEmployee?.leader?.id;
+      if (!leaderId) return [];
+
+      const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
+      return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
+    }
+
+    const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
+    const ownId = Number(session?.uid?.idEmployee);
+
+    if (isLeaderNotExtra) {
+      if (selectedId === ownId) {
+        return directionOptions;
+      }
+
       if (selectedId) {
         const subordinate = employees.find((e) => Number(e.id) === selectedId);
         const leaderId = subordinate?.leader?.id;
 
         if (!leaderId) return [];
 
-        // Buscamos el registro completo del líder (para nombre/apellido) dentro de employees
         const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
 
         return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
@@ -229,7 +253,7 @@ export default function CreatePermissionComponent({
     }
 
     return employees.filter(hasId).map(mapToOption);
-  }, [session, directionList, employees, idEmployeeSelected,roles]);
+  }, [session, directionList, employees, idEmployeeSelected, roles]);
 
   useEffect(() => {
     const employeeId = Number(session?.uid?.id);
@@ -247,14 +271,14 @@ export default function CreatePermissionComponent({
       return
     }
 
-    if (roles?.isExtra || roles?.isDoh && !roles?.isLeader){
+    if (roles?.isExtra || roles?.isDoh && !roles?.isLeader) {
       const values: TInputs = {
         ...DEFAULT_VALUES,
         idEmployee: null,
         idLeader: null
       };
       reset(values);
-      return 
+      return
     }
 
     const values: TInputs = {
@@ -264,7 +288,7 @@ export default function CreatePermissionComponent({
     };
 
     reset(values);
-  }, [reset, employees, session, directionList,roles]);
+  }, [reset, employees, session, directionList, roles]);
 
   useEffect(() => {
     if (dateInit) {
@@ -272,50 +296,50 @@ export default function CreatePermissionComponent({
     }
   }, [dateInit, setValue]);
 
-  useEffect(() => {
-    if (!idEmployeeSelected) return;
+  // useEffect(() => {
+  //   if (!idEmployeeSelected) return;
 
-    let cancelled = false;
+  //   let cancelled = false;
 
-    const run = async () => {
-      try {
-        const employeeId = Number(idEmployeeSelected);
-        if (!employeeId || Number.isNaN(employeeId)) return;
+  //   const run = async () => {
+  //     try {
+  //       const employeeId = Number(idEmployeeSelected);
+  //       if (!employeeId || Number.isNaN(employeeId)) return;
 
-        const emp = await findEmployeeById({ id: employeeId });
+  //       const emp = await findEmployeeById({ id: employeeId });
 
-        if (cancelled || !emp) return;
+  //       if (cancelled || !emp) return;
 
-        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+  //       const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
 
-        if (emp.isLeader) {
-          if (!leaderFromConfig) return;
+  //       if (emp.isLeader) {
+  //         if (!leaderFromConfig) return;
 
-          setValue("idLeader", Number(leaderFromConfig), {
-            shouldDirty: true,
-            shouldValidate: true,
-          });
-          return;
-        }
+  //         setValue("idLeader", Number(leaderFromConfig), {
+  //           shouldDirty: true,
+  //           shouldValidate: true,
+  //         });
+  //         return;
+  //       }
 
-        const leaderId = emp?.leader?.id ?? null;
+  //       const leaderId = emp?.leader?.id ?? null;
 
 
-        setValue("idLeader", leaderId ? Number(leaderId) : null, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  //       setValue("idLeader", leaderId ? Number(leaderId) : null, {
+  //         shouldDirty: true,
+  //         shouldValidate: true,
+  //       });
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
 
-    run();
+  //   run();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [idEmployeeSelected, config, setValue]);
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [idEmployeeSelected, config, setValue]);
 
   useEffect(() => {
     const dohFromConfig = config?.permissions?.approvalDoh?.idPerson;
@@ -425,45 +449,45 @@ export default function CreatePermissionComponent({
                       </p>
 
                       <Row className="g-4">
+
+                        {/* Elegir empelado */}
                         <Col xs={12}>
-                          <RelationField
+                          <FieldSelect
                             register={register("idEmployee", { required: true })}
                             options={filteredEmployees.map((e) => ({
-                              id: e.id!,
-                              displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                              name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                              value: e.id!,
+                              label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                             }))}
                             label="Empleado:"
-                            callBackMode="id"
-                            control={control}
                             readonly={readInput}
                           />
                         </Col>
 
+                        {/* Elegir lider */}
                         <Col xs={12} md={6}>
-                          <RelationField
+                          <FieldSelect
                             readonly={readInput}
                             register={register("idLeader", { required: true })}
                             options={leaderOptions}
                             label="Líder:"
-                            callBackMode="id"
-                            control={control}
-                            />
+                          />
                         </Col>
 
+                        {/* Elegir DOH */}
                         <Col xs={12} md={6}>
-                          <RelationField
+                          <FieldSelect
                             register={register("idPersonDoh", { required: true })}
-                            options={employees.map((e) => ({
-                              id: e.id ?? 0,
-                              displayName:
-                                `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                              name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
-                            }))}
+                            options={
+                              dohMap?.employee
+                                ? [{
+                                  value: dohMap.employee.id,
+                                  label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
+                                }]
+                                : []
+                            }
                             label="D.O.H."
-                            callBackMode="id"
-                            control={control}
-                            readonly={!readOnlyDoh}
+                            className="text-uppercase"
+                            readonly={!readInput}
                           />
                         </Col>
                       </Row>
@@ -557,7 +581,7 @@ export default function CreatePermissionComponent({
                             label="Fecha inicio:"
                             type="date"
                             register={register("dateInit")}
-                            
+
                             className="border text-left"
                           />
                         </Col>

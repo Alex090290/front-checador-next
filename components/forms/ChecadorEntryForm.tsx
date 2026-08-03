@@ -2,9 +2,15 @@
 
 import { TCheckData } from "@/app/(auth)/app/checador/views/ChecadorFormView";
 import { ActionResponse } from "@/lib/definitions";
-import { useEffect, useRef } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Button, Col, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
   idCheck: string;
@@ -14,11 +20,15 @@ type TInputs = {
 type Props = {
   receiveCheckData: (data: TCheckData) => Promise<ActionResponse<string>>;
   disabled?: boolean;
+  onBack: () => void;
+  onHide: () => void;
 };
 
 function ChecadorEntryForm({
   receiveCheckData,
   disabled = false,
+  onBack,
+  onHide,
 }: Props) {
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -36,16 +46,27 @@ function ChecadorEntryForm({
     },
   });
 
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const displayState = feedback ?? (isSubmitting ? "loading" : null);
+
   const onSubmit: SubmitHandler<TInputs> = async (formData) => {
     if (disabled) return;
 
     const res = await receiveCheckData(formData);
 
     if (!res.success) {
-      setError("passwordCheck", { type: "custom", message: res.message });
-      setTimeout(() => setFocus("passwordCheck"), 100);
+      setFeedback("error");
+      setFeedbackMsg(res.message);
+
+      reset({ idCheck: "", passwordCheck: "" });
+      setTimeout(() => setFocus("idCheck"), 100); 
+
       return;
     }
+
+    setFeedback("success");
+    setFeedbackMsg(res.data ?? "Registro completado");
 
     reset({ idCheck: "", passwordCheck: "" });
     setTimeout(() => setFocus("idCheck"), 100);
@@ -64,8 +85,33 @@ function ChecadorEntryForm({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [setFocus, disabled]);
 
+  const handleBack = () => {
+    onBack();
+  }
+
   return (
     <>
+      <ConditionalRender cond={displayState === "loading"}>
+        <Loading message="Cargando..." />
+      </ConditionalRender>
+
+      <ConditionalRender cond={displayState === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={displayState === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
       <Row className="m-0" style={{ minWidth: '40%' }}>
         <Col md="12" className="px-0">
           <Form className="card bg-body-tertiary border-0 mt-2 w-100" onSubmit={handleSubmit(onSubmit)}>
@@ -107,14 +153,30 @@ function ChecadorEntryForm({
                 />
               </Form.Group>
 
-              <div>
-                <Button
-                  type="submit"
-                  size="sm"
-                  variant="info"
-                  disabled={isSubmitting || disabled || !isDirty}>
-                  {isSubmitting ? "Registrando..." : "Completar registro"}
-                </Button>
+              <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div className="d-flex gap-2 flex-wrap">
+
+                  <Button
+                    type="submit"
+                    variant="info"
+                    className="mt-2"
+                    disabled={isSubmitting || disabled || !isDirty}>
+                    {isSubmitting ? "Registrando..." : "Completar registro"}
+                  </Button>
+                </div>
+
+                <div className=" d-md-flex flex-wrap">
+
+                  <Button
+                    type="button"
+                    variant="outline-secondary"
+                    className="mt-2"
+                    onClick={handleBack}
+                  >
+                    <i className="bi bi-arrow-left me-2" />
+                    Validar por rostro
+                  </Button>
+                </div>
               </div>
             </fieldset>
           </Form>

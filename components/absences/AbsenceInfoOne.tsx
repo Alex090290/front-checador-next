@@ -138,13 +138,13 @@ export function AbsenceOne({
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = absence?.checks.find((c) => String(c.id) === activeCheckId);
     const [showUpdateAbsenceModal, setShowUpdateAbsenceModal] = useState(false);
-    const isAbsence = absence.type === "falta" && absence.category === "justificada";
-    const isAbsenceA = absence.type === "falta";
+    const isAbsence = absence?.type === "falta" && absence?.category === "justificada";
+    const isAbsenceA = absence?.type === "falta";
     const [documentUrl, setDocumentUrl] = useState<string | null>(null);
     const [loadingDoc, setLoadingDoc] = useState(false);
     const [activeDocId, setActiveDocId] = useState<number | null>(null);
     const [showPdfModal, setShowPdfModal] = useState(false);
-    const hasDocuments = (absence.documents?.length ?? 0) >= 1;
+    const hasDocuments = (absence?.documents?.length ?? 0) >= 1;
     const uploadInputRef = useRef<HTMLInputElement | null>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);

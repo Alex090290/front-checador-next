@@ -14,7 +14,6 @@ import {
 } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useEffect, useRef, useState } from "react";
-import ModifyModalForm from "./ModifyModalForm";
 import {
   deleteRegristrosChecador,
   searchEventosParams,
@@ -85,7 +84,7 @@ function EventosListView({
     show: boolean;
     type: string;
     status: string;
-  }>({ show: false, type: "", status: "" });
+  }>({ show: true, type: "", status: "" });
 
   const [eventosList, setEventosList] = useState<ICheckInFeedback[]>(eventos);
 
@@ -561,13 +560,7 @@ function EventosListView({
         </ListView.Body>
       </ListView>
 
-      <ModifyModalForm
-        show={modalModify.show}
-        onHide={() => setModalModify({ ...modalModify, show: false })}
-        sendData={onSubmitData}
-        status={modalModify.status}
-        type={modalModify.type}
-      />
+
     </>
   );
 }

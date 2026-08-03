@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Employee } from "@/lib/definitions";
+import { Branch, Department, Employee, Position } from "@/lib/definitions";
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TablePage";
-import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Dropdown, InputGroup, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "./GenericSearchInput";
@@ -21,12 +21,19 @@ export default function EmployeeTableClient({
   limit,
   employees = [],
   search = "",
+  branches = [],
+  departments = [],
 }: {
   total: number;
   page: number;
   limit: number;
   employees?: Employee[];
   search?: string;
+  departments?: Department[];
+  branches?: Branch[];
+  idDepartment?: string;
+  idPosition?: string;
+  branch?: string;
 }) {
   const router = useRouter();
   const sp = useSearchParams();
@@ -39,6 +46,11 @@ export default function EmployeeTableClient({
   const [, setTableResetKey] = useState(0);
   const isClearingSelectionRef = useRef(false);
   const [, setSelectedIds] = useState<Array<string | number>>([]);
+  const currentBranch = sp.get("branch") ?? "";
+  const currentIdDepartment = sp.get("idDepartment") ?? "";
+  const currentPosition = sp.get("idPosition") ?? "";
+  const [positions, setPositions] = useState<Array<Position>>([]);
+
 
   useEffect(() => {
     setLoading(false);
@@ -109,6 +121,124 @@ export default function EmployeeTableClient({
     },
     [currentSearch, searchParamsString, limit, router, clearSelectedIds]
   );
+
+  // Filtro por sucursal
+  const handleBranchFilter = useCallback((value: string) => {
+    const trimedSuc = value.trim();
+    const normalizedCurrent = currentBranch ? String(currentBranch) : "";
+
+    if (trimedSuc === normalizedCurrent) return;
+
+    setLoading(true);
+    setMessageLoading("Filtrando...");
+
+    const params = new URLSearchParams(searchParamsString);
+    params.delete("id");
+    params.set("view_type", "list");
+    params.set("page", "1");
+    params.set("limit", String(limit));
+
+    if (trimedSuc !== "") {
+      params.set("branch", value.trim());
+      params.delete("idDepartment")
+      params.delete("idPosition")
+    } else {
+      params.delete("branch");
+      params.delete("idDepartment")
+      params.delete("idPosition")
+
+    }
+
+    clearSelectedIds();
+    router.push(`/app/employee?${params.toString()}`);
+  }, [searchParamsString, limit, router, clearSelectedIds]);
+
+  const selectedBranchName = useMemo(() => {
+    if (!currentBranch) return "Sucursales";
+    const found = branches.find(
+      (br) => String(br.id) === currentBranch
+    );
+    return found ? found.name : "Sucursales";
+  }, [currentBranch, branches]);
+
+
+  // Filtro por departamento
+  const handleDepartmentFilter = useCallback((value: string, positions?: Position[]) => {
+    const trimmedValue = value.trim();
+    const normalizedCurrent = currentIdDepartment ? String(currentIdDepartment) : "";
+
+    if (trimmedValue === normalizedCurrent) return;
+
+    if (positions) {
+      setPositions(positions);
+    }
+    setLoading(true);
+    setMessageLoading("Filtrando...");
+
+    const params = new URLSearchParams(searchParamsString);
+    params.delete("id");
+    params.delete("branch");
+    params.set("view_type", "list");
+    params.set("page", "1");
+    params.set("limit", String(limit));
+
+    if (trimmedValue !== "") {
+      params.set("idDepartment", trimmedValue);
+      params.delete("idPosition");
+      params.delete("branch");
+    } else {
+      params.delete("branch");
+      params.delete("idDepartment");
+      params.delete("idPosition");
+      setPositions([]);
+    }
+
+    clearSelectedIds();
+    router.push(`/app/employee?${params.toString()}`);
+  }, [searchParamsString, limit, router, clearSelectedIds, currentIdDepartment]);
+
+  const selectedDepartmentName = useMemo(() => {
+    if (!currentIdDepartment) return "Departamentos";
+    const found = departments.find(
+      (dep) => String(dep.id) === currentIdDepartment
+    );
+    return found ? found.nameDepartment : "Departamentos";
+  }, [currentIdDepartment, departments]);
+
+  // Filtro por puesto
+  const handlePositionFilter = useCallback((id: string) => {
+    const trimmedId = id.trim();
+    const normalizedCurrent = currentPosition ? String(currentPosition) : "";
+
+    if (trimmedId === normalizedCurrent) return;
+
+    setLoading(true);
+    setMessageLoading("Filtrando...");
+
+    const params = new URLSearchParams(searchParamsString);
+    params.delete("id");
+    params.set("view_type", "list");
+    params.set("page", "1");
+    params.set("limit", String(limit));
+
+    if (trimmedId !== "") {
+      params.set("idPosition", trimmedId);
+    } else {
+      params.delete("idPosition");
+    }
+
+    clearSelectedIds();
+    router.push(`/app/employee?${params.toString()}`);
+  }, [searchParamsString, limit, router, clearSelectedIds]);
+
+  const selectedPositionName = useMemo(() => {
+    if (!currentIdDepartment) return "inhabilitado"
+    if (!currentPosition) return "Puestos";
+    const found = positions.find(
+      (pos) => String(pos.id) === currentPosition
+    );
+    return found ? found.namePosition : "Puestos";
+  }, [currentPosition, currentIdDepartment, positions]);
 
   const columns: TableTemplateColumn<Employee>[] = [
     {
@@ -209,22 +339,208 @@ export default function EmployeeTableClient({
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">
                 <div className="mb-4">
-                  <Col xs={12} md={6} lg={4}>
-                    <InputGroup>
-                      <InputGroup.Text
-                        className="bg-gray"
-                        style={{ color: "#6c757d" }}
-                      >
-                        <i className="bi bi-search" />
-                      </InputGroup.Text>
+                  <Row className="mb-4 g-5 align-items-between">
 
-                      <GenericSearchInput
-                        initialValue={search}
-                        onSearch={handleSearch}
-                        placeholder="Buscar por nombre o apellido"
-                      />
-                    </InputGroup>
-                  </Col>
+                    {/* FILTRO DE EMPLEADOS */}
+                    <Col xs={12} sm={6} md={6} lg={3} style={{ minWidth: 0 }}>
+                      <Card className="border rounded-4 h-100">
+                        <Card.Body className="p-3">
+                          <div className="d-flex align-items-center gap-2 mb-3">
+                            <i className="bi bi-person text-primary" />
+                            <span className="fw-semibold small">Filtrar por empleado</span>
+                          </div>
+
+                          <InputGroup>
+                            <InputGroup.Text
+                              className="bg-gray"
+                              style={{ color: "#6c757d" }}
+                            >
+                              <i className="bi bi-search" />
+                            </InputGroup.Text>
+                            <GenericSearchInput
+                              initialValue={search}
+                              onSearch={handleSearch}
+                              placeholder="Buscar por nombre o apellido..."
+                            />
+                          </InputGroup>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* FILTRO DE SUCURSALES */}
+                    <Col xs={12} sm={6} md={6} lg={3} style={{ minWidth: 0 }}>
+                      <Card className="rounded-4 border h-100">
+                        <Card.Body className="p-3">
+                          <div className="d-flex align-items-center gap-2 mb-3">
+                            <i className="bi bi-building text-primary" />
+                            <span className="fw-semibold small">Filtrar por sucursal</span>
+                          </div>
+
+                          <Dropdown className="w-100">
+                            <Dropdown.Toggle
+                              as={Button}
+                              variant="outline-secondary"
+                              className="w-100 d-flex align-items-center justify-content-between text-uppercase"
+                              style={{ minWidth: 0 }}
+                            >
+                              <span
+                                style={{
+                                  whiteSpace: "normal",
+                                  overflowWrap: "break-word",
+                                  wordBreak: "break-word",
+                                  textAlign: "left",
+                                }}
+                              >
+                                {selectedBranchName}
+                              </span>
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu>
+                              <Dropdown.Item
+                                active={!currentBranch}
+                                onClick={() => handleBranchFilter("")}
+                              >
+                                <span className="text-uppercase text-muted">TODOS</span>
+                              </Dropdown.Item>
+
+                              {branches.map((br) => (
+                                <Dropdown.Item
+                                  key={br.id}
+                                  active={String(br.id) === currentBranch}
+                                  onClick={() => handleBranchFilter(String(br.id))}>
+                                  <span className="text-uppercase">
+                                    {br.name}
+                                  </span>
+                                </Dropdown.Item>
+                              ))}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* FILTRO DE DEPARTAMENTOS */}
+                    <Col xs={12} sm={6} md={6} lg={3} style={{ minWidth: 0 }}>
+                      <Card className="rounded-4 border h-100">
+                        <Card.Body className="p-3">
+                          <div className="d-flex align-items-center gap-2 mb-3">
+                            <i className="bi bi-columns-gap text-primary" />
+                            <span className="fw-semibold small">Filtrar por departamento</span>
+                          </div>
+
+                          <Dropdown className="w-100">
+                            <Dropdown.Toggle
+                              as={Button}
+                              variant="outline-secondary"
+                              className="w-100 d-flex align-items-center justify-content-between text-uppercase"
+                              style={{ minWidth: 0 }}
+                            >
+                              <span
+                                style={{
+                                  whiteSpace: "normal",
+                                  overflowWrap: "break-word",
+                                  wordBreak: "break-word",
+                                  textAlign: "left",
+                                }}
+                              >
+                                {selectedDepartmentName}
+                              </span>
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu>
+                              <Dropdown.Item
+                                active={!currentIdDepartment}
+                                onClick={() => handleDepartmentFilter("")}
+                              >
+                                <span className="text-uppercase text-muted">TODOS</span>
+                              </Dropdown.Item>
+
+                              {departments.map((dep) => (
+                                <Dropdown.Item
+                                  key={dep.id}
+                                  active={String(dep.id) === currentIdDepartment}
+                                  onClick={() => handleDepartmentFilter(String(dep.id), dep.positions)}>
+                                  <span className="text-uppercase">
+                                    {dep.nameDepartment}
+                                  </span>
+                                </Dropdown.Item>
+                              ))}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* FILTRO POR PUESTOS */}
+                    <Col xs={12} sm={6} md={6} lg={3} style={{ minWidth: 0 }}>
+                      <Card className="rounded-4 border h-100">
+                        <Card.Body className="p-3">
+                          <div className="d-flex align-items-center gap-2 mb-3">
+                            <i className="bi bi-briefcase text-primary" />
+                            <span className="fw-semibold small">Filtrar por puesto</span>
+
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={
+                                <Tooltip id="tooltip-info">
+                                  Para filtrar por puesto, primero debes elegir un departamento.
+                                </Tooltip>
+                              }
+                            >
+                              <span style={{ cursor: "pointer" }}>
+                                <i className="bi bi-info-circle-fill text-primary" />
+                              </span>
+                            </OverlayTrigger>
+                          </div>
+
+                          <Dropdown className="w-100">
+                            <Dropdown.Toggle
+                              as={Button}
+                              variant="outline-secondary"
+                              className="w-100 d-flex align-items-center justify-content-between text-uppercase"
+                              disabled={!currentIdDepartment}
+                              style={{ minWidth: 0 }}
+                            >
+                              <span
+                                style={{
+                                  whiteSpace: "normal",
+                                  overflowWrap: "break-word",
+                                  wordBreak: "break-word",
+                                  textAlign: "left",
+                                }}
+                              >
+                                {selectedPositionName}
+                              </span>
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu className="w-100">
+                              <Dropdown.Item
+                                active={!currentPosition}
+                                onClick={() => handlePositionFilter("")}
+                              >
+                                <span className="text-uppercase text-muted">TODOS</span>
+                              </Dropdown.Item>
+
+                              {positions.map((pos) => (
+                                <Dropdown.Item
+                                  key={pos.id}
+                                  active={String(pos.id) === String(currentPosition)}
+                                  onClick={() => handlePositionFilter(String(pos.id))}
+                                >
+                                  <span
+                                    className="text-uppercase"
+                                    style={{ whiteSpace: "normal", wordBreak: "break-word" }}
+                                  >
+                                    {pos.namePosition}
+                                  </span>
+                                </Dropdown.Item>
+                              ))}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
                 </div>
 
                 <ListView>

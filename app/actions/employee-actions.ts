@@ -45,13 +45,19 @@ export interface EmployeeBiometricPhoto {
   active?: boolean;
 }
 export async function fetchEmployees(
-  args: FetchVacationsArgs & { search?: string } = {} ): Promise<{
-  data: Employee[];
-  total: number;
-  page: number;
-  limit: number;
-  pages: number;
-}> {
+  args: FetchVacationsArgs & {
+    search?: string
+    idEmployee?: number;
+    idDepartment?: string;
+    idPosition?: string;
+    branch?: string;
+  } = {}): Promise<{
+    data: Employee[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }> {
   try {
     const { apiToken, API_URL } = await storeAction();
 
@@ -64,6 +70,18 @@ export async function fetchEmployees(
 
     if (args.search?.trim()) {
       params.set("search", args.search.trim());
+    }
+    if (args.idEmployee !== undefined && !Number.isNaN(Number(args.idEmployee))) {
+      params.set("idEmployee", String(args.idEmployee));
+    }
+    if (args.idDepartment !== undefined && !Number.isNaN(Number(args.idDepartment))) {
+      params.set("idDepartment", String(args.idDepartment));
+    }
+    if (args.idPosition !== undefined && !Number.isNaN(Number(args.idPosition))) {
+      params.set("idPosition", String(args.idPosition));
+    }
+    if (args.branch !== undefined && !Number.isNaN(Number(args.branch))) {
+      params.set("branch", String(args.branch));
     }
 
     const response = await axios.get(
@@ -528,7 +546,7 @@ export async function updateEmploye({
           role: data.role,
           visibleRecords: true,
           dailyWage: Number(data.dailyWage),
-          foodBaucher: data.foodBaucher, 
+          foodBaucher: data.foodBaucher,
         },
         {
           headers: {

@@ -127,6 +127,11 @@ export default function EmployeeSalariesTableClient({
 
     // Filtro por sucursal
     const handleBranchFilter = useCallback((value: string) => {
+        const trimedSuc = value.trim();
+        const normalizedCurrent = currentBranch ? String(currentBranch) : "";
+
+        if (trimedSuc === normalizedCurrent) return;
+
         setLoading(true);
         setMessageLoading("Filtrando...");
 
@@ -136,12 +141,15 @@ export default function EmployeeSalariesTableClient({
         params.set("page", "1");
         params.set("limit", String(limit));
 
-        if (value && value.trim() !== "") {
+        if (trimedSuc !== "") {
             params.set("branch", value.trim());
             params.delete("idDepartment")
+            params.delete("idPosition")
         } else {
             params.delete("branch");
             params.delete("idDepartment")
+            params.delete("idPosition")
+
         }
 
         clearSelectedIds();
@@ -159,31 +167,38 @@ export default function EmployeeSalariesTableClient({
 
     // Filtro por departamento
     const handleDepartmentFilter = useCallback((value: string, positions?: Position[]) => {
+        const trimmedValue = value.trim();
+        const normalizedCurrent = currentIdDepartment ? String(currentIdDepartment) : "";
+
+        if (trimmedValue === normalizedCurrent) return;
+
         if (positions) {
-            setPositions(positions)
+            setPositions(positions);
         }
         setLoading(true);
         setMessageLoading("Filtrando...");
 
         const params = new URLSearchParams(searchParamsString);
         params.delete("id");
-        params.delete("branch")
+        params.delete("branch");
         params.set("view_type", "list");
         params.set("page", "1");
         params.set("limit", String(limit));
 
-        if (value && value.trim() !== "") {
-            params.set("idDepartment", value.trim());
+        if (trimmedValue !== "") {
+            params.set("idDepartment", trimmedValue);
+            params.delete("idPosition");
+            params.delete("branch");
         } else {
             params.delete("branch");
             params.delete("idDepartment");
-            params.delete("idPosition")
+            params.delete("idPosition");
             setPositions([]);
         }
 
         clearSelectedIds();
         router.push(`/app/salaries?${params.toString()}`);
-    }, [searchParamsString, limit, router, clearSelectedIds]);
+    }, [searchParamsString, limit, router, clearSelectedIds, currentIdDepartment]);
 
     const selectedDepartmentName = useMemo(() => {
         if (!currentIdDepartment) return "Departamentos";
@@ -195,6 +210,11 @@ export default function EmployeeSalariesTableClient({
 
     // Filtro por puesto
     const handlePositionFilter = useCallback((id: string) => {
+        const trimmedId = id.trim();
+        const normalizedCurrent = currentPosition ? String(currentPosition) : "";
+
+        if (trimmedId === normalizedCurrent) return;
+
         setLoading(true);
         setMessageLoading("Filtrando...");
 
@@ -204,15 +224,15 @@ export default function EmployeeSalariesTableClient({
         params.set("page", "1");
         params.set("limit", String(limit));
 
-        if (id && id.trim() !== "") {
-            params.set("idPosition", id.trim());
+        if (trimmedId !== "") {
+            params.set("idPosition", trimmedId);
         } else {
             params.delete("idPosition");
         }
 
         clearSelectedIds();
         router.push(`/app/salaries?${params.toString()}`);
-    }, [ searchParamsString, limit, router, clearSelectedIds]);
+    }, [searchParamsString, limit, router, clearSelectedIds]);
 
     const selectedPositionName = useMemo(() => {
         if (!currentIdDepartment) return "inhabilitado"
@@ -469,7 +489,6 @@ export default function EmployeeSalariesTableClient({
                                                         </OverlayTrigger>
                                                     </div>
 
-
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
                                                             as={Button}
@@ -478,12 +497,19 @@ export default function EmployeeSalariesTableClient({
                                                             disabled={!currentIdDepartment}
                                                             style={{ minWidth: 0 }}
                                                         >
-                                                            {selectedPositionName}
+                                                            <span
+                                                                style={{
+                                                                    whiteSpace: "normal",
+                                                                    overflowWrap: "break-word",
+                                                                    wordBreak: "break-word",
+                                                                    textAlign: "left",
+                                                                }}
+                                                            >
+                                                                {selectedPositionName}
+                                                            </span>
                                                         </Dropdown.Toggle>
 
-
-                                                        <Dropdown.Menu className="w-100 text-truncate">
-
+                                                        <Dropdown.Menu className="w-100">
                                                             <Dropdown.Item
                                                                 active={!currentPosition}
                                                                 onClick={() => handlePositionFilter("")}
@@ -494,14 +520,18 @@ export default function EmployeeSalariesTableClient({
                                                             {positions.map((pos) => (
                                                                 <Dropdown.Item
                                                                     key={pos.id}
-                                                                    onClick={() => handlePositionFilter(String(pos.id))}>
-                                                                    <span className="text-uppercase text-truncate">
+                                                                    active={String(pos.id) === String(currentPosition)}
+                                                                    onClick={() => handlePositionFilter(String(pos.id))}
+                                                                >
+                                                                    <span
+                                                                        className="text-uppercase"
+                                                                        style={{ whiteSpace: "normal", wordBreak: "break-word" }}
+                                                                    >
                                                                         {pos.namePosition}
                                                                     </span>
                                                                 </Dropdown.Item>
                                                             ))}
                                                         </Dropdown.Menu>
-
                                                     </Dropdown>
                                                 </Card.Body>
                                             </Card>

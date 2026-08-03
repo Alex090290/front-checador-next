@@ -14,16 +14,16 @@ export interface ApiResponse<T> {
 }
 
 export interface IDepartmentLeaderValues {
-    id: number,
-    name: string
+  id: number,
+  name: string
 }
 export interface IRolesMe {
-    isLeader: true,
-    isDoh: false,
-    isExtra: false,
-    isApproverLeaders: false,
-    isApproverDoh: false,
-    departmentLeader: IDepartmentLeaderValues;
+  isLeader: true,
+  isDoh: false,
+  isExtra: false,
+  isApproverLeaders: false,
+  isApproverDoh: false,
+  departmentLeader: IDepartmentLeaderValues;
 }
 
 export interface User {
@@ -342,7 +342,7 @@ export interface Vacations {
   dateEnd: string;
   isAutomatic: boolean;
   holidayName: string;
-  
+
   createForPerson: {
     _id: string;
     id: number;
@@ -418,7 +418,7 @@ export type VacationRequestStatus =
   | "APPROVED"
   | "REFUSED"
   | "PENDING"
-  // | "EMPLOYEE";
+// | "EMPLOYEE";
 
 export interface ConfigSystemUpdate {
   permissions: {
@@ -515,6 +515,8 @@ export interface IInability {
 
 export type InabilityPayload = {
   idEmployee: number | null;
+  idLeader: number | null,
+  idPersonDoh: number | null,
   disabilityCategory: string;
   folio: string;
   typeOfDisability: string;
@@ -574,17 +576,17 @@ export interface IOvertime {
 }
 
 export interface ICurrentPeriod {
-		_id: string;
-		id: number;
-		year: string;
-		numberPeriod: number;
-		description: string;
-		dateInit: string;
-		dateEnd: string;
-		payrollReport: boolean;
-		createdAt: string;
-		updatedAt: string;
-	}
+  _id: string;
+  id: number;
+  year: string;
+  numberPeriod: number;
+  description: string;
+  dateInit: string;
+  dateEnd: string;
+  payrollReport: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface EmployeeStats {
   id: number;

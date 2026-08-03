@@ -2,7 +2,9 @@
 
 import { userLogin } from "@/app/actions/user-actions";
 import ConditionalRender from "@/components/ConditionalRender";
+import ErrorOverlay from "@/components/ErrorOverlay";
 import Loading from "@/components/LoadingSpinner";
+import SuccessOverlay from "@/components/SuccessOverlay";
 import { useModals } from "@/context/ModalContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,6 +24,8 @@ type TInputs = {
   password: string;
 };
 
+type FeedbackState = "loading" | "success" | "error" | null;
+
 function FormLogin() {
   const {
     register,
@@ -37,83 +41,137 @@ function FormLogin() {
   const router = useRouter();
   const { modalError } = useModals();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
+
     const res = await userLogin(data);
 
-    console.log(res);
-
     if (!res.success) {
-      modalError(res.message);
+      setFeedbackMsg(res.message || "No se pudo iniciar sesión");
+      setFeedback("error");
       return;
     }
-    setLoading(true);
-    toast.success("Se ha iniciado sesión");
+    setFeedbackMsg(res.message || "Inicio de sesión exitoso");
+    setFeedback("success");
     // router.replace("/app/checador?view_type=form");
     router.replace("/");
   };
 
   return (
-    <> 
-    <ConditionalRender cond={isSubmitting}>
-      <Loading message="Espere un momento..." />
-    </ConditionalRender>
+    <>
+      <ConditionalRender cond={feedback === "loading" || isSubmitting}>
+        <Loading message={feedbackMsg || "Actualizando..."} />
+      </ConditionalRender>
 
-      <Container>
-        <Row className="vh-110 d-flex justify-content-center align-items-center">
-          <Col xs="11" sm="8" md="5" lg="4" xl="5" xxl="4">
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+           
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
+      <Container fluid className="min-vh-100 d-flex align-items-center justify-content-center"
+        style={{
+          background: "linear-gradient(135deg, var(--bs-danger-bg-subtle), var(--bs-body-bg))",
+        }}
+      >
+        <Row className="w-100 justify-content-center">
+          <Col xs="11" sm="8" md="5" lg="4" xl="4" xxl="3">
+            <div className="text-center mb-4">
+              <div
+                className="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger text-white mb-3"
+                style={{ width: 64, height: 64 }}
+              >
+                <i className="bi bi-shield-lock-fill fs-3" />
+              </div>
+              <h4 className="fw-bold mb-0">Checador Digital</h4>
+              <p className="text-muted small mb-0">Inicia sesión para continuar</p>
+            </div>
+
             <Form
               onSubmit={handleSubmit(onSubmit)}
-              className="card shadow-md mt-5 bg-body-tertiary"
+              className="card shadow-lg border-0 rounded-4"
             >
-              <fieldset className="card-body" disabled={isSubmitting}>
-                <legend className="card-shadow-lg d-flex justify-content-center text-uppercase">
-                  Inicio de sesión
-                </legend>
-                <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    <i className="bi bi-person-fill"></i>
-                  </InputGroup.Text>
+              <fieldset className="card-body p-4" disabled={isSubmitting}>
+                <Form.FloatingLabel label="Usuario" className="mb-3">
                   <Form.Control
-                    {...register("email", {
-                      required: "Este campo es requerido",
-                    })}
-                    className="text-center"
+                    {...register("email", { required: "Este campo es requerido" })}
                     placeholder="Usuario"
                     type="text"
                     autoComplete="off"
                     autoFocus
                     isInvalid={!!errors.email}
-                    size="sm"
+                    className="rounded-3"
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.email?.message}
                   </Form.Control.Feedback>
-                </InputGroup>
-                <InputGroup className="mb-2">
-                  <InputGroup.Text>
-                    <i className="bi bi-lock-fill"></i>
-                  </InputGroup.Text>
-                  <Form.Control
-                    {...register("password", {
-                      required: "Este campo es requerido",
-                    })}
-                    className="text-center"
-                    placeholder="Contraseña"
-                    type="password"
-                    autoComplete="off"
-                    isInvalid={!!errors.password}
-                    size="sm"
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.password?.message}
-                  </Form.Control.Feedback>
-                </InputGroup>
-                <Form.Group className="text-center">
-                  <Button type="submit" className="fs-6 text-center w-50" size="sm" >
-                    {isSubmitting || loading ? "Espere un momento..." : "Entrar"}
-                  </Button>
-                </Form.Group>
+                </Form.FloatingLabel>
+
+                <div className="position-relative mb-3">
+                  <Form.FloatingLabel label="Contraseña">
+                    <Form.Control
+                      {...register("password", { required: "Este campo es requerido" })}
+                      placeholder="Contraseña"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="off"
+                      isInvalid={!!errors.password}
+                      className="rounded-3 pe-5"
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.password?.message}
+                    </Form.Control.Feedback>
+                  </Form.FloatingLabel>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-danger"
+                    tabIndex={-1}
+                  >
+                    <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                  </button>
+                </div>
+
+                {/* <Button
+                  type="submit"
+                  variant="outline-secondary"
+                  className="w-100 rounded-3 fw-semibold d-flex align-items-center justify-content-center gap-2 fw-3"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting || loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm" />
+                      Espere un momento...
+                    </>
+                  ) : (
+                    "ENTRAR"
+                  )}
+                </Button> */}
+
+                <Button
+                  variant="outline-danger"
+                  type="submit"
+                  className="w-100 rounded-3 fw-semibold d-flex align-items-center justify-content-center gap-2 fw-3"
+                  disabled={isSubmitting || feedback === "loading"}
+                >
+                  {isSubmitting || feedback === "loading" ? "Cargando..." : "ENTRAR"}
+                </Button>
               </fieldset>
             </Form>
           </Col>

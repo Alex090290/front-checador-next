@@ -29,7 +29,7 @@ type TInputs = {
   phone: PhoneNumberFormat | string | null;
   status: 1 | 2 | 3;
   imageUrl?: string | null;
-  idEmployee: number | null;
+  idEmployee?: number | null;
 };
 
 const DEFAULT_VALUES: TInputs = {
@@ -91,6 +91,7 @@ export default function CreateUserComponent({
   };
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {    
+    
     modalConfirm("¿Seguro que quieres guardar el usuario?", async () => {
       try {
         setLoading(true);
@@ -105,7 +106,7 @@ export default function CreateUserComponent({
           modalError(resCreate.message || "No se pudo crear el usuario");
           return;
         }
-
+        
         toast.success(resCreate.message || "Usuario creado correctamente");
 
         setTimeout(() => {
@@ -268,7 +269,7 @@ export default function CreateUserComponent({
 
                           <RelationField
                             options={employees.map((e) => ({
-                              id: e.id || 0,
+                              id: Number(e.id) || 0,
                               displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                               name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                             }))}
