@@ -25,26 +25,30 @@
 }
 
 @keyframes collapseFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes flashHighlight {
-    0% {
-        background-color: rgba(9, 131, 245, 0.5); /* amarillo, más llamativo que azul */
-    }
-    50% {
-        background-color: rgba(89, 158, 223, 0.15);
-    }
-    100% {
-        background-color: transparent;
-    }
+  0% {
+    background-color: rgba(9, 131, 245, 0.5);
+    /* amarillo, más llamativo que azul */
+  }
+
+  50% {
+    background-color: rgba(89, 158, 223, 0.15);
+  }
+
+  100% {
+    background-color: transparent;
+  }
 }
 
 .btn-needs-signature {
@@ -105,6 +109,14 @@
   top: 1.1rem;
 }
 
+/* Quitar o comentar esto */
+/* .react-datepicker__day--today {
+  background-color: #0d6efd !important;
+  color: #fff !important;
+  border-radius: 50%;
+  font-weight: normal;
+} */
+
 .table-row-selected>* {
   color: var(--bs-black) !important;
 }
@@ -124,6 +136,5 @@
 }
 
 .collapse-detail-enter {
-    animation: collapseFadeIn 0.25s ease-out, flashHighlight 0.5s ease-out;
+  animation: collapseFadeIn 0.25s ease-out, flashHighlight 0.5s ease-out;
 }
-

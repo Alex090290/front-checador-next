@@ -3,6 +3,7 @@
 import { ActionResponse, AttendanceReportItem, ICheckInFeedback } from "@/lib/definitions";
 import { storeAction } from "./storeActions";
 import axios from "axios";
+import { FetchUsersArgs } from "@/lib/constancy/interface";
 
 type FetchArgs = {
   idPeriod?: number;
@@ -10,20 +11,47 @@ type FetchArgs = {
   limit?: number;
 };
 
-export async function fetchEventos(): Promise<ICheckInFeedback[]> {
+export async function fetchEventos(args: FetchUsersArgs & {
+  search?: string;
+  idUser?: string;
+  date?: string;
+} = {}): Promise<{
+  data: ICheckInFeedback[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}> {
   try {
     const { API_URL, apiToken, session } = await storeAction();
 
-    let url = `${API_URL}/checador/view`;
+
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
+
+    if (args.search?.trim()) {
+      params.set("search", args.search.trim());
+    }
+    if (args.idUser !== undefined && !Number.isNaN(Number(args.idUser))) {
+      params.set("idUser", String(args.idUser));
+    }
+    if (args.date?.trim()) {
+      params.set("date", args.date.trim());
+    }
+
+    let url = `${API_URL}/checador/view?${params.toString()}`;
 
     if (session?.role === "CHECADOR") url += `?idUser=${session?.id}`;
 
-    const response = await axios
-      .get(url, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      })
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    })
       .then((res) => {
         return res.data;
       })
@@ -35,11 +63,21 @@ export async function fetchEventos(): Promise<ICheckInFeedback[]> {
         );
       });
 
-    return response.data;
+    const total = Number(response.total ?? 0);
+    const pages = Math.max(Math.ceil(total / limitNum), 1);
+
+
+    return {
+      data: response.data ?? [],
+      total,
+      page: pageNum,
+      limit: limitNum,
+      pages,
+    };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     console.log(error);
-    return [];
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 
@@ -169,15 +207,15 @@ export async function deleteRegristrosChecador({
     const { API_URL, apiToken } = await storeAction();
     if (!idCheck && idRegistro) throw new Error("ID NOT DEFINED");
 
-    console.log("idRegistro: ",idRegistro);
-    console.log("idCheck: ",idCheck);
-    
+    console.log("idRegistro: ", idRegistro);
+    console.log("idCheck: ", idCheck);
+
 
     await axios.delete(`${API_URL}/checador/${idRegistro}/${idCheck}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      })
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    })
       .then((res) => {
         return res.data;
       })

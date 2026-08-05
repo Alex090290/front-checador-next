@@ -1,23 +1,50 @@
-import NotFound from "@/app/not-found";
-import EventosListView from "./EventosListView";
 import { fetchEventos } from "@/app/actions/eventos-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
 import { fetchUsers } from "@/app/actions/user-actions";
+import EventsTableClient from "@/components/events/EventsTableClient";
 
-async function EventosMainView({ viewType }: { viewType: string; id: string }) {
+export default async function EventosMainView({
+  id,
+  page = "1",
+  limit = "20",
+  search = "",
+  idUser = "",
+  date = "",
+}: {
+  id: string;
+  page?: string;
+  limit?: string;
+  search?: string;
+  idUser?: string;
+  date?: string;
+}) {
 
+  const pageParse = Math.max(Number(page || "1") || 1, 1);
+  const limitParse = Math.min(Math.max(Number(limit || "20") || 2, 1), 100)
 
-  const [eventos, employees, users] = await Promise.all([
-    fetchEventos(),
+  const [events, employees, users] = await Promise.all([
+    fetchEventos({
+      page: pageParse,
+      limit: limitParse,
+      search,
+      idUser,
+      date
+    }),
     fetchEmployees({ page: 1, limit: 500 }),
     fetchUsers(),
   ]);
 
-  if (viewType === "list") {
-    return (<EventosListView eventos={eventos} users={users} employees={employees.data} />);
-  } else {
-    return <NotFound />;
-  }
+  return (
+    <EventsTableClient
+      total={events.total}
+      page={Number(page)}
+      limit={Number(limit)}
+      search={search}
+      idUser={idUser}
+      events={events.data}
+      users={users}
+      employees={employees.data}
+      date={date}
+    />
+  )
 }
-
-export default EventosMainView;

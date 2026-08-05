@@ -461,6 +461,7 @@ export default function AbsencesTableClient({
                             <Card.Body className="p-4 p-md-5">
                                 <div className="mb-4">
                                     <Row className="mb-4 g-5 align-items-between">
+                                        {/* Filtrar por empleado */}
                                         <Col xs={12} md={6} lg={4}>
                                             <Card className="border rounded-4 h-100">
                                                 <Card.Body className="p-3">
@@ -486,6 +487,7 @@ export default function AbsencesTableClient({
                                             </Card>
                                         </Col>
 
+                                        {/* Filtrar por fechas */}
                                         <Col xs={12} md={6} lg={4}>
                                             <Card className="rounded-4 border h-100">
                                                 <Card.Body className="p-3">
@@ -560,6 +562,7 @@ export default function AbsencesTableClient({
                                             </Card>
                                         </Col>
 
+                                        {/* Filtrar por tipo */}
                                         <Col xs={12} md={6} lg={4}>
                                             <Card className="rounded-4 border h-100">
                                                 <Card.Body className="p-3">
@@ -638,7 +641,10 @@ export default function AbsencesTableClient({
                                                         return (
                                                             <tr key={row.id} className={isSelected ? "table-secondary table-row-selected" : ""}>
                                                                 {columns.map((column) => (
-                                                                    <td key={String(column.key)}>{renderCell(row, column)}</td>
+                                                                    <td
+                                                                        key={String(column.key)}>
+                                                                        {renderCell(row, column)}
+                                                                    </td>
                                                                 ))}
                                                                 <td className="align-middle">
                                                                     <div className="d-flex justify-content-center align-items-center gap-2">

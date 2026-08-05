@@ -53,6 +53,11 @@ export function formatCreatedAtOnlyHours(value?: string) {
   return m.isValid() ? m.format("hh:mm A") : "—";
 };
 
+export function formatDateHours(value?: string) {
+  const m = moment.utc(value).tz("America/Mexico_City");
+  return m.isValid() ? m.format("DD-MM-YYYY hh:mm A") : "—";
+};
+
 export function formatCreatedAt(value?: string) {
   const m = moment.utc(value);
   return m.isValid() ? m.format("DD/MM/YYYY") : "—";
