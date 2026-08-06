@@ -40,9 +40,7 @@ export default function ChecadorFormView({
   const [message, setMessage] = useState<string>("");
 
   const [manualEnabled, setManualEnabled] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
-  const [switchingToFace, setSwitchingToFace] = useState(false);
+  const [, setSwitchingToFace] = useState(false);
 
 
   const [showImg, setShowImg] = useState(false)

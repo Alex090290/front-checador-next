@@ -398,7 +398,7 @@ export async function updateUser({
   status: number;
   phone: PhoneNumberFormat | string | null;
   id: number;
-  idEmployee: number;
+  idEmployee: number | null;
   imageUrl?: string | File | null;
 }): Promise<ActionResponse<UserAxios>> {
   try {

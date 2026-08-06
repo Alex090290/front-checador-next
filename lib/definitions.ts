@@ -515,8 +515,6 @@ export interface IInability {
 
 export type InabilityPayload = {
   idEmployee: number | null;
-  idLeader: number | null,
-  idPersonDoh: number | null,
   disabilityCategory: string;
   folio: string;
   typeOfDisability: string;

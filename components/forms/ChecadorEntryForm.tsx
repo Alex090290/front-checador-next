@@ -3,7 +3,7 @@
 import { TCheckData } from "@/app/(auth)/app/checador/views/ChecadorFormView";
 import { ActionResponse } from "@/lib/definitions";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Button, Col, Form, Row } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
@@ -37,7 +37,6 @@ function ChecadorEntryForm({
     handleSubmit,
     reset,
     setFocus,
-    setError,
     formState: { isSubmitting, errors, isDirty },
   } = useForm<TInputs>({
     defaultValues: {

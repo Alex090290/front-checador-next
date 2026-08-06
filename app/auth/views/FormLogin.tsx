@@ -5,7 +5,6 @@ import ConditionalRender from "@/components/ConditionalRender";
 import ErrorOverlay from "@/components/ErrorOverlay";
 import Loading from "@/components/LoadingSpinner";
 import SuccessOverlay from "@/components/SuccessOverlay";
-import { useModals } from "@/context/ModalContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -13,11 +12,9 @@ import {
   Col,
   Container,
   Form,
-  InputGroup,
   Row,
 } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
 
 type TInputs = {
   email: string;
@@ -39,8 +36,6 @@ function FormLogin() {
   });
 
   const router = useRouter();
-  const { modalError } = useModals();
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [feedbackMsg, setFeedbackMsg] = useState("");

@@ -80,7 +80,7 @@ function EventosListView({
   const tableRef = useRef<TableTemplateRef>(null);
 
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-  const [modalModify, setModalModify] = useState<{
+  const [modalModify] = useState<{
     show: boolean;
     type: string;
     status: string;

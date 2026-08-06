@@ -6,7 +6,6 @@ import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
 import {
   Entry,
   FieldSelect,
-  RelationField,
   SignatureInput,
 } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
@@ -21,6 +20,10 @@ import useSWR from "swr";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { formatDate } from "date-fns";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = Pick<
   Vacations,
@@ -66,6 +69,8 @@ function CreateVacationComponent({
   } = useForm<TInputs>();
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
 
   const dateInit = watch("dateInit");
   const idEmployeeSelected = watch("idEmployee");
@@ -402,19 +407,19 @@ function CreateVacationComponent({
 
     modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Guardando permiso...");
+        setFeedback("loading");
+        setFeedbackMsg("Guardando permiso...");
 
         const res = await createVacation({ data });
 
         if (!res.success) {
-          modalError(res.message);
+         setFeedbackMsg(res.message || "No se pudo actualizar");
+          setFeedback("error");
           return;
         }
 
-        console.log("LLEGA AQUI:", data);
-
-        toast.success(res.message);
+        setFeedbackMsg(res.message || "Actualizado correctamente");
+        setFeedback("success");
         router.push("/app/vacationList");
       } finally {
         setLoading(false);
@@ -425,12 +430,24 @@ function CreateVacationComponent({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading" || isSubmitting}>
+        <Loading message={feedbackMsg || "Cargando..."} />
       </ConditionalRender>
 
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Guardando permiso..."} />
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
@@ -494,7 +511,7 @@ function CreateVacationComponent({
                             label: `${e.lastName} ${e.name}`.toUpperCase(),
                           }))}
                           label="Empleado"
-                          className="text-uppercase"
+                          className="text-uppercase border"
                         />
                       </Col>
 
@@ -505,6 +522,7 @@ function CreateVacationComponent({
                           register={register("idLeader", { required: true })}
                           options={leaderOptions}
                           label="Líder:"
+                          className="text-uppercase border"
                         />
                       </Col>
 
@@ -512,7 +530,7 @@ function CreateVacationComponent({
                       <Col xs={12} md={4}>
                         <FieldSelect
                           register={register("idPersonDoh")}
-                          className="text-uppercase"
+                          className="text-uppercase border"
                           options={
                             dohMap?.employee
                               ? [{

@@ -3,23 +3,21 @@
 import { createInability } from "@/app/actions/inability-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
-import { Entry, FieldSelect, RelationField } from "@/components/fields";
+import { Entry, FieldSelect } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import { Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
-import useSWR from "swr";
-import { findEmployeeById } from "@/app/actions/employee-actions";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
   idEmployee: number | null;
-  idPersonDoh: number | null;
-  idLeader: number | null;
   disabilityCategory: string;
   folio: string;
   typeOfDisability: string;
@@ -30,8 +28,6 @@ type TInputs = {
 
 const DEFAULT_VALUES: TInputs = {
   idEmployee: null,
-  idLeader: null,
-  idPersonDoh: null,
   disabilityCategory: "",
   folio: "",
   typeOfDisability: "inicial",
@@ -40,7 +36,6 @@ const DEFAULT_VALUES: TInputs = {
   firstDoc: null,
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function CreateInabilityComponent({
   employees = [],
@@ -60,25 +55,20 @@ export default function CreateInabilityComponent({
 
   const session = useSessionSnapshot();
   const roles = session?.uid?.roles;
-  const { data } = useSWR("/api/configsystem", fetcher);
-  const config: IConfigSystem | null = useMemo(() => {
-    const maybe = data?.data?.[0];
-    return maybe ?? null;
-  }, [data]);
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
 
   // const dohMap = config?.permissions.approvalDoh;
   const sessionEmployeeId = Number(session?.uid?.idEmployee);
-  const idEmployeeSelected = watch("idEmployee");
   const idEmployee = Number(session?.uid?.idEmployee);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
-  const directionList: EmployeeRef[] | undefined = config?.permissions.extra?.employees;
 
 
-  const { modalError, modalConfirm } = useModals();
+  const { modalConfirm } = useModals();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
 
   const onChangeDateInit = watch("dateInit");
 
@@ -132,103 +122,6 @@ export default function CreateInabilityComponent({
 
   }, [session, setValue]);
 
-  // Este sirve para filtrar las opciones de idLeader
-  useEffect(() => {
-    if (!idEmployeeSelected) return;
-
-    let cancelled = false;
-
-    const run = async () => {
-      try {
-        const employeeId = Number(idEmployeeSelected);
-        if (!employeeId || Number.isNaN(employeeId)) return;
-
-        const ownId = Number(session?.uid?.idEmployee);
-        const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
-
-        // Caso: el líder vuelve a seleccionarse a sí mismo -> default a la posición 0 de directionList
-        if (isLeaderNotExtra && employeeId === ownId) {
-          setValue("idLeader", Number(directionList?.[0]?.id) || null, {
-            shouldDirty: true,
-            shouldValidate: true,
-          });
-          return;
-        }
-
-        const emp = await findEmployeeById({ id: employeeId });
-
-        if (cancelled || !emp) return;
-
-        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
-
-        if (emp.isLeader) {
-          if (!leaderFromConfig) return;
-
-          setValue("idLeader", Number(leaderFromConfig), {
-            shouldDirty: true,
-            shouldValidate: true,
-          });
-          return;
-        }
-
-        const leaderId = emp?.leader?.id ?? null;
-
-
-        setValue("idLeader", leaderId ? Number(leaderId) : null, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [idEmployeeSelected, config, setValue, session, directionList, roles]);
-
-  // const leaderOptions = useMemo(() => {
-  //   const mapToOption = (e: Employee | EmployeeRef) => ({
-  //     value: e.id!,
-  //     label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-  //   });
-
-  //   function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
-  //     return e.id !== undefined;
-  //   }
-
-  //   const isLeaderNotExtra = roles?.isLeader && !roles?.isExtra;
-  //   const ownId = Number(session?.uid?.idEmployee);
-  //   const selectedId = Number(idEmployeeSelected);
-
-  //   if (isLeaderNotExtra) {
-  //     // Caso 1: seleccionó a sí mismo -> puede elegir su propio líder (directionList)
-  //     if (selectedId === ownId) {
-  //       return (directionList ?? []).filter(hasId).map(mapToOption);
-  //     }
-
-  //     // Caso 2: seleccionó a un subordinado -> mostrar fijo el líder real de ese subordinado
-  //     if (selectedId) {
-  //       const subordinate = employees.find((e) => Number(e.id) === selectedId);
-  //       const leaderId = subordinate?.leader?.id;
-
-  //       if (!leaderId) return [];
-
-  //       // Buscamos el registro completo del líder (para nombre/apellido) dentro de employees
-  //       const leaderRecord = employees.find((e) => Number(e.id) === Number(leaderId));
-
-  //       return leaderRecord && hasId(leaderRecord) ? [mapToOption(leaderRecord)] : [];
-  //     }
-
-  //     return [];
-  //   }
-
-  //   return employees.filter(hasId).map(mapToOption);
-  // }, [session, directionList, employees, idEmployeeSelected, roles]);
-
   const handleBack = () => {
     setLoading(true);
     setMessageLoading("Cargando...");
@@ -239,19 +132,20 @@ export default function CreateInabilityComponent({
 
     modalConfirm("¿Seguro que quieres guardar esta incapacidad?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Guardando incapacidad...");
+        setFeedback("loading");
+        setFeedbackMsg("Guardando incapacidad...");
 
         const res = await createInability(data);
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo crear");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
+        setFeedbackMsg(res.message || "Creada correctamente");
+        setFeedback("success");
         router.push("/app/inability?view_type=list&id=null");
-
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -261,8 +155,24 @@ export default function CreateInabilityComponent({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Guardando incapacidad..."} />
+      <ConditionalRender cond={feedback === "loading" || isSubmitting}>
+        <Loading message={feedbackMsg || "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
@@ -324,38 +234,13 @@ export default function CreateInabilityComponent({
                               value: Number(em.id),
                               label: `${em.lastName} ${em.name}`.toUpperCase(),
                             }))}
-                            register={register("idEmployee", { required: true })}
-                          // readonly={session?.uid?.role === "EMPLOYEE"}
+                            register={register("idEmployee", {
+                              required: true,
+                              setValueAs: (v) => (v === "" ? null : Number(v))
+                            })}
+                            className="text-uppercase border"
                           />
                         </Col>
-
-                        {/* Elegir lider */}
-                        {/* <Col xs={12} md={6}>
-                          <FieldSelect
-                            readonly={readInput}
-                            register={register("idLeader", { required: true })}
-                            options={leaderOptions}
-                            label="Líder:"
-                          />
-                        </Col> */}
-
-                        {/* Elegir DOH */}
-                        {/* <Col xs={12} md={6}>
-                          <FieldSelect
-                            register={register("idPersonDoh", { required: true })}
-                            options={
-                              dohMap?.employee
-                                ? [{
-                                  value: dohMap.employee.id,
-                                  label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
-                                }]
-                                : []
-                            }
-                            label="D.O.H."
-                            className="text-uppercase"
-                            readonly={!readInput}
-                          />
-                        </Col> */}
 
                         <Col xs={12} md={6}>
                           <FieldSelect
@@ -451,7 +336,9 @@ export default function CreateInabilityComponent({
 
                         <Col xs={12} md={6}>
                           <Entry
-                            register={register("folio", { required: true })}
+                            register={register("folio", {
+                              required: true,
+                            })}
                             label="Folio CITT:"
                             className="text-uppercase border"
                             invalid={!!errors.folio}

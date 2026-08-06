@@ -6,8 +6,8 @@ import { ActionResponse, Employee } from "@/lib/definitions"
 import { OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Button, Card, Col, Container, Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
-import { Entry, FieldSelect, RelationField, SignatureInput } from "../fields";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Entry, FieldSelect, SignatureInput } from "../fields";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { SubmitHandler, useForm } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
@@ -258,14 +258,12 @@ export default function CreateOvertimeComponent({
     };
 
     console.log("ROL:", roles);
-    
+
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
         if (!data.signature || data.signature === "") {
             modalError("La firma es obligatoria");
             return;
         }
-
-        console.log("SE VA:", data);
 
         modalConfirm("¿Seguro que quieres guardar el registro?", async () => {
 
@@ -387,6 +385,7 @@ export default function CreateOvertimeComponent({
                                                         label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                                                     }))}
                                                     label="Empleado:"
+                                                    className="text-uppercase border"
                                                     readonly={readInput}
                                                 />
                                             </Col>
@@ -401,6 +400,7 @@ export default function CreateOvertimeComponent({
                                                     })}
                                                     options={leaderOptions}
                                                     label="Líder:"
+                                                    className="text-uppercase border"
                                                 />
                                             </Col>
 
@@ -417,7 +417,7 @@ export default function CreateOvertimeComponent({
                                                             : []
                                                     }
                                                     label="D.O.H."
-                                                    className="text-uppercase"
+                                                    className="text-uppercase border"
                                                     readonly={!readInput || !readOnlyDoh}
                                                 />
                                             </Col>

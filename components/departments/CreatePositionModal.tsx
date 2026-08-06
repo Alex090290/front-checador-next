@@ -95,8 +95,8 @@ function CreatePositionModal({
                                             register={register("namePosition", {
                                                 required: "Nombre es requerido",
                                                 maxLength: {
-                                                    value: 50,
-                                                    message: "El nombre del puesto no puede exceder los 50 caracteres",
+                                                    value: 100,
+                                                    message: "El nombre del puesto no puede exceder los 100 caracteres",
                                                 },
                                             })}
                                             label="Nombre:"

@@ -74,7 +74,6 @@ export async function fetchEventos(args: FetchUsersArgs & {
       limit: limitNum,
       pages,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error) {
     console.log(error);
     return { data: [], total: 0, page: 1, limit: 20, pages: 1 };

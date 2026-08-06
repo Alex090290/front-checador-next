@@ -30,6 +30,39 @@ type TInputs = {
   firstDoc: FileList | null;
 };
 
+function statusVariant(status: string | null) {
+  switch ((status ?? "").toLowerCase()) {
+    case "aviso_de_incapacidad":
+      return (
+        <span className="text-uppercase">
+          Aviso de incapacidad
+        </span>
+      );
+    case "posesion_de_hoja":
+      return (
+        <span className="text-uppercase">
+          Posesión de hoja
+        </span>
+      );
+    case "entrega_a_contabilidad":
+      return (
+        <span className="text-uppercase">
+          Entrega a contabilidad
+        </span>
+      );
+    case "alta":
+      return (
+        <span className="text-uppercase">
+          Alta
+        </span>
+      );
+    default:
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+      );
+  }
+}
+
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
   return `${p.lastName ?? ""} ${p.name ?? ""}`.trim().toUpperCase();
@@ -66,6 +99,7 @@ export default function InfoOneInability({
   const [messageLoading, setMessageLoading] = useState("");
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
+  const status = inhability?.status ?? "";
 
   if (!inhability) {
     return (
@@ -151,6 +185,7 @@ export default function InfoOneInability({
       data: true,
     };
   }
+
 
   return (
     <>
@@ -311,7 +346,7 @@ export default function InfoOneInability({
                           <span className="text-muted">Estatus</span>
                         </div>
                         <span className="fw-semibold text-end">
-                          {formatText(inhability.status)}
+                          {statusVariant(status)}
                         </span>
                       </div>
                     </div>
@@ -442,16 +477,16 @@ export default function InfoOneInability({
                   <Row className="g-2">
                     {inhability?.documentsInability?.map((doc) => (
 
-                        <InhabilityDocCard
-                          key={doc.id}
-                          selfId={String(doc.id)}
-                          idDoc={id}
-                          urlDocument={doc.urlDocument}
-                          dateInit={doc.dateInit}
-                          dateEnd={doc.dateEnd}
-                          folio={doc.folio}
-                        />
-                      ))}
+                      <InhabilityDocCard
+                        key={doc.id}
+                        selfId={String(doc.id)}
+                        idDoc={id}
+                        urlDocument={doc.urlDocument}
+                        dateInit={doc.dateInit}
+                        dateEnd={doc.dateEnd}
+                        folio={doc.folio}
+                      />
+                    ))}
                   </Row>
                 </Card.Body>
               </Card>

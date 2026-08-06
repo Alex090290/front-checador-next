@@ -3,7 +3,7 @@
 import { ActionResponse, Employee, ICheckInFeedback } from "@/lib/definitions";
 import { User } from "@/lib/definitions";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { Button, Card, Col, Container, Dropdown, InputGroup, Overlay, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import GenericSearchInput from "../employee/GenericSearchInput";
@@ -20,7 +20,7 @@ import FormUpdateEvent from "./EventUpdate";
 import { deleteRegristrosChecador, updateRegristrosChecador } from "@/app/actions/eventos-actions";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
-import { formatCreatedAt, formatCreatedAtOnlyHours, formatDateHours } from "@/lib/helpers";
+import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -94,9 +94,6 @@ export default function EvenstsTableClient({
     search = "",
     events,
     users,
-    employees,
-    idUser,
-    date,
 }: {
     total: number;
     page: number;
@@ -112,7 +109,7 @@ export default function EvenstsTableClient({
     const {
         watch,
         setValue,
-        formState: { isSubmitting, isDirty },
+        formState: { isSubmitting },
     } = useForm<TSearchInputs>({
         defaultValues: {
             date: null,
@@ -129,9 +126,6 @@ export default function EvenstsTableClient({
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
     const currentSearch = sp.get("search") ?? "";
-    const tableRef = useRef<{ clearSelection: () => void } | null>(null);
-    const isClearingSelectionRef = useRef(false);
-    const [, setTableResetKey] = useState(0);
     const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
     const { modalError, modalConfirm } = useModals();
     const dateButtonRef = useRef<HTMLButtonElement>(null);
@@ -300,7 +294,7 @@ export default function EvenstsTableClient({
 
         clearSelectedIds();
         router.push(`/app/eventos?${params.toString()}`);
-    }, [searchParamsString, limit, router, clearSelectedIds, idUser]);
+    }, [searchParamsString, limit, router, clearSelectedIds]);
 
     const handleDateFilter = useCallback(() => {
         setLoading(true);
@@ -321,7 +315,7 @@ export default function EvenstsTableClient({
 
         clearSelectedIds();
         router.push(`/app/eventos?${params.toString()}`);
-    }, [searchParamsString, limit, router, clearSelectedIds, watch, date]);
+    }, [searchParamsString, limit, router, clearSelectedIds, watch]);
 
     useEffect(() => {
         setEventosList(events ?? []);

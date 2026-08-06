@@ -84,7 +84,8 @@ export default function ShowInfoOneUser({
 
     const res = await updateUser({
       ...data,
-      id: user.id,
+      id: user.id, 
+      idEmployee: data.idEmployee!
     });
 
     if (!res) {

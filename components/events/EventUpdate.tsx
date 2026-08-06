@@ -69,7 +69,7 @@ export default function FormUpdateEvent({
     const { modalConfirm } = useModals();
     const [checadorTypes, setChecadorTypes] = useState<string[]>([]);
     const [checadorStatus, setChecadorStatus] = useState<string[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
     const dateButtonRef = useRef<HTMLButtonElement>(null);
     const [showCalendar, setShowCalendar] = useState(false);
     const [overlayContainer, setOverlayContainer] = useState<HTMLElement | null>(null);
@@ -108,7 +108,6 @@ export default function FormUpdateEvent({
             type: currentType,
             dateHour: initialDateHour,
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reset, currentStatus, currentType, initialDateHour]);
 
     const handleFetchResources = useCallback(async () => {

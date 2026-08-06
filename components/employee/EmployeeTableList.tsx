@@ -151,7 +151,7 @@ export default function EmployeeTableClient({
 
     clearSelectedIds();
     router.push(`/app/employee?${params.toString()}`);
-  }, [searchParamsString, limit, router, clearSelectedIds]);
+  }, [searchParamsString, limit, router, clearSelectedIds, currentBranch]);
 
   const selectedBranchName = useMemo(() => {
     if (!currentBranch) return "Sucursales";
@@ -229,7 +229,7 @@ export default function EmployeeTableClient({
 
     clearSelectedIds();
     router.push(`/app/employee?${params.toString()}`);
-  }, [searchParamsString, limit, router, clearSelectedIds]);
+  }, [searchParamsString, limit, router, clearSelectedIds, currentPosition]);
 
   const selectedPositionName = useMemo(() => {
     if (!currentIdDepartment) return "inhabilitado"

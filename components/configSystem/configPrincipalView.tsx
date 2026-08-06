@@ -8,6 +8,7 @@ import ConfigSystemView from "@/components/configSystem/formView";
 import ConfigSystemUpdateComp from "@/components/configSystem/formUpdate";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import ConfigError from "./ConfigError";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -78,11 +79,11 @@ export default function ConfigSystem() {
       </ConditionalRender>
 
       {error && (
-        <p className="text-danger">Error cargando configuración</p>
+        <ConfigError/> 
       )}
 
       {!config && !loading && !isLoading && !isValidating ? (
-        <p className="text-muted">No hay configuración</p>
+         <ConfigError/> 
       ) : config ? (
         <div className="container py-3">
           {mode === "view" ? (

@@ -101,7 +101,7 @@ export default function PermissionsTableClient({
       type: "string",
       render: (row) => (
         <div className="text-uppercase">
-          {row.employee.lastName} {row.employee.name}
+          {row.employee ? `${row.employee.lastName} ${row.employee.name}` : "—"}
         </div>
       ),
     },

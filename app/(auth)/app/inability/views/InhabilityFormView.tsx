@@ -97,7 +97,7 @@ function InhabilityFormView({
         dateInit: "",
         dateEnd: "",
         firstDoc: null,
-        folio:''
+        folio: ''
       };
       reset(values);
       originalValuesRef.current = values;
@@ -121,7 +121,7 @@ function InhabilityFormView({
       originalValuesRef.current = values;
     }
   }, [reset, inhability, session, sessionEmployeeId]);
-  
+
   return (
     <>
       <FormView
@@ -193,11 +193,11 @@ function InhabilityFormView({
                 accept=".jpg,.jpeg,.png,.pdf,.webp"
                 {...register("firstDoc")}
               />
-            <Entry 
-              register={register("folio")}
-              label="Folio CITT:"
-              className="text-uppercase"
-            />
+              <Entry
+                register={register("folio")}
+                label="Folio CITT:"
+                className="text-uppercase"
+              />
             </Form.Group>
           )}
         </FieldGroup>

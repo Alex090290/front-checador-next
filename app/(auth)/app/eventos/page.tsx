@@ -1,6 +1,6 @@
 // import LoadingPage from "@/app/LoadingPage";
 import Loading from "@/components/LoadingSpinner";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import EventosMainView from "./views/EventosMainView";
 
 type SearchParams = {

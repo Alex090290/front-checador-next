@@ -75,7 +75,7 @@ function UsersFormView({
         return error.message;
       }
     } else {
-      const res = await updateUser({ ...data, id });
+      const res = await updateUser({ ...data, id, idEmployee: data.idEmployee!});
       console.log(res);
       if (!res) {
         modalError(String(res));

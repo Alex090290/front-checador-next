@@ -17,8 +17,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import useSWR from "swr";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
   motive: string;
@@ -79,7 +82,9 @@ export default function CreatePermissionComponent({
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
 
   const modeSelect = watch("modeSelect");
   const dateInit = watch("dateInit");
@@ -101,12 +106,6 @@ export default function CreatePermissionComponent({
     && !roles?.isApproverLeaders
     && !roles?.isApproverDoh;
 
-  // const readOnlyDoh = !roles?.isLeader
-  //   && !roles?.isExtra
-  //   && roles?.isDoh
-  //   && !roles?.isApproverLeaders
-  //   && !roles?.isApproverDoh
-  //   && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
 
   const idEmployee = Number(session?.uid?.idEmployee);
 
@@ -363,14 +362,22 @@ export default function CreatePermissionComponent({
       modalError("La firma es obligatoria");
       return;
     }
-
+    
     modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Guardando permiso...");
+        setFeedback("loading");
+        setFeedbackMsg("Guardando permiso...");
 
         const newData = {
-          ...data,
+          idEmployee: data.idEmployee,
+          idLeader: data.idLeader,
+          idPersonDoh: data.idPersonDoh,
+          incidence: data.incidence,
+          type: data.type,
+          motive: data.motive,
+          dateInit: data.dateInit,
+          dateEnd: data.dateEnd,
+          signature: data.signature,
           forDays: data.modeSelect === "forDays",
           forHours: data.modeSelect === "forHours",
           hourInit: data.modeSelect === "forDays" ? "" : data.hourInit,
@@ -380,11 +387,13 @@ export default function CreatePermissionComponent({
         const res = await createPermission({ data: newData });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo actualizar");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
+        setFeedbackMsg(res.message || "Actualizado correctamente");
+        setFeedback("success");
         router.push("/app/permissions");
       } finally {
         setLoading(false);
@@ -395,8 +404,24 @@ export default function CreatePermissionComponent({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Guardando permiso..."} />
+      <ConditionalRender cond={feedback === "loading" || isSubmitting}>
+        <Loading message={feedbackMsg || "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
@@ -453,13 +478,17 @@ export default function CreatePermissionComponent({
                         {/* Elegir empelado */}
                         <Col xs={12}>
                           <FieldSelect
-                            register={register("idEmployee", { required: true })}
+                            register={register("idEmployee", {
+                              required: true,
+                              setValueAs: (v) => (v === "" ? null : Number(v))
+                            })}
                             options={filteredEmployees.map((e) => ({
-                              value: e.id!,
+                              value: Number(e.id!),
                               label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                             }))}
                             label="Empleado:"
                             readonly={readInput}
+                            className="text-uppercase border"
                           />
                         </Col>
 
@@ -467,9 +496,13 @@ export default function CreatePermissionComponent({
                         <Col xs={12} md={6}>
                           <FieldSelect
                             readonly={readInput}
-                            register={register("idLeader", { required: true })}
+                            register={register("idLeader", {
+                              required: true,
+                              setValueAs: (v) => (v === "" ? null : Number(v))
+                            })}
                             options={leaderOptions}
                             label="Líder:"
+                            className="text-uppercase border"
                           />
                         </Col>
 
@@ -486,7 +519,7 @@ export default function CreatePermissionComponent({
                                 : []
                             }
                             label="D.O.H."
-                            className="text-uppercase"
+                            className="text-uppercase border"
                             readonly={!readInput}
                           />
                         </Col>

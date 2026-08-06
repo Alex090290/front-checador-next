@@ -139,12 +139,11 @@ export async function createInability(
     if (data.firstDoc) {
       document.append("document", data.firstDoc?.[0]);
     }
-
+        
     const response = await axios
       .post(`${API_URL}/inability`, data, {
         headers: { Authorization: `Bearer ${apiToken}` },
-      })
-      .then(async (res) => {
+      }).then(async (res) => {
         if (data.firstDoc) {
           await uploadFirstInhabilityDocument({
             formData: document,
@@ -171,12 +170,13 @@ export async function createInability(
       message: "Incapacidad creada",
       data: response.data.id,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(err);
+
     return {
       success: false,
-      message: error.message,
+      message: err.message,
     };
   }
 }
@@ -185,6 +185,7 @@ export async function uploadFirstInhabilityDocument({
   id,
   idDoc,
   formData,
+  folio
 }: {
   id: string;
   idDoc: string;
@@ -199,6 +200,7 @@ export async function uploadFirstInhabilityDocument({
     // Subir imagen al backend
     const data = new FormData();
     data.append("document", image);
+    data.append("folio", folio);
 
     const response = await axios
       .put(`${apiUrl}/inability/documentsInability/${id}/${idDoc}`, data, {

@@ -4,7 +4,6 @@ import { fetchUsers } from "@/app/actions/user-actions";
 import EventsTableClient from "@/components/events/EventsTableClient";
 
 export default async function EventosMainView({
-  id,
   page = "1",
   limit = "20",
   search = "",
