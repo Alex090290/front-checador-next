@@ -62,3 +62,4 @@ export function formatCreatedAt(value?: string) {
   const m = moment.utc(value);
   return m.isValid() ? m.format("DD/MM/YYYY") : "—";
 }
+

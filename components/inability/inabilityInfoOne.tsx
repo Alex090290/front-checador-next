@@ -14,21 +14,25 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { useRouter } from "next/navigation";
 import FormUpdateInability from "./inabilityFormUpdate";
-import { deleteInability, updateInability } from "@/app/actions/inability-actions";
-import toast from "react-hot-toast";
+import { deleteInability } from "@/app/actions/inability-actions";
 import { useModals } from "@/context/ModalContext";
 import OverLay from "../templates/OverLay";
 import InabilityOneError from "./inabilityMessageError";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
 
-type TInputs = {
-  idEmployee: number | null;
-  disabilityCategory: string;
-  folio: string;
-  typeOfDisability: string;
-  dateInit: string;
-  dateEnd: string;
-  firstDoc: FileList | null;
-};
+// type TInputs = {
+//   idEmployee: number | null;
+//   disabilityCategory: string;
+//   folio: string;
+//   typeOfDisability: string;
+//   dateInit: string;
+//   dateEnd: string;
+//   firstDoc: FileList | null;
+// };
+
+type FeedbackState = "loading" | "success" | "error" | null;
+
 
 function statusVariant(status: string | null) {
   switch ((status ?? "").toLowerCase()) {
@@ -96,7 +100,9 @@ export default function InfoOneInability({
   const [modalUploadDoc, setModalUploadDoc] = useState(false);
   const [showUpdateInabilityModal, setShowUpdateInabilityModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
   const status = inhability?.status ?? "";
@@ -110,8 +116,6 @@ export default function InfoOneInability({
   const employee =
     employees.find((em) => Number(em.id) === Number(inhability.idEmployee)) ??
     inhability.employee;
-
-
 
   const firstDocument = inhability.documentsInability?.[0];
   const createdAt = formatDateValue(inhability?.createdAt ?? "dd/MM/yyyy HH:mm");
@@ -136,18 +140,20 @@ export default function InfoOneInability({
 
     modalConfirm("¿Deseas eliminar este registro?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Eliminando registro...");
+        setFeedback("loading");
+        setFeedbackMsg("Eliminando registro...");
 
         const res = await deleteInability({ id: Number(inhability.id) });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo eliminar");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
-        router.push("/app/inability");
+        setFeedbackMsg(res.message || "Eliminado correctamente");
+        setFeedback("success");
+        router.refresh();
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -155,42 +161,28 @@ export default function InfoOneInability({
     });
   };
 
-  const handleUpdateInability = async (
-    data: TInputs
-  ): Promise<ActionResponse<boolean | null>> => {
-    if (!inhability?.id) {
-      return {
-        success: false,
-        message: "No se encontró la incapacidad",
-        data: null,
-      };
-    }
-
-    const res = await updateInability(Number(inhability.id), data);
-
-    if (!res.success) {
-      modalError(res.message);
-      return {
-        success: false,
-        message: res.message,
-        data: null,
-      };
-    }
-
-    toast.success(res.message);
-
-    return {
-      success: true,
-      message: res.message,
-      data: true,
-    };
-  }
-
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Cargando..."} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Actualizando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
@@ -282,7 +274,7 @@ export default function InfoOneInability({
               </div>
 
               <span className="badge rounded-pill px-3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle text-uppercase">
-                {formatText(inhability.status)}
+                {statusVariant(status)}
               </span>
             </div>
 
@@ -500,7 +492,7 @@ export default function InfoOneInability({
           <FormUpdateInability
             show={showUpdateInabilityModal}
             onHide={() => setShowUpdateInabilityModal(false)}
-            sendData={handleUpdateInability}
+            id={Number(inhability.id)}
             inhability={inhability}
             employees={employees}
           />

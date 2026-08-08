@@ -11,13 +11,38 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TablePage";
 import { IInability } from "@/lib/definitions";
 
-const statusVariantMap: Record<string, string> = {
-  APROBADA: "badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle",
-  // APROBADO: "success",
-  PENDIENTE: "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle",
-  RECHAZADA: "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle",
-  RECHAZADO: "badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle",
-};
+function statusVariant(status: string | null) {
+  switch ((status ?? "").toLowerCase()) {
+    case "aviso_de_incapacidad":
+      return (
+        <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+          Aviso de incapacidad
+        </span>
+      );
+    case "posesion_de_hoja":
+      return (
+        <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+          Posesión de hoja
+        </span>
+      );
+    case "entrega_a_contabilidad":
+      return (
+        <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+          Entrega a contabilidad
+        </span>
+      );
+    case "alta":
+      return (
+        <span className="badge rounded-pill px-2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+          Alta
+        </span>
+      );
+    default:
+      return (
+        <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+      );
+  }
+}
 
 export default function TableInabilityComponent({
   total,
@@ -101,18 +126,8 @@ export default function TableInabilityComponent({
       accessor: (r) => r.status,
       filterable: true,
       type: "string",
-      render: (r) => {
-        const status = String(r.status ?? "").toUpperCase();
-        const variant = statusVariantMap[status] ?? "badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle";
-
-        return (
-          <div className="text-start">
-            <Badge pill bg={variant}>
-              {status}
-            </Badge>
-          </div>
-        );
-      },
+      render: (r) => (
+        <div className="text-uppercase text-start"> {statusVariant(r.status)}</div>)
     },
     {
       key: "whoCreate",

@@ -7,6 +7,12 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useState } from "react";
+import { createPosition } from "@/app/actions/positions-actions";
+import { useRouter } from "next/navigation";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
     namePosition: string;
@@ -20,12 +26,10 @@ type PositionFormCreateProps = {
         activeId: number | null;
         namePosition: string;
     };
-    sendData: (idDepartment: number, namePosition: string) => Promise<void>;
 };
 
 function CreatePositionModal({
     onHide,
-    sendData,
     idDepartment,
     positionData,
 }: PositionFormCreateProps) {
@@ -40,8 +44,13 @@ function CreatePositionModal({
         },
     });
 
-    const [loading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const { modalConfirm } = useModals();
+    const router = useRouter();
+    const [feedbackMsg, setFeedbackMsg] = useState("");
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
+    const [, setMessageLoading] = useState("");
+
 
     const handleClose = () => {
         reset({ namePosition: "" });
@@ -50,17 +59,56 @@ function CreatePositionModal({
 
 
     const onSubmit: SubmitHandler<TInputs> = async (data) => {
-        onHide();
+        modalConfirm("¿Seguro que quieres guardar este puesto?", async () => {
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Guardando puesto...");
 
-        modalConfirm("¿Deseas guardar los cambios de este puesto?", async () => {
-            await sendData(idDepartment, data.namePosition);
+                const res = await createPosition({
+                    namePosition: data.namePosition,
+                    idDepartment: idDepartment
+                });
+
+                if (!res.success) {
+                    setFeedbackMsg(res.message || "No se pudo crear el puesto");
+                    setFeedback("error");
+                    return;
+                }
+
+                setFeedbackMsg(res.message || "Puesto creado correctamente");
+                setFeedback("success");
+                router.refresh
+            } catch {
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
+                setFeedback("error");
+            } finally {
+                setLoading(false);
+                setMessageLoading("");
+            }
         });
     };
 
     return (
         <>
-            <ConditionalRender cond={loading || isSubmitting}>
-                <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+            <ConditionalRender cond={feedback === "loading"}>
+                <Loading message={feedbackMsg || "Actualizando..."} />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => {
+                        setFeedback(null);
+                        handleClose();
+                    }}
+                />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
             </ConditionalRender>
 
             <div className="p-2">
@@ -102,7 +150,7 @@ function CreatePositionModal({
                                             label="Nombre:"
                                             invalid={!!errors.namePosition}
                                             feedBack={errors.namePosition?.message}
-                                            className="border"
+                                            className="border text-uppercase"
                                         />
                                     </Col>
                                 </Row>

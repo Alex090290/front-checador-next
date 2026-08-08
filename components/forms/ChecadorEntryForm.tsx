@@ -60,7 +60,6 @@ function ChecadorEntryForm({
 
       reset({ idCheck: "", passwordCheck: "" });
       setTimeout(() => setFocus("idCheck"), 100); 
-
       return;
     }
 

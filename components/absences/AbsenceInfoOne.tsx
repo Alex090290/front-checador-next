@@ -244,17 +244,19 @@ export function AbsenceOne({
 
         modalConfirm("¿Deseas eliminar el registro?", async () => {
             try {
-                setLoading(true);
-                setMessageLoading("Eliminando registro...");
+                setFeedback("loading");
+                setFeedbackMsg("Eliminando registro...");
 
                 const res = await deleteAbsence({ id: Number(absence.id) });
 
                 if (!res.success) {
-                    modalError(res.message);
+                    setFeedbackMsg(res.message || "No se pudo eliminar");
+                    setFeedback("error");
                     return;
                 }
 
-                toast.success(res.message);
+                setFeedbackMsg(res.message || "Eliminado correctamente");
+                setFeedback("success");
                 router.push("/app/absences");
             } finally {
                 setLoading(false);
@@ -291,8 +293,8 @@ export function AbsenceOne({
 
     //Regresar a pagina principal
     const handleBack = () => {
-        setLoading(true);
-        setMessageLoading("Cargando datos...");
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...");
         router.push("/app/absences");
     }
 

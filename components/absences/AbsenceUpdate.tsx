@@ -185,7 +185,7 @@ export default function FormUpdateAbsence({
                                         label="Motivo:"
                                         invalid={!!errors.motiveJustify}
                                         feedBack={errors.motiveJustify?.message}
-                                        className="border"
+                                        className="border text-uppercase"
                                         as="textarea"
                                         rows={2}
                                     />

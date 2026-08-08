@@ -6,6 +6,7 @@ import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
 import {
   Entry,
   FieldSelect,
+  RelationField,
   SignatureInput,
 } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
@@ -192,8 +193,9 @@ function CreateVacationComponent({
 
   const leaderOptions = useMemo(() => {
     const mapToOption = (e: Employee | EmployeeRef) => ({
-      value: e.id!,
-      label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+      id: Number(e.id!),
+      displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+      name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`
     });
 
     function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
@@ -413,7 +415,7 @@ function CreateVacationComponent({
         const res = await createVacation({ data });
 
         if (!res.success) {
-         setFeedbackMsg(res.message || "No se pudo actualizar");
+          setFeedbackMsg(res.message || "No se pudo actualizar");
           setFeedback("error");
           return;
         }
@@ -454,206 +456,215 @@ function CreateVacationComponent({
         <Row className="m-2">
           <Col xs={12}>
             <Form onSubmit={handleSubmit(onSubmit)}>
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-                <div>
-                  <h1 className="mb-1">Crear vacaciones</h1>
-                  <p className="text-muted mb-0">
-                    Registra la solicitud de vacaciones del empleado.
-                  </p>
-                </div>
-
-                <div className="d-flex flex-wrap gap-2">
-                  <Button
-                    variant="outline-secondary"
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleBack}
-                  >
-                    Cancelar
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={isSubmitting || !isDirty}
-                    onClick={handleReverse}
-                  >
-                    Limpiar
-                  </Button>
-
-                  <Button
-                    className="bg-success border-success"
-                    type="submit"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Guardando..." : "Guardar"}
-                  </Button>
-                </div>
-              </div>
-
-              <Card className="rounded-4 shadow-sm border">
-                <Card.Body className="p-3 p-md-5">
-                  <div className="mb-4">
-                    <h5 className="fw-semibold mb-1">Datos del empleado</h5>
-                    <p className="text-muted mb-3">
-                      Selecciona el empleado, líder, periodo vacacional y D.O.H.
-                    </p>
-
-                    <Row className="g-4">
-
-                      {/* Elegir empleado */}
-                      <Col xs={12}>
-                        <FieldSelect
-                          readonly={readInput}
-                          register={register("idEmployee")}
-                          options={filteredEmployees.map((e) => ({
-                            value: Number(e.id),
-                            label: `${e.lastName} ${e.name}`.toUpperCase(),
-                          }))}
-                          label="Empleado"
-                          className="text-uppercase border"
-                        />
-                      </Col>
-
-                      {/* Elegir Lider */}
-                      <Col xs={12} md={4}>
-                        <FieldSelect
-                          readonly={readInput}
-                          register={register("idLeader", { required: true })}
-                          options={leaderOptions}
-                          label="Líder:"
-                          className="text-uppercase border"
-                        />
-                      </Col>
-
-                      {/* Elegir doh */}
-                      <Col xs={12} md={4}>
-                        <FieldSelect
-                          register={register("idPersonDoh")}
-                          className="text-uppercase border"
-                          options={
-                            dohMap?.employee
-                              ? [{
-                                value: dohMap.employee.id,
-                                label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
-                              }]
-                              : []
-                          }
-                          label="D.O.H."
-                          readonly={!readInput}
-                        />
-                      </Col>
-
-                      {/* Elegir oeriodo */}
-                      <Col xs={12} md={4}>
-                        <FieldSelect
-                          label="Periodo vacacional"
-                          options={
-                            periods.length > 0
-                              ? periods.map((p) => ({
-                                label: `${formatDate(p.dateInitPeriod, "dd/MM/yyyy")} - ${formatDate(p.dateEndPeriod, "dd/MM/yyyy")}`,
-                                value: Number(p.id),
-                              }))
-                              : [
-                                {
-                                  label: "El empleado no cuenta con periodos disponibles",
-                                  value: "",
-                                },
-                              ]
-                          }
-                          register={register("idPeriod", {
-                            required: periods.length > 0,
-                          })}
-                          className="border"
-                          readonly={readInput || readOnlyDoh}
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-
-                  <hr className="my-4" />
-
-                  <div className="mb-4">
-                    <h5 className="fw-semibold mb-1">Fechas de vacaciones</h5>
-                    <p className="text-muted mb-3">
-                      Indica la fecha de inicio y fin del periodo solicitado.
-                    </p>
-
-                    <Row className="g-4">
-                      <Col xs={12} md={6}>
-                        <Entry
-                          label="Inicio"
-                          type="date"
-                          register={register("dateInit")}
-                          className="border"
-                        />
-                      </Col>
-
-                      <Col xs={12} md={6}>
-                        <Entry
-                          label="Final"
-                          type="date"
-                          register={register("dateEnd")}
-                          min={dateInit}
-                          className="border"
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-
-                  {selectedPeriod && (
-                    <>
-                      <hr className="my-4" />
-
-                      <div className="mb-4">
-                        <h5 className="fw-semibold mb-1">Resumen del periodo</h5>
-                        <p className="text-muted mb-3">
-                          Consulta los días usados y disponibles del periodo seleccionado.
-                        </p>
-
-                        <Row className="g-3">
-                          <Col xs={12} md={6}>
-                            <div className="border rounded-3 p-3 text-center h-100">
-                              <i className="bi bi-check2-circle text-success fs-5 mb-2 d-block" />
-                              <div className="text-muted small">Días aprobados usados</div>
-                              <div className="fw-bold fs-5">
-                                {selectedPeriod.usedDaysApproved ?? 0}
-                              </div>
-                            </div>
-                          </Col>
-
-                          <Col xs={12} md={6}>
-                            <div className="border rounded-3 p-3 text-center h-100">
-                              <i className="bi bi-calendar2-check text-info fs-5 mb-2 d-block" />
-                              <div className="text-muted small">Días disponibles</div>
-                              <div className="fw-bold fs-5">
-                                {selectedPeriod.availableDays ?? 0}
-                              </div>
-                            </div>
-                          </Col>
-                        </Row>
-                      </div>
-                    </>
-                  )}
-
-                  <hr className="my-4" />
-
+              <fieldset disabled={isSubmitting}>
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                   <div>
-                    <h5 className="fw-semibold mb-1">Firma</h5>
-                    <p className="text-muted mb-3">
-                      Agrega la firma para confirmar la solicitud.
+                    <h1 className="mb-1">Crear vacaciones</h1>
+                    <p className="text-muted mb-0">
+                      Registra la solicitud de vacaciones del empleado.
                     </p>
-
-                    <div className="w-100 overflow-hidden">
-                      <SignatureInput
-                        name="signature"
-                        register={register}
-                        control={control}
-                      />
-                    </div>
                   </div>
-                </Card.Body>
-              </Card>
+
+                  <div className="d-flex flex-wrap gap-2">
+                    <Button
+                      variant="outline-secondary"
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleBack}
+                    >
+                      Cancelar
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={isSubmitting || !isDirty}
+                      onClick={handleReverse}
+                    >
+                      Limpiar
+                    </Button>
+
+                    <Button
+                      className="bg-success border-success"
+                      type="submit"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Guardando..." : "Guardar"}
+                    </Button>
+                  </div>
+                </div>
+
+                <Card className="rounded-4 shadow-sm mb-3">
+                  <Card.Body className="p-3 p-md-5">
+                    <div className="mb-4">
+                      <h5 className="fw-semibold mb-1">Datos generales</h5>
+                      <p className="text-muted mb-3">
+                        Captura empleado, fechas, periodo y firma de la solicitud.
+                      </p>
+
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-person text-primary" />
+                            <h6 className="mb-0 fw-bold">Datos del empleado</h6>
+                          </div>
+
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <RelationField
+                                readonly={readInput}
+                                register={register("idEmployee")}
+                                options={filteredEmployees.map((e) => ({
+                                  id: Number(e.id),
+                                  displayName: `${e.lastName} ${e.name}`.toUpperCase(),
+                                  name: `${e.lastName} ${e.name}`.toUpperCase()
+                                }))}
+                                control={control}
+                                callBackMode="id"
+                                label="Empleado:"
+                                className="text-uppercase border"
+                              />
+                            </Col>
+
+                            <Col md={4}>
+                              <RelationField
+                                readonly={readInput}
+                                register={register("idLeader", { required: true })}
+                                options={leaderOptions}
+                                label="Líder:"
+                                className="text-uppercase border"
+                                control={control}
+                                callBackMode="id"
+                              />
+                            </Col>
+
+                            <Col md={4}>
+                              <FieldSelect
+                                register={register("idPersonDoh")}
+                                className="text-uppercase border"
+                                options={
+                                  dohMap?.employee
+                                    ? [{
+                                      value: dohMap.employee.id,
+                                      label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
+                                    }]
+                                    : []
+                                }
+                                label="D.O.H.:"
+                                readonly={!readInput}
+                              />
+                            </Col>
+
+                            <Col md={4}>
+                              <FieldSelect
+                                label="Periodo vacacional:"
+                                options={
+                                  periods.length > 0
+                                    ? periods.map((p) => ({
+                                      label: `${formatDate(p.dateInitPeriod, "dd/MM/yyyy")} - ${formatDate(p.dateEndPeriod, "dd/MM/yyyy")}`,
+                                      value: Number(p.id),
+                                    }))
+                                    : [
+                                      {
+                                        label: "El empleado no cuenta con periodos disponibles",
+                                        value: "",
+                                      },
+                                    ]
+                                }
+                                register={register("idPeriod", {
+                                  required: periods.length > 0,
+                                })}
+                                className="border"
+                                readonly={readInput || readOnlyDoh}
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-calendar-range text-success" />
+                            <h6 className="mb-0 fw-bold">Fechas de vacaciones</h6>
+                          </div>
+
+                          <Row className="g-3">
+                            <Col md={6}>
+                              <Entry
+                                label="Inicio:"
+                                type="date"
+                                register={register("dateInit")}
+                                className="border text-uppercase"
+                              />
+                            </Col>
+
+                            <Col md={6}>
+                              <Entry
+                                label="Final:"
+                                type="date"
+                                register={register("dateEnd")}
+                                min={dateInit}
+                                className="border text-uppercase"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+
+                      {selectedPeriod && (
+                        <Card className="border rounded-4 mb-3">
+                          <Card.Body>
+                            <div className="d-flex align-items-center gap-2 mb-4">
+                              <i className="bi bi-bar-chart text-warning" />
+                              <h6 className="mb-0 fw-bold">Resumen del periodo</h6>
+                            </div>
+
+                            <Row className="g-3">
+                              <Col md={6}>
+                                <div className="border rounded-3 p-3 text-center h-100">
+                                  <i className="bi bi-check2-circle text-success fs-5 mb-2 d-block" />
+                                  <div className="text-muted small">Días aprobados usados</div>
+                                  <div className="fw-bold fs-5">
+                                    {selectedPeriod.usedDaysApproved ?? 0}
+                                  </div>
+                                </div>
+                              </Col>
+
+                              <Col md={6}>
+                                <div className="border rounded-3 p-3 text-center h-100">
+                                  <i className="bi bi-calendar2-check text-info fs-5 mb-2 d-block" />
+                                  <div className="text-muted small">Días disponibles</div>
+                                  <div className="fw-bold fs-5">
+                                    {selectedPeriod.availableDays ?? 0}
+                                  </div>
+                                </div>
+                              </Col>
+                            </Row>
+                          </Card.Body>
+                        </Card>
+                      )}
+
+                      <Card className="border rounded-4">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-pen text-info" />
+                            <h6 className="mb-0 fw-bold">Firma</h6>
+                          </div>
+
+                          <div className="w-100 overflow-hidden">
+                            <SignatureInput
+                              name="signature"
+                              register={register}
+                              control={control}
+                            />
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </fieldset>
             </Form>
           </Col>
         </Row>

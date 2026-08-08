@@ -20,6 +20,7 @@ type FieldEntryProps = {
   cols?: number;
   rows?: number;
   prefix?: React.ReactNode;
+  suffix?: React.ReactNode;
 };
 
 export const Entry = ({
@@ -39,8 +40,12 @@ export const Entry = ({
   cols,
   rows,
   prefix,
+  suffix,
 }: FieldEntryProps) => {
   if (invisible) return null;
+
+  const autoCompleteValue = type === "password" ? "new-password" : "off";
+
   return (
     <Form.Group controlId={label} className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>
@@ -48,23 +53,17 @@ export const Entry = ({
         {prefix && (
           <span
             className="position-absolute text-muted"
-            style={{
-              left: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
+            style={{ left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", zIndex: 2 }}
           >
             {prefix}
           </span>
         )}
         <Form.Control
-          className={`text-uppercase w-100 ${prefix ? "ps-4" : ""} ${className}`}
+          className={`w-100 ${prefix ? "ps-4" : ""} ${suffix ? "pe-5 no-validation-icon" : ""} ${className}`}
           size="sm"
           {...register}
           type={type}
-          autoComplete="off"
+          autoComplete={autoCompleteValue}
           disabled={readonly}
           required={required}
           isInvalid={invalid}
@@ -75,9 +74,16 @@ export const Entry = ({
           min={min}
           max={max}
         />
+        {suffix && (
+          <span className="position-absolute top-50 end-0 translate-middle-y me-2" style={{ zIndex: 2 }}>
+            {suffix}
+          </span>
+        )}
       </div>
       {feedBack && (
-        <Form.Control.Feedback type="invalid">{feedBack}</Form.Control.Feedback>
+        <Form.Control.Feedback type="invalid" className={invalid ? "d-block" : ""}>
+          {feedBack}
+        </Form.Control.Feedback>
       )}
     </Form.Group>
   );

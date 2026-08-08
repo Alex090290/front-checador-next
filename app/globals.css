@@ -138,3 +138,16 @@
 .collapse-detail-enter {
   animation: collapseFadeIn 0.25s ease-out, flashHighlight 0.5s ease-out;
 }
+
+.confirm-modal-backdrop {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  background-color: rgba(153, 145, 145, 0.4) !important;
+  /* ajusta según tu diseño */
+}
+
+.form-control.no-validation-icon.is-invalid {
+  background-image: none !important;
+  padding-right: 0.75rem !important;
+  /* recupera el padding que Bootstrap reserva para su icono */
+}

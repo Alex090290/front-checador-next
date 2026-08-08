@@ -181,8 +181,8 @@ export interface Employee {
   socialSecurityNumber: string;
   rfc: string;
   curp: string;
-  weight: string;
-  height: string;
+  weight: number | null;
+  height: number | null;
   bloodType: string;
   constitution: string;
   healthStatus: string;

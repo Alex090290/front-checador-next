@@ -18,7 +18,6 @@ export default function ConfigSystem() {
   const { data, mutate, error, isLoading, isValidating } = useSWR("/api/configsystem", fetcher);
   const [mode, setMode] = useState<Mode>("view");
   const [isEditLoading, setIsEditLoading] = useState(false);
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,18 +71,28 @@ export default function ConfigSystem() {
     }
   };
 
+  const handleCancel = async () => {
+    try {
+      setIsEditLoading(true);
+      await mutate();
+      setMode("view");
+    } finally {
+      setIsEditLoading(false);
+    }
+  };
+
   return (
     <>
-      <ConditionalRender cond={loading || isLoading || isValidating}>
-        <Loading message="Cargando datos..." />
+      <ConditionalRender cond={isLoading || isEditLoading}>
+        <Loading message={isEditLoading ? "Cargando..." : "Cargando Datos"} />
       </ConditionalRender>
 
       {error && (
-        <ConfigError/> 
+        <ConfigError />
       )}
 
       {!config && !loading && !isLoading && !isValidating ? (
-         <ConfigError/> 
+        <ConfigError />
       ) : config ? (
         <div className="container py-3">
           {mode === "view" ? (
@@ -103,7 +112,7 @@ export default function ConfigSystem() {
           ) : (
             <ConfigSystemUpdateComp
               initialData={config}
-              onCancel={() => setMode("view")}
+              onCancel={handleCancel}
               onSave={saveConfig}
             />
           )}

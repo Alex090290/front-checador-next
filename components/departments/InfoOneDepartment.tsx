@@ -14,6 +14,10 @@ import FormUpdateDepartment from "./UpdateDepartment";
 import CreatePositionModal from "./CreatePositionModal";
 import { createPosition, deletePosition } from "@/app/actions/positions-actions";
 import OverLay from "../templates/OverLay";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
@@ -32,9 +36,11 @@ export default function InfoOneDepartment({
   const [showUpdateDepartmentModal, setShowUpdateDepartmentModal] = useState(false);
   const [showCreatePositionModal, setShowCreatePositionModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   if (!department) {
     return (
@@ -53,40 +59,6 @@ export default function InfoOneDepartment({
     router.push("/app/departments/create");
   };
 
-  const handleUpdateDepartment = async (
-    data: Department
-  ): Promise<ActionResponse<boolean | null>> => {
-    if (!department?.id) {
-      return {
-        success: false,
-        message: "No se encontró el departamento",
-        data: null,
-      };
-    }
-
-    const res = await updateDepartment({
-      id: Number(department.id),
-      data,
-    });
-
-    if (!res.success) {
-      modalError(res.message);
-      return {
-        success: false,
-        message: res.message,
-        data: null,
-      };
-    }
-
-    toast.success(res.message);
-
-    return {
-      success: true,
-      message: res.message,
-      data: true,
-    };
-  };
-
 
   const handleDeleteDepartment = async () => {
     if (!department?.id) {
@@ -96,18 +68,25 @@ export default function InfoOneDepartment({
 
     modalConfirm("¿Deseas eliminar este departamento?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Eliminando departamento...");
+        setFeedback("loading");
+        setFeedbackMsg("Eliminando departamento...");
 
         const res = await deleteDepartment({ id: Number(department.id) });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo eliminar el departamento");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
-        router.push("/app/departments");
+        setFeedbackMsg(res.message || "Departamento eliminado correctamente");
+        setFeedback("success");
+        setTimeout(() => {
+          router.push("/app/departments");
+        }, 1200);
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -115,31 +94,6 @@ export default function InfoOneDepartment({
     });
   };
 
-  const handleCreatePositionLoading = async (
-    idDepartment: number,
-    namePosition: string
-  ) => {
-    try {
-      setLoading(true);
-      setMessageLoading("Guardando puesto...");
-
-      const res = await createPosition({
-        idDepartment,
-        namePosition,
-      });
-
-      if (!res.success) {
-        modalError(res.message);
-        return;
-      }
-
-      toast.success(res.message);
-      router.refresh();
-    } finally {
-      setLoading(false);
-      setMessageLoading("");
-    }
-  };
 
   const handleDeletePosition = async (id?: number) => {
     if (!id) {
@@ -149,18 +103,23 @@ export default function InfoOneDepartment({
 
     modalConfirm("¿Deseas eliminar este puesto?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Eliminando puesto...");
+        setFeedback("loading");
+        setFeedbackMsg("Eliminando puesto...");
 
         const res = await deletePosition({ id });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo eliminar el puesto");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
+        setFeedbackMsg(res.message || "Puesto eliminado correctamente");
+        setFeedback("success");
         router.refresh();
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -179,16 +138,32 @@ export default function InfoOneDepartment({
   };
 
   const handleBack = () => {
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     router.push("/app/departments")
   }
-
-  console.log("department.positions", department.positions);
 
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
@@ -384,7 +359,7 @@ export default function InfoOneDepartment({
                 <FormUpdateDepartment
                   show={showUpdateDepartmentModal}
                   onHide={() => setShowUpdateDepartmentModal(false)}
-                  sendData={handleUpdateDepartment}
+                  id={Number(department.id)}
                   department={department}
                   employees={employees}
                 />
@@ -401,7 +376,6 @@ export default function InfoOneDepartment({
                     activeId: null,
                     namePosition: "",
                   }}
-                  sendData={handleCreatePositionLoading}
                 />
               </ModalBlur>
             </ConditionalRender>

@@ -10,7 +10,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Form, Button, Container, Row, Col, Card } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 const DEFAULT_VALUES: Branch = {
   name: "",
@@ -37,11 +40,13 @@ export default function CreateBranchComponent() {
     defaultValues: DEFAULT_VALUES,
   });
 
-  const { modalError, modalConfirm } = useModals();
+  const { modalConfirm } = useModals();
   const router = useRouter();
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
 
   const handleBack = () => {
     setLoading(true);
@@ -52,18 +57,25 @@ export default function CreateBranchComponent() {
   const onSubmit: SubmitHandler<Branch> = async (data) => {
     modalConfirm("¿Seguro que quieres guardar esta sucursal?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Guardando sucursal...");
+        setFeedback("loading");
+        setFeedbackMsg("Guardando sucursal...");
 
         const res = await createBranch({ branch: data });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo crear la sucursal");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
-        router.push("/app/branches");
+        setFeedbackMsg(res.message || "Sucursal creada correctamente");
+        setFeedback("success");
+        setTimeout(() => {
+          router.push("/app/branches");
+        }, 1200);
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -73,8 +85,25 @@ export default function CreateBranchComponent() {
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Guardando sucursal..."} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Actualizando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
@@ -119,153 +148,165 @@ export default function CreateBranchComponent() {
                   </div>
                 </div>
 
-                <Card className="rounded-4 shadow-sm border">
+                <Card className="rounded-4 shadow-sm mb-3">
                   <Card.Body className="p-3 p-md-5">
                     <div className="mb-4">
-                      <h5 className="fw-semibold mb-1">Datos de la sucursal</h5>
+                      <h5 className="fw-semibold mb-1">Datos generales</h5>
                       <p className="text-muted mb-3">
-                        Captura el nombre y domicilio de la sucursal.
+                        Captura la información básica de la sucursal.
                       </p>
 
-                      <Row className="g-4">
-                        <Col xs={12}>
-                          <Entry
-                            register={register("name", {
-                              required: "Este campo es requerido",
-                            })}
-                            label="Nombre"
-                            invalid={!!errors.name}
-                            feedBack={errors.name?.message}
-                            className="border"
-                          />
-                        </Col>
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-building text-primary" />
+                            <h6 className="mb-0 fw-bold">Datos de la sucursal</h6>
+                          </div>
 
-                        <Col xs={12}>
-                          <Entry
-                            register={register("street", {
-                              required: "Este campo es requerido",
-                            })}
-                            label="Calle"
-                            invalid={!!errors.street}
-                            feedBack={errors.street?.message}
-                            className="border"
-                          />
-                        </Col>
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <Entry
+                                register={register("name", {
+                                  required: "Este campo es requerido",
+                                })}
+                                label="Nombre:"
+                                invalid={!!errors.name}
+                                feedBack={errors.name?.message}
+                                className="border text-uppercase"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={4}>
-                          <Entry
-                            register={register("numberOut", {
-                              required: "Número exterior es requerido",
-                            })}
-                            label="No. Exterior"
-                            invalid={!!errors.numberOut}
-                            feedBack={errors.numberOut?.message}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={12}>
+                              <Entry
+                                register={register("street", {
+                                  required: "Este campo es requerido",
+                                })}
+                                label="Calle:"
+                                invalid={!!errors.street}
+                                feedBack={errors.street?.message}
+                                className="border text-uppercase"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={4}>
-                          <Entry
-                            register={register("numberIn")}
-                            label="No. Interior"
-                            invalid={!!errors.numberIn}
-                            feedBack={errors.numberIn?.message}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={4}>
+                              <Entry
+                                register={register("numberOut", {
+                                  required: "Número exterior es requerido",
+                                })}
+                                label="No. Exterior:"
+                                invalid={!!errors.numberOut}
+                                feedBack={errors.numberOut?.message}
+                                className="border"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={4}>
-                          <Entry
-                            register={register("zipCode", {
-                              valueAsNumber: true,
-                            })}
-                            label="Código Postal"
-                            invalid={!!errors.zipCode}
-                            feedBack={errors.zipCode?.message}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={4}>
+                              <Entry
+                                register={register("numberIn")}
+                                label="No. Interior:"
+                                invalid={!!errors.numberIn}
+                                feedBack={errors.numberIn?.message}
+                                className="border"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("neighborhood", {
-                              required: "Colonia es requerida",
-                            })}
-                            label="Colonia"
-                            invalid={!!errors.neighborhood}
-                            feedBack={errors.neighborhood?.message}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={4}>
+                              <Entry
+                                register={register("zipCode", {
+                                  valueAsNumber: true,
+                                })}
+                                label="Código Postal:"
+                                invalid={!!errors.zipCode}
+                                feedBack={errors.zipCode?.message}
+                                className="border"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("municipality", {
-                              required: "Municipio es requerido",
-                            })}
-                            label="Municipio"
-                            invalid={!!errors.municipality}
-                            feedBack={errors.municipality?.message}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={6}>
+                              <Entry
+                                register={register("neighborhood", {
+                                  required: "Colonia es requerida",
+                                })}
+                                label="Colonia:"
+                                invalid={!!errors.neighborhood}
+                                feedBack={errors.neighborhood?.message}
+                                className="border text-uppercase"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("state", {
-                              required: "Estado es requerido",
-                            })}
-                            label="Estado"
-                            invalid={!!errors.state}
-                            feedBack={errors.state?.message}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={6}>
+                              <Entry
+                                register={register("municipality", {
+                                  required: "Municipio es requerido",
+                                })}
+                                label="Municipio:"
+                                invalid={!!errors.municipality}
+                                feedBack={errors.municipality?.message}
+                                className="border text-uppercase"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("country", {
-                              required: "País es requerido",
-                            })}
-                            label="País"
-                            invalid={!!errors.country}
-                            feedBack={errors.country?.message}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={6}>
+                              <Entry
+                                register={register("state", {
+                                  required: "Estado es requerido",
+                                })}
+                                label="Estado:"
+                                invalid={!!errors.state}
+                                feedBack={errors.state?.message}
+                                className="border text-uppercase"
+                              />
+                            </Col>
 
-                        <Col xs={12}>
-                          <hr className="my-4" />
-                          <h6 className="fw-semibold mb-1">Ubicación GPS</h6>
-                          <p className="text-muted mb-3">
-                            Agrega la ubicación para confirmar el registro.
-                          </p>
-                        </Col>
+                            <Col md={6}>
+                              <Entry
+                                register={register("country", {
+                                  required: "País es requerido",
+                                })}
+                                label="País:"
+                                invalid={!!errors.country}
+                                feedBack={errors.country?.message}
+                                className="border text-uppercase"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
 
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("lat", {
-                              valueAsNumber: true,
-                            })}
-                            label="Latitud"
-                            invalid={!!errors.lat}
-                            feedBack={errors.lat?.message}
-                            className="border"
-                          />
-                        </Col>
+                      <Card className="border rounded-4">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-geo-alt text-success" />
+                            <h6 className="mb-0 fw-bold">Ubicación GPS</h6>
+                          </div>
 
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("lng", {
-                              valueAsNumber: true,
-                            })}
-                            label="Longitud"
-                            invalid={!!errors.lng}
-                            feedBack={errors.lng?.message}
-                            className="border"
-                          />
-                        </Col>
-                      </Row>
+                          <Row className="g-3">
+                            <Col md={6}>
+                              <Entry
+                                register={register("lat", {
+                                  valueAsNumber: true,
+                                })}
+                                label="Latitud:"
+                                invalid={!!errors.lat}
+                                feedBack={errors.lat?.message}
+                                className="border"
+                              />
+                            </Col>
+
+                            <Col md={6}>
+                              <Entry
+                                register={register("lng", {
+                                  valueAsNumber: true,
+                                })}
+                                label="Longitud:"
+                                invalid={!!errors.lng}
+                                feedBack={errors.lng?.message}
+                                className="border"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
                     </div>
                   </Card.Body>
                 </Card>

@@ -23,10 +23,7 @@ function SignaturesView({
   label?: string;
 }) {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
-  const [loadingSignature, setLoadingSignature] = useState(true);
-
-  console.log("url:", imgUrl);
-  
+  const [loadingSignature, setLoadingSignature] = useState(true);  
 
  useEffect(() => {
     const handleFetchSignature = async () => {

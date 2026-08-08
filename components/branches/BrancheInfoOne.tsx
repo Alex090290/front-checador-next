@@ -1,6 +1,6 @@
 "use client";
 
-import { ActionResponse, Branch } from "@/lib/definitions";
+import { Branch } from "@/lib/definitions";
 import { useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
@@ -8,11 +8,14 @@ import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import ModalBlur from "../ModalBlur";
 import FormUpdateBranch from "./FormUpdateBranch";
-import toast from "react-hot-toast";
-import { deleteBranch, updateBranch } from "@/app/actions/branches-actionst";
+import { deleteBranch } from "@/app/actions/branches-actionst";
 import { useModals } from "@/context/ModalContext";
 import OverLay from "../templates/OverLay";
 import BranchesOneError from "./branchesMessageError";
+import ErrorOverlay from "../ErrorOverlay";
+import SuccessOverlay from "../SuccessOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
@@ -27,53 +30,21 @@ export default function BrancheOne({
 }) {
   const [showUpdateBranchModal, setShowUpdateBranchModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
   const { modalError, modalConfirm } = useModals();
-
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
   const router = useRouter();
+
   if (!branch) {
     return (
-      <BranchesOneError/>
+      <BranchesOneError />
     );
   }
 
-  const handleUpdateBranch = async (
-    data: Branch
-  ): Promise<ActionResponse<boolean | null>> => {
-    if (!branch?.id) {
-      return {
-        success: false,
-        message: "No se encontró la sucursal",
-        data: null,
-      };
-    }
-
-    const res = await updateBranch({
-      id: Number(branch.id),
-      branch: data,
-    });
-
-    if (!res.success) {
-      modalError(res.message);
-      return {
-        success: false,
-        message: res.message,
-        data: null,
-      };
-    }
-
-    toast.success(res.message);
-
-    return {
-      success: true,
-      message: res.message,
-      data: true,
-    };
-  };
-
   const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading('Cargando...');
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     router.push("/app/branches/create");
   };
 
@@ -85,18 +56,25 @@ export default function BrancheOne({
 
     modalConfirm("¿Deseas eliminar esta sucursal?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Eliminando sucursal...");
+        setFeedback("loading");
+        setFeedbackMsg("Eliminando sucursal...");
 
         const res = await deleteBranch({ id: Number(branch.id) });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo eliminar la sucursal");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
-        router.push("/app/branches");
+        setFeedbackMsg(res.message || "Sucursal eliminada correctamente");
+        setFeedback("success");
+        setTimeout(() => {
+          router.push("/app/branches");
+        }, 1200);
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -105,13 +83,34 @@ export default function BrancheOne({
   };
 
   const handleBack = () => {
-    router.push("/app/branches");
-  }
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
+    setTimeout(() => {
+      router.push("/app/branches");
+    }, 1200);
+  };
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
@@ -166,7 +165,7 @@ export default function BrancheOne({
             <Button
               variant="outline-secondary"
               onClick={handleBack}
-              disabled={loading}
+              disabled={feedback === "loading"}
               className="d-inline-flex align-items-center gap-2 fw-semibold px-2 px-md-3"
             >
               <i className="bi bi-arrow-left" />
@@ -400,14 +399,14 @@ export default function BrancheOne({
                 <FormUpdateBranch
                   show={showUpdateBranchModal}
                   onHide={() => setShowUpdateBranchModal(false)}
-                  sendData={handleUpdateBranch}
+                  id={Number(branch.id)}
                   branch={branch}
                 />
               </ModalBlur>
             </ConditionalRender>
           </Card.Body>
         </Card>
-      </Container>
+      </Container >
     </>
   );
 }

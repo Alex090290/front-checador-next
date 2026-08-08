@@ -31,18 +31,34 @@ export function RelationField({
   return (
     <Form.Group className="mb-2">
       <Form.Label className="fw-semibold">{label}</Form.Label>
-      <Many2one
-        disabled={readonly}
-        options={options}
-        {...register}
-        control={control}
-        callBackMode={callBackMode}
-        size="sm"
-        className={className}
-        isInvalid={invalid}
-      />
+      <div className="position-relative">
+        <Many2one
+          disabled={readonly}
+          options={options}
+          {...register}
+          control={control}
+          callBackMode={callBackMode}
+          size="sm"
+          className={`${className ?? ""} pe-4`}
+          isInvalid={invalid}
+        />
+        {!readonly && (
+          <i
+            className="bi bi-chevron-down position-absolute text-muted"
+            style={{
+              right: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+              fontSize: "0.75rem",
+            }}
+          />
+        )}
+      </div>
       {feedBack && (
-        <Form.Control.Feedback type="invalid">{feedBack}</Form.Control.Feedback>
+        <Form.Control.Feedback type="invalid" className={invalid ? "d-block" : ""}>
+          {feedBack}
+        </Form.Control.Feedback>
       )}
     </Form.Group>
   );

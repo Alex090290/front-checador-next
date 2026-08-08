@@ -1,17 +1,27 @@
 "use client";
 
 import { deleteNotice } from "@/app/actions/newsletter-actions";
+import ConditionalRender from "@/components/ConditionalRender";
+import ErrorOverlay from "@/components/ErrorOverlay";
+import Loading from "@/components/LoadingSpinner";
+import SuccessOverlay from "@/components/SuccessOverlay";
 import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { useModals } from "@/context/ModalContext";
 import { INewsletter } from "@/lib/definitions";
 import { formatDate } from "date-fns";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import toast from "react-hot-toast";
+
+type FeedbackState = "loading" | "success" | "error" | null;
+
 
 function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
   const { modalError, modalConfirm } = useModals();
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const router = useRouter();
 
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
 
@@ -22,12 +32,18 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
       accessor: (row) => row.title,
       type: "string",
       filterable: true,
+      render: (row) => (
+        <div className="text-uppercase"> {row.title}</div>
+      )
     },
     {
       key: "text",
       label: "Texto",
       accessor: (row) => row.text,
       type: "string",
+      render: (row) => (
+        <div className="text-uppercase"> {row.text}</div>
+      )
     },
     {
       key: "dateInitiPublish",
@@ -36,7 +52,7 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
       type: "date",
       groupFormat: "yyyy-MM",
       render: (row) => (
-        <div className="text">
+        <div className="text-uppercase">
           {row.dateInitiPublish
             ? formatDate(row.dateInitiPublish, "dd-MM-yyyy HH:mm")
             : null}
@@ -50,7 +66,7 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
       type: "date",
       groupFormat: "yyyy-MM",
       render: (row) => (
-        <div className="text">
+        <div className="text-uppercase">
           {row.dateEndPublish
             ? formatDate(row.dateEndPublish, "dd-MM-yyyy HH:mm")
             : null}
@@ -60,25 +76,62 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
   ];
 
   const actionDeleteRecord = () => {
-    if (selectedIds.length <= 0)
-      return modalError("Selecciona un registro para continuar");
+    if (selectedIds.length <= 0) {
+      modalError("Selecciona un registro para continuar");
+      return;
+    }
 
     modalConfirm(
-      `Se eliminarán ${selectedIds.length ?? 0
-      } registros. Confirma la acción para continuar`,
+      `Se eliminarán ${selectedIds.length ?? 0} registros. Confirma la acción para continuar`,
       async () => {
-        const toastId = toast.loading("Eliminando registros");
-        for (const record of selectedIds) {
-          const res = await deleteNotice({ id: String(record) });
-          if (!res) return modalError("Error al eliminar registro");
+        try {
+          setFeedback("loading");
+          setFeedbackMsg("Eliminando registros...");
+
+          for (const record of selectedIds) {
+            const res = await deleteNotice({ id: String(record) });
+
+            if (!res) {
+              setFeedbackMsg("Error al eliminar registro");
+              setFeedback("error");
+              return;
+            }
+          }
+
+          setFeedbackMsg("Se han eliminado los registros");
+          setFeedback("success");
+        } catch {
+          setFeedbackMsg("Error inesperado, intenta de nuevo");
+          setFeedback("error");
         }
-        toast.success("Se han eliminado los registros", { id: toastId });
       }
     );
   };
 
   return (
     <>
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Eliminando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            setSelectedIds([]);
+            router.refresh();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
       <Container className="py-3" style={{ maxWidth: "1600px" }}>
         <div className="d-flex gap-2">
           <Button

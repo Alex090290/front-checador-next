@@ -10,7 +10,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 const DEFAULT_VALUES: Department = {
   nameDepartment: "",
@@ -34,11 +37,14 @@ export default function CreateDepartmentComponent({
     defaultValues: DEFAULT_VALUES,
   });
 
-  const { modalError, modalConfirm } = useModals();
+  const { modalConfirm } = useModals();
   const router = useRouter();
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+
 
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
 
   const handleBack = () => {
     setLoading(true);
@@ -49,18 +55,25 @@ export default function CreateDepartmentComponent({
   const onSubmit: SubmitHandler<Department> = async (data) => {
     modalConfirm("¿Seguro que quieres guardar este departamento?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Guardando departamento...");
+        setFeedback("loading");
+        setFeedbackMsg("Guardando departamento...");
 
         const res = await createDepartment({ data });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo crear el departamento");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
-        router.push("/app/departments");
+        setFeedbackMsg(res.message || "Departamento creado correctamente");
+        setFeedback("success");
+        setTimeout(() => {
+          router.push("/app/departments");
+        }, 1200);
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -70,8 +83,25 @@ export default function CreateDepartmentComponent({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Guardando departamento..."} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Actualizando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
@@ -88,7 +118,6 @@ export default function CreateDepartmentComponent({
                   </div>
 
                   <div className="d-flex flex-wrap gap-2">
-
                     <Button
                       variant="outline-secondary"
                       type="button"
@@ -97,7 +126,7 @@ export default function CreateDepartmentComponent({
                     >
                       Cancelar
                     </Button>
-                    
+
                     <Button
                       type="button"
                       variant="secondary"
@@ -117,52 +146,61 @@ export default function CreateDepartmentComponent({
                   </div>
                 </div>
 
-                <Card className="rounded-4 shadow-sm border">
+                <Card className="rounded-4 shadow-sm mb-3">
                   <Card.Body className="p-3 p-md-5">
                     <div className="mb-4">
-                      <h5 className="fw-semibold mb-1">Datos del departamento</h5>
+                      <h5 className="fw-semibold mb-1">Datos generales</h5>
                       <p className="text-muted mb-3">
-                        Captura el nombre, descripción y líder del departamento.
+                        Captura la información básica del departamento.
                       </p>
 
-                      <Row className="g-4">
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("nameDepartment", {
-                              required: "Este campo es requerido",
-                            })}
-                            label="Nombre"
-                            invalid={!!errors.nameDepartment}
-                            feedBack={errors.nameDepartment?.message}
-                            className="text-uppercase border"
-                          />
-                        </Col>
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-diagram-3 text-primary" />
+                            <h6 className="mb-0 fw-bold">Datos del departamento</h6>
+                          </div>
 
-                        <Col xs={12} md={6}>
-                          <RelationField
-                            register={register("idLeader")}
-                            label="Líder"
-                            control={control}
-                            callBackMode="id"
-                            className="text-uppercase border"
-                            options={employees.map((emp) => ({
-                              id: emp.id ?? 0,
-                              displayName: `${emp.lastName?.toUpperCase()} ${emp.name?.toUpperCase()}`,
-                              name: `${emp.lastName?.toUpperCase()} ${emp.name?.toUpperCase()}`,
-                            }))}
-                          />
-                        </Col>
+                          <Row className="g-3">
+                            <Col md={6}>
+                              <Entry
+                                register={register("nameDepartment", {
+                                  required: "Este campo es requerido",
+                                })}
+                                label="Nombre:"
+                                invalid={!!errors.nameDepartment}
+                                feedBack={errors.nameDepartment?.message}
+                                className="text-uppercase border"
+                              />
+                            </Col>
 
-                        <Col xs={12}>
-                          <Entry
-                            register={register("description")}
-                            label="Descripción"
-                            invalid={!!errors.description}
-                            feedBack={errors.description?.message}
-                            className="border"
-                          />
-                        </Col>
-                      </Row>
+                            <Col md={6}>
+                              <RelationField
+                                register={register("idLeader")}
+                                label="Líder:"
+                                control={control}
+                                callBackMode="id"
+                                className="text-uppercase border"
+                                options={employees.map((emp) => ({
+                                  id: emp.id ?? 0,
+                                  displayName: `${emp.lastName?.toUpperCase()} ${emp.name?.toUpperCase()}`,
+                                  name: `${emp.lastName?.toUpperCase()} ${emp.name?.toUpperCase()}`,
+                                }))}
+                              />
+                            </Col>
+
+                            <Col md={12}>
+                              <Entry
+                                register={register("description")}
+                                label="Descripción:"
+                                invalid={!!errors.description}
+                                feedBack={errors.description?.message}
+                                className="border text-uppercase"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
                     </div>
                   </Card.Body>
                 </Card>

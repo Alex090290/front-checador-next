@@ -250,6 +250,16 @@ export default function EmployeeTableClient({
       render: (u) => <div className="text-uppercase">{u.lastName} {u.name}</div>,
     },
     {
+      key: "branch",
+      label: "Sucursal",
+      accessor: (u) => u.branch?.name,
+      filterable: false,
+      type: "string",
+      render: (u) => (
+        <div className="text-uppercase">{u.branch?.name}</div>
+      ),
+    },
+    {
       key: "department.nameDepartment",
       label: "Departamento",
       accessor: (u) => u.department?.nameDepartment,

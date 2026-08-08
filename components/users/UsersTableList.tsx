@@ -187,6 +187,7 @@ export default function UserTableClient({
       accessor: (u) => u.email,
       filterable: true,
       type: "string",
+      render: (u) => <div className="text-uppercase">{u.email}</div>,
     },
     {
       key: "gender",

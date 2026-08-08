@@ -30,10 +30,8 @@ import FormUpdateEmployee from "@/app/(auth)/app/employee/views/updateEmplyee/up
 import { TInputsEmployee } from "@/app/(auth)/app/employee/definition";
 import {
   reEntry,
-  updateEmploye,
 } from "@/app/actions/employee-actions";
 import { useModals } from "@/context/ModalContext";
-import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import RegisterBiometricModal from "./rekognition";
@@ -44,6 +42,11 @@ import { useRouter } from "next/navigation";
 import OverLay from "../templates/OverLay";
 import { formatScheduleTime } from "@/lib/helpers";
 import moment from "moment";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
   if (!value) return "-";
@@ -117,7 +120,7 @@ function statusVariant(type: number | null) {
 }
 
 type Props = {
-  employee: Employee | null;
+  employee: Employee;
   id: string;
   departments: Department[];
   branches: Branch[];
@@ -141,7 +144,7 @@ export default function EmployeeDetailsView({
   const [showRegisterBiometricModal, setShowRegisterBiometricModal] = useState(false);
   const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
   const [showUnsubscribeEmployeeModal, setShowUnsubscribeEmployeeModal] = useState(false);
   const [showNewDocumentEmployeeModal, setShowNewDocumentEmployeeModal] = useState(false);
   const statusOne = employee?.status === 1;
@@ -153,7 +156,8 @@ export default function EmployeeDetailsView({
   const statusEmployee = employee?.status ?? 0;
   const saturdatEntry = moment(employee?.scheduleSaturday?.entry, "HH:mm").format("hh:mm A");
   const saturdayExit = moment(employee?.scheduleSaturday?.exit, "HH:mm").format("hh:mm A");
-    
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||
@@ -164,23 +168,6 @@ export default function EmployeeDetailsView({
     branches.find((b) => b.id === employee?.branch?.id) || employee?.branch;
 
 
-  const handleUpdateEmployee = async (
-    data: TInputsEmployee
-  ): Promise<ActionResponse<boolean | null>> => {
-    if (!employee?.id) {
-      return {
-        success: false,
-        message: "No se encontró el empleado",
-        data: null,
-      };
-    }
-
-    return await updateEmploye({
-      id: employee.id,
-      data,
-    });
-  };
-
   const handleReEntry = async () => {
     if (!employee?.id) {
       modalError("No se encontró el empleado");
@@ -189,16 +176,22 @@ export default function EmployeeDetailsView({
 
     modalConfirm("Confirma el reingreso del empleado", async () => {
       try {
-        setLoading(true);
+        setFeedback("loading");
+        setFeedbackMsg("Reingresando empleado...");
 
         const res = await reEntry({ id: Number(employee.id) });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo reingresar al empleado");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
+        setFeedbackMsg(res.message || "Empleado actualizado correctamente");
+        setFeedback("success");
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
         setLoading(false);
       }
@@ -219,12 +212,16 @@ export default function EmployeeDetailsView({
   };
 
   const handleBack = () => {
-    router.push("/app/employee");
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
+    setTimeout(() => {
+      router.push("/app/employee");
+    }, 1200);
   }
 
   const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading("Cargando...");
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     router.push("/app/employee/create");
   };
 
@@ -235,8 +232,24 @@ export default function EmployeeDetailsView({
         <AlertBiometrics onClose={() => setHideBiometricAlert(true)} />
       </ConditionalRender>
 
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
@@ -317,7 +330,7 @@ export default function EmployeeDetailsView({
             <Button
               variant="outline-secondary"
               onClick={handleBack}
-              disabled={loading}
+              disabled={feedback === "loading"}
               className="d-inline-flex align-items-center gap-2 fw-semibold px-2 px-md-3"
             >
               <i className="bi bi-arrow-left" />
@@ -1631,7 +1644,7 @@ export default function EmployeeDetailsView({
                 <FormUpdateEmployee
                   show={showUpdateEmployeeModal}
                   onHide={() => setShowUpdateEmployeeModal(false)}
-                  sendData={handleUpdateEmployee}
+                  id={Number(employee.id)}
                   employee={employee}
                   departments={departments}
                   branches={branches}

@@ -182,7 +182,6 @@ export default function FaceCheckPanel({
 
       resetForNextEmployee();
     } catch (error) {
-      console.error(error);
       setMessage("Error al validar por rostro");
       setFeedback("error");
       setFeedbackMsg("Error al validar por rostro");

@@ -9,7 +9,6 @@ import {
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
 import {
-  ActionResponse,
   Branch,
   Department,
   Employee,
@@ -28,10 +27,14 @@ import {
 } from "react-hook-form";
 import { TInputsEmployee } from "../../definition";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { updateEmploye } from "@/app/actions/employee-actions";
+import SuccessOverlay from "@/components/SuccessOverlay";
+import ErrorOverlay from "@/components/ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type ModalAction = {
-  sendData: (data: TInputsEmployee) => Promise<ActionResponse<boolean | null>>;
+  id: number;
   employee?: Employee | null;
   departments?: Department[];
   branches?: Branch[];
@@ -83,8 +86,8 @@ function formatEmployeeValues(employee?: Employee | null): TInputsEmployee {
     socialSecurityNumber: employee?.socialSecurityNumber || "",
     rfc: employee?.rfc || "",
     curp: employee?.curp || "",
-    weight: employee?.weight || "",
-    height: employee?.height || "",
+    weight: employee?.weight || null,
+    height: employee?.height || null,
     bloodType: employee?.bloodType || "",
     constitution: employee?.constitution || "",
     healthStatus: employee?.healthStatus || "",
@@ -115,7 +118,7 @@ function formatEmployeeValues(employee?: Employee | null): TInputsEmployee {
 
 export default function FormUpdateEmployee({
   onHide,
-  sendData,
+  id,
   employee,
   departments = [],
   branches = [],
@@ -132,10 +135,11 @@ export default function FormUpdateEmployee({
   });
 
   const { modalError, modalConfirm } = useModals();
-  const [, setMessageLoading] = useState("");
   const [loading, setLoading] = useState(false);
   const [puestos, setPuestos] = useState<Position[]>([]);
   const router = useRouter();
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const {
     append: appendContact,
@@ -179,7 +183,7 @@ export default function FormUpdateEmployee({
   //     })),
   //   [employees]
   // );
-  
+
 
   const branchOptions = useMemo(
     () =>
@@ -212,32 +216,27 @@ export default function FormUpdateEmployee({
   );
 
   const onSubmit: SubmitHandler<TInputsEmployee> = async (data) => {
-    onHide();
-
-    modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
-
+    modalConfirm("¿Seguro que quieres guardar el usuario?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Actualizando cambios...");
-        const res = await sendData(data);
+        setFeedback("loading");
+        setFeedbackMsg("Actualizando empleado...");
+
+        const res = await updateEmploye({ data, id });
 
         if (!res.success) {
-          modalError(res.message);
-          console.log(res.message);
-
+          setFeedbackMsg(res.message || "No se pudo actualizar el empleado");
+          setFeedback("error");
           return;
         }
-        toast.success(res.message);
-        onHide();
-        router.refresh();
 
-      } finally {
-
-        setLoading(false);
-        setMessageLoading("");
+        setFeedbackMsg(res.message || "Empleado actualizado correctamente");
+        setFeedback("success");
+          router.refresh();      
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       }
-
-    })
+    });
   };
 
   const onError: SubmitErrorHandler<TInputsEmployee> = () => {
@@ -249,6 +248,27 @@ export default function FormUpdateEmployee({
     <>
       <ConditionalRender cond={loading || isSubmitting}>
         <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <div className="p-2">
@@ -272,7 +292,7 @@ export default function FormUpdateEmployee({
               {/* =============== Información Personal ===================*/}
               <FormPage title="Información Personal" eventKey="personalInfo">
 
-                <Card className="border rounded-4 mb-3">
+                <Card className="border rounded-4 mb-3 mt-1">
                   <Card.Body>
                     <div className="d-flex align-items-center gap-2 mb-4">
                       <i className="bi bi-person text-primary" />
@@ -286,7 +306,7 @@ export default function FormUpdateEmployee({
                           label="Nombre:"
                           invalid={!!errors.name}
                           feedBack={errors.name?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={6}>
@@ -295,7 +315,7 @@ export default function FormUpdateEmployee({
                           label="Apellidos:"
                           invalid={!!errors.lastName}
                           feedBack={errors.lastName?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={6}>
@@ -314,7 +334,7 @@ export default function FormUpdateEmployee({
                           label="Nacionalidad:"
                           invalid={!!errors.nationality}
                           feedBack={errors.nationality?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={6}>
@@ -327,7 +347,7 @@ export default function FormUpdateEmployee({
                           label="Género:"
                           invalid={!!errors.gender}
                           feedBack={errors.gender?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                     </Row>
@@ -347,7 +367,7 @@ export default function FormUpdateEmployee({
                           register={register("emailPersonal")}
                           label="Correo personal:"
                           invalid={!!errors.emailPersonal}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={6}>
@@ -384,7 +404,7 @@ export default function FormUpdateEmployee({
                           label="Calle:"
                           invalid={!!errors.address?.street}
                           feedBack={errors.address?.street?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={4}>
@@ -409,7 +429,7 @@ export default function FormUpdateEmployee({
                           label="Colonia:"
                           invalid={!!errors.address?.neighborhood}
                           feedBack={errors.address?.neighborhood?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={4}>
@@ -425,7 +445,7 @@ export default function FormUpdateEmployee({
                         <Entry
                           register={register("address.municipality")}
                           label="Municipio:"
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={6}>
@@ -434,7 +454,7 @@ export default function FormUpdateEmployee({
                           label="Estado:"
                           invalid={!!errors.address?.state}
                           feedBack={errors.address?.state?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                       <Col md={12}>
@@ -443,7 +463,7 @@ export default function FormUpdateEmployee({
                           label="País:"
                           invalid={!!errors.address?.country}
                           feedBack={errors.address?.country?.message}
-                          className="border"
+                          className="border text-uppercase"
                         />
                       </Col>
                     </Row>
@@ -498,7 +518,7 @@ export default function FormUpdateEmployee({
 
                     <Row className="g-3">
                       <Col md={4}>
-                        <Entry register={register("bloodType")} label="Grupo sanguíneo:" className="border" />
+                        <Entry register={register("bloodType")} label="Grupo sanguíneo:" className="border text-uppercase" />
                       </Col>
                       <Col md={4}>
                         <Entry register={register("weight")} label="Peso:" className="border" />
@@ -507,16 +527,16 @@ export default function FormUpdateEmployee({
                         <Entry register={register("height")} label="Altura:" className="border" />
                       </Col>
                       <Col md={6}>
-                        <Entry register={register("constitution")} label="Constitución:" className="border" />
+                        <Entry register={register("constitution")} label="Complexión:" className="border text-uppercase" />
                       </Col>
                       <Col md={6}>
-                        <Entry register={register("healthStatus")} label="Estado de salud:" className="border" />
+                        <Entry register={register("healthStatus")} label="Estado de salud:" className="border text-uppercase" />
                       </Col>
                       <Col md={6}>
-                        <Entry register={register("education")} label="Formación académica:" className="border" />
+                        <Entry register={register("education")} label="Formación académica:" className="border text-uppercase" />
                       </Col>
                       <Col md={6}>
-                        <Entry register={register("skills")} label="Habilidades:" className="border" />
+                        <Entry register={register("skills")} label="Habilidades:" className="border text-uppercase" />
                       </Col>
                       <Col md={6}>
                         <Entry register={register("sons")} label="Hijos:" className="border" />
@@ -543,7 +563,7 @@ export default function FormUpdateEmployee({
               {/* =============== Información Laboral ===================*/}
               <FormPage title="Información Laboral" eventKey="jobInfo">
 
-                <Card className="border rounded-4 mb-3">
+                <Card className="border rounded-4 mb-3 mt-1">
                   <Card.Body>
                     <div className="d-flex align-items-center gap-2 mb-4">
                       <i className="bi bi-diagram-3 text-primary" />
@@ -761,9 +781,9 @@ export default function FormUpdateEmployee({
                           className="border"
                         />
                       </Col>
-                      <Col md={6}>
+                      {/* <Col md={6}>
                         <Entry register={register("dischargeReason")} label="Motivo de la baja:" className="border" />
-                      </Col>
+                      </Col> */}
                       <Col md={6}>
                         <Entry register={register("keyCONTPAQi")} label="keyCONTPAQi:" className="border" />
                       </Col>
@@ -795,88 +815,94 @@ export default function FormUpdateEmployee({
 
               {/* =============== Contactos ===================*/}
               <FormPage title="Contactos" eventKey="contacts">
-                <Card className="border rounded-4">
+
+                <Card className="border rounded-4 mb-3 mt-1">
                   <Card.Body>
                     <div className="d-flex align-items-center gap-2 mb-4">
-                      <i className="bi bi-person-lines-fill text-primary" />
+                      <i className="bi bi-person-lines-fill text-danger" />
                       <h6 className="mb-0 fw-bold">Contactos de emergencia</h6>
                     </div>
 
-                    <Table size="sm" borderless hover responsive>
-                      <thead>
-                        <tr className="border-bottom table-active">
-                          <th className="border-end">Nombre</th>
-                          <th className="border-end">Parentezco</th>
-                          <th className="border-end">Contacto</th>
-                          <th className="border-end text-center">
-                            <i className="bi bi-trash" />
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {contactFields.map((contact, index) => (
-                          <tr key={contact.id}>
-                            <td className="border-bottom">
-                              <Form.Control
-                                {...register(`emergencyContacts.${index}.name`, { required: true })}
+                    <div className="border rounded-2 overflow-hidden">
+                      <Table size="sm" borderless hover responsive className="mb-0">
+                        <thead>
+                          <tr className="border-bottom table-active">
+                            <th className="border-end">Nombre</th>
+                            <th className="border-end">Parentesco</th>
+                            <th className="border-end">Contacto</th>
+                            <th className="border-end text-center">
+                              <i className="bi bi-trash" />
+                            </th>
+                          </tr>
+                        </thead>
 
-                                className="border-0 shadow-none"
-                              />
-                            </td>
-                            <td className="border-bottom">
-                              <Form.Control
-                                {...register(`emergencyContacts.${index}.kinship`, { required: true })}
+                        <tbody>
+                          {contactFields.map((contact, index) => (
+                            <tr key={contact.id}>
+                              <td valign="middle" className="border-bottom">
+                                <Form.Control
+                                  {...register(`emergencyContacts.${index}.name`, { required: true })}
+                                  className="border-0 shadow-none text-uppercase"
+                                  isInvalid={!!errors.emergencyContacts?.[index]?.name}
+                                />
+                              </td>
 
-                                className="border-0 shadow-none"
-                              />
-                            </td>
-                            <td className="border-bottom">
-                              <Form.Control
-                                {...register(`emergencyContacts.${index}.phone.internationalNumber`, { required: true })}
+                              <td valign="middle" className="border-bottom">
+                                <Form.Control
+                                  {...register(`emergencyContacts.${index}.kinship`, { required: true })}
+                                  className="border-0 shadow-none text-uppercase"
+                                  isInvalid={!!errors.emergencyContacts?.[index]?.kinship}
+                                />
+                              </td>
 
-                                className="border-0 shadow-none"
-                              />
-                            </td>
-                            <td className="border-bottom text-center">
+                              <td valign="middle" className="border-bottom">
+                                <Form.Control
+                                  {...register(`emergencyContacts.${index}.phone.internationalNumber`, { required: true })}
+                                  className="border-0 shadow-none"
+                                  isInvalid={!!errors.emergencyContacts?.[index]?.phone}
+                                />
+                              </td>
+
+                              <td valign="middle" className="border-bottom text-center">
+                                <Button
+                                  type="button"
+                                  variant="link"
+                                  onClick={() => removeContact(index)}
+                                >
+                                  <i className="bi bi-trash text-danger" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+
+                          <tr>
+                            <td colSpan={4}>
                               <Button
                                 type="button"
-
-                                variant="danger"
-                                onClick={() => removeContact(index)}
+                                variant="link"
+                                onClick={() =>
+                                  appendContact({
+                                    name: "",
+                                    kinship: "",
+                                    phone: { internationalNumber: "" },
+                                  } as never)
+                                }
                               >
-                                <i className="bi bi-trash" />
+                                <i className="bi bi-plus-lg me-1" />
+                                Agregar
                               </Button>
                             </td>
                           </tr>
-                        ))}
-
-                        <tr>
-                          <td colSpan={4}>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="link"
-                              onClick={() =>
-                                appendContact({
-                                  name: "",
-                                  kinship: "",
-                                  phone: "",
-                                } as never)
-                              }
-                            >
-                              Agregar
-                            </Button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </Table>
+                        </tbody>
+                      </Table>
+                    </div>
                   </Card.Body>
                 </Card>
               </FormPage>
 
               {/* =============== Ingresos y Bajas ===================*/}
               <FormPage title="Ingresos y Bajas" eventKey="historical">
-                <Card className="border rounded-4">
+                <Card className="border rounded-4 mt-1">
                   <Card.Body>
                     <div className="d-flex align-items-center gap-2 mb-4">
                       <i className="bi bi-calendar-range text-warning" />
@@ -885,13 +911,13 @@ export default function FormUpdateEmployee({
 
                     <Row className="g-3">
                       <Col md={6}>
-                        <Entry register={register("admissionDate")} label="Inicio de relación:" type="date" className="border" />
+                        <Entry register={register("admissionDate")} label="Inicio de relación:" type="date" className="border text-uppercase" />
                       </Col>
                       <Col md={6}>
-                        <Entry register={register("dischargeDate")} label="Fin de relación:" type="date" className="border" />
+                        <Entry register={register("dischargeDate")} label="Fin de relación:" type="date" className="border text-uppercase" />
                       </Col>
                       <Col md={12}>
-                        <Entry register={register("typeOfDischarge")} label="Tipo de baja:" className="border" />
+                        <Entry register={register("typeOfDischarge")} label="Tipo de baja:" className="border text-uppercase" />
                       </Col>
                       <Col xs={12}>
                         <Form.Group>
@@ -899,7 +925,7 @@ export default function FormUpdateEmployee({
                           <Form.Control
                             as="textarea"
                             rows={4}
-                            className="border"
+                            className="border text-uppercase"
                             {...register("dischargeReason")}
                           />
                         </Form.Group>
@@ -921,7 +947,7 @@ export default function FormUpdateEmployee({
               </Button>
 
               <Button type="submit" variant="success" disabled={loading || isSubmitting}>
-                {isSubmitting ? "Guardando..." : "Guardar"}
+                {isSubmitting ? "Actualizando..." : "Actualizar"}
               </Button>
             </div>
 

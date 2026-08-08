@@ -110,9 +110,12 @@ export default function ConfigSystemView({
   onEdit: () => void;
   isLoading?: boolean;
 }) {
+
   return (
     //Bloque para bloquear pagina y mostrar mensaje cargando
     <>
+    
+
       <Card className="border-0 shadow-sm">
 
         <Card.Body>
@@ -121,14 +124,11 @@ export default function ConfigSystemView({
               <Card.Title className="mb-1 fs-2">Configuración del sistema</Card.Title>
             </div>
 
-            <Button variant="success" onClick={onEdit} disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  Cargando...
-                </>
-              ) : (
-                "Actualizar"
-              )}
+            <Button
+              variant="success"
+              onClick={onEdit}
+              disabled={isLoading}>
+              Actualizar
             </Button>
           </div>
 

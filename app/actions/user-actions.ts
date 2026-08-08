@@ -333,7 +333,7 @@ export async function createUser({
       password,
       idEmployee,
     };
-    
+
     const headers = {
       headers: {
         Authorization: `Bearer ${apiToken}`,
@@ -341,13 +341,13 @@ export async function createUser({
     };
 
     try {
-      const res = await axios.post(`${API_URL}/users`,dataSave,
+      const res = await axios.post(`${API_URL}/users`, dataSave,
         headers
       );
 
       revalidatePath("/app/users");
-
       return {
+
         success: true,
         message: "Usuario creado correctamente",
         data: res.data.data,

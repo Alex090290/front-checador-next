@@ -4,6 +4,7 @@ import { ActionResponse, AttendanceReportItem, ICheckInFeedback } from "@/lib/de
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { FetchUsersArgs } from "@/lib/constancy/interface";
+import { revalidatePath } from "next/cache";
 
 type FetchArgs = {
   idPeriod?: number;
@@ -286,31 +287,43 @@ export async function searchEventosParams({
   }
 }
 
-export async function generateFault(): Promise<string[]> {
+export async function generateFault(): Promise<ActionResponse<string[]>> {
   try {
     const { API_URL, apiToken } = await storeAction();
-    const response = await axios
-      .get(`${API_URL}/checador/registrarFaltas`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
-    return response.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.log(error);
-    return [];
+
+    const res = await axios.get(`${API_URL}/checador/registrarFaltas`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    revalidatePath("/app/checador"); // ajusta la ruta según tu módulo
+
+    return {
+      success: true,
+      message: res.data?.message || "Faltas generadas correctamente",
+      data: res.data?.data ?? [],
+    };
+  } catch (error: unknown) {
+    const message = axios.isAxiosError<{ message?: string | string[] }>(error)
+      ? formatBackendMessage(error.response?.data?.message) || error.message
+      : error instanceof Error
+        ? error.message
+        : "Error en la respuesta";
+
+    console.error(message);
+
+    return {
+      success: false,
+      message,
+      data: [],
+    };
   }
+}
+
+function formatBackendMessage(message?: string | string[]): string | undefined {
+  if (!message) return undefined;
+  return Array.isArray(message) ? message.join(" · ") : message;
 }
 
 export async function fetchEventosReports(args: FetchArgs = {}): Promise<{

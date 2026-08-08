@@ -365,90 +365,91 @@ export async function createEmployee({
       ? sanitizePhoneNumber(homePhoneString)
       : null;
 
-    await axios
-      .post(
-        `${API_URL}/employee`,
-        {
-          name: data.name,
-          lastName: data.lastName,
-          phonePersonal: sanitizedPhonePersonal,
-          emailPersonal: data.emailPersonal,
-          idCheck: data.idCheck,
-          passwordCheck: data.passwordCheck,
-          entryOffice: data.entryOffice,
-          exitOffice: data.exitOffice,
-          entryLunch: data.entryLunch,
-          exitLunch: data.exitLunch,
-          entrySaturdayOffice: data.entrySaturdayOffice,
-          exitSaturdayOffice: data.exitSaturdayOffice,
-          idDepartment: data.idDepartment?.id || 0,
-          idPosition: data.idPosition,
-          branch: data.branch,
-          gender: data.gender,
-          emergencyContacts: sanitizedEmergencyContacts,
-          phoneCompany: sanitizedPhoneCompany,
-          homePhone: sanitizedHomePhone,
-          phoneExtCompany: !isNaN(data.phoneExtCompany)
-            ? data.phoneExtCompany
-            : 0,
-          address: data.address,
-          emailCompany: data.emailCompany || "",
-          scheduleDescription: data.scheduleDescription,
-          policies: data.policies,
-          group: data.group,
-          sons: data.sons,
-          daughters: data.daughters,
-          birthDate: data.birthDate,
-          socialSecurityNumber: data.socialSecurityNumber,
-          rfc: data.rfc,
-          curp: data.curp,
-          weight: Number(data.weight) || 0,
-          height: Number(data.height) || 0,
-          bloodType: data.bloodType.toUpperCase(),
-          constitution: data.constitution,
-          healthStatus: data.healthStatus,
-          education: data.education,
-          skills: data.skills,
-          comments: data.comments,
-          keyAspelNOI: data.keyAspelNOI,
-          keyCONTPAQi: data.keyCONTPAQi,
-          admissionDate: data.admissionDate,
-          dischargeDate: data.dischargeDate,
-          anniversaryLetter: data.anniversaryLetter,
-          nationality: data.nationality,
-          dailyWage: Number(data.dailyWage),
-          foodBaucher: data.foodBaucher,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiToken}`,
-          },
-        }
-      )
-      .then((res) => res.data)
-      .catch((err) => {
-        throw new Error(
-          err?.response?.data?.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+    const headers = {
+      headers: { Authorization: `Bearer ${apiToken}` },
+    };
+
+    const res = await axios.post(
+      `${API_URL}/employee`,
+      {
+        name: data.name,
+        lastName: data.lastName,
+        phonePersonal: sanitizedPhonePersonal,
+        emailPersonal: data.emailPersonal,
+        idCheck: data.idCheck,
+        passwordCheck: data.passwordCheck,
+        entryOffice: data.entryOffice,
+        exitOffice: data.exitOffice,
+        entryLunch: data.entryLunch,
+        exitLunch: data.exitLunch,
+        entrySaturdayOffice: data.entrySaturdayOffice,
+        exitSaturdayOffice: data.exitSaturdayOffice,
+        idDepartment: data.idDepartment?.id || 0,
+        idPosition: data.idPosition,
+        branch: data.branch,
+        gender: data.gender,
+        emergencyContacts: sanitizedEmergencyContacts,
+        phoneCompany: sanitizedPhoneCompany,
+        homePhone: sanitizedHomePhone,
+        phoneExtCompany: !isNaN(data.phoneExtCompany) ? data.phoneExtCompany : 0,
+        address: data.address,
+        emailCompany: data.emailCompany || "",
+        scheduleDescription: data.scheduleDescription,
+        policies: data.policies,
+        group: data.group,
+        sons: data.sons,
+        daughters: data.daughters,
+        birthDate: data.birthDate,
+        socialSecurityNumber: data.socialSecurityNumber,
+        rfc: data.rfc,
+        curp: data.curp,
+        weight: Number(data.weight) || 0,
+        height: Number(data.height) || 0,
+        bloodType: data.bloodType.toUpperCase(),
+        constitution: data.constitution,
+        healthStatus: data.healthStatus,
+        education: data.education,
+        skills: data.skills,
+        comments: data.comments,
+        keyAspelNOI: data.keyAspelNOI,
+        keyCONTPAQi: data.keyCONTPAQi,
+        admissionDate: data.admissionDate,
+        dischargeDate: data.dischargeDate,
+        anniversaryLetter: data.anniversaryLetter,
+        nationality: data.nationality,
+        dailyWage: Number(data.dailyWage),
+        foodBaucher: data.foodBaucher,
+      },
+      headers
+    );
 
     revalidatePath("/app/employee");
 
     return {
       success: true,
       message: "Empleado creado",
+      data: res.data,
     };
   } catch (error: unknown) {
-    const err = error as Error;
-    console.log(err);
+    const message = axios.isAxiosError<{ message?: string | string[] }>(error)
+      ? formatBackendMessage(error.response?.data?.message) || error.message
+      : error instanceof Error
+        ? error.message
+        : "Error en la respuesta";
+
+    console.error(message);
 
     return {
       success: false,
-      message: err.message,
+      message,
+      data: null,
     };
   }
+}
+
+function formatBackendMessage(message?: string | string[]): string | undefined {
+  if (!message) return undefined;
+  return Array.isArray(message) ? message.join(" · ") : message;
 }
 
 export async function updateEmploye({

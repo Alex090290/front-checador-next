@@ -15,6 +15,11 @@ import { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import { updateInability } from "@/app/actions/inability-actions";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 export type TInputsInability = {
   idEmployee: number | null;
@@ -27,11 +32,9 @@ export type TInputsInability = {
 };
 
 type ModalAction = {
-  sendData: (
-    data: TInputsInability
-  ) => Promise<ActionResponse<boolean | null>>;
   inhability?: IInability | null;
   employees?: Employee[];
+  id?: number;
 };
 
 function getDefaultValues(
@@ -70,9 +73,9 @@ function getDefaultValues(
 
 export default function FormUpdateInability({
   onHide,
-  sendData,
   inhability,
   employees = [],
+  id
 }: ModalBasicProps & ModalAction) {
   const session = useSessionSnapshot();
   const sessionEmployeeId = Number(session?.uid?.idEmployee);
@@ -93,6 +96,8 @@ export default function FormUpdateInability({
   });
 
   const onChangeDateInit = watch("dateInit");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -113,22 +118,54 @@ export default function FormUpdateInability({
   }, [inhability, reset, modalError, session?.uid?.role, sessionEmployeeId]);
 
   const onSubmit: SubmitHandler<TInputsInability> = async (data) => {
+    if (!id) return;
+
     modalConfirm("¿Deseas guardar los cambios de esta incapacidad?", async () => {
-      const res = await sendData(data);
 
-      if (!res.success) {
-        modalError(res.message);
-        return;
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Actualizando falta...");
+
+
+        const res = await updateInability(Number(id), data);
+
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo actualizar");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Actualizado correctamente");
+        setFeedback("success");
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       }
-
-      onHide();
-    });
+    })
   };
+
 
   return (
     <>
-      <ConditionalRender cond={loading || isSubmitting}>
-        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      <ConditionalRender cond={feedback === "loading" || isSubmitting}>
+        <Loading message={feedbackMsg || "Actualizando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <div className="p-2">
@@ -185,6 +222,7 @@ export default function FormUpdateInability({
                   <Col md={6}>
                     <FieldSelect
                       label="Categoría:"
+                      className="text-uppercase border"
                       options={[
                         { label: "Enfermedad general", value: "enfermedad general" },
                         { label: "Riesgo de trabajo", value: "riesgo de trabajo" },
@@ -199,6 +237,7 @@ export default function FormUpdateInability({
                   <Col md={6}>
                     <FieldSelect
                       label="Tipo:"
+                      className="text-uppercase border"
                       options={[
                         { label: "Inicial", value: "inicial" },
                         { label: "Subsecuente", value: "subsecuente" },

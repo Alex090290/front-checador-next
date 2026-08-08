@@ -1,11 +1,9 @@
 "use client";
 
-import { updateUser } from "@/app/actions/user-actions";
 import FormUpdateUser from "@/app/(auth)/app/users/views/UpdateUser";
 import ChangePasswordModal from "@/app/(auth)/app/users/views/ModalChangePassword";
 import ModalBlur from "@/components/ModalBlur";
-import { TInputsUser } from "@/components/users/UsersTableList";
-import { ActionResponse, Employee, Permission, User } from "@/lib/definitions";
+import { Employee, Permission, User } from "@/lib/definitions";
 import { useState } from "react";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useRouter } from "next/navigation";
@@ -13,6 +11,7 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import OverLay from "../templates/OverLay";
 import UserOneError from "./usersMessageError";
+import moment from "moment-timezone";
 
 function formatPermission(text?: string | null) {
   if (!text) return "—";
@@ -50,7 +49,8 @@ export default function ShowInfoOneUser({
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
-
+  const CreatedHour = moment.utc(user?.createdAt).format("HH:mm A");
+  const CreatedDate = moment.utc(user?.createdAt, "DD/MM/YYYY HH:mm").tz("America/Mexico_City").format("DD/MM/YYYY");
   const router = useRouter();
 
   if (!user) {
@@ -71,37 +71,6 @@ export default function ShowInfoOneUser({
     user.phone?.number ??
     "—";
 
-  const handleUpdateUser = async (
-    data: TInputsUser
-  ): Promise<ActionResponse<boolean | null>> => {
-    if (!user?.id) {
-      return {
-        success: false,
-        message: "No hay usuario seleccionado",
-        data: null,
-      };
-    }
-
-    const res = await updateUser({
-      ...data,
-      id: user.id, 
-      idEmployee: data.idEmployee!
-    });
-
-    if (!res) {
-      return {
-        success: false,
-        message: "No se pudo actualizar el usuario",
-        data: null,
-      };
-    }
-
-    return {
-      success: true,
-      message: "Usuario actualizado correctamente",
-      data: true,
-    };
-  };
 
   const handleCreate = () => {
     setLoading(true);
@@ -112,12 +81,8 @@ export default function ShowInfoOneUser({
   const handleBack = () => {
     setLoading(true);
     setMessageLoading("Cargando datos...");
-
-
     router.push("/app/users");
-
   }
-
 
   return (
     <>
@@ -300,7 +265,7 @@ export default function ShowInfoOneUser({
                           <span className="text-muted">Correo</span>
                         </div>
 
-                        <span className="fw-semibold text-md-end text-break">
+                        <span className="fw-semibold text-md-end text-break text-uppercase">
                           {user.email ?? "—"}
                         </span>
                       </div>
@@ -327,14 +292,25 @@ export default function ShowInfoOneUser({
                         </span>
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2">
-                          <i className="bi bi-calendar-event text-secondary" />
+                          <i className="bi bi-calendar-event text-info" />
                           <span className="text-muted">Fecha de creación</span>
                         </div>
 
                         <span className="fw-semibold text-end">
-                          {user.createdAt ?? "—"}
+                          {(CreatedDate) ?? "—"}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-clock text-secondary" />
+                          <span className="text-muted">Hora de creación</span>
+                        </div>
+
+                        <span className="fw-semibold text-end">
+                          {(CreatedHour) ?? "—"}
                         </span>
                       </div>
                     </div>
@@ -397,7 +373,7 @@ export default function ShowInfoOneUser({
             <FormUpdateUser
               show={showUpdateUserModal}
               onHide={() => setShowUpdateUserModal(false)}
-              sendData={handleUpdateUser}
+              id={Number(user.id)}
               user={user}
               perms={perms}
               employees={employees}

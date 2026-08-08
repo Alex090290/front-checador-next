@@ -1,11 +1,11 @@
 "use client";
 
+import { updateDepartment } from "@/app/actions/departments-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry, RelationField } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import {
-  ActionResponse,
   Department,
   Employee,
   ModalBasicProps,
@@ -14,9 +14,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type ModalAction = {
-  sendData: (data: Department) => Promise<ActionResponse<boolean | null>>;
+  id: number;
   department?: Department | null;
   employees?: Employee[];
 };
@@ -32,7 +36,7 @@ function getDefaultValues(department?: Department | null): Department {
 
 export default function FormUpdateDepartment({
   onHide,
-  sendData,
+  id,
   department,
   employees = [],
 }: ModalBasicProps & ModalAction) {
@@ -50,6 +54,8 @@ export default function FormUpdateDepartment({
   const [loading, setLoading] = useState(false);
   const { modalError, modalConfirm } = useModals();
   const [, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -63,26 +69,28 @@ export default function FormUpdateDepartment({
   }, [department, reset, modalError]);
 
   const onSubmit: SubmitHandler<Department> = async (data) => {
-    onHide();
-
     modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
 
       try {
-        setLoading(true);
-        setMessageLoading("Actualizando cambios...");
-        const res = await sendData(data);
+        setFeedback("loading");
+        setFeedbackMsg("Actualizando departamento...");
+        const res = await updateDepartment({
+          data: data,
+          id: Number(id)
+        });
 
         if (!res.success) {
-          modalError(res.message);
-          console.log(res.message);
-
+          setFeedbackMsg(res.message || "No se pudo actualizar el departamento");
+          setFeedback("error");
           return;
         }
-        onHide();
+        setFeedbackMsg(res.message || "Departamento actualizado correctamente");
+        setFeedback("success");
         router.refresh();
-
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
-
         setLoading(false);
         setMessageLoading("");
       }
@@ -93,6 +101,27 @@ export default function FormUpdateDepartment({
     <>
       <ConditionalRender cond={loading || isSubmitting}>
         <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <div className="p-2">

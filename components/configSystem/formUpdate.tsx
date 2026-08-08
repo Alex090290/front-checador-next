@@ -7,7 +7,6 @@ import { Control, Controller, useForm } from "react-hook-form";
 import useSWR from "swr";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
 import { useModals } from "@/context/ModalContext";
 
 
@@ -15,8 +14,10 @@ import { useModals } from "@/context/ModalContext";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { useRouter } from "next/navigation";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
 
-
+type FeedbackState = "loading" | "success" | "error" | null;
 
 /** ======================
  *  Types
@@ -72,8 +73,8 @@ export type EmployeeLite = {
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 const upperCase = (text?: string) => {
-    return text?.toUpperCase() || "";
-  };
+  return text?.toUpperCase() || "";
+};
 
 const empName = (e: EmployeeLite) => `${upperCase(e.name ?? "")} ${upperCase(e.lastName ?? "")}`.trim();
 
@@ -287,7 +288,7 @@ function EmployeeMultiSelect({
   const removeOne = (id: number) => {
     const next = value.filter((x) => Number(x) !== Number(id));
     onChange(next);
-  };
+  };  
 
 
   return (
@@ -307,7 +308,7 @@ function EmployeeMultiSelect({
           <div className="text-muted small">Sin empleados extra</div>
         ) : (
           selectedEmployees.map((e) => (
-            <Badge key={e._id ?? String(e.id)} bg="primary" className="d-inline-flex align-items-center gap-2">
+            <Badge key={e._id ?? String(e.id)} bg="info" className="d-inline-flex align-items-center gap-2">
               <span className="text-uppercase">{empName(e)}</span>
               <button
                 type="button"
@@ -511,6 +512,8 @@ export default function ConfigSystemUpdate({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const router = useRouter();
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const { modalConfirm } = useModals();
 
@@ -557,17 +560,19 @@ export default function ConfigSystemUpdate({
 
     modalConfirm("¿Seguro que quieres actualizar la configuración?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Actualizando configuración...");
+        setFeedback("loading");
+        setFeedbackMsg("Actualizando información...");
 
         const res = await onSave(payload);
 
         if (!res.success) {
-          alert(res.message ?? "No se pudo guardar");
+          setFeedbackMsg(res.message || "No se pudo eliminar");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message ?? "Configuración actualizada");
+        setFeedbackMsg(res.message || "Eliminado correctamente");
+        setFeedback("success");
         router.push("/app/configSystem")
       } finally {
         setLoading(false);
@@ -578,8 +583,25 @@ export default function ConfigSystemUpdate({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Guardando actualización..."} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Actualizando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Card className="border-0 shadow-sm">

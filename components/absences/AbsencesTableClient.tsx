@@ -17,8 +17,12 @@ import { generateFault } from "@/app/actions/eventos-actions";
 import useSWR from "swr";
 import { ICheckInFeedback } from "@/lib/definitions";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 function statusVariant(type: string, category?: string) {
     switch ((type ?? "").toLowerCase()) {
@@ -77,8 +81,8 @@ export default function AbsencesTableClient({
     const router = useRouter();
     const session = useSessionSnapshot();
     const roles = session?.uid?.roles;
-    const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
+    const [, setLoading] = useState(false);
+    const [, setMessageLoading] = useState("");
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
     const currentSearch = sp.get("search") ?? "";
@@ -103,6 +107,8 @@ export default function AbsencesTableClient({
     const [showModalPenalty, setShowModalPenalty] = useState(false);
     const [, setStatusUpdate] = useState("");
     const [, setTypeUpdate] = useState("");
+    const [feedbackMsg, setFeedbackMsg] = useState("");
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
 
     const { mutate } = useSWR<ICheckInFeedback[]>(
         "/api/eventos",
@@ -334,27 +340,35 @@ export default function AbsencesTableClient({
 
     const handleGenerateFaults = () => {
         modalConfirm("¿Seguro que desea generar las faltas del día?", async () => {
-            setMessageLoading(`Generando registros...`);
-            setLoading(true);
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Generando registros...");
 
-            await generateFault()
-                .then(() => {
-                    mutate();
-                    setStatusUpdate("");
-                    setTypeUpdate("");
-                    clearSelectedIds();
-                    router.refresh();
-                    setLoading(false);
-                })
-                .catch(() => {
-                    setStatusUpdate("");
-                    setTypeUpdate("");
-                    clearSelectedIds();
-                    setLoading(false);
-                });
+                const res = await generateFault();
+
+                if (!res.success) {
+                    setFeedbackMsg(res.message || "No se pudieron generar las faltas");
+                    setFeedback("error");
+                    return;
+                }
+
+                setFeedbackMsg(res.message || "Faltas generadas correctamente");
+                setFeedback("success");
+
+                mutate();
+                setStatusUpdate("");
+                setTypeUpdate("");
+                clearSelectedIds();
+                router.refresh();
+            } catch {
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
+                setFeedback("error");
+                setStatusUpdate("");
+                setTypeUpdate("");
+                clearSelectedIds();
+            }
         });
     };
-
 
 
     //Desgloce de la tabla
@@ -418,10 +432,23 @@ export default function AbsencesTableClient({
 
     return (
         <>
-            <ConditionalRender cond={loading}>
-                <Loading message={messageLoading} />
+            <ConditionalRender cond={feedback === "loading"}>
+                <Loading message={feedbackMsg || "Generando..."} />
             </ConditionalRender>
 
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
+            </ConditionalRender>
             <Container className="py-3 " style={{ maxWidth: "1600px" }}>
 
                 <ConditionalRender cond={!isLeader}>

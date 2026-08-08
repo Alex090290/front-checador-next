@@ -79,9 +79,9 @@ export default function ShowInfoPermissionRequest({
   const [permissionPDFModal, setPermissionPDFModal] = useState(false);
 
 
-  const signatures = useMemo(() => 
-      Array.isArray(permission?.signatures) ? permission.signatures : [],
-      [permission?.signatures]
+  const signatures = useMemo(() =>
+    Array.isArray(permission?.signatures) ? permission.signatures : [],
+    [permission?.signatures]
   );
 
   // ID del empleado con sesión activa
@@ -109,7 +109,7 @@ export default function ShowInfoPermissionRequest({
 
     return sign?.url !== "";
   };
-  
+
   const showLeaderApprove = useMemo(() => {
     return (!!session?.uid?.roles?.isLeader || !!session?.uid?.roles?.isExtra)
       && idEmployee !== overtimeEmployeeId
@@ -134,7 +134,7 @@ export default function ShowInfoPermissionRequest({
 
   if (!permission) {
     return (
-      <PermissionsOneError/> 
+      <PermissionsOneError />
     );
   }
 
@@ -159,6 +159,9 @@ export default function ShowInfoPermissionRequest({
     setMessageLoading("Cargando datos...");
     router.push("/app/permissions");
   }
+
+  const signaturesComplete = permission.signatures.every((f) => f.url);
+
 
   return (
     <>
@@ -226,16 +229,18 @@ export default function ShowInfoPermissionRequest({
               </OverLay>
             </ConditionalRender>
 
-            <OverLay string="Descargar PDF">
-              <Button
-                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
-                variant="dark"
-                onClick={handleDownloadPDF}
-              >
-                <i className="bi bi-filetype-pdf" />
-                <span className="d-none d-md-inline ms-2">Descargar</span>
-              </Button>
-            </OverLay>
+            <ConditionalRender cond={signaturesComplete}>
+              <OverLay string="Descargar PDF">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
+                  variant="dark"
+                  onClick={handleDownloadPDF}
+                >
+                  <i className="bi bi-filetype-pdf" />
+                  <span className="d-none d-md-inline ms-2">Descargar</span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
           </div>
 
           <div className=" d-md-flex flex-wrap">
@@ -296,7 +301,7 @@ export default function ShowInfoPermissionRequest({
                         </div>
                         <span className="fw-semibold text-end">{createdAt}</span>
                       </div>
-                      
+
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2">
                           <i className="bi bi-clock" />
@@ -455,7 +460,7 @@ export default function ShowInfoPermissionRequest({
 
 
       {/* Modales */}
-      < ApproveLeaderModal
+      <ApproveLeaderModal
         show={approveModal}
         onHide={() => setApproveModal(false)
         }

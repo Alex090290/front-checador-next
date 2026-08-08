@@ -7,6 +7,11 @@ import { enrollEmployeeFace } from "@/app/actions/employee-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Employee } from "@/lib/definitions";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+import { useModals } from "@/context/ModalContext";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type Props = {
   employeeId: number;
@@ -42,9 +47,11 @@ export default function RegisterBiometricModal({
   const [loading, setLoading] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [startingCamera, setStartingCamera] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
+  const { modalConfirm } = useModals();
   const [hasBiometricPhotos, setHasBiometricPhotos] = useState(false);
-
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
   // const hasBiometricPhotos = employee.biometricPhotos && c;
 
   useEffect(() => {
@@ -225,35 +232,37 @@ export default function RegisterBiometricModal({
   };
 
   const handleSubmit = async () => {
+
     if (files.length < MIN_FILES) {
       toast.error(`Debes registrar al menos ${MIN_FILES} fotos`);
       return;
     }
+    modalConfirm("¿Seguro que quieres guardar el usuario?", async () => {
 
-    try {
-      setLoading(true);
-      setMessageLoading("Registrando biométricos...");
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Registrando biométricos...");
 
-      const res = await enrollEmployeeFace({
-        idEmployee: employeeId,
-        files: files.map((item) => item.file),
-      });
+        const res = await enrollEmployeeFace({
+          idEmployee: employeeId,
+          files: files.map((item) => item.file),
+        });
 
-      if (!res.success) {
-        toast.error(res.message || "Error al registrar biométricos");
-        return;
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo reingresar al empleado");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Empleado actualizado correctamente");
+        setFeedback("success");
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
+      } finally {
+        setLoading(false);
       }
-
-      toast.success(res.message || "Biométricos registrados correctamente");
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      console.error(error);
-      toast.error("Error al registrar biométricos");
-    } finally {
-      setLoading(false);
-      setMessageLoading("");
-    }
+    });
   };
 
   const handleActiveBiometrics = async () => {
@@ -261,201 +270,227 @@ export default function RegisterBiometricModal({
   }
 
   return (
-    <div className="p-2">
+    <>
+
       <ConditionalRender cond={loading || startingCamera}>
-        <Loading message={messageLoading || "Cargando..."} />
+        <Loading message={startingCamera ? "Cargando..." : "Cargando..."} />
       </ConditionalRender>
 
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <div>
-          <h4 className="mb-1 fw-bold">Registrar biométricos</h4>
-          <p className="text-muted mb-0">
-            {employeeName
-              ? `Empleado: ${employeeName.toUpperCase()}`
-              : `Empleado #${employeeId}`}
-          </p>
-        </div>
-
-        <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-          {hasBiometricPhotos ? "Registrado" : "Nuevo"}
-        </span>
-      </div>
-
-      <ConditionalRender cond={!hasBiometricPhotos}>
-        <Alert variant="info" className="rounded-4">
-          Registra entre <strong>{MIN_FILES}</strong> y <strong>{MAX_FILES}</strong>{" "}
-          fotografías claras del rostro del empleado. Idealmente:
-          frontal, ligera izquierda y ligera derecha, con buena iluminación.
-        </Alert>
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
       </ConditionalRender>
 
-      <Card className="border rounded-4 mb-3">
-        <Card.Body>
-          <div className="d-flex align-items-center justify-content-between mb-4">
-            <div className="d-flex align-items-center gap-2">
-              <i className="bi bi-camera text-primary" />
-              <h6 className="mb-0 fw-bold">Captura de fotografías</h6>
-            </div>
-            <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-              {hasBiometricPhotos
-                ? `${employee.biometricPhotos?.length} / ${MAX_FILES}`
-                : `${files.length} / ${MAX_FILES}`}
-            </span>
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onClose();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
+      <div className="p-2">
+
+
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 className="mb-1 fw-bold">Registrar biométricos</h4>
+            <p className="text-muted mb-0">
+              {employeeName
+                ? `Empleado: ${employeeName.toUpperCase()}`
+                : `Empleado #${employeeId}`}
+            </p>
           </div>
 
-          <ConditionalRender cond={!hasBiometricPhotos}>
-            <Form.Label className="fw-semibold">Selecciona una opción</Form.Label>
-
-            <div className="d-flex flex-wrap gap-2 mb-2">
-              <Button
-                variant="outline-primary"
-                onClick={() => uploadInputRef.current?.click()}
-                disabled={loading || startingCamera || files.length >= MAX_FILES}
-              >
-                <i className="bi bi-upload me-2" />
-                Subir archivo
-              </Button>
-
-              <Button
-                variant="outline-success"
-                onClick={handleOpenCamera}
-                disabled={loading || startingCamera || files.length >= MAX_FILES}
-              >
-                <i className="bi bi-camera me-2" />
-                {startingCamera ? "Abriendo cámara..." : "Tomar foto"}
-              </Button>
-            </div>
-          </ConditionalRender>
-
-          <Form.Control
-            ref={uploadInputRef}
-            type="file"
-            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            multiple
-            onChange={handleChangeUploadFile}
-            disabled={loading}
-            className="d-none"
-          />
-
-          <ConditionalRender cond={!hasBiometricPhotos && files.length === 0}>
-            <div className="text-muted mt-2">
-              Aún no has registrado ninguna imagen.
-            </div>
-          </ConditionalRender>
-        </Card.Body>
-      </Card>
-
-      {cameraOpen && (
-        <Card className="border rounded-4 mb-3">
-          <Card.Body>
-            <div className="d-flex align-items-center gap-2 mb-4">
-              <i className="bi bi-camera-video text-success" />
-              <h6 className="mb-0 fw-bold">Cámara</h6>
-            </div>
-
-            <div className="border rounded-3 p-2 text-center">
-              <video
-                ref={videoRef}
-                className="w-100 rounded"
-                style={{ maxHeight: 360, objectFit: "cover" }}
-                autoPlay
-                playsInline
-                muted
-              />
-
-              <div className="d-flex justify-content-center gap-2 mt-3">
-                <Button
-                  variant="success"
-                  onClick={handleTakePhoto}
-                  disabled={files.length >= MAX_FILES || loading}
-                >
-                  <i className="bi bi-camera-fill me-2" />
-                  Capturar foto
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  onClick={stopCamera}
-                  disabled={loading}
-                >
-                  Cancelar cámara
-                </Button>
-              </div>
-            </div>
-          </Card.Body>
-        </Card>
-      )}
-
-      {files.length > 0 && (
-        <Card className="border rounded-4 mb-3">
-          <Card.Body>
-            <div className="d-flex align-items-center gap-2 mb-4">
-              <i className="bi bi-images text-warning" />
-              <h6 className="mb-0 fw-bold">Fotografías capturadas</h6>
-            </div>
-
-            <Row className="g-3">
-              {files.map((item, index) => (
-                <Col md={4} key={item.id}>
-                  <div className="border rounded-3 p-2 h-100">
-                    <div className="small fw-semibold mb-2">
-                      Foto {index + 1}
-                    </div>
-
-                    <Image
-                      src={item.preview}
-                      alt={`Vista previa ${index + 1}`}
-                      rounded
-                      fluid
-                      style={{
-                        width: "100%",
-                        height: 220,
-                        objectFit: "cover",
-                      }}
-                    />
-
-                    <div className="mt-2 d-grid">
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleRemoveFile(item.id)}
-                        disabled={loading}
-                      >
-                        <i className="bi bi-trash me-2" />
-                        Quitar
-                      </Button>
-                    </div>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          </Card.Body>
-        </Card>
-      )}
-
-      <canvas ref={canvasRef} className="d-none" />
-
-      <div className="d-flex justify-content-end gap-2 mt-4">
-        <Button variant="secondary" onClick={onClose} disabled={loading}>
-          Cancelar
-        </Button>
+          <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+            {hasBiometricPhotos ? "Registrado" : "Nuevo"}
+          </span>
+        </div>
 
         <ConditionalRender cond={!hasBiometricPhotos}>
-          <Button
-            variant="success"
-            onClick={handleSubmit}
-            disabled={loading || files.length < MIN_FILES}
-          >
-            {loading ? "Registrando..." : "Registrar biométricos"}
-          </Button>
+          <Alert variant="info" className="rounded-4">
+            Registra entre <strong>{MIN_FILES}</strong> y <strong>{MAX_FILES}</strong>{" "}
+            fotografías claras del rostro del empleado. Idealmente:
+            frontal, ligera izquierda y ligera derecha, con buena iluminación.
+          </Alert>
         </ConditionalRender>
 
-        <ConditionalRender cond={hasBiometricPhotos}>
-          <Button variant="success" onClick={handleActiveBiometrics}>
-            Actualizar biométricos
+        <Card className="border rounded-4 mb-3">
+          <Card.Body>
+            <div className="d-flex align-items-center justify-content-between mb-4">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-camera text-primary" />
+                <h6 className="mb-0 fw-bold">Captura de fotografías</h6>
+              </div>
+              <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                {hasBiometricPhotos
+                  ? `${employee.biometricPhotos?.length} / ${MAX_FILES}`
+                  : `${files.length} / ${MAX_FILES}`}
+              </span>
+            </div>
+
+            <ConditionalRender cond={!hasBiometricPhotos}>
+              <Form.Label className="fw-semibold">Selecciona una opción</Form.Label>
+
+              <div className="d-flex flex-wrap gap-2 mb-2">
+                <Button
+                  variant="outline-primary"
+                  onClick={() => uploadInputRef.current?.click()}
+                  disabled={loading || startingCamera || files.length >= MAX_FILES}
+                >
+                  <i className="bi bi-upload me-2" />
+                  Subir archivo
+                </Button>
+
+                <Button
+                  variant="outline-success"
+                  onClick={handleOpenCamera}
+                  disabled={loading || startingCamera || files.length >= MAX_FILES}
+                >
+                  <i className="bi bi-camera me-2" />
+                  {startingCamera ? "Abriendo cámara..." : "Tomar foto"}
+                </Button>
+              </div>
+            </ConditionalRender>
+
+            <Form.Control
+              ref={uploadInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              multiple
+              onChange={handleChangeUploadFile}
+              disabled={loading}
+              className="d-none"
+            />
+
+            <ConditionalRender cond={!hasBiometricPhotos && files.length === 0}>
+              <div className="text-muted mt-2">
+                Aún no has registrado ninguna imagen.
+              </div>
+            </ConditionalRender>
+          </Card.Body>
+        </Card>
+
+        {cameraOpen && (
+          <Card className="border rounded-4 mb-3">
+            <Card.Body>
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <i className="bi bi-camera-video text-success" />
+                <h6 className="mb-0 fw-bold">Cámara</h6>
+              </div>
+
+              <div className="border rounded-3 p-2 text-center">
+                <video
+                  ref={videoRef}
+                  className="w-100 rounded"
+                  style={{ maxHeight: 360, objectFit: "cover" }}
+                  autoPlay
+                  playsInline
+                  muted
+                />
+
+                <div className="d-flex justify-content-center gap-2 mt-3">
+                  <Button
+                    variant="success"
+                    onClick={handleTakePhoto}
+                    disabled={files.length >= MAX_FILES || loading}
+                  >
+                    <i className="bi bi-camera-fill me-2" />
+                    Capturar foto
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    onClick={stopCamera}
+                    disabled={loading}
+                  >
+                    Cancelar cámara
+                  </Button>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        )}
+
+        {files.length > 0 && (
+          <Card className="border rounded-4 mb-3">
+            <Card.Body>
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <i className="bi bi-images text-warning" />
+                <h6 className="mb-0 fw-bold">Fotografías capturadas</h6>
+              </div>
+
+              <Row className="g-3">
+                {files.map((item, index) => (
+                  <Col md={4} key={item.id}>
+                    <div className="border rounded-3 p-2 h-100">
+                      <div className="small fw-semibold mb-2">
+                        Foto {index + 1}
+                      </div>
+
+                      <Image
+                        src={item.preview}
+                        alt={`Vista previa ${index + 1}`}
+                        rounded
+                        fluid
+                        style={{
+                          width: "100%",
+                          height: 220,
+                          objectFit: "cover",
+                        }}
+                      />
+
+                      <div className="mt-2 d-grid">
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleRemoveFile(item.id)}
+                          disabled={loading}
+                        >
+                          <i className="bi bi-trash me-2" />
+                          Quitar
+                        </Button>
+                      </div>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </Card.Body>
+          </Card>
+        )}
+
+        <canvas ref={canvasRef} className="d-none" />
+
+        <div className="d-flex justify-content-end gap-2 mt-4">
+          <Button variant="secondary" onClick={onClose} disabled={loading}>
+            Cancelar
           </Button>
-        </ConditionalRender>
+
+          <ConditionalRender cond={!hasBiometricPhotos}>
+            <Button
+              variant="success"
+              onClick={handleSubmit}
+              disabled={loading || files.length < MIN_FILES}
+            >
+              {loading ? "Registrando..." : "Registrar biométricos"}
+            </Button>
+          </ConditionalRender>
+
+          <ConditionalRender cond={hasBiometricPhotos}>
+            <Button variant="success" onClick={handleActiveBiometrics}>
+              Actualizar biométricos
+            </Button>
+          </ConditionalRender>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -8,6 +8,7 @@ import Loading from "@/components/LoadingSpinner";
 import {
   Entry,
   FieldSelect,
+  RelationField,
   SignatureInput,
 } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
@@ -106,6 +107,12 @@ export default function CreatePermissionComponent({
     && !roles?.isApproverLeaders
     && !roles?.isApproverDoh;
 
+  const readOnlyDoh = !roles?.isLeader
+    && !roles?.isExtra
+    && roles?.isDoh
+    && !roles?.isApproverLeaders
+    && !roles?.isApproverDoh
+    && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
 
   const idEmployee = Number(session?.uid?.idEmployee);
 
@@ -199,8 +206,9 @@ export default function CreatePermissionComponent({
 
   const leaderOptions = useMemo(() => {
     const mapToOption = (e: Employee | EmployeeRef) => ({
-      value: e.id!,
-      label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+      id: e.id!,
+      displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+      name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`
     });
 
     function hasId<T extends Employee | EmployeeRef>(e: T): e is T & { id: number } {
@@ -362,7 +370,7 @@ export default function CreatePermissionComponent({
       modalError("La firma es obligatoria");
       return;
     }
-    
+
     modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
       try {
         setFeedback("loading");
@@ -465,211 +473,220 @@ export default function CreatePermissionComponent({
                   </div>
                 </div>
 
-                <Card className="rounded-4 shadow-sm border">
+                <Card className="rounded-4 shadow-sm mb-3">
                   <Card.Body className="p-3 p-md-5">
                     <div className="mb-4">
-                      <h5 className="fw-semibold mb-1">Datos del empleado</h5>
+                      <h5 className="fw-semibold mb-1">Datos generales</h5>
                       <p className="text-muted mb-3">
-                        Selecciona el empleado, líder y responsable D.O.H.
+                        Captura el empleado, motivo, fecha y firma del permiso.
                       </p>
 
-                      <Row className="g-4">
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-person text-primary" />
+                            <h6 className="mb-0 fw-bold">Datos del empleado</h6>
+                          </div>
 
-                        {/* Elegir empelado */}
-                        <Col xs={12}>
-                          <FieldSelect
-                            register={register("idEmployee", {
-                              required: true,
-                              setValueAs: (v) => (v === "" ? null : Number(v))
-                            })}
-                            options={filteredEmployees.map((e) => ({
-                              value: Number(e.id!),
-                              label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                            }))}
-                            label="Empleado:"
-                            readonly={readInput}
-                            className="text-uppercase border"
-                          />
-                        </Col>
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <RelationField
+                                register={register("idEmployee", {
+                                  required: true,
+                                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                                })}
+                                options={filteredEmployees.map((e) => ({
+                                  id: Number(e.id!),
+                                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                  name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
+                                }))}
+                                label="Empleado:"
+                                control={control}
+                                callBackMode="id"
+                                readonly={readInput}
+                                className="text-uppercase border"
+                              />
+                            </Col>
 
-                        {/* Elegir lider */}
-                        <Col xs={12} md={6}>
-                          <FieldSelect
-                            readonly={readInput}
-                            register={register("idLeader", {
-                              required: true,
-                              setValueAs: (v) => (v === "" ? null : Number(v))
-                            })}
-                            options={leaderOptions}
-                            label="Líder:"
-                            className="text-uppercase border"
-                          />
-                        </Col>
+                            <Col md={6}>
+                              <RelationField
+                                readonly={readInput}
+                                register={register("idLeader", {
+                                  required: true,
+                                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                                })}
+                                options={leaderOptions}
+                                control={control}
+                                callBackMode="id"
+                                label="Líder:"
+                                className="text-uppercase border"
+                              />
+                            </Col>
 
-                        {/* Elegir DOH */}
-                        <Col xs={12} md={6}>
-                          <FieldSelect
-                            register={register("idPersonDoh", { required: true })}
-                            options={
-                              dohMap?.employee
-                                ? [{
-                                  value: dohMap.employee.id,
-                                  label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
-                                }]
-                                : []
-                            }
-                            label="D.O.H."
-                            className="text-uppercase border"
-                            readonly={!readInput}
-                          />
-                        </Col>
-                      </Row>
-                    </div>
+                            <Col md={6}>
+                              <FieldSelect
+                                register={register("idPersonDoh", { required: true })}
+                                options={
+                                  dohMap?.employee
+                                    ? [{
+                                      value: dohMap.employee.id,
+                                      label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
+                                    }]
+                                    : []
+                                }
+                                label="D.O.H.:"
+                                className="text-uppercase border"
+                                readonly={!readOnlyDoh}
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
 
-                    <hr className="my-4" />
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-card-text text-warning" />
+                            <h6 className="mb-0 fw-bold">Motivo del permiso</h6>
+                          </div>
 
-                    <div className="mb-4">
-                      <h5 className="fw-semibold mb-1">Motivo del permiso</h5>
-                      <p className="text-muted mb-3">
-                        Indica el tipo de permiso y describe el motivo.
-                      </p>
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <FieldSelect
+                                options={[
+                                  {
+                                    label: "TRÁMITE PERSONAL",
+                                    value: "PERMISO POR TRÁMITE PERSONAL",
+                                  },
+                                  {
+                                    label: "SITUACIÓN VIAL",
+                                    value: "PERMISO POR SITUACIÓN VIAL",
+                                  },
+                                  {
+                                    label: "POR SALUD (PROPIA O DE FAMILIAR)",
+                                    value: "PERMISO POR SALUD",
+                                  },
+                                  {
+                                    label: "ASUNTOS ESCOLARES",
+                                    value: "PERMISO POR ASUSNTOS ESCOLARES",
+                                  },
+                                  {
+                                    label: "PERMISO POR PATERNIDAD",
+                                    value: "PERMISO PATERNIDAD",
+                                  },
+                                  {
+                                    label: "OTROS",
+                                    value: "PERMISO OTROS",
+                                  },
+                                ]}
+                                register={register("type", { required: true })}
+                                label="Tipo:"
+                                invalid={!!errors.type}
+                                className="border"
+                              />
+                            </Col>
 
-                      <Row className="g-4">
-                        <Col xs={12}>
-                          <FieldSelect
-                            options={[
-                              {
-                                label: "TRÁMITE PERSONAL",
-                                value: "PERMISO POR TRÁMITE PERSONAL",
-                              },
-                              {
-                                label: "SITUACIÓN VIAL",
-                                value: "PERMISO POR SITUACIÓN VIAL",
-                              },
-                              {
-                                label: "POR SALUD (PROPIA O DE FAMILIAR)",
-                                value: "PERMISO POR SALUD",
-                              },
-                              {
-                                label: "ASUNTOS ESCOLARES",
-                                value: "PERMISO POR ASUSNTOS ESCOLARES",
-                              },
-                              {
-                                label: "PERMISO POR PATERNIDAD",
-                                value: "PERMISO PATERNIDAD",
-                              },
-                              {
-                                label: "OTROS",
-                                value: "PERMISO OTROS",
-                              },
-                            ]}
-                            register={register("type", { required: true })}
-                            label="Tipo:"
-                            invalid={!!errors.type}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={12}>
+                              <Entry
+                                label="Descripción del motivo:"
+                                register={register("motive", { required: true })}
+                                invalid={!!errors.motive}
+                                className="border text-uppercase"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
 
-                        <Col xs={12}>
-                          <Entry
-                            label="Descripción del motivo:"
-                            register={register("motive", { required: true })}
-                            invalid={!!errors.motive}
-                            className="border"
-                          />
-                        </Col>
-                      </Row>
-                    </div>
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-calendar-range text-success" />
+                            <h6 className="mb-0 fw-bold">Fecha y horario</h6>
+                          </div>
 
-                    <hr className="my-4" />
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <div className="d-flex flex-wrap gap-4">
+                                <Form.Check
+                                  {...register("modeSelect")}
+                                  value="forHours"
+                                  type="radio"
+                                  label="Horas"
+                                  id="forHours"
+                                />
+                                <Form.Check
+                                  {...register("modeSelect")}
+                                  value="forDays"
+                                  type="radio"
+                                  label="Días"
+                                  id="forDays"
+                                />
+                              </div>
+                            </Col>
 
-                    <div className="mb-4">
-                      <h5 className="fw-semibold mb-1">Fecha y horario</h5>
-                      <p className="text-muted mb-3">
-                        Define si el permiso será por horas o por días.
-                      </p>
+                            <Col md={6}>
+                              <Entry
+                                label="Fecha inicio:"
+                                type="date"
+                                register={register("dateInit")}
+                                className="border text-left text-uppercase"
+                              />
+                            </Col>
 
-                      <Row className="g-4">
-                        <Col xs={12}>
-                          <div className="d-flex flex-wrap gap-4">
-                            <Form.Check
-                              {...register("modeSelect")}
-                              value="forHours"
-                              type="radio"
-                              label="Horas"
-                              id="forHours"
-                            />
-                            <Form.Check
-                              {...register("modeSelect")}
-                              value="forDays"
-                              type="radio"
-                              label="Días"
-                              id="forDays"
+                            <Col md={6}>
+                              <Entry
+                                label="Fecha final:"
+                                type="date"
+                                register={register("dateEnd")}
+                                invalid={!!errors.dateEnd}
+                                readonly={modeSelect === "forHours"}
+                                min={dateInit}
+                                className="border text-left text-uppercase"
+                              />
+                            </Col>
+
+                            <ConditionalRender cond={modeSelect === "forHours"}>
+                              <>
+                                <Col md={6}>
+                                  <Entry
+                                    register={register("hourInit")}
+                                    label="Hora inicial:"
+                                    className="text-left border"
+                                    type="time"
+                                  />
+                                </Col>
+
+                                <Col md={6}>
+                                  <Entry
+                                    label="Hora final:"
+                                    register={register("hourEnd")}
+                                    className="text-left border"
+                                    type="time"
+                                  />
+                                </Col>
+                              </>
+                            </ConditionalRender>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+
+                      <Card className="border rounded-4">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-pen text-info" />
+                            <h6 className="mb-0 fw-bold">Firma</h6>
+                          </div>
+
+                          <div className="w-100 overflow-hidden">
+                            <SignatureInput
+                              name="signature"
+                              register={register}
+                              control={control}
                             />
                           </div>
-                        </Col>
-
-                        <Col xs={12} md={6}>
-                          <Entry
-                            label="Fecha inicio:"
-                            type="date"
-                            register={register("dateInit")}
-
-                            className="border text-left"
-                          />
-                        </Col>
-
-                        <Col xs={12} md={6}>
-                          <Entry
-                            label="Fecha final:"
-                            type="date"
-                            register={register("dateEnd")}
-                            invalid={!!errors.dateEnd}
-                            readonly={modeSelect === "forHours"}
-                            min={dateInit}
-                            className="border text-left"
-                          />
-                        </Col>
-
-                        <ConditionalRender cond={modeSelect === "forHours"}>
-                          <>
-                            <Col xs={12} md={6}>
-                              <Entry
-                                register={register("hourInit")}
-                                label="Hora inicial:"
-                                className="text-left border"
-                                type="time"
-                              />
-                            </Col>
-
-                            <Col xs={12} md={6}>
-                              <Entry
-                                label="Hora final:"
-                                register={register("hourEnd")}
-                                className="text-left border"
-                                type="time"
-                              />
-                            </Col>
-                          </>
-                        </ConditionalRender>
-                      </Row>
-                    </div>
-
-                    <hr className="my-4" />
-
-                    <div>
-                      <h5 className="fw-semibold mb-1">Firma</h5>
-                      <p className="text-muted mb-3">
-                        Agrega la firma para confirmar la solicitud.
-                      </p>
-
-                      <div className="w-100 overflow-hidden">
-                        <SignatureInput
-                          name="signature"
-                          register={register}
-                          control={control}
-                        />
-                      </div>
+                        </Card.Body>
+                      </Card>
                     </div>
                   </Card.Body>
                 </Card>

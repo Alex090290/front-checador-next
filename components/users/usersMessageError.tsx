@@ -34,8 +34,8 @@ export default function UserOneError() {
 
                                 <div className="mb-4">
                                     <i
-                                        className="bi bi-people-fill text-danger"
-                                        style={{ fontSize: "4rem" }}
+                                        className="bi bi-person-x text-danger"
+                                        style={{ fontSize: "5rem" }}
                                     />
                                 </div>
 

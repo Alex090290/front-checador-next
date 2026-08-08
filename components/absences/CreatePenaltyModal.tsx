@@ -7,13 +7,19 @@ import { IAbsence } from "@/lib/absences/interface";
 import { useRef, useState } from "react";
 import { Button, Card, Col, Form, Overlay, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import { formatDate } from "date-fns";
 import { createPenalty } from "@/app/actions/penalties-actions";
 import { IPenalty } from "@/lib/penalties/interface";
 import { ModalBasicProps } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import DatePicker from "react-datepicker";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { es } from "date-fns/locale";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+registerLocale("es", es);
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 const upperCase = (text?: string) => {
     return text?.toUpperCase() || "";
@@ -44,7 +50,8 @@ export default function CreatePenaltyComponent({
     const [showCalendar, setShowCalendar] = useState(false);
     const [selectedDates, setSelectedDates] = useState<Date[]>([]);
     const sortedSelectedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
-
+    const [feedbackMsg, setFeedbackMsg] = useState("");
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
 
     const rangeLabel =
         selectedDates.length === 0
@@ -70,7 +77,7 @@ export default function CreatePenaltyComponent({
             return;
         }
         setDateError("");
-        onHide();
+        
 
         const payload: IPenalty = {
             idEmployee: absence[0]?.employee?.id ?? 0,
@@ -84,18 +91,23 @@ export default function CreatePenaltyComponent({
 
         modalConfirm("¿Seguro que quieres guardar la penalización?", async () => {
             try {
-                setLoading(true);
-                setMessageLoading("Guardando Penalización...");
+                setFeedback("loading");
+                setFeedbackMsg("Guardando penalización...");
 
                 const res = await createPenalty({ data: payload });
 
                 if (!res.success) {
-                    modalError(res.message);
+                    setFeedbackMsg(res.message || "No se pudo crear la penalización");
+                    setFeedback("error");
                     return;
                 }
 
-                toast.success(res.message);
+                setFeedbackMsg(res.message || "Penalización creada correctamente");
+                setFeedback("success");
                 router.push("/app/penalties");
+            } catch {
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
+                setFeedback("error");
             } finally {
                 setLoading(false);
                 setMessageLoading("");
@@ -104,9 +116,27 @@ export default function CreatePenaltyComponent({
     };
 
     return (
-        <> <ConditionalRender cond={loading || isSubmitting}>
-            <Loading message={messageLoading || "Guardando..."} />
-        </ConditionalRender>
+        <>
+            <ConditionalRender cond={feedback === "loading"}>
+                <Loading message={feedbackMsg || "Actualizando..."} />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => {
+                        setFeedback(null);
+
+                    }}
+                />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
+            </ConditionalRender>
 
             <div className="p-2">
 
@@ -163,7 +193,7 @@ export default function CreatePenaltyComponent({
                                                     required: "Selecciona un tipo de penalización",
                                                 })}
                                                 isInvalid={!!errors.PenaltyForOffensesType}
-                                                className="border"
+                                                className="border text-uppercase"
                                             >
                                                 <option value="">Selecciona...</option>
                                                 <option value="retardos">Retardos</option>
@@ -183,7 +213,7 @@ export default function CreatePenaltyComponent({
                                         <Button
                                             ref={dateButtonRef}
                                             variant="outline-secondary"
-                                            className={`w-100 d-flex align-items-center justify-content-between ${dateError ? "border-danger text-danger" : ""}`}
+                                            className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                             onClick={() => setShowCalendar((s) => !s)}
                                         >
                                             <span>{rangeLabel}</span>
@@ -206,7 +236,7 @@ export default function CreatePenaltyComponent({
                                                 <div
                                                     ref={ref}
                                                     style={style}
-                                                    className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light"
+                                                    className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-uppercase"
                                                 >
                                                     <DatePicker
                                                         selectsMultiple
@@ -216,6 +246,7 @@ export default function CreatePenaltyComponent({
                                                         shouldCloseOnSelect={false}
                                                         disabledKeyboardNavigation
                                                         monthsShown={1}
+                                                        locale="es"
                                                     />
                                                 </div>
                                             )}

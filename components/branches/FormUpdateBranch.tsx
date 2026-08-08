@@ -4,14 +4,19 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
-import { ActionResponse, Branch, ModalBasicProps } from "@/lib/definitions";
+import { Branch, ModalBasicProps } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+import { updateBranch } from "@/app/actions/branches-actionst";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type ModalAction = {
-  sendData: (data: Branch) => Promise<ActionResponse<boolean | null>>;
+  id: number;
   branch?: Branch | null;
 };
 
@@ -34,7 +39,7 @@ function getDefaultValues(branch?: Branch | null): Branch {
 
 export default function FormUpdateBranch({
   onHide,
-  sendData,
+  id,
   branch,
 }: ModalBasicProps & ModalAction) {
   const {
@@ -49,7 +54,8 @@ export default function FormUpdateBranch({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { modalError, modalConfirm } = useModals();
-  const [, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -64,36 +70,57 @@ export default function FormUpdateBranch({
   }, [branch, reset, modalError]);
 
   const onSubmit: SubmitHandler<Branch> = async (data) => {
-    onHide();
-
     modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
-
       try {
-        setLoading(true);
-        setMessageLoading("Actualizando cambios...");
-        const res = await sendData(data);
+        setFeedback("loading");
+        setFeedbackMsg("Actualizando sucursal...");
+
+        const res = await updateBranch({
+          id: Number(id),
+          branch: data,
+        });
 
         if (!res.success) {
-          modalError(res.message);
-          console.log(res.message);
-
+          setFeedbackMsg(res.message || "No se pudo actualizar la sucursal");
+          setFeedback("error");
           return;
         }
-        onHide();
+
+        setFeedbackMsg(res.message || "Sucursal actualizada correctamente");
+        setFeedback("success");
         router.refresh();
-
-      } finally {
-
-        setLoading(false);
-        setMessageLoading("");
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       }
-    })
+    });
   };
 
   return (
     <>
       <ConditionalRender cond={loading || isSubmitting}>
         <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <div className="p-2">
@@ -127,7 +154,7 @@ export default function FormUpdateBranch({
                       label="Nombre:"
                       invalid={!!errors.name}
                       feedBack={errors.name?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
                 </Row>
@@ -148,7 +175,7 @@ export default function FormUpdateBranch({
                       label="Calle:"
                       invalid={!!errors.street}
                       feedBack={errors.street?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -158,7 +185,7 @@ export default function FormUpdateBranch({
                       label="Ext:"
                       invalid={!!errors.numberOut}
                       feedBack={errors.numberOut?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -168,7 +195,7 @@ export default function FormUpdateBranch({
                       label="Int:"
                       invalid={!!errors.numberIn}
                       feedBack={errors.numberIn?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -178,7 +205,7 @@ export default function FormUpdateBranch({
                       label="C.P.:"
                       invalid={!!errors.zipCode}
                       feedBack={errors.zipCode?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -188,7 +215,7 @@ export default function FormUpdateBranch({
                       label="Colonia:"
                       invalid={!!errors.neighborhood}
                       feedBack={errors.neighborhood?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -198,7 +225,7 @@ export default function FormUpdateBranch({
                       label="Municipio:"
                       invalid={!!errors.municipality}
                       feedBack={errors.municipality?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -208,7 +235,7 @@ export default function FormUpdateBranch({
                       label="Estado:"
                       invalid={!!errors.state}
                       feedBack={errors.state?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -218,7 +245,7 @@ export default function FormUpdateBranch({
                       label="País:"
                       invalid={!!errors.country}
                       feedBack={errors.country?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
                 </Row>
@@ -239,7 +266,7 @@ export default function FormUpdateBranch({
                       label="Latitud:"
                       invalid={!!errors.lat}
                       feedBack={errors.lat?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -249,7 +276,7 @@ export default function FormUpdateBranch({
                       label="Longitud:"
                       invalid={!!errors.lng}
                       feedBack={errors.lng?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
                 </Row>

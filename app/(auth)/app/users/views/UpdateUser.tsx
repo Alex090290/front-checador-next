@@ -1,12 +1,14 @@
 "use client";
 
+import { updateUser } from "@/app/actions/user-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import SuccessOverlay from "@/components/SuccessOverlay";
+import ErrorOverlay from "@/components/ErrorOverlay";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import { TInputsUser } from "@/components/users/UsersTableList";
 import { useModals } from "@/context/ModalContext";
 import {
-  ActionResponse,
   ModalBasicProps,
   Permission,
   User,
@@ -16,14 +18,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { Form, Button, Row, Col, Card } from "react-bootstrap";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
-import toast from "react-hot-toast";
 
-
-
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type ModalAction = {
-  sendData: (data: TInputsUser) => Promise<ActionResponse<boolean | null>>;
-  user?: User | null;
+  user: User;
+  id: number;
   /** Si faltan, se usan [] para evitar errores en runtime */
   perms?: Permission[];
   employees?: Employee[];
@@ -49,8 +49,8 @@ function sanitizeRole(role?: User["role"] | null): TInputsUser["role"] {
 
 export default function FormUpdateUser({
   onHide,
-  sendData,
   user,
+  id,
   perms = [],
   employees = [],
 }: ModalBasicProps & ModalAction) {
@@ -80,14 +80,16 @@ export default function FormUpdateUser({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { modalError, modalConfirm } = useModals();
-  const [, setMessageLoading] = useState("");
   const permisosSeleccionados = watch("permissions") || [];
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const isPermSelected = (id: number) =>
     permisosSeleccionados.some((perm: Permission) => perm.id === id);
 
   const toggleSelectAll = () => {
-    const allSelected = perms.every((perm) => isPermSelected(perm.id || 0));
+    const allSelected =
+      perms.length > 0 && perms.every((perm) => isPermSelected(perm.id || 0));
 
     if (allSelected) {
       setValue("permissions", []);
@@ -125,38 +127,53 @@ export default function FormUpdateUser({
   }, [handleFetchResources]);
 
   const onSubmit: SubmitHandler<TInputsUser> = async (data) => {
-    onHide();
-
-    modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
-
+    modalConfirm("¿Seguro que quieres guardar el usuario?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Actualizando cambios...");
-        const res = await sendData(data);
+        setFeedback("loading");
+        setFeedbackMsg("Actualizando usuario...");
+
+        const res = await updateUser({ ...data, id });
 
         if (!res.success) {
-          modalError(res.message);
-          console.log(res.message);
-
+          setFeedbackMsg(res.message || "No se pudo actualizar el usuario");
+          setFeedback("error");
           return;
         }
-        toast.success(res.message);
-        onHide();
-        router.refresh();
 
-      } finally {
-
-        setLoading(false);
-        setMessageLoading("");
+        setFeedbackMsg(res.message || "Usuario actualizado correctamente");
+        setFeedback("success");
+        setTimeout(() => {
+          router.push("/app/users?view_type=list&id=null");
+        }, 1200);
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       }
-
-    })
+    });
   };
 
   return (
     <>
       <ConditionalRender cond={loading || isSubmitting}>
         <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <div className="p-2">
@@ -213,7 +230,7 @@ export default function FormUpdateUser({
                       invalid={!!errors.email}
                       feedBack={errors.email?.message}
                       type="email"
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -237,7 +254,7 @@ export default function FormUpdateUser({
                       label="Género:"
                       invalid={!!errors.gender}
                       feedBack={errors.gender?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
                 </Row>
@@ -278,22 +295,16 @@ export default function FormUpdateUser({
                       label="Status:"
                       invalid={!!errors.status}
                       feedBack={errors.status?.message as string}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
-                  {!user && (
-                    <Col md={6}>
-                      <Entry
-                        register={register("password", { required: "Contraseña requerida" })}
-                        type="password"
-                        label="Contraseña:"
-                        invalid={!!errors.password}
-                        feedBack={errors.password?.message}
-                        className="border"
-                      />
-                    </Col>
-                  )}
+                  {/*
+                    OJO: con user tipado como requerido, !user nunca es true —
+                    este campo nunca se muestra en este form.
+                    Confirma si aquí se debe poder cambiar la contraseña
+                    (como campo opcional) o si intencionalmente no se permite.
+                  */}
                 </Row>
               </Card.Body>
             </Card>
@@ -336,8 +347,9 @@ export default function FormUpdateUser({
                     size="sm"
                     variant="outline-primary"
                     onClick={toggleSelectAll}
+                    disabled={perms.length === 0}
                   >
-                    {perms.every((perm) => isPermSelected(perm.id ?? 0))
+                    {perms.length > 0 && perms.every((perm) => isPermSelected(perm.id ?? 0))
                       ? "Deseleccionar todos"
                       : "Seleccionar todos"}
                   </Button>
@@ -397,7 +409,7 @@ export default function FormUpdateUser({
               </Button>
 
               <Button type="submit" variant="success" disabled={loading || isSubmitting}>
-                {isSubmitting ? "Guardando..." : "Guardar"}
+                {isSubmitting ? "Actualizando..." : "Actualizar"}
               </Button>
             </div>
 
