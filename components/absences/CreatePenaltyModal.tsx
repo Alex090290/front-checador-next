@@ -43,8 +43,8 @@ export default function CreatePenaltyComponent({
 
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
-    const { modalError, modalConfirm } = useModals();
+    const [, setMessageLoading] = useState("");
+    const { modalConfirm } = useModals();
     const dateButtonRef = useRef(null);
     const [dateError, setDateError] = useState("");
     const [showCalendar, setShowCalendar] = useState(false);

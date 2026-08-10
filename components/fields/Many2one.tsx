@@ -1,6 +1,7 @@
 "use client";
 
 import React, {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -83,8 +84,10 @@ export function Many2one<T extends Many2OneOption>({
    * ---------------------------------------------------
    */
 
-  const getOptionLabel = (option?: T | null) =>
-    option?.displayName ?? option?.name ?? "";
+  const getOptionLabel = useCallback(
+  (option?: T | null) => option?.displayName ?? option?.name ?? "",
+  []
+);
 
   /*
    * ---------------------------------------------------
@@ -124,7 +127,7 @@ export function Many2one<T extends Many2OneOption>({
       setQuery(getOptionLabel(found));
       setIsSearching(false);
     }
-  }, [value, options]);
+  }, [value, options, getOptionLabel]);
 
   /*
    * ---------------------------------------------------
@@ -159,7 +162,7 @@ export function Many2one<T extends Many2OneOption>({
 
       return label.includes(normalizedQuery);
     });
-  }, [query, options, isSearching]);
+  }, [query, options, isSearching, getOptionLabel]);
 
   /*
    * ---------------------------------------------------

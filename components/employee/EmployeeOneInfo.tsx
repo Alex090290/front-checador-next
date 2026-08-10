@@ -14,7 +14,6 @@ import {
   Table,
 } from "react-bootstrap";
 import {
-  ActionResponse,
   Branch,
   Department,
   Employee,
@@ -27,7 +26,6 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import ModalBlur from "../ModalBlur";
 import FormUpdateEmployee from "@/app/(auth)/app/employee/views/updateEmplyee/update";
-import { TInputsEmployee } from "@/app/(auth)/app/employee/definition";
 import {
   reEntry,
 } from "@/app/actions/employee-actions";
@@ -144,7 +142,6 @@ export default function EmployeeDetailsView({
   const [showRegisterBiometricModal, setShowRegisterBiometricModal] = useState(false);
   const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [, setMessageLoading] = useState("");
   const [showUnsubscribeEmployeeModal, setShowUnsubscribeEmployeeModal] = useState(false);
   const [showNewDocumentEmployeeModal, setShowNewDocumentEmployeeModal] = useState(false);
   const statusOne = employee?.status === 1;

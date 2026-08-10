@@ -5,7 +5,6 @@ import Loading from "@/components/LoadingSpinner";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import {
-  ActionResponse,
   Employee,
   IInability,
   ModalBasicProps,

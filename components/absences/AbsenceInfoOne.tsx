@@ -8,7 +8,6 @@ import Loading from "../LoadingSpinner";
 import { useRef, useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import { deleteAbsence, deleteDocument, getAbsenceDocument, updateAbsence } from "@/app/actions/absences-actions";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import React from "react";
 import CheckLocationMap from "./AbsenceMap";

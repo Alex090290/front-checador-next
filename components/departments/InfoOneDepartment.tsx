@@ -1,7 +1,7 @@
 "use client";
 
-import { deleteDepartment, updateDepartment } from "@/app/actions/departments-actions";
-import { ActionResponse, Department, Employee, Position } from "@/lib/definitions";
+import { deleteDepartment } from "@/app/actions/departments-actions";
+import { Department, Employee, Position } from "@/lib/definitions";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
@@ -9,10 +9,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useModals } from "@/context/ModalContext";
 import ModalBlur from "../ModalBlur";
-import toast from "react-hot-toast";
 import FormUpdateDepartment from "./UpdateDepartment";
 import CreatePositionModal from "./CreatePositionModal";
-import { createPosition, deletePosition } from "@/app/actions/positions-actions";
+import { deletePosition } from "@/app/actions/positions-actions";
 import OverLay from "../templates/OverLay";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";

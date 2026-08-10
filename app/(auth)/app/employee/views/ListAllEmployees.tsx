@@ -54,7 +54,7 @@ export default async function ListAllEmployees({
         departments={departments}
         employees={employees.data}
         documents={documents}
-        employee={employee}
+        employee={employee!}
         id={id}
         vacations={vacations}
       />

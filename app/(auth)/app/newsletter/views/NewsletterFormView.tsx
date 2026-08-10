@@ -38,7 +38,6 @@ const DEFAULT_VALUES: TInputs = {
 };
 
 function NewsletterFormView({
-  id,
   newsletter,
 }: {
   id: string;
@@ -62,7 +61,7 @@ function NewsletterFormView({
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
 
   const originalValuesRef = useRef<TInputs | null>(null);
 

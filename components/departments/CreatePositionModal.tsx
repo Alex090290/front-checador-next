@@ -77,7 +77,7 @@ function CreatePositionModal({
 
                 setFeedbackMsg(res.message || "Puesto creado correctamente");
                 setFeedback("success");
-                router.refresh
+                router.refresh();
             } catch {
                 setFeedbackMsg("Error inesperado, intenta de nuevo");
                 setFeedback("error");

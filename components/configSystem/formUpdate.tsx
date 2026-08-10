@@ -510,7 +510,7 @@ export default function ConfigSystemUpdate({
   }, [initialData, reset]);
 
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
   const router = useRouter();
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);

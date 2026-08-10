@@ -181,10 +181,10 @@ export default function FaceCheckPanel({
       onFaceSuccess(successMessage);
 
       resetForNextEmployee();
-    } catch (error) {
-      setMessage("Error al validar por rostro");
-      setFeedback("error");
-      setFeedbackMsg("Error al validar por rostro");
+    // } catch (error) {
+    //   setMessage("Error al validar por rostro");
+    //   // setFeedback("error");
+    //   setFeedbackMsg("Error al validar por rostro");
     } finally {
       setProcessing(false);
     }

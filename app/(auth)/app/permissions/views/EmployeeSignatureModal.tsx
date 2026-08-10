@@ -34,7 +34,7 @@ function EmployeeSignatureModal({
 
   const { modalConfirm } = useModals();
   const router = useRouter(); const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
 

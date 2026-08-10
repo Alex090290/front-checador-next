@@ -1,6 +1,6 @@
 "use client";
 
-import { ActionResponse, Employee, IInability } from "@/lib/definitions";
+import { Employee, IInability } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useState } from "react";

@@ -24,7 +24,6 @@ export default function UnsubscribeEmployeeComponent({
   employeeId,
   employeeName,
   onClose,
-  onSuccess,
 }: {
   employeeId: number;
   employeeName?: string;

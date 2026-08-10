@@ -35,7 +35,6 @@ export default function RegisterBiometricModal({
   employeeId,
   employeeName,
   onClose,
-  onSuccess,
   employee,
 }: Props) {
   const uploadInputRef = useRef<HTMLInputElement | null>(null);

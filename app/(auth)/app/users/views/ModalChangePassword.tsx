@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useModals } from "@/context/ModalContext";
 import { Entry } from "@/components/fields";
 import { updatePasswordUser } from "@/app/actions/user-actions";
-import toast from "react-hot-toast";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { useState } from "react";

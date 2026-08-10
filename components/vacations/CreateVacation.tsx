@@ -383,9 +383,9 @@ function CreateVacationComponent({
 
       setPeriods(res);
 
-      if (res && res.length >= 1 && Number(res[0].idEmployee) === Number(idEmployeeSelected))  {
+      if (res && res.length >= 1 && Number(res[0].idEmployee) === Number(idEmployeeSelected)) {
         setValue("idPeriod", Number(res[0].id), { shouldDirty: false });
-      }else{
+      } else {
         setValue("idPeriod", 0, { shouldDirty: false });
       }
 
@@ -393,7 +393,7 @@ function CreateVacationComponent({
       console.error(error);
       setPeriods([]);
     }
-  }, [idEmployeeSelected, setValue, watch]);
+  }, [idEmployeeSelected, setValue]);
 
   useEffect(() => {
     getPeriods();
