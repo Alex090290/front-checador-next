@@ -12,8 +12,10 @@ export default async function ListVacationsAll({
   limit?: string;
 }) {
 
-  if (id && id !== "null") return <VacationsInfoOne id={id} />;
-  
+  if (id && id !== "null")
+    return
+  <VacationsInfoOne id={id} />;
+
   const pageParse = Math.max(Number(page || "1") || 1, 1);
   const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
 

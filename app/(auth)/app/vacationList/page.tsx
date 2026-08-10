@@ -16,7 +16,6 @@ export default function PageVacations({
   searchParams?: SearchParams;
 }) {
   const id = searchParams?.id ?? "null";
-
   const page = searchParams?.page ?? "1";
   const limit = searchParams?.limit ?? "20";
     

@@ -173,7 +173,7 @@ export async function fetchPeriods({
 }): Promise<PeriodVacation[]> {
   try {
     const { apiToken, apiUrl } = await storeToken();
-
+ 
     const response = await axios
       .get(`${apiUrl}/vacations/listPeriods/${idEmployee}`, {
         headers: {
@@ -284,7 +284,7 @@ export async function createVacation({
         );
       });
 
-    console.log(response.data.id);
+    // console.log(response.data.id);
 
     if (response.data.id) {
       const datax = new FormData();

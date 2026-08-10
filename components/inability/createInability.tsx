@@ -217,134 +217,142 @@ export default function CreateInabilityComponent({
                   </div>
                 </div>
 
-                <Card className="rounded-4 shadow-sm border">
+                <Card className="rounded-4 shadow-sm mb-3">
                   <Card.Body className="p-3 p-md-5">
                     <div className="mb-4">
-                      <h5 className="fw-semibold mb-1">Datos del empleado</h5>
+                      <h5 className="fw-semibold mb-1">Datos generales</h5>
                       <p className="text-muted mb-3">
-                        Selecciona el empleado y clasifica la incapacidad.
+                        Captura empleado, periodo y documento de la incapacidad.
                       </p>
 
-                      <Row className="g-4">
-                        <Col xs={12}>
-                          <FieldSelect
-                            readonly={readInput}
-                            label="Empleado"
-                            options={filteredEmployees.map((em) => ({
-                              value: Number(em.id),
-                              label: `${em.lastName} ${em.name}`.toUpperCase(),
-                            }))}
-                            register={register("idEmployee", {
-                              required: true,
-                              setValueAs: (v) => (v === "" ? null : Number(v))
-                            })}
-                            className="text-uppercase border"
-                          />
-                        </Col>
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-person text-primary" />
+                            <h6 className="mb-0 fw-bold">Datos del empleado</h6>
+                          </div>
 
-                        <Col xs={12} md={6}>
-                          <FieldSelect
-                            label="Categoría:"
-                            options={[
-                              { label: "Enfermedad general", value: "enfermedad general" },
-                              { label: "Riesgo de trabajo", value: "riesgo de trabajo" },
-                              { label: "Maternidad", value: "maternidad" },
-                            ]}
-                            register={register("disabilityCategory", { required: true })}
-                            // readonly={session?.uid?.role === "EMPLOYEE"}
-                            invalid={!!errors.disabilityCategory}
-                            className="border text-uppercase"
-                          />
-                        </Col>
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <FieldSelect
+                                readonly={readInput}
+                                label="Empleado:"
+                                options={filteredEmployees.map((em) => ({
+                                  value: Number(em.id),
+                                  label: `${em.lastName} ${em.name}`.toUpperCase(),
+                                }))}
+                                register={register("idEmployee", {
+                                  required: true,
+                                  setValueAs: (v) => (v === "" ? null : Number(v)),
+                                })}
+                                className="text-uppercase border"
+                              />
+                            </Col>
 
-                        <Col xs={12} md={6}>
-                          <FieldSelect
-                            label="Tipo:"
-                            options={[
-                              { label: "Inicial", value: "inicial" },
-                              { label: "Subsecuente", value: "subsecuente" },
-                              { label: "Alta", value: "alta" },
-                            ]}
-                            register={register("typeOfDisability", { required: true })}
-                            // readonly={session?.uid?.role === "EMPLOYEE"}
-                            invalid={!!errors.typeOfDisability}
-                            className="border text-uppercase"
-                          />
-                        </Col>
-                      </Row>
-                    </div>
+                            <Col md={6}>
+                              <FieldSelect
+                                label="Categoría:"
+                                options={[
+                                  { label: "Enfermedad general", value: "enfermedad general" },
+                                  { label: "Riesgo de trabajo", value: "riesgo de trabajo" },
+                                  { label: "Maternidad", value: "maternidad" },
+                                ]}
+                                register={register("disabilityCategory", { required: true })}
+                                // readonly={session?.uid?.role === "EMPLOYEE"}
+                                invalid={!!errors.disabilityCategory}
+                                className="border text-uppercase"
+                              />
+                            </Col>
 
-                    <hr className="my-4" />
+                            <Col md={6}>
+                              <FieldSelect
+                                label="Tipo:"
+                                options={[
+                                  { label: "Inicial", value: "inicial" },
+                                  { label: "Subsecuente", value: "subsecuente" },
+                                  { label: "Alta", value: "alta" },
+                                ]}
+                                register={register("typeOfDisability", { required: true })}
+                                // readonly={session?.uid?.role === "EMPLOYEE"}
+                                invalid={!!errors.typeOfDisability}
+                                className="border text-uppercase"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
 
-                    <div className="mb-4">
-                      <h5 className="fw-semibold mb-1">Periodo de incapacidad</h5>
-                      <p className="text-muted mb-3">
-                        Indica la fecha de inicio y fin de la incapacidad.
-                      </p>
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-calendar-range text-success" />
+                            <h6 className="mb-0 fw-bold">Periodo de incapacidad</h6>
+                          </div>
 
-                      <Row className="g-4">
-                        <Col xs={12} md={6}>
-                          <Entry
-                            label="Fecha inicio:"
-                            type="date"
-                            register={register("dateInit", { required: true })}
-                            invalid={!!errors.dateInit}
+                          <Row className="g-3">
+                            <Col md={6}>
+                              <Entry
+                                label="Fecha inicio:"
+                                type="date"
+                                register={register("dateInit", { required: true })}
+                                invalid={!!errors.dateInit}
+                                // readonly={session?.uid?.role === "EMPLOYEE"}
+                                className="border"
+                              />
+                            </Col>
 
-                            // readonly={session?.uid?.role === "EMPLOYEE"}
-                            className="border"
-                          />
-                        </Col>
+                            <Col md={6}>
+                              <Entry
+                                label="Fecha fin:"
+                                type="date"
+                                min={onChangeDateInit}
+                                register={register("dateEnd", { required: true })}
+                                invalid={!!errors.dateEnd}
+                                // readonly={session?.uid?.role === "EMPLOYEE"}
+                                className="border"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
 
-                        <Col xs={12} md={6}>
-                          <Entry
-                            label="Fecha fin:"
-                            type="date"
-                            min={onChangeDateInit}
-                            register={register("dateEnd", { required: true })}
-                            invalid={!!errors.dateEnd}
-                            // readonly={session?.uid?.role === "EMPLOYEE"}
-                            className="border"
-                          />
-                        </Col>
-                      </Row>
-                    </div>
+                      <Card className="border rounded-4">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-upc-scan text-warning" />
+                            <h6 className="mb-0 fw-bold">Documento CITT</h6>
+                          </div>
 
-                    <hr className="my-4" />
+                          <Row className="g-3">
+                            <Col md={6}>
+                              <Form.Group>
+                                <Form.Label className="fw-semibold">CITT:</Form.Label>
+                                <Form.Control
+                                  type="file"
+                                  accept=".jpg,.jpeg,.png,.pdf,.webp"
+                                  {...register("firstDoc", { required: true })}
+                                  isInvalid={!!errors.firstDoc}
+                                  className="border"
+                                />
+                                <Form.Control.Feedback type="invalid" className={errors.firstDoc ? "d-block" : ""}>
+                                  Este campo es requerido
+                                </Form.Control.Feedback>
+                              </Form.Group>
+                            </Col>
 
-                    <div>
-                      <h5 className="fw-semibold mb-1">Documento CITT</h5>
-                      <p className="text-muted mb-3">
-                        Adjunta el documento CITT e indica el folio correspondiente.
-                      </p>
-
-                      <Row className="g-4">
-                        <Col xs={12} md={6}>
-                          <Form.Group>
-                            <Form.Label className="fw-semibold">CITT:</Form.Label>
-                            <Form.Control
-                              type="file"
-                              accept=".jpg,.jpeg,.png,.pdf,.webp"
-                              {...register("firstDoc", { required: true })}
-                              isInvalid={!!errors.firstDoc}
-                              className="border"
-                            />
-                            <Form.Control.Feedback type="invalid">
-                              Este campo es requerido
-                            </Form.Control.Feedback>
-                          </Form.Group>
-                        </Col>
-
-                        <Col xs={12} md={6}>
-                          <Entry
-                            register={register("folio", {
-                              required: true,
-                            })}
-                            label="Folio CITT:"
-                            className="text-uppercase border"
-                            invalid={!!errors.folio}
-                          />
-                        </Col>
-                      </Row>
+                            <Col md={6}>
+                              <Entry
+                                register={register("folio", {
+                                  required: true,
+                                })}
+                                label="Folio CITT:"
+                                className="text-uppercase border"
+                                invalid={!!errors.folio}
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
                     </div>
                   </Card.Body>
                 </Card>

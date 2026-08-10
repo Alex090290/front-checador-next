@@ -15,7 +15,6 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import useSWR from "swr";
 import ConditionalRender from "../ConditionalRender";
@@ -68,8 +67,8 @@ function CreateVacationComponent({
     setValue,
     formState: { isDirty, isSubmitting },
   } = useForm<TInputs>();
-  const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setLoading] = useState(false);
+  const [, setMessageLoading] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [feedbackMsg, setFeedbackMsg] = useState("");
 
@@ -91,6 +90,7 @@ function CreateVacationComponent({
   const [periods, setPeriods] = useState<PeriodVacation[]>([]);
 
 
+
   const originalValuesRef = useRef<TInputs | null>(null);
   const roles = session?.uid?.roles;
 
@@ -107,6 +107,7 @@ function CreateVacationComponent({
     && !roles?.isApproverLeaders
     && !roles?.isApproverDoh
     && Number(session?.uid?.idEmployee) === Number(config?.permissions.approvalDoh.idPerson);
+
 
   const dohMap = config?.vacations.approvalDoh;
 
@@ -250,7 +251,9 @@ function CreateVacationComponent({
   }, [session, directionList, employees, idEmployeeSelected, roles]);
 
   useEffect(() => {
+
     const employeeId = Number(session?.uid?.id);
+
     if (!employeeId) return;
 
 
@@ -284,7 +287,7 @@ function CreateVacationComponent({
     reset(values);
   }, [reset, employees, session, directionList, roles]);
 
-  // ✅ periodo seleccionado para mostrar stats
+  // periodo seleccionado para mostrar stats
   const selectedPeriod = useMemo(() => {
     const pid = Number(idPeriodSelected);
     if (!pid || Number.isNaN(pid)) return null;
@@ -378,18 +381,14 @@ function CreateVacationComponent({
         idEmployee: Number(idEmployeeSelected),
       });
 
-      const nextPeriods = (res ?? []) as PeriodVacation[];
-      setPeriods(nextPeriods);
+      setPeriods(res);
 
-      // ✅ si aún no hay periodo, setear el primero
-      const current = watch("idPeriod");
-      const currentNum = Number(current);
-      if (
-        (!current || Number.isNaN(currentNum) || currentNum === 0) &&
-        nextPeriods.length > 0
-      ) {
-        setValue("idPeriod", Number(nextPeriods[0].id), { shouldDirty: false });
+      if (res && res.length >= 1 && Number(res[0].idEmployee) === Number(idEmployeeSelected))  {
+        setValue("idPeriod", Number(res[0].id), { shouldDirty: false });
+      }else{
+        setValue("idPeriod", 0, { shouldDirty: false });
       }
+
     } catch (error) {
       console.error(error);
       setPeriods([]);
