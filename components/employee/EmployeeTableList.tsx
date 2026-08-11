@@ -45,7 +45,7 @@ export default function EmployeeTableClient({
   const currentSearch = sp.get("search") ?? "";
 
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [, setTableResetKey] = useState(0);
   const isClearingSelectionRef = useRef(false);

@@ -8,7 +8,6 @@ import {
   Col,
   Container,
   Row,
-  Table,
 } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
@@ -30,7 +29,6 @@ import { ISignatures } from "@/lib/overTime/interface";
 import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
 import VacationsOneError from "./vacationsMessageError";
 import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
-import moment from "moment";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 

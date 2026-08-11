@@ -524,25 +524,15 @@ export async function approvedVacation({
   }
 }
 
-export async function deleteVacationTest(text:string) {
-  console.log("Action deleteVacation");
-      console.log("text:", text);
-}
 
 export async function deleteVacation(idRequest: number, idPeriod: number): Promise<ActionResponse<boolean>> {
-  console.log("Action deleteVacation");
-      console.log("idRequest:", idRequest);
-    console.log("idPeriod:", idPeriod);
 
   try {
-
-    
-    
     if (!idRequest) throw new Error("ID NOT DEFINED");
 
     const { apiToken, apiUrl } = await storeToken();
 
-    let resData = await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`, {
+    await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
@@ -550,6 +540,7 @@ export async function deleteVacation(idRequest: number, idPeriod: number): Promi
     )
       .then((res) => {
         return res.data;
+
       })
       .catch((err) => {
         console.log("Error en axios delete vacations: ", err);
@@ -560,7 +551,6 @@ export async function deleteVacation(idRequest: number, idPeriod: number): Promi
             : "Error en la respuesta"
         );
       });
-console.log("resData:", resData);
 
 
     // revalidatePath("/app/vacationList");
@@ -572,7 +562,6 @@ console.log("resData:", resData);
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.log("Error eliminar vacaciones",error);
     return {
       success: false,
       message: error.message,

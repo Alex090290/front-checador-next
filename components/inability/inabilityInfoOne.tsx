@@ -1,7 +1,6 @@
 "use client";
 
 import { Employee, IInability } from "@/lib/definitions";
-import { formatDate } from "date-fns";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useState } from "react";
 import ST7V1Card from "@/app/(auth)/app/inability/views/ST7V1Card";
@@ -76,16 +75,6 @@ function fullName(p?: { name?: string; lastName?: string } | null) {
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
   return String(value);
-}
-
-function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
-  if (!value) return "-";
-
-  try {
-    return formatDate(new Date(value), pattern);
-  } catch {
-    return String(value);
-  }
 }
 
 
