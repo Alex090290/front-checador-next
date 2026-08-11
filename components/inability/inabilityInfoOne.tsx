@@ -20,6 +20,7 @@ import OverLay from "../templates/OverLay";
 import InabilityOneError from "./inabilityMessageError";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 
 // type TInputs = {
 //   idEmployee: number | null;
@@ -116,9 +117,6 @@ export default function InfoOneInability({
   const employee =
     employees.find((em) => Number(em.id) === Number(inhability.idEmployee)) ??
     inhability.employee;
-
-  const firstDocument = inhability.documentsInability?.[0];
-  const createdAt = formatDateValue(inhability?.createdAt ?? "dd/MM/yyyy HH:mm");
 
   const handleCreate = () => {
     setLoading(true);
@@ -297,7 +295,17 @@ export default function InfoOneInability({
                           <span className="text-muted">Creada</span>
                         </div>
                         <span className="fw-semibold text-end">
-                          {createdAt}
+                          {formatCreatedAt(inhability.createdAt)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-clock" />
+                          <span className="text-muted">Hora de creación</span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {formatCreatedAtOnlyHours(inhability.createdAt)}
                         </span>
                       </div>
 
@@ -312,25 +320,6 @@ export default function InfoOneInability({
                         </span>
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-                        <div className="d-flex align-items-center gap-2">
-                          <i className="bi bi-folder2 text-primary" />
-                          <span className="text-muted">Categoría</span>
-                        </div>
-                        <span className="fw-semibold text-end text-uppercase">
-                          {formatText(inhability.disabilityCategory)}
-                        </span>
-                      </div>
-
-                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-                        <div className="d-flex align-items-center gap-2">
-                          <i className="bi bi-tag text-warning" />
-                          <span className="text-muted">Tipo</span>
-                        </div>
-                        <span className="fw-semibold text-end text-uppercase">
-                          {formatText(inhability.typeOfDisability)}
-                        </span>
-                      </div>
 
                       <div className="d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-2">
@@ -363,40 +352,8 @@ export default function InfoOneInability({
                     </div>
 
                     <div className="d-flex flex-column gap-4">
-                      <div className="border rounded-3 p-3">
-                        <div className="d-flex align-items-center gap-2 mb-2">
-                          <i className="bi bi-upc-scan text-primary" />
-                          <span className="text-muted fw-semibold">
-                            Folio CITT
-                          </span>
-                        </div>
-                        <div className="text-uppercase">
-                          {formatText(inhability.folio || firstDocument?.folio)}
-                        </div>
-                      </div>
-
                       <Row className="g-3">
-                        <Col xs={12} md={6} xl={3}>
-                          <div className="border rounded-3 p-3 text-center h-100">
-                            <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
-                            <div className="text-muted small">Fecha inicio</div>
-                            <div className="fw-semibold">
-                              {formatDateValue(firstDocument?.dateInit, "yyyy-MM-dd")}
-                            </div>
-                          </div>
-                        </Col>
-
-                        <Col xs={12} md={6} xl={3}>
-                          <div className="border rounded-3 p-3 text-center h-100">
-                            <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
-                            <div className="text-muted small">Fecha fin</div>
-                            <div className="fw-semibold">
-                              {formatDateValue(firstDocument?.dateEnd, "yyyy-MM-dd")}
-                            </div>
-                          </div>
-                        </Col>
-
-                        <Col xs={12} md={6} xl={3}>
+                        <Col xs={12} md={6} xl={6}>
                           <div className="border rounded-3 p-3 text-center h-100">
                             <i className="bi bi-folder2-open text-warning fs-5 mb-2 d-block" />
                             <div className="text-muted small">Categoría</div>
@@ -406,7 +363,7 @@ export default function InfoOneInability({
                           </div>
                         </Col>
 
-                        <Col xs={12} md={6} xl={3}>
+                        <Col xs={12} md={6} xl={6}>
                           <div className="border rounded-3 p-3 text-center h-100">
                             <i className="bi bi-tag-fill text-info fs-5 mb-2 d-block" />
                             <div className="text-muted small">Tipo</div>
@@ -433,7 +390,7 @@ export default function InfoOneInability({
                     </span>
                   </div>
 
-                  <Row className="g-3">
+                  <Row className="g-6 justify-content-center">
                     <ST7V1Card
                       st2v1Doc={inhability?.sT7FillingDocumentv1}
                       idDoc={id}

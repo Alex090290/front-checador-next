@@ -102,7 +102,7 @@ function ST7V2Card({
   };
 
   return (
-    <Col xs={12} sm={6} md={4} xl={2}>
+    <Col xs={12} sm={6} md={4} xl={3}>
       <Card className="rounded shadow-sm bg-body-tertiary h-100">
         <Card.Header className="d-flex justify-content-between align-items-end">
           <Card.Title

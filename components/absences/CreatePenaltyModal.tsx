@@ -236,7 +236,7 @@ export default function CreatePenaltyComponent({
                                                 <div
                                                     ref={ref}
                                                     style={style}
-                                                    className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-uppercase"
+                                                    className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
                                                 >
                                                     <DatePicker
                                                         selectsMultiple

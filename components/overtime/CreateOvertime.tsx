@@ -324,191 +324,196 @@ export default function CreateOvertimeComponent({
 
             <Container className="justify-content-between" style={{ maxWidth: "1200px" }}>
                 <Row className="m-2">
-                    <Col xs={12} md={12} lg={12}>
-
+                    <Col xs={12}>
                         <Form onSubmit={handleSubmit(onSubmit)}>
-                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
-                                <div>
-                                    <h1 className="mb-1">Horas extra</h1>
-                                    <p className="text-muted mb-0">
-                                        Registra la información de la solicitud.
-                                    </p>
-                                </div>
-
-                                <div className="d-flex flex-wrap gap-2">
-                                    <Button
-                                        variant="outline-secondary"
-                                        type="button"
-                                        disabled={isSubmitting}
-                                        onClick={handleBack}
-                                    >
-                                        Cancelar
-                                    </Button>
-
-                                    <Button
-                                        type="button"
-                                        variant="secondary"
-                                        disabled={isSubmitting || feedback === "loading" || !isDirty}
-                                        onClick={() => reset(DEFAULT_VALUES)}
-                                    >
-                                        Limpiar
-                                    </Button>
-
-                                    <Button
-                                        className="bg-success border-success"
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                    >
-                                        {isSubmitting ? "Guardando..." : "Guardar"}
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <Card className="rounded-4 shadow-sm border">
-                                <Card.Body className="p-4 p-md-5">
-                                    <div className="mb-4">
-                                        <h5 className="fw-semibold mb-1">Datos del empleado</h5>
-                                        <p className="text-muted mb-3">
-                                            Selecciona el empleado y describe el motivo.
-                                        </p>
-
-                                        <Row className="g-4">
-
-                                            <Col xs={12}>
-                                                <FieldSelect
-                                                    register={register("idEmployee", {
-                                                        required: true,
-                                                        setValueAs: (v) => (v === "" ? null : Number(v)),
-                                                    })}
-                                                    options={filteredEmployees.map((e) => ({
-                                                        value: e.id!,
-                                                        label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
-                                                    }))}
-                                                    label="Empleado:"
-                                                    className="text-uppercase border"
-                                                    readonly={readInput}
-                                                />
-                                            </Col>
-
-                                            {/* Elegir lider */}
-                                            <Col xs={12} md={6}>
-                                                <FieldSelect
-                                                    readonly={readInput}
-                                                    register={register("idLeader", {
-                                                        required: true,
-                                                        setValueAs: (v) => (v === "" ? null : Number(v)),
-                                                    })}
-                                                    options={leaderOptions}
-                                                    label="Líder:"
-                                                    className="text-uppercase border"
-                                                />
-                                            </Col>
-
-                                            {/* Elegir DOH */}
-                                            <Col xs={12} md={6}>
-                                                <FieldSelect
-                                                    register={register("idPersonDoh", { required: true })}
-                                                    options={
-                                                        dohMap?.employee
-                                                            ? [{
-                                                                value: dohMap.employee.id,
-                                                                label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
-                                                            }]
-                                                            : []
-                                                    }
-                                                    label="D.O.H."
-                                                    className="text-uppercase border"
-                                                    readonly={!readInput || !readOnlyDoh}
-                                                />
-                                            </Col>
-
-                                            <Col xs={12}>
-                                                <Entry
-                                                    register={register("motive",
-                                                        { required: "El motivo es requerido" }
-                                                    )}
-                                                    label="Motivo"
-                                                    type="text"
-                                                    invalid={!!errors.motive}
-                                                    feedBack={errors.motive?.message}
-                                                    className="text-uppercase border"
-                                                />
-                                            </Col>
-                                        </Row>
-                                    </div>
-
-                                    <hr className="my-4" />
-
-                                    <div className="mb-4">
-                                        <h5 className="fw-semibold mb-1">Fecha y horario</h5>
-                                        <p className="text-muted mb-3">
-                                            Indica cuándo inició y terminó la hora extra.
-                                        </p>
-
-                                        <Row className="g-4">
-                                            <Col xs={12} md={4}>
-                                                <Entry
-                                                    register={register("date", {
-                                                        required: "La fecha del evento es requerida",
-                                                    })}
-                                                    type="date"
-                                                    label="Fecha del evento"
-                                                    invalid={!!errors.date}
-                                                    feedBack={errors.date?.message}
-                                                    className="border"
-                                                />
-                                            </Col>
-
-                                            <Col xs={12} md={4}>
-                                                <Entry
-                                                    register={register("hourInit", {
-                                                        required: "La hora de inicio es requerida",
-                                                    })}
-                                                    type="time"
-                                                    label="Hora de inicio"
-                                                    invalid={!!errors.hourInit}
-                                                    feedBack={errors.hourInit?.message}
-                                                    className="border"
-                                                />
-                                            </Col>
-
-                                            <Col xs={12} md={4}>
-                                                <Entry
-                                                    register={register("hourEnd", {
-                                                        required: "La hora de fin es requerida",
-                                                    })}
-                                                    type="time"
-                                                    label="Hora de fin"
-                                                    invalid={!!errors.hourEnd}
-                                                    feedBack={errors.hourEnd?.message}
-                                                    className="border"
-                                                />
-                                            </Col>
-                                        </Row>
-                                    </div>
-
-                                    <hr className="my-4" />
-
+                            <fieldset disabled={isSubmitting}>
+                                <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
                                     <div>
-                                        <h5 className="fw-semibold mb-1">Firma</h5>
-                                        <p className="text-muted mb-3">
-                                            Agrega la firma para confirmar el registro.
+                                        <h1 className="mb-1">Horas extra</h1>
+                                        <p className="text-muted mb-0">
+                                            Registra la información de la solicitud.
                                         </p>
-
-                                        <div className="w-100 overflow-hidden">
-                                            <SignatureInput
-                                                name="signature"
-                                                register={register}
-                                                control={control}
-                                            />
-                                        </div>
                                     </div>
-                                </Card.Body>
-                            </Card>
+
+                                    <div className="d-flex flex-wrap gap-2">
+                                        <Button
+                                            variant="outline-secondary"
+                                            type="button"
+                                            disabled={isSubmitting}
+                                            onClick={handleBack}
+                                        >
+                                            Cancelar
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            disabled={isSubmitting || feedback === "loading" || !isDirty}
+                                            onClick={() => reset(DEFAULT_VALUES)}
+                                        >
+                                            Limpiar
+                                        </Button>
+
+                                        <Button
+                                            className="bg-success border-success"
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                        >
+                                            {isSubmitting ? "Guardando..." : "Guardar"}
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <Card className="rounded-4 shadow-sm mb-3">
+                                    <Card.Body className="p-3 p-md-5">
+                                        <div className="mb-4">
+                                            <h5 className="fw-semibold mb-1">Datos generales</h5>
+                                            <p className="text-muted mb-3">
+                                                Captura empleado, motivo, fecha, horario y firma de la solicitud.
+                                            </p>
+
+                                            <Card className="border rounded-4 mb-3">
+                                                <Card.Body>
+                                                    <div className="d-flex align-items-center gap-2 mb-4">
+                                                        <i className="bi bi-person text-primary" />
+                                                        <h6 className="mb-0 fw-bold">Datos del empleado</h6>
+                                                    </div>
+
+                                                    <Row className="g-3">
+                                                        <Col md={12}>
+                                                            <FieldSelect
+                                                                register={register("idEmployee", {
+                                                                    required: true,
+                                                                    setValueAs: (v) => (v === "" ? null : Number(v)),
+                                                                })}
+                                                                options={filteredEmployees.map((e) => ({
+                                                                    value: e.id!,
+                                                                    label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                                                }))}
+                                                                label="Empleado:"
+                                                                className="text-uppercase border"
+                                                                readonly={readInput}
+                                                            />
+                                                        </Col>
+
+                                                        <Col md={6}>
+                                                            <FieldSelect
+                                                                readonly={readInput}
+                                                                register={register("idLeader", {
+                                                                    required: true,
+                                                                    setValueAs: (v) => (v === "" ? null : Number(v)),
+                                                                })}
+                                                                options={leaderOptions}
+                                                                label="Líder:"
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
+
+                                                        <Col md={6}>
+                                                            <FieldSelect
+                                                                register={register("idPersonDoh", { required: true })}
+                                                                options={
+                                                                    dohMap?.employee
+                                                                        ? [{
+                                                                            value: dohMap.employee.id,
+                                                                            label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
+                                                                        }]
+                                                                        : []
+                                                                }
+                                                                label="D.O.H.:"
+                                                                className="text-uppercase border"
+                                                                readonly={!readInput || !readOnlyDoh}
+                                                            />
+                                                        </Col>
+
+                                                        <Col md={12}>
+                                                            <Entry
+                                                                register={register("motive", { required: "El motivo es requerido" })}
+                                                                label="Motivo:"
+                                                                type="text"
+                                                                invalid={!!errors.motive}
+                                                                feedBack={errors.motive?.message}
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
+                                                    </Row>
+                                                </Card.Body>
+                                            </Card>
+
+                                            <Card className="border rounded-4 mb-3">
+                                                <Card.Body>
+                                                    <div className="d-flex align-items-center gap-2 mb-4">
+                                                        <i className="bi bi-calendar-range text-success" />
+                                                        <h6 className="mb-0 fw-bold">Fecha y horario</h6>
+                                                    </div>
+
+                                                    <Row className="g-3">
+                                                        <Col md={4}>
+                                                            <Entry
+                                                                register={register("date", {
+                                                                    required: "La fecha del evento es requerida",
+                                                                })}
+                                                                type="date"
+                                                                label="Fecha del evento:"
+                                                                invalid={!!errors.date}
+                                                                feedBack={errors.date?.message}
+                                                                className="border text-uppercase"
+                                                            />
+                                                        </Col>
+
+                                                        <Col md={4}>
+                                                            <Entry
+                                                                register={register("hourInit", {
+                                                                    required: "La hora de inicio es requerida",
+                                                                })}
+                                                                type="time"
+                                                                label="Hora de inicio:"
+                                                                invalid={!!errors.hourInit}
+                                                                feedBack={errors.hourInit?.message}
+                                                                className="border"
+                                                            />
+                                                        </Col>
+
+                                                        <Col md={4}>
+                                                            <Entry
+                                                                register={register("hourEnd", {
+                                                                    required: "La hora de fin es requerida",
+                                                                })}
+                                                                type="time"
+                                                                label="Hora de fin:"
+                                                                invalid={!!errors.hourEnd}
+                                                                feedBack={errors.hourEnd?.message}
+                                                                className="border"
+                                                            />
+                                                        </Col>
+                                                    </Row>
+                                                </Card.Body>
+                                            </Card>
+
+                                            <Card className="border rounded-4">
+                                                <Card.Body>
+                                                    <div className="d-flex align-items-center gap-2 mb-4">
+                                                        <i className="bi bi-pen text-info" />
+                                                        <h6 className="mb-0 fw-bold">Firma</h6>
+                                                    </div>
+
+                                                    <div className="w-100 overflow-hidden">
+                                                        <SignatureInput
+                                                            name="signature"
+                                                            register={register}
+                                                            control={control}
+                                                        />
+                                                    </div>
+                                                </Card.Body>
+                                            </Card>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </fieldset>
                         </Form>
                     </Col>
                 </Row>
-            </Container >
+            </Container>
         </>
     );
 }

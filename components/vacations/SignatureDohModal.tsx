@@ -10,7 +10,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
   signature: string;
@@ -22,9 +25,9 @@ function SignatureVacationDohModal({
   onHide,
   id,
   idPeriod,
-}: ModalBasicProps & { 
-  id: string; 
-  idPeriod: number | null 
+}: ModalBasicProps & {
+  id: string;
+  idPeriod: number | null
 }) {
   const {
     reset,
@@ -34,10 +37,12 @@ function SignatureVacationDohModal({
     formState: { isSubmitting, errors },
   } = useForm<TInputs>();
 
-  const { modalError, modalConfirm } = useModals();
+  const { modalConfirm } = useModals();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const handleOnExited = () => {
     reset({ signature: "" });
@@ -49,8 +54,8 @@ function SignatureVacationDohModal({
     modalConfirm("¿Seguro que quieres guardar la firma?", async () => {
       try {
 
-        setLoading(true);
-        setMessageLoading("Enviando firma...");
+        setFeedback("loading");
+        setFeedbackMsg("Enviando firma...");
 
         const res = await approvedVacationDoh({
           data: {
@@ -62,27 +67,50 @@ function SignatureVacationDohModal({
         });
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo mandar la firma");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
-        onHide();
+        setFeedbackMsg(res.message || "Firma enviada correctamente");
+        setFeedback("success");
         router.refresh();
 
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
-
         setLoading(false);
         setMessageLoading("");
-
       }
     });
   };
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading || "Enviando firma..."} />
+      <ConditionalRender cond={loading || isSubmitting}>
+        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Modal

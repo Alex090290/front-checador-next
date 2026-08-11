@@ -4,12 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { formatDate } from "date-fns";
-
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-
 import { Vacations } from "@/lib/definitions";
-import { vacationStatus } from "@/app/(auth)/app/vacations/views/VacationsListView";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import AlertSignaturesV from "./AlertSignatures";
@@ -142,7 +139,7 @@ export default function VacationsTableClient({
     {
       key: "status",
       label: "Estado",
-      accessor: (row) => vacationStatus[row.status],
+      accessor: (row) => row.status,
       type: "string",
       render: (e) => {
         const estado = e.status

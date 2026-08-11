@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { Button, Modal, Form } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { SignatureInput } from "../fields";
-import toast from "react-hot-toast";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useState } from "react";
 import { sendSignatureOverTime } from "@/app/actions/overtime-actions";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
     signature: string;
@@ -29,19 +32,20 @@ function SignatureDohModal({
         formState: { isSubmitting },
     } = useForm<TInputs>();
 
-    const { modalError, modalConfirm } = useModals();
+    const { modalConfirm } = useModals();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [messageLoading, setMessageLoading] = useState("");
+    const [, setMessageLoading] = useState("");
+    const [feedbackMsg, setFeedbackMsg] = useState("");
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
 
     const onSubmit: SubmitHandler<TInputs> = async (data) => {
-        onHide();
-
         modalConfirm("¿Seguro que quieres guardar la firma?", async () => {
             try {
 
-                setLoading(true);
-                setMessageLoading("Enviando firma...");
+                setFeedback("loading");
+                setFeedbackMsg("Enviando firma...");
+
 
                 const res = await sendSignatureOverTime({
                     id: id ? Number(id) : null,
@@ -49,19 +53,20 @@ function SignatureDohModal({
                 });
 
                 if (!res.success) {
-                    modalError(res.message);
+                    setFeedbackMsg(res.message || "No se pudo mandar la firma");
+                    setFeedback("error");
                     return;
                 }
 
-                toast.success(res.message);
-                onHide();
+                setFeedbackMsg(res.message || "Firma enviada correctamente");
+                setFeedback("success");
                 router.refresh();
-
+            } catch {
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
+                setFeedback("error");
             } finally {
-
                 setLoading(false);
                 setMessageLoading("");
-
             }
         });
     };
@@ -70,12 +75,33 @@ function SignatureDohModal({
         reset({ signature: "" });
     };
 
-    
+
 
     return (
         <>
-            <ConditionalRender cond={loading}>
-                <Loading message={messageLoading || "Enviando firma..."} />
+            <ConditionalRender cond={loading || isSubmitting}>
+                <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "loading"}>
+                <Loading message={feedbackMsg || "Guardando..."} />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => {
+                        setFeedback(null);
+                        onHide();
+                    }}
+                />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
             </ConditionalRender>
 
             <Modal

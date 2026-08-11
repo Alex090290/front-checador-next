@@ -3,7 +3,7 @@
 import { createInability } from "@/app/actions/inability-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
-import { Entry, FieldSelect } from "@/components/fields";
+import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import { Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
@@ -48,6 +48,7 @@ export default function CreateInabilityComponent({
     reset,
     watch,
     setValue,
+    control,
     formState: { isDirty, isSubmitting, errors },
   } = useForm<TInputs>({
     defaultValues: DEFAULT_VALUES,
@@ -234,13 +235,16 @@ export default function CreateInabilityComponent({
 
                           <Row className="g-3">
                             <Col md={12}>
-                              <FieldSelect
+                              <RelationField
                                 readonly={readInput}
                                 label="Empleado:"
                                 options={filteredEmployees.map((em) => ({
-                                  value: Number(em.id),
-                                  label: `${em.lastName} ${em.name}`.toUpperCase(),
+                                  id: Number(em.id),
+                                  displayName: `${em.lastName} ${em.name}`.toUpperCase(),
+                                  name: `${em.lastName} ${em.name}`.toUpperCase()
                                 }))}
+                                control={control}
+                                callBackMode="id"
                                 register={register("idEmployee", {
                                   required: true,
                                   setValueAs: (v) => (v === "" ? null : Number(v)),
@@ -297,7 +301,7 @@ export default function CreateInabilityComponent({
                                 register={register("dateInit", { required: true })}
                                 invalid={!!errors.dateInit}
                                 // readonly={session?.uid?.role === "EMPLOYEE"}
-                                className="border"
+                                className="border text-uppercase"
                               />
                             </Col>
 
@@ -309,7 +313,7 @@ export default function CreateInabilityComponent({
                                 register={register("dateEnd", { required: true })}
                                 invalid={!!errors.dateEnd}
                                 // readonly={session?.uid?.role === "EMPLOYEE"}
-                                className="border"
+                                className="border text-uppercase"
                               />
                             </Col>
                           </Row>
@@ -330,7 +334,7 @@ export default function CreateInabilityComponent({
                                 <Form.Control
                                   type="file"
                                   accept=".jpg,.jpeg,.png,.pdf,.webp"
-                                  {...register("firstDoc", { required: true })}
+                                  {...register("firstDoc")}
                                   isInvalid={!!errors.firstDoc}
                                   className="border"
                                 />

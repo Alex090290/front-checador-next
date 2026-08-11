@@ -13,11 +13,11 @@ type SearchParams = {
 export default function PageVacations({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams: SearchParams;
 }) {
-  const id = searchParams?.id ?? "null";
-  const page = searchParams?.page ?? "1";
-  const limit = searchParams?.limit ?? "20";
+  const id = searchParams.id!
+  const page = searchParams.page ?? "1";
+  const limit = searchParams.limit ?? "20";
     
   return (
         <Suspense fallback={<Loading message="Cargando datos..." />}>

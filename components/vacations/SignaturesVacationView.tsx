@@ -39,8 +39,8 @@ function SignaturesVacationView({
         const res = await fetchVacationSignature({
           data: { idSolicitud, idPeriod, idEmployee },
         });
-
-        if (res.success && res.data) {
+        
+        if (res.success && res.data && res.data !== '') {
           setImgUrl(res.data);
         } else {
           setImgUrl(null);

@@ -14,6 +14,12 @@ import {
 import toast from "react-hot-toast";
 import PDFViewerModal from "../../employee/views/PDFViewer";
 import { getViewSTDocument, uploadST } from "@/app/actions/st-actions";
+import ConditionalRender from "@/components/ConditionalRender";
+import Loading from "@/components/LoadingSpinner";
+import SuccessOverlay from "@/components/SuccessOverlay";
+import ErrorOverlay from "@/components/ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 function ST7V1Card({
   st2v1Doc,
@@ -28,7 +34,8 @@ function ST7V1Card({
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
   const { modalError } = useModals();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,18 +87,19 @@ function ST7V1Card({
   };
 
   const handleGetDocument = async () => {
-    setLoading(true);
+    setFeedback("loading");
+    setFeedbackMsg("Subiendo documento...");
     const res = await getViewSTDocument({
       idDoc,
       version: "sT7FillingDocumentv1",
     });
     if (!res.success) {
-      setLoading(false);
-      return modalError(res.message);
+      setFeedbackMsg(res.message || "No se pudo subir");
+      setFeedback("error");
     }
     setPdfUrl(res.data || "");
     setShowPdfModal(true);
-    setLoading(false);
+    setFeedback(null);
   };
 
   const handleCancel = () => {
@@ -102,103 +110,125 @@ function ST7V1Card({
   };
 
   return (
-    <Col xs={12} sm={6} md={4} xl={2}>
-      <Card className="rounded shadow-sm bg-body-tertiary h-100">
-        <Card.Header className="d-flex justify-content-between align-items-end">
-          <Card.Title
-            className="text-center text-uppercase mb-0"
-            style={{ fontSize: "0.9rem" }}
-          >
-            ST7 V1
-          </Card.Title>
-          <DropdownButton
-            size="sm"
-            variant="secondary"
-            title={<i className="bi bi-gear-fill"></i>}
-          >
-            <Dropdown.Item>
-              <i className="bi bi-calendar-minus me-1"></i>
-              Fecha de expiración
-            </Dropdown.Item>
-          </DropdownButton>
-        </Card.Header>
-        <Card.Body>
-          {loading ? (
-            <div
-              className="text-center h-100 align-content-center"
-              style={{ height: "200px" }}
-            >
-              <ProgressBar variant="primary" striped now={100} animated />
-            </div>
-          ) : (
-            <Card.Body>
-              {/* Input file oculto */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".jpg,.jpeg,.png,.pdf,.webp"
-                multiple
-                style={{ display: "none" }}
-              />
+    <>
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Actualizando..."} />
+      </ConditionalRender>
 
-              {/* Información de archivos seleccionados */}
-              {selectedFiles.length > 0 && (
-                <div className="mb-2">
-                  <small className="text-muted">
-                    {selectedFiles.length} archivo(s) seleccionado(s)
-                  </small>
-                  {selectedFiles.slice(0, 2).map((file, index) => (
-                    <div key={index} className="small text-truncate">
-                      {file.name}
-                    </div>
-                  ))}
-                  {selectedFiles.length > 2 && (
-                    <div className="small text-muted">
-                      +{selectedFiles.length - 2} más
-                    </div>
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+      <Col xs={12} sm={6} md={4} xl={3}>
+        <Card className="rounded shadow-sm bg-body-tertiary h-100">
+          <Card.Header className="d-flex justify-content-between align-items-end">
+            <Card.Title
+              className="text-center text-uppercase mb-0"
+              style={{ fontSize: "0.9rem" }}
+            >
+              ST7 V1
+            </Card.Title>
+            <DropdownButton
+              size="sm"
+              variant="secondary"
+              title={<i className="bi bi-gear-fill"></i>}
+            >
+              <Dropdown.Item>
+                <i className="bi bi-calendar-minus me-1" />
+                Fecha de expiración
+              </Dropdown.Item>
+            </DropdownButton>
+          </Card.Header>
+          <Card.Body>
+            {loading ? (
+              <div
+                className="text-center h-100 align-content-center"
+                style={{ height: "200px" }}
+              >
+                <ProgressBar variant="primary" striped now={100} animated />
+              </div>
+            ) : (
+              <Card.Body>
+                {/* Input file oculto */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".jpg,.jpeg,.png,.pdf,.webp"
+                  multiple
+                  style={{ display: "none" }}
+                />
+
+                {/* Información de archivos seleccionados */}
+                {selectedFiles.length > 0 && (
+                  <div className="mb-2">
+                    <small className="text-muted">
+                      {selectedFiles.length} archivo(s) seleccionado(s)
+                    </small>
+                    {selectedFiles.slice(0, 2).map((file, index) => (
+                      <div key={index} className="small text-truncate">
+                        {file.name}
+                      </div>
+                    ))}
+                    {selectedFiles.length > 2 && (
+                      <div className="small text-muted">
+                        +{selectedFiles.length - 2} más
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Botones condicionales */}
+                <div className="d-flex flex-column justify-content-center gap-1">
+                  {selectedFiles.length === 0 ? (
+                    <>
+                      <Button onClick={handleButtonClick}>
+                        {st2v1Doc?.urlDocument ? "Reemplazar" : "Cargar"}
+                      </Button>
+                      {st2v1Doc?.urlDocument && (
+                        <Button variant="warning" onClick={handleGetDocument}>
+                          Visualizar
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="success" onClick={handleUpload}>
+                        Subir
+                      </Button>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={handleCancel}
+                      >
+                        Cancelar
+                      </Button>
+                    </>
                   )}
                 </div>
-              )}
-
-              {/* Botones condicionales */}
-              <div className="d-flex flex-column justify-content-center gap-1">
-                {selectedFiles.length === 0 ? (
-                  <>
-                    <Button onClick={handleButtonClick}>
-                      {st2v1Doc?.urlDocument ? "Reemplazar" : "Cargar"}
-                    </Button>
-                    {st2v1Doc?.urlDocument && (
-                      <Button variant="warning" onClick={handleGetDocument}>
-                        Visualizar
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Button variant="success" onClick={handleUpload}>
-                      Subir
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      onClick={handleCancel}
-                    >
-                      Cancelar
-                    </Button>
-                  </>
-                )}
-              </div>
-            </Card.Body>
-          )}
-        </Card.Body>
-      </Card>
-      <PDFViewerModal
-        show={showPdfModal}
-        onHide={() => setShowPdfModal(false)}
-        pdfBase64Url={pdfUrl}
-      />
-    </Col>
+              </Card.Body>
+            )}
+          </Card.Body>
+        </Card>
+        <PDFViewerModal
+          show={showPdfModal}
+          onHide={() => setShowPdfModal(false)}
+          pdfBase64Url={pdfUrl}
+        />
+      </Col>
+    </>
   );
 }
 

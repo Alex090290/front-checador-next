@@ -9,6 +9,10 @@ import { Button, Card, Col, Container, Dropdown, InputGroup, OverlayTrigger, Row
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "./GenericSearchInput";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 const employeeStatus = {
   1: "activo",
@@ -50,11 +54,12 @@ export default function EmployeeTableClient({
   const currentIdDepartment = sp.get("idDepartment") ?? "";
   const currentPosition = sp.get("idPosition") ?? "";
   const [positions, setPositions] = useState<Array<Position>>([]);
-
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   useEffect(() => {
-    setLoading(false);
-    setMessageLoading("");
+    setFeedback(null);
+    setFeedbackMsg("");
   }, [searchParamsString]);
 
   const handleCreate = () => {
@@ -102,8 +107,8 @@ export default function EmployeeTableClient({
     (value: string) => {
       if (value === currentSearch) return;
 
-      setLoading(true);
-      setMessageLoading("Buscando...");
+      setFeedback("loading");
+      setFeedbackMsg("Buscando...");
 
       const params = new URLSearchParams(searchParamsString);
       params.set("id", "null");
@@ -129,8 +134,8 @@ export default function EmployeeTableClient({
 
     if (trimedSuc === normalizedCurrent) return;
 
-    setLoading(true);
-    setMessageLoading("Filtrando...");
+    setFeedback("loading");
+    setFeedbackMsg("Filtrando...");
 
     const params = new URLSearchParams(searchParamsString);
     params.delete("id");
@@ -172,8 +177,8 @@ export default function EmployeeTableClient({
     if (positions) {
       setPositions(positions);
     }
-    setLoading(true);
-    setMessageLoading("Filtrando...");
+    setFeedback('loading');
+    setFeedbackMsg("Filtrando...");
 
     const params = new URLSearchParams(searchParamsString);
     params.delete("id");
@@ -212,8 +217,8 @@ export default function EmployeeTableClient({
 
     if (trimmedId === normalizedCurrent) return;
 
-    setLoading(true);
-    setMessageLoading("Filtrando...");
+    setFeedback("loading");
+    setFeedbackMsg("Filtrando...");
 
     const params = new URLSearchParams(searchParamsString);
     params.delete("id");
@@ -319,8 +324,24 @@ export default function EmployeeTableClient({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="py-3" style={{ maxWidth: "1600px" }}>

@@ -393,8 +393,9 @@ export async function fetchVacationSignature({
   };
 }): Promise<ActionResponse<string>> {
   try {
+
     const { apiToken, apiUrl } = await storeToken();
-    // Obtener imagen en binario
+
     const resImg = await axios
       .get(
         `${apiUrl}/vacations/signature/${data.idSolicitud}/${data.idPeriod}/${data.idEmployee}`,
@@ -405,24 +406,27 @@ export async function fetchVacationSignature({
           responseType: "arraybuffer",
         }
       )
-      .then((res) => {
-        return res.data;
-      })
+      .then((res) => res.data)
       .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
+        console.log("Error de firmas: ", err?.response?.status ?? err.message);
+        return null; // null en vez de '' para distinguir claramente "no hay imagen"
       });
+      console.log("resImg: ",resImg);
+      
+    if (!resImg) {
+      return {
+        success: false,
+        message: "Firma no encontrada",
+        data: "",
+      };
+    }
 
-    // Convertir a base64
     const base64 = Buffer.from(resImg, "binary").toString("base64");
     const imageBase64Url = `data:image/jpeg;base64,${base64}`;
 
     return {
       success: true,
-      message: "Imagen subida correctamente",
+      message: "Imagen obtenida correctamente",
       data: imageBase64Url,
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -431,6 +435,7 @@ export async function fetchVacationSignature({
     return {
       success: false,
       message: error.message,
+      data: "",
     };
   }
 }
@@ -519,13 +524,25 @@ export async function approvedVacation({
   }
 }
 
+export async function deleteVacationTest(text:string) {
+  console.log("Action deleteVacation");
+      console.log("text:", text);
+}
+
 export async function deleteVacation(idRequest: number, idPeriod: number): Promise<ActionResponse<boolean>> {
+  console.log("Action deleteVacation");
+      console.log("idRequest:", idRequest);
+    console.log("idPeriod:", idPeriod);
+
   try {
+
+    
+    
     if (!idRequest) throw new Error("ID NOT DEFINED");
 
     const { apiToken, apiUrl } = await storeToken();
 
-    await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`, {
+    let resData = await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
@@ -535,15 +552,18 @@ export async function deleteVacation(idRequest: number, idPeriod: number): Promi
         return res.data;
       })
       .catch((err) => {
+        console.log("Error en axios delete vacations: ", err);
+        
         throw new Error(
           err.response.data.message
             ? err.response.data.message
             : "Error en la respuesta"
         );
       });
+console.log("resData:", resData);
 
 
-    revalidatePath("/app/vacationList");
+    // revalidatePath("/app/vacationList");
 
     return {
       success: true,
@@ -552,7 +572,7 @@ export async function deleteVacation(idRequest: number, idPeriod: number): Promi
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.log(error);
+    console.log("Error eliminar vacaciones",error);
     return {
       success: false,
       message: error.message,

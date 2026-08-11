@@ -9,7 +9,7 @@ import ListView from "../templates/ListView";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "../employee/GenericSearchInput";
-import DatePicker from "react-datepicker";
+import DatePicker, { registerLocale } from "react-datepicker";
 import { useModals } from "@/context/ModalContext";
 import ModalBlur from "../ModalBlur";
 import CreatePenaltyComponent from "./CreatePenaltyModal";
@@ -19,6 +19,9 @@ import { ICheckInFeedback } from "@/lib/definitions";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import { es } from "date-fns/locale";
+
+registerLocale("es", es);
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -545,7 +548,7 @@ export default function AbsencesTableClient({
                                                         onHide={() => setShowCalendar(false)}
                                                     >
                                                         {({ ref, style }) => (
-                                                            <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light">
+                                                            <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize">
                                                                 <DatePicker
                                                                     selectsRange
                                                                     inline
@@ -553,6 +556,7 @@ export default function AbsencesTableClient({
                                                                     endDate={parsedEnd}
                                                                     onChange={handleRangeChange}
                                                                     monthsShown={1}
+                                                                    locale="es"
                                                                 />
                                                                 <Row className="g-2 m-2">
 

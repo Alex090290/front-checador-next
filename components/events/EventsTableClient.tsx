@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useModals } from "@/context/ModalContext";
 import { useForm } from "react-hook-form";
-import DatePicker from "react-datepicker";
+import DatePicker, { registerLocale } from "react-datepicker";
 import moment from "moment-timezone";
 import ModalBlur from "../ModalBlur";
 import FormUpdateEvent from "./EventUpdate";
@@ -21,7 +21,9 @@ import { deleteRegristrosChecador, updateRegristrosChecador } from "@/app/action
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { es } from "date-fns/locale";
 
+registerLocale("es", es);
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -148,8 +150,8 @@ export default function EvenstsTableClient({
     //HELPERS
 
     useEffect(() => {
-        setLoading(false);
-        setMessageLoading("");
+        setFeedback(null);
+        setFeedbackMsg("");
     }, [searchParamsString]);
 
     const dateLabel = parsedDate
@@ -188,14 +190,15 @@ export default function EvenstsTableClient({
         setSelectedIds([]);
     }, []);
 
+    //Filtro de empleado
     const handleSearch = useCallback(
         (value: string) => {
             const cleanValue = value.trim();
 
             if (cleanValue === currentSearch.trim()) return;
 
-            setLoading(true);
-            setMessageLoading("Buscando...");
+            setFeedback("loading");
+            setFeedbackMsg("Buscando...");
 
             const params = new URLSearchParams(searchParamsString);
             params.set("id", "null");
@@ -277,8 +280,8 @@ export default function EvenstsTableClient({
     }, [currentIdUser, checadores]);
 
     const handleUserFilter = useCallback((value: string) => {
-        setLoading(true);
-        setMessageLoading("Filtrando...");
+        setFeedback("loading");
+        setFeedbackMsg("Filtrando...");
 
         const params = new URLSearchParams(searchParamsString);
         params.delete("id");
@@ -296,9 +299,10 @@ export default function EvenstsTableClient({
         router.push(`/app/eventos?${params.toString()}`);
     }, [searchParamsString, limit, router, clearSelectedIds]);
 
+    //Filtro por fecha
     const handleDateFilter = useCallback(() => {
-        setLoading(true);
-        setMessageLoading("Filtrando...");
+        setFeedback("loading");
+        setFeedbackMsg("Filtrando...");
 
         const params = new URLSearchParams(searchParamsString);
         params.delete("id");
@@ -661,11 +665,12 @@ export default function EvenstsTableClient({
                                                     onHide={() => setShowCalendar(false)}
                                                 >
                                                     {({ ref, style }) => (
-                                                        <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light">
+                                                        <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize">
                                                             <DatePicker
                                                                 inline
                                                                 selected={parsedDate}
                                                                 onChange={handleDateChange}
+                                                                locale="es"
                                                             />
                                                             <Row className="g-2 m-2">
                                                                 <Col xs={6}>

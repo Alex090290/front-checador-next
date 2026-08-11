@@ -261,7 +261,7 @@ export async function updateBranch({
 }
 
 export async function deleteBranch({
-  id,
+  id
 }: {
   id: number | null;
 }): Promise<ActionResponse<boolean>> {

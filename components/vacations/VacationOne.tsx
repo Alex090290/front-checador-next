@@ -12,12 +12,12 @@ import {
 } from "react-bootstrap";
 import { formatDate } from "date-fns";
 
-import SignaturesVacationView from "@/app/(auth)/app/vacations/views/SignaturesVacationView";
+import SignaturesVacationView from "@/components/vacations/SignaturesVacationView";
 import { FormBook, FormPage } from "../templates/FormView";
 
-import ApproveVacationLeaderModal from "@/app/(auth)/app/vacations/views/ApproveVacationLeaderModal";
-import SignatureVacationDohModal from "@/app/(auth)/app/vacations/views/SignatureDohModal";
-import VacationPDFownload from "@/app/(auth)/app/vacations/views/VacationPDFownload";
+import ApproveVacationLeaderModal from "@/components/vacations/ApproveVacationLeaderModal";
+import SignatureVacationDohModal from "@/components/vacations/SignatureDohModal";
+import VacationPDFownload from "@/components/vacations/VacationPDFownload";
 
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { deleteVacation, fetchPeriods } from "@/app/actions/vacations-actions";
@@ -26,12 +26,16 @@ import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { useModals } from "@/context/ModalContext";
-import toast from "react-hot-toast";
 import { ISignatures } from "@/lib/overTime/interface";
 import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
 import VacationsOneError from "./vacationsMessageError";
-import { formatCreatedAt } from "@/lib/helpers";
+import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 import moment from "moment";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
+
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
   if (!p) return "—";
@@ -89,13 +93,15 @@ export default function ShowInfoVacation({
   const router = useRouter();
   const session = useSessionSnapshot();
   const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [, setMessageLoading] = useState("");
   const [approveModal, setApproveModal] = useState(false);
   const [signatureDohModal, setSignatureDohModal] = useState(false);
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [, setPeriods] = useState<PeriodVacation[]>([]);
   const { modalError, modalConfirm } = useModals();
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const signatures = useMemo(() =>
     Array.isArray(vacation?.signatures) ? vacation.signatures : [],
@@ -150,9 +156,9 @@ export default function ShowInfoVacation({
     session?.uid?.idEmployee === vacation?.employee?.id &&
     !getSignatureEmployee();
 
-  const showAnyActions = useMemo(() => {
-    return showLeaderApprove || showDohApprove || showEmployeeSign || true; // Descargar siempre
-  }, [showLeaderApprove, showDohApprove, showEmployeeSign]);
+  // const showAnyActions = useMemo(() => {
+  //   return showLeaderApprove || showDohApprove || showEmployeeSign || true; // Descargar siempre
+  // }, [showLeaderApprove, showDohApprove, showEmployeeSign]);
 
   const getPeriods = useCallback(async () => {
     try {
@@ -200,7 +206,8 @@ export default function ShowInfoVacation({
   }
 
   //Borrar
-  const handleDeleteOvertime = async () => {
+  const handleDeleteVacations = async () => {
+
     if (!vacation?.id) {
       modalError("No se encontró el registro");
       return;
@@ -208,18 +215,28 @@ export default function ShowInfoVacation({
 
     modalConfirm("¿Deseas eliminar este registro?", async () => {
       try {
-        setLoading(true);
-        setMessageLoading("Eliminando registro...");
+        setFeedback("loading");
+        setFeedbackMsg("Eliminando registro...");
 
-        const res = await deleteVacation(Number(vacation.idPeriod), Number(vacation.id));
+
+
+        const res = await deleteVacation(
+          Number(vacation.id),
+          Number(vacation.idPeriod)
+        );
 
         if (!res.success) {
-          modalError(res.message);
+          setFeedbackMsg(res.message || "No se pudo eliminar el registro");
+          setFeedback("error");
           return;
         }
 
-        toast.success(res.message);
-        router.push("/app/vacations");
+        setFeedbackMsg(res.message || "Registro eliminado correctamente");
+        setFeedback("success");
+        router.push("/app/vacationsList");
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       } finally {
         setLoading(false);
         setMessageLoading("");
@@ -235,12 +252,27 @@ export default function ShowInfoVacation({
   }
   const overallStatus = vacation.status ?? "PENDING";
   const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy");
-  const createdHour = moment.utc(vacation.createdAt).format("HH:mm A");  
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
@@ -264,22 +296,22 @@ export default function ShowInfoVacation({
               </Button>
             </OverLay>
 
-            <ConditionalRender cond={showAnyActions}>
-              <OverLay string="Eliminar registro">
-                <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                  variant="danger"
-                  onClick={handleDeleteOvertime}
-                  disabled={loading}
-                >
-                  <i className="bi bi-trash" />
+            {/* <ConditionalRender cond={showAnyActions}> */}
+            <OverLay string="Eliminar registro">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="danger"
+                onClick={handleDeleteVacations}
+                disabled={loading}
+              >
+                <i className="bi bi-trash" />
 
-                  <span className="d-none d-md-inline ms-2">
-                    Eliminar registro
-                  </span>
-                </Button>
-              </OverLay>
-            </ConditionalRender>
+                <span className="d-none d-md-inline ms-2">
+                  Eliminar registro
+                </span>
+              </Button>
+            </OverLay>
+            {/* </ConditionalRender> */}
 
             <ConditionalRender cond={showEmployeeSign}>
               <OverLay string="Firmar">
@@ -394,13 +426,13 @@ export default function ShowInfoVacation({
                         </div>
                         <span className="fw-semibold text-end">{createdAt}</span>
                       </div>
-                      
+
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2">
                           <i className="bi bi-clock" />
                           <span className="text-muted">Hora de creación</span>
                         </div>
-                        <span className="fw-semibold text-end">{createdHour}</span>
+                        <span className="fw-semibold text-end">{formatCreatedAtOnlyHours(vacation.createdAt)}</span>
                       </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
@@ -508,41 +540,41 @@ export default function ShowInfoVacation({
               <Card.Body>
                 <div className="d-flex align-items-center justify-content-between mb-4">
                   <h6 className="mb-0 fw-bold">Días solicitados</h6>
-                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
-                    Desglose
+                  <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                    {daysList.length} {daysList.length === 1 ? "día" : "días"}
                   </span>
                 </div>
 
                 <ConditionalRender cond={daysList.length === 0}>
                   <div className="text-center py-4 text-muted">
                     <i className="bi bi-calendar-minus fs-4 d-block mb-2" />
-                    Sin desgloce de días solicitados.
+                    Sin desglose de días solicitados.
                   </div>
                 </ConditionalRender>
 
                 <ConditionalRender cond={daysList.length > 0}>
-                  <Table responsive hover borderless className="m-0">
-                    <thead className="text-uppercase">
-                      <tr>
-                        <th className="text-muted small">Día</th>
-                        <th className="text-muted small text-end">
-                          Periodo catorcenal
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {daysList.map((d) => (
-                        <tr key={d.id}>
-                          <td className="fw-semibold">{formatCreatedAt(String(d.day))}</td>
-                          <td className="text-end">
-                            {d.fortnightlyPeriod ?? "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </ConditionalRender>
+                  <div>
+                    <div className="d-flex align-items-center justify-content-between px-1 pb-2 border-bottom">
+                      <span className="text-muted small text-uppercase fw-semibold">Día</span>
+                      <span className="text-muted small text-uppercase fw-semibold">Periodo catorcenal</span>
+                    </div>
 
+                    {daysList.map((d, index) => (
+                      <div
+                        key={d.id}
+                        className={`d-flex align-items-center justify-content-between px-1 py-2 ${index !== daysList.length - 1 ? "border-bottom" : ""
+                          }`}
+                      >
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-calendar-event text-warning" />
+                          <span className="fw-semibold">{formatCreatedAt(String(d.day))}</span>
+                        </div>
+
+                        <span className="fw-semibold">{d.fortnightlyPeriod ?? "—"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </ConditionalRender>
               </Card.Body>
             </Card>
 

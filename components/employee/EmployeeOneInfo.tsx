@@ -42,6 +42,7 @@ import { formatScheduleTime } from "@/lib/helpers";
 import moment from "moment";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import EmployeeOneError from "./EmployeeMessageError";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -221,6 +222,12 @@ export default function EmployeeDetailsView({
     setFeedbackMsg("Cargando...");
     router.push("/app/employee/create");
   };
+
+  if (!employee) {
+      return (
+        <EmployeeOneError />
+      );
+    }
 
 
   return (

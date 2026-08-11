@@ -360,8 +360,6 @@ export default function CreatePermissionComponent({
   }, [config, currentDoh, setValue]);
 
   const handleBack = () => {
-    setLoading(true);
-    setMessageLoading("Cargando...");
     router.push("/app/permissions");
   };
 
@@ -413,7 +411,7 @@ export default function CreatePermissionComponent({
   return (
     <>
       <ConditionalRender cond={feedback === "loading" || isSubmitting}>
-        <Loading message={feedbackMsg || "Cargando..."} />
+        <Loading message={feedbackMsg } />
       </ConditionalRender>
 
       <ConditionalRender cond={feedback === "success"}>
@@ -436,7 +434,7 @@ export default function CreatePermissionComponent({
         <Row className="m-2">
           <Col xs={12}>
             <Form onSubmit={handleSubmit(onSubmit)}>
-              <fieldset disabled={isSubmitting || loading}>
+              <fieldset disabled={loading}>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
                   <div>
                     <h1 className="mb-1">Crear permiso</h1>
@@ -449,7 +447,7 @@ export default function CreatePermissionComponent({
                     <Button
                       variant="outline-secondary"
                       type="button"
-                      disabled={isSubmitting}
+                      disabled={loading}
                       onClick={handleBack}
                     >
                       Cancelar

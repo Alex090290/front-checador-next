@@ -15,6 +15,7 @@ import { deletePosition } from "@/app/actions/positions-actions";
 import OverLay from "../templates/OverLay";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import DepartmentOneError from "./DepartrmentsMessageError";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -43,9 +44,7 @@ export default function InfoOneDepartment({
 
   if (!department) {
     return (
-      <div className="py-4">
-        <h4 className="mb-0">Departamento no encontrado</h4>
-      </div>
+      <DepartmentOneError />
     );
   }
 

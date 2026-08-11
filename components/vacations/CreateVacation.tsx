@@ -550,7 +550,7 @@ function CreateVacationComponent({
                                     : []
                                 }
                                 label="D.O.H.:"
-                                readonly={!readInput}
+                                readonly={!readInput || !readOnlyDoh}
                               />
                             </Col>
 
