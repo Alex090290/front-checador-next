@@ -128,8 +128,8 @@ export default function AbsencesTableClient({
 
 
     useEffect(() => {
-        setLoading(false);
-        setMessageLoading("");
+        setFeedback(null);
+        setFeedbackMsg("");
     }, [searchParamsString]);
 
     //Helpers
@@ -202,8 +202,8 @@ export default function AbsencesTableClient({
         (value: string) => {
             if (value === currentSearch) return;
 
-            setLoading(true);
-            setMessageLoading("Buscando...");
+            setFeedback("loading");
+            setFeedbackMsg("Buscando...");
 
             const params = new URLSearchParams(searchParamsString);
             params.set("id", "null");
@@ -235,8 +235,9 @@ export default function AbsencesTableClient({
 
         if (dateInitValue === (dateInit ?? "") && dateEndValue === (dateEnd ?? "")) return;
 
-        setLoading(true);
-        setMessageLoading("Filtrando...");
+        setFeedback("loading");
+        setFeedbackMsg("Filtrando...");
+
 
         const params = new URLSearchParams(searchParamsString);
         params.set("id", "null");
@@ -251,8 +252,9 @@ export default function AbsencesTableClient({
     }, [dateInitValue, dateEndValue, dateInit, dateEnd, searchParamsString, limit, router, clearSelectedIds]);
 
     const handleTypeFilter = useCallback((value: string) => {
-        setLoading(true);
-        setMessageLoading("Filtrando...");
+        setFeedback("loading");
+        setFeedbackMsg("Filtrando...");
+
 
         const params = new URLSearchParams(searchParamsString);
         params.set("id", "null");
@@ -373,7 +375,6 @@ export default function AbsencesTableClient({
         });
     };
 
-
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IAbsence>[] = [
         {
@@ -401,14 +402,25 @@ export default function AbsencesTableClient({
             )
         },
         {
-            key: "category",
-            label: "Categoría",
-            accessor: (e) => e.category,
+            key: "department",
+            label: "Departamento",
+            accessor: (e) => e.department.nameDepartment,
             filterable: true,
             type: "string",
             render: (e) =>
                 <div className="text-uppercase">
-                    {e.category || "-"}
+                    {e.department.nameDepartment || "-"}
+                </div>
+        },
+        {
+            key: "position",
+            label: "Puesto",
+            accessor: (e) => e.position.namePosition,
+            filterable: true,
+            type: "string",
+            render: (e) =>
+                <div className="text-uppercase">
+                    {e.position.namePosition || "-"}
                 </div>
         },
         {

@@ -12,7 +12,7 @@ import FormView, {
   PageSheet,
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
-import { Employee, IInability } from "@/lib/definitions";
+import { Employee } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -25,6 +25,7 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import ModalAddDocuments from "./ModalUploadDocuments";
 import InhabilityDocCard from "./InhabilityDocumentCard";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import { IInability } from "@/lib/inhability/interface";
 // import DocumetCitt from "./DocumetCitt";
 
 type TInputs = {
@@ -238,6 +239,7 @@ function InhabilityFormView({
                       inhability.documentsInability.map((doc) => {
                         return (
                           <InhabilityDocCard
+                            doc={doc}
                             key={doc.id}
                             selfId={String(doc.id)}
                             idDoc={id}

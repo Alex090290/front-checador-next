@@ -4,7 +4,7 @@ import ListView from "@/components/templates/ListView";
 import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
-import { IInability } from "@/lib/definitions";
+import { IInability } from "@/lib/inhability/interface";
 // import { formatDate } from "date-fns";
 import moment from "moment-timezone";
 

@@ -33,6 +33,16 @@ export interface IAbsence {
         }
     };
 
+    department: {
+        id: number;
+        nameDepartment: string;
+    }
+
+    position: {
+        id: number;
+        namePosition: string;
+    }
+
     checks: IChecks[];
 }
 
@@ -73,7 +83,7 @@ interface IDaysBrokenDown {
     day: string;
 }
 
-interface listDocuments{
+interface listDocuments {
     id: number;
     whoUploadId: number;
     urlDocument: string;

@@ -2,12 +2,12 @@ import React from "react";
 import InhabilityListView from "./InhabilityListView";
 import InhabilityFormView from "./InhabilityFormView";
 import NotFound from "@/app/not-found";
-import { IInability } from "@/lib/definitions";
 import {
   getAllInability,
   getOneInability,
 } from "@/app/actions/inability-actions";
 import { fetchEmployees } from "@/app/actions/employee-actions";
+import { IInability } from "@/lib/inhability/interface";
 
 async function InhabilityMainView({
   viewType,

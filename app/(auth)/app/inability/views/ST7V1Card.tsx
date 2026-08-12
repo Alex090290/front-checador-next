@@ -1,7 +1,6 @@
 "use client";
 
 import { useModals } from "@/context/ModalContext";
-import { IInability } from "@/lib/definitions";
 import { useRef, useState } from "react";
 import {
   Button,
@@ -11,32 +10,38 @@ import {
   DropdownButton,
   ProgressBar,
 } from "react-bootstrap";
-import toast from "react-hot-toast";
 import PDFViewerModal from "../../employee/views/PDFViewer";
 import { getViewSTDocument, uploadST } from "@/app/actions/st-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import SuccessOverlay from "@/components/SuccessOverlay";
 import ErrorOverlay from "@/components/ErrorOverlay";
+import ModalBlur from "@/components/ModalBlur";
+import FormUpdateDateV1 from "@/components/inability/FormUpdateDateV1";
+import { IInability } from "@/lib/inhability/interface";
+import { formatCreatedAt } from "@/lib/helpers";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
 function ST7V1Card({
   st2v1Doc,
   idDoc,
+  getData
 }: {
   st2v1Doc: IInability["sT7FillingDocumentv1"] | undefined;
   idDoc: string;
+   getData?: () => void | Promise<void>;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
-  const { modalError } = useModals();
+  const [showUpdateDateModal, setShowUpdateDateModal] = useState(false);
+  const { modalConfirm } = useModals();
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -52,54 +57,65 @@ function ST7V1Card({
     fileInputRef.current?.click();
   };
 
+  //SUBIR
   const handleUpload = async () => {
-    if (selectedFiles.length > 0) {
-      setLoading(true);
-      const toastId = toast.loading("Subiendo archivo...");
-      const formData = new FormData();
+    modalConfirm("¿Deseas subir este archivo?", async () => {
+      if (selectedFiles.length === 0) return;
 
-      // Agregar cada archivo al FormData
-      selectedFiles.forEach((file) => {
-        formData.append("files", file);
-      });
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Subiendo documento...");
+        const formData = new FormData();
 
-      const res = await uploadST({
-        formData,
-        idDoc,
-        version: "sT7FillingDocumentv1",
-      });
+        // Agregar cada archivo al FormData
+        selectedFiles.forEach((file) => {
+          formData.append("files", file);
+        });
 
-      if (!res.success) {
-        setLoading(false);
-        toast.error(res.message, { id: toastId });
-        return modalError(res.message);
+        const res = await uploadST({
+          formData,
+          idDoc,
+          version: "sT7FillingDocumentv1",
+        });
+
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo subir");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg("Archivo cargado correctamente");
+        setFeedback("success");
+
+        // Opcional: resetear el estado después de subir
+        setSelectedFiles([]);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
       }
-
-      toast.success(res.message, { id: toastId });
-
-      // Opcional: resetear el estado después de subir
-      setSelectedFiles([]);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      setLoading(false);
-    }
+    });
   };
 
+  //VISUALIZAR
   const handleGetDocument = async () => {
     setFeedback("loading");
-    setFeedbackMsg("Subiendo documento...");
+    setFeedbackMsg("Cargando...");
+
     const res = await getViewSTDocument({
       idDoc,
       version: "sT7FillingDocumentv1",
     });
+
     if (!res.success) {
       setFeedbackMsg(res.message || "No se pudo subir");
       setFeedback("error");
     }
     setPdfUrl(res.data || "");
     setShowPdfModal(true);
-    setFeedback(null);
+    setFeedback(null)
   };
 
   const handleCancel = () => {
@@ -112,7 +128,7 @@ function ST7V1Card({
   return (
     <>
       <ConditionalRender cond={feedback === "loading"}>
-        <Loading message={feedbackMsg || "Actualizando..."} />
+        <Loading message={feedbackMsg} />
       </ConditionalRender>
 
       <ConditionalRender cond={feedback === "success"}>
@@ -131,6 +147,7 @@ function ST7V1Card({
           onDone={() => setFeedback(null)}
         />
       </ConditionalRender>
+
       <Col xs={12} sm={6} md={4} xl={3}>
         <Card className="rounded shadow-sm bg-body-tertiary h-100">
           <Card.Header className="d-flex justify-content-between align-items-end">
@@ -146,8 +163,12 @@ function ST7V1Card({
               title={<i className="bi bi-gear-fill"></i>}
             >
               <Dropdown.Item>
-                <i className="bi bi-calendar-minus me-1" />
-                Fecha de expiración
+                <Button
+                  type="button"
+                  onClick={() => setShowUpdateDateModal(true)}>
+                  <i className="bi bi-calendar-minus me-1" />
+                  Fecha de expiración
+                </Button>
               </Dropdown.Item>
             </DropdownButton>
           </Card.Header>
@@ -221,6 +242,12 @@ function ST7V1Card({
               </Card.Body>
             )}
           </Card.Body>
+          <Card.Footer>
+            <h6 className="text-center">Fecha de expiración:</h6>
+            <p className="text-center">
+              {formatCreatedAt(st2v1Doc?.expirationDateDocument) || "Sin fecha de expiración"}
+            </p>
+          </Card.Footer>
         </Card>
         <PDFViewerModal
           show={showPdfModal}
@@ -228,6 +255,19 @@ function ST7V1Card({
           pdfBase64Url={pdfUrl}
         />
       </Col>
+
+      <ConditionalRender cond={showUpdateDateModal}>
+        <ModalBlur onClose={() => setShowUpdateDateModal(false)}>
+          <FormUpdateDateV1
+            key={st2v1Doc?.expirationDateDocument}
+            show={showUpdateDateModal}
+            onHide={() => setShowUpdateDateModal(false)}
+            getData={getData}
+            id={Number(idDoc)}
+            doc={st2v1Doc}
+          />
+        </ModalBlur>
+      </ConditionalRender>
     </>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { Employee, IInability } from "@/lib/definitions";
+import { Employee } from "@/lib/definitions";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import ST7V1Card from "@/app/(auth)/app/inability/views/ST7V1Card";
 import ST7V2Card from "@/app/(auth)/app/inability/views/ST7V2Card";
 import ST2Card from "@/app/(auth)/app/inability/views/ST2Card";
@@ -13,13 +13,14 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { useRouter } from "next/navigation";
 import FormUpdateInability from "./inabilityFormUpdate";
-import { deleteInability } from "@/app/actions/inability-actions";
+import { deleteInability, getOneInability } from "@/app/actions/inability-actions";
 import { useModals } from "@/context/ModalContext";
 import OverLay from "../templates/OverLay";
 import InabilityOneError from "./inabilityMessageError";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { IInability } from "@/lib/inhability/interface";
 
 // type TInputs = {
 //   idEmployee: number | null;
@@ -30,7 +31,6 @@ import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 //   dateEnd: string;
 //   firstDoc: FileList | null;
 // };
-
 type FeedbackState = "loading" | "success" | "error" | null;
 
 
@@ -79,7 +79,7 @@ function formatText(value?: string | number | null) {
 
 
 export default function InfoOneInability({
-  inhability,
+  inhability: inhabilityProp,
   employees = [],
   id,
 }: {
@@ -95,13 +95,20 @@ export default function InfoOneInability({
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const { modalError, modalConfirm } = useModals();
   const router = useRouter();
+  const [inhability, setInhability] = useState(inhabilityProp);
   const status = inhability?.status ?? "";
+
+  const refreshData = useCallback(async () => {
+    const updated = await getOneInability(Number(id));
+    setInhability(updated);
+  }, [id]);
 
   if (!inhability) {
     return (
       <InabilityOneError />
     );
   }
+
 
   const employee =
     employees.find((em) => Number(em.id) === Number(inhability.idEmployee)) ??
@@ -381,16 +388,22 @@ export default function InfoOneInability({
 
                   <Row className="g-6 justify-content-center">
                     <ST7V1Card
+                      key={inhability?.sT7FillingDocumentv1.expirationDateDocument}
                       st2v1Doc={inhability?.sT7FillingDocumentv1}
                       idDoc={id}
+                      getData={refreshData}
                     />
                     <ST7V2Card
+                      key={inhability.sT7FillingDocumentv2.expirationDateDocument}
                       st2v2Doc={inhability?.sT7FillingDocumentv2}
                       idDoc={id}
+                      getData={refreshData}
                     />
                     <ST2Card
+                      key={inhability.sT2DischargeDocument.expirationDateDocument}
                       st2Doc={inhability?.sT2DischargeDocument}
                       idDoc={id}
+                      getData={refreshData}
                     />
                   </Row>
                 </Card.Body>
@@ -416,6 +429,7 @@ export default function InfoOneInability({
                     {inhability?.documentsInability?.map((doc) => (
 
                       <InhabilityDocCard
+                        doc={doc}
                         key={doc.id}
                         selfId={String(doc.id)}
                         idDoc={id}

@@ -3,12 +3,9 @@
 
 import axios, { AxiosError } from "axios";
 import { storeAction } from "./storeActions";
-import {
-  ActionResponse,
-  IInability,
-  InabilityPayload,
-} from "@/lib/definitions";
+import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
+import { IdocumentsInability, IInability, InabilityPayload, IsT2DischargeDocument, IsT7FillingDocumentv1, IsT7FillingDocumentv2 } from "@/lib/inhability/interface";
 
 
 export interface IResponseInabilityCreate {
@@ -66,7 +63,7 @@ export async function getAllInability(args: FetchArgs = {}): Promise<{
   page: number;
   limit: number;
   pages: number;
-  }>{
+}> {
   try {
 
     const { apiToken, API_URL } = await storeAction();
@@ -84,13 +81,13 @@ export async function getAllInability(args: FetchArgs = {}): Promise<{
     }).then((res) => {
       return res.data;
     })
-    .catch((err) => {
-      throw new Error(
-        err.response.data.message
-          ? err.response.data.message
-          : "Error en la respuesta"
-      );
-    });
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
 
     const total = Number(response.total ?? 0);
     const pages = Math.max(Math.ceil(total / limitNum), 1);
@@ -107,7 +104,7 @@ export async function getAllInability(args: FetchArgs = {}): Promise<{
     console.log(
       axiosErr.response?.data?.message ?? axiosErr.message ?? "Error"
     );
-        return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
 
@@ -139,7 +136,7 @@ export async function createInability(
     if (data.firstDoc) {
       document.append("document", data.firstDoc?.[0]);
     }
-        
+
     const response = await axios
       .post(`${API_URL}/inability`, data, {
         headers: { Authorization: `Bearer ${apiToken}` },
@@ -303,7 +300,7 @@ export async function createNewDocument({
         `${API_URL}/inability/newDocumentsInability`,
         {
           id: idDoc,
-          folio:folio,
+          folio: folio,
           dateInit,
           dateEnd,
         },
@@ -315,7 +312,7 @@ export async function createNewDocument({
         const selfId = res.data.data.idDocument;
         const newFormData = new FormData();
         if (formData) newFormData.append("files", formData?.[0]);
-        await updateInabilityModal({ formData: newFormData, idDoc, selfId,folio });
+        await updateInabilityModal({ formData: newFormData, idDoc, selfId, folio });
         return res.data;
       })
       .catch((err) => {
@@ -554,3 +551,196 @@ export async function deleteInability({
     };
   }
 }
+
+export async function updateExpirationDateST7V1({
+  id,
+  data
+}: {
+  id: number;
+  data: Pick<IsT7FillingDocumentv1, "expirationDateDocument">;
+}): Promise<ActionResponse<string>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.put(`${API_URL}/inability/sT7FillingDocumentv1-data/${String(id)}`,
+      {
+        expirationDate: data.expirationDateDocument
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then(async (res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err.response);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error al actualizar"
+        );
+      });
+
+
+    return { success: true, message: "Fecha actualizada" };
+  } catch (error: unknown) {
+
+    const err = error as Error;
+
+    return {
+      success: false,
+      message: err.message
+
+    };
+  }
+}
+
+export async function updateExpirationDateST7V2({
+  id,
+  data
+}: {
+  id: number;
+  data: Pick<IsT7FillingDocumentv2, "expirationDateDocument">;
+}): Promise<ActionResponse<string>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.put(`${API_URL}/inability/sT7FillingDocumentv2-data/${String(id)}`,
+      {
+        expirationDate: data.expirationDateDocument
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then(async (res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err.response);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error al actualizar"
+        );
+      });
+
+
+    return { success: true, message: "Fecha actualizada" };
+  } catch (error: unknown) {
+
+    const err = error as Error;
+
+    return {
+      success: false,
+      message: err.message
+
+    };
+  }
+}
+
+export async function updateExpirationDateST2({
+  id,
+  data
+}: {
+  id: number;
+  data: Pick<IsT2DischargeDocument, "expirationDateDocument">;
+}): Promise<ActionResponse<string>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.put(`${API_URL}/inability/sT2DischargeDocument-data/${String(id)}`,
+      {
+        expirationDate: data.expirationDateDocument
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then(async (res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err.response);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error al actualizar"
+        );
+      });
+
+
+    return { success: true, message: "Fecha actualizada" };
+  } catch (error: unknown) {
+
+    const err = error as Error;
+
+    return {
+      success: false,
+      message: err.message
+
+    };
+  }
+}
+
+export async function updateDocumentsInhability({
+  id,
+  selfId,
+  data,
+}: {
+  id: number;
+  selfId: number;
+  data: IdocumentsInability;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.put(`${API_URL}/inability/documentsInability-updatedata/${String(id)}/${String(selfId)}`,
+      {
+        folio: data.folio,
+        dateInit: data.dateInit,
+        dateEnd: data.dateEnd,
+        expirationDate: data.expirationDate
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      });
+
+
+    return {
+      success: true,
+      message: "Actualizado exitosamente",
+    };
+  } catch (error: unknown) {
+    console.log(error);
+
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return {
+      success: false,
+      message,
+    };
+  }
+}
+
+

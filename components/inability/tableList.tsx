@@ -9,7 +9,7 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TablePage";
-import { IInability } from "@/lib/definitions";
+import { IInability } from "@/lib/inhability/interface";
 
 function statusVariant(status: string | null) {
   switch ((status ?? "").toLowerCase()) {

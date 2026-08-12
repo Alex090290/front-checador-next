@@ -252,7 +252,7 @@ function CreateVacationComponent({
 
   useEffect(() => {
 
-    const employeeId = Number(session?.uid?.id);
+    const employeeId = Number(session?.uid?.idEmployee);
 
     if (!employeeId) return;
 
@@ -308,7 +308,7 @@ function CreateVacationComponent({
 
   useEffect(() => {
     const values: TInputs = {
-      idEmployee: Number(session?.uid?.id),
+      idEmployee: Number(session?.uid?.idEmployee),
       idLeader: null,
       idPersonDoh: null,
       idPeriod: null,

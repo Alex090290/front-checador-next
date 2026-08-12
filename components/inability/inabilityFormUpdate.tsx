@@ -6,7 +6,6 @@ import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
 import {
   Employee,
-  IInability,
   ModalBasicProps,
 } from "@/lib/definitions";
 import { formatDate } from "date-fns";
@@ -17,6 +16,7 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { updateInability } from "@/app/actions/inability-actions";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import { IInability } from "@/lib/inhability/interface";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
