@@ -13,6 +13,7 @@ import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { IInability } from "@/lib/inhability/interface";
+import DateButton from "./DatePickerHelper";
 
 registerLocale("es", es);
 
@@ -58,7 +59,7 @@ export default function FormUpdateDateV1({
         const expirationDateDocument = moment(selectedDate).format("YYYY-MM-DD");
 
         modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
-            
+
             try {
                 setFeedback("loading");
                 setFeedbackMsg("Actualizando fecha de expiración...");
@@ -135,19 +136,29 @@ export default function FormUpdateDateV1({
 
                             <Row className="g-3">
                                 <Col md={12} className="position-relative">
-                                    <DatePicker
-                                        selected={selectedDate}
-                                        onChange={(date: Date | null) => {
-                                            setSelectedDate(date);
-                                            if (date) setDateError(false);
-                                        }}
-                                        dateFormat="dd/MM/yyyy"
-                                        className={`form-control ${dateError ? "is-invalid" : ""}`}
-                                        placeholderText="dd/mm/aaaa"
-                                        popperContainer={({ children }) => children}
-                                        withPortal
-                                        locale="es"
-                                    />
+                                    <Col md={12} className="position-relative">
+                                        <DatePicker
+                                            selected={selectedDate}
+                                            onChange={(date: Date | null) => {
+                                                setSelectedDate(date);
+                                                if (date) setDateError(false);
+                                            }}
+                                            dateFormat="dd/MM/yyyy"
+                                            placeholderText="dd/mm/aaaa"
+                                            popperContainer={({ children }) => children}
+                                            withPortal
+                                            locale="es"
+                                            customInput={
+                                                <DateButton isInvalid={dateError} placeholder="dd/mm/aaaa" />
+                                            }
+                                        />
+                                        <BForm.Control.Feedback
+                                            type="invalid"
+                                            className={dateError ? "d-block" : ""}
+                                        >
+                                            Selecciona una fecha de expiración.
+                                        </BForm.Control.Feedback>
+                                    </Col>
                                     <BForm.Control.Feedback
                                         type="invalid"
                                         className={dateError ? "d-block" : ""}

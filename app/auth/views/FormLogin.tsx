@@ -15,6 +15,8 @@ import {
   Row,
 } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
+import Image from "next/image";
+
 
 type TInputs = {
   email: string;
@@ -34,7 +36,6 @@ function FormLogin() {
       password: "",
     },
   });
-
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
@@ -69,7 +70,6 @@ function FormLogin() {
           message={feedbackMsg}
           onDone={() => {
             setFeedback(null);
-
           }}
         />
       </ConditionalRender>
@@ -89,12 +89,16 @@ function FormLogin() {
         <Row className="w-100 justify-content-center">
           <Col xs="11" sm="8" md="5" lg="4" xl="4" xxl="3">
             <div className="text-center mb-4">
-              <div
-                className="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger text-white mb-3"
-                style={{ width: 64, height: 64 }}
-              >
-                <i className="bi bi-shield-lock-fill fs-3" />
-              </div>
+
+              {/* LOGO */}
+              <Image
+                src="/image/icon.svg"
+                alt="GAMA"
+                width={68}
+                height={68}
+                style={{ objectFit: "contain" }}
+              />
+              {/* <i className="bi bi-shield-lock-fill fs-3" /> */}
               <h4 className="fw-bold mb-0">Checador Digital</h4>
               <p className="text-muted small mb-0">Inicia sesión para continuar</p>
             </div>
@@ -125,22 +129,25 @@ function FormLogin() {
                       {...register("password", { required: "Este campo es requerido" })}
                       placeholder="Contraseña"
                       type={showPassword ? "text" : "password"}
-                      autoComplete="off"
+                      autoComplete="new-password"
                       isInvalid={!!errors.password}
-                      className="rounded-3 pe-5"
+                      className="rounded-3 pe-5 no-validation-icon"
                     />
-                    <Form.Control.Feedback type="invalid">
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className={`btn btn-link p-0 position-absolute top-50 end-0 translate-middle-y me-3 ${errors.password ? "text-danger" : "text-info"
+                        }`}
+                      style={{ zIndex: 5 }}
+                      tabIndex={10}
+                    >
+                      <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                    </button>
+                    <Form.Control.Feedback type="invalid" className={errors.password ? "d-block" : ""}>
                       {errors.password?.message}
                     </Form.Control.Feedback>
                   </Form.FloatingLabel>
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-danger"
-                    tabIndex={-1}
-                  >
-                    <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
-                  </button>
+
                 </div>
 
                 {/* <Button

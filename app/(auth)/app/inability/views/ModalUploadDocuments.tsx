@@ -7,79 +7,146 @@ import { Entry } from "@/components/fields";
 import React, { useState } from "react";
 import { Button, Form, Row, Col, Card } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { es } from "date-fns/locale";
+import moment from "moment-timezone";
+import { useModals } from "@/context/ModalContext";
+import SuccessOverlay from "@/components/SuccessOverlay";
+import ErrorOverlay from "@/components/ErrorOverlay";
+
+registerLocale("es", es);
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
-  dateInit: string;
   folio: string;
-  dateEnd: string;
   document: FileList | null;
 };
 
 type Props = {
   idDoc: string;
   onHide: () => void;
+  getData?: () => void | Promise<void>;
 };
 
-function ModalAddDocuments({ idDoc, onHide }: Props) {
+function ModalAddDocuments({ idDoc, onHide, getData }: Props) {
   const {
     register,
     reset,
-    watch,
     handleSubmit,
     formState: { isSubmitting, errors },
   } = useForm<TInputs>({
     defaultValues: {
-      dateEnd: "",
-      dateInit: "",
       folio: "",
       document: null,
     },
   });
 
-  const [loading, setLoading] = useState(false);
-  const onChangeDateInit = watch("dateInit");
+  const [loading] = useState(false);
+
+  const [selectedDateInit, setSelectedDateInit] = useState<Date | null>(null);
+  const [dateInitError, setDateInitError] = useState(false);
+
+  const [selectedDateEnd, setSelectedDateEnd] = useState<Date | null>(null);
+  const [dateEndError, setDateEndError] = useState(false);
+  const { modalConfirm } = useModals();
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
 
   const handleClose = () => {
     reset({
-      dateEnd: "",
-      dateInit: "",
       folio: "",
       document: null,
     });
+    setSelectedDateInit(null);
+    setSelectedDateEnd(null);
+    setDateInitError(false);
+    setDateEndError(false);
     onHide();
   };
 
   const onSubmit = handleSubmit(async (data) => {
-    const toastId = toast.loading("Creando nuevo documento...");
+    let hasError = false;
 
-    try {
-      setLoading(true);
-
-      const res = await createNewDocument({
-        idDoc,
-        folio: data.folio,
-        dateEnd: data.dateEnd,
-        dateInit: data.dateInit,
-        formData: data.document,
-      });
-
-      if (!res.success) {
-        toast.error(res.message, { id: toastId });
-        return;
-      }
-
-      toast.success(res.message, { id: toastId });
-      handleClose();
-    } finally {
-      setLoading(false);
+    if (!selectedDateInit) {
+      setDateInitError(true);
+      hasError = true;
+    } else {
+      setDateInitError(false);
     }
+
+    if (!selectedDateEnd) {
+      setDateEndError(true);
+      hasError = true;
+    } else {
+      setDateEndError(false);
+    }
+
+    if (
+      selectedDateInit &&
+      selectedDateEnd &&
+      moment(selectedDateInit).isAfter(selectedDateEnd)
+    ) {
+      setDateInitError(true);
+      setDateEndError(true);
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    const dateInit = moment(selectedDateInit).format("YYYY-MM-DD");
+    const dateEnd = moment(selectedDateEnd).format("YYYY-MM-DD");
+
+    modalConfirm("¿Seguro que quieres cargar este documento?", async () => {
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Creando nuevo documento...");
+
+        const res = await createNewDocument({
+          idDoc,
+          folio: data.folio,
+          dateEnd,
+          dateInit,
+          formData: data.document,
+        });
+
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo crear el documento");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Documento creado correctamente");
+        setFeedback("success");
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
+      }
+    });
   });
 
   return (
     <>
-      <ConditionalRender cond={loading || isSubmitting}>
-        <Loading message="Cargando documento..." />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Cargando documento..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            handleClose();
+            getData?.();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <div className="p-2">
@@ -105,25 +172,54 @@ function ModalAddDocuments({ idDoc, onHide }: Props) {
               </div>
 
               <Row className="g-3">
-                <Col md={6}>
-                  <Entry
-                    type="date"
-                    register={register("dateInit", { required: true })}
-                    label="Fecha inicio"
-                    invalid={!!errors.dateInit}
-                    className="border"
+                <Col md={6} className="position-relative">
+                  <Form.Label className="fw-semibold">Fecha inicio:</Form.Label>
+                  <DatePicker
+                    selected={selectedDateInit}
+                    onChange={(date: Date | null) => {
+                      setSelectedDateInit(date);
+                      if (date) setDateInitError(false);
+                      if (date && selectedDateEnd && moment(date).isAfter(selectedDateEnd)) {
+                        setSelectedDateEnd(null);
+                      }
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    className={`form-control text-uppercase ${dateInitError ? "is-invalid" : ""}`}
+                    placeholderText="dd/mm/aaaa"
+                    popperContainer={({ children }) => children}
+                    withPortal
+                    locale="es"
                   />
+                  <Form.Control.Feedback
+                    type="invalid"
+                    className={dateInitError ? "d-block" : ""}
+                  >
+                    Selecciona la fecha de inicio.
+                  </Form.Control.Feedback>
                 </Col>
 
-                <Col md={6}>
-                  <Entry
-                    type="date"
-                    register={register("dateEnd", { required: true })}
-                    label="Fecha fin"
-                    min={onChangeDateInit}
-                    invalid={!!errors.dateEnd}
-                    className="border"
+                <Col md={6} className="position-relative">
+                  <Form.Label className="fw-semibold">Fecha fin:</Form.Label>
+                  <DatePicker
+                    selected={selectedDateEnd}
+                    onChange={(date: Date | null) => {
+                      setSelectedDateEnd(date);
+                      if (date) setDateEndError(false);
+                    }}
+                    minDate={selectedDateInit ?? undefined}
+                    dateFormat="dd/MM/yyyy"
+                    className={`form-control text-uppercase ${dateEndError ? "is-invalid" : ""}`}
+                    placeholderText="dd/mm/aaaa"
+                    popperContainer={({ children }) => children}
+                    withPortal
+                    locale="es"
                   />
+                  <Form.Control.Feedback
+                    type="invalid"
+                    className={dateEndError ? "d-block" : ""}
+                  >
+                    Selecciona la fecha de fin.
+                  </Form.Control.Feedback>
                 </Col>
               </Row>
             </Card.Body>

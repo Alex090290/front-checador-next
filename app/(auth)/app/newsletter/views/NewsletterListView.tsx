@@ -9,7 +9,7 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { useModals } from "@/context/ModalContext";
 import { INewsletter } from "@/lib/definitions";
-import { formatDate } from "date-fns";
+import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
@@ -24,6 +24,8 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
   const router = useRouter();
 
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
+
+  
 
   const colums: TableTemplateColumn<INewsletter>[] = [
     {
@@ -47,28 +49,54 @@ function NewsletterListView({ newsletters }: { newsletters: INewsletter[] }) {
     },
     {
       key: "dateInitiPublish",
-      label: "Inicio",
+      label: "Fecha Inicio",
       accessor: (row) => row.dateInitiPublish,
       type: "date",
       groupFormat: "yyyy-MM",
       render: (row) => (
         <div className="text-uppercase">
           {row.dateInitiPublish
-            ? formatDate(row.dateInitiPublish, "dd-MM-yyyy HH:mm")
+            ? formatCreatedAt(row.dateInitiPublish)
+            : null}
+        </div>
+      ),
+    },
+    {
+      key: "hourInitiPublish",
+      label: "Hora Inicio",
+      accessor: (row) => row.dateInitiPublish,
+      // type: "time",
+      // groupFormat: "yyyy-MM",
+      render: (row) => (
+        <div className="text-uppercase">
+          {row.dateInitiPublish
+            ? formatCreatedAtOnlyHours(row.dateInitiPublish)
             : null}
         </div>
       ),
     },
     {
       key: "dateEndPublish",
-      label: "Final",
+      label: "Fecha Final",
       accessor: (row) => row.dateEndPublish,
       type: "date",
       groupFormat: "yyyy-MM",
       render: (row) => (
         <div className="text-uppercase">
           {row.dateEndPublish
-            ? formatDate(row.dateEndPublish, "dd-MM-yyyy HH:mm")
+            ? formatCreatedAt(row.dateEndPublish)
+            : null}
+        </div>
+      ),
+    },
+    {
+      key: "hourEndPublish",
+      label: "Hora Final",
+      accessor: (row) => row.dateEndPublish,
+      render: (row) => (
+        <div className="text-uppercase">
+          {row.dateEndPublish
+            ? formatCreatedAtOnlyHours(row.dateEndPublish)
             : null}
         </div>
       ),

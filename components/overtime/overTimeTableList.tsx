@@ -8,10 +8,10 @@ import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { useSearchParams, useRouter } from "next/navigation";
-import moment from "moment";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import AlertSignatures from "./AlertSignatures";
+import { formatCreatedAt, formatParseHours } from "@/lib/helpers";
 
 export default function OverTimeTableClient({
     total,
@@ -110,24 +110,7 @@ export default function OverTimeTableClient({
             ? `${capitalize(e.employee.lastName)} ${capitalize(e.employee.name)}`
             : `${e.idEmployee}`;
     };
-
-    const getDate = (e: OverTime) => {
-        return e.informationDate
-            ? moment.utc(e.informationDate.dateInit).format("DD/MM/YYYY")
-            : `${e.idEmployee}`
-    }
-
-    const getHourInit = (e: OverTime) => {
-        return e.informationDate
-            ? moment.utc(e.informationDate.hourInit, "HH:mm").format("HH:mm")
-            : `${e.idEmployee}`
-    }
-
-    const getHourEnd = (e: OverTime) => {
-        return e.informationDate
-            ? moment.utc(e.informationDate.hourEnd, "HH:mm").format("HH:mm")
-            : `${e.idEmployee}`
-    }
+    
 
     const clearSelectedIds = useCallback(() => {
         isClearingSelectionRef.current = true;
@@ -220,36 +203,36 @@ export default function OverTimeTableClient({
         {
             key: "date",
             label: "Fecha",
-            accessor: getDate,
+            accessor: (e) => e.informationDate?.dateInit,
             filterable: true,
             type: "date",
             render: (e) => (
                 <div className="text-uppercase">
-                    {getDate(e) || "-"}
+                    {formatCreatedAt(e.informationDate?.dateInit) || "-"}
                 </div>
             )
         },
         {
             key: "hourInit",
             label: "Hora inicio",
-            accessor: getHourInit,
+            accessor: (e) => e.informationDate?.hourInit,
             filterable: true,
             type: "string",
             render: (e) => (
                 <div className="text-uppercase">
-                    {getHourInit(e) || "-"}
+                    {formatParseHours(e.informationDate?.hourInit)}
                 </div>
             )
         },
         {
             key: "hourEnd",
             label: "Hora fin",
-            accessor: getHourEnd,
+            accessor: (e) => e.informationDate?.hourEnd,
             filterable: true,
             type: "string",
             render: (e) =>
                 <div className="text-uppercase">
-                    {getHourEnd(e) || "-"}
+                    {formatParseHours(e.informationDate?.hourEnd) || "-"}
                 </div>
         },
         {

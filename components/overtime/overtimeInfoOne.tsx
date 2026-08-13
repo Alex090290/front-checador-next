@@ -11,8 +11,6 @@ import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { deleteOverTime } from "@/app/actions/overtime-actions";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { formatDate } from "date-fns";
-import moment from "moment";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesViewOvertime from "./signaturesOvertime";
@@ -21,6 +19,7 @@ import OvertimeSignatureModal from "./OvertimeSignatureModal"
 import SignatureLeaderModal from "./SignatureLeaderModal";
 import SignatureDohModal from "./SignatureDohModal";
 import OverLay from "../templates/OverLay";
+import { formatCreatedAt, formatParseHours } from "@/lib/helpers";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -53,14 +52,7 @@ function statusLabel(status?: string | null) {
             return status ? status.toUpperCase() : "—";
     }
 }
-function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
-    if (!date) return "—";
-    try {
-        return formatDate(new Date(date), fmt);
-    } catch {
-        return "—";
-    }
-}
+
 
 
 
@@ -144,8 +136,6 @@ export function OvertimeOne({
             && hasNotSigned;
     }, [session, idEmployee, configOvertime, currentSignature, hasNotSigned]);
         const overallStatus = overtime?.status ?? "PENDING";
-        const createdAt = safeDate(overtime?.createdAt ?? "dd/MM/yyyy HH:mm");
-
         
     // ============ Aqui los helpers ===============
 
@@ -203,24 +193,6 @@ export function OvertimeOne({
             ? `${upperCase(u.employee.lastName)} ${upperCase(u.employee.name)} `
             : `EMPLEADO #${u.idEmployee}`;
     };
-
-    const getDate = (e: OverTime) => {
-        return e.informationDate
-            ? moment.utc(e.informationDate.dateInit).format("DD/MM/YYYY")
-            : `${e.idEmployee}`
-    }
-
-    const getHourInit = (e: OverTime) => {
-        return e.informationDate
-            ? moment.utc(e.informationDate.hourInit, "HH:mm").format("HH:mm")
-            : `${e.idEmployee}`
-    }
-
-    const getHourEnd = (e: OverTime) => {
-        return e.informationDate
-            ? moment.utc(e.informationDate.hourEnd, "HH:mm").format("HH:mm")
-            : `${e.idEmployee}`
-    }
 
     //Mensaje de error al encontrar
     if (!overtime) {
@@ -385,7 +357,7 @@ export function OvertimeOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {createdAt}
+                                                    {formatCreatedAt(overtime.createdAt)}
                                                 </span>
                                             </div>
 
@@ -470,7 +442,7 @@ export function OvertimeOne({
                                                         </div>
 
                                                         <div className="fw-semibold">
-                                                            {getDate(overtime)}
+                                                            {formatCreatedAt(overtime.informationDate?.dateInit)}
                                                         </div>
                                                     </div>
                                                 </Col>
@@ -484,7 +456,7 @@ export function OvertimeOne({
                                                         </div>
 
                                                         <div className="fw-semibold">
-                                                            {getHourInit(overtime)}
+                                                            {formatParseHours(overtime.informationDate?.hourInit)}
                                                         </div>
                                                     </div>
                                                 </Col>
@@ -498,7 +470,7 @@ export function OvertimeOne({
                                                         </div>
 
                                                         <div className="fw-semibold">
-                                                            {getHourEnd(overtime)}
+                                                            {formatParseHours(overtime.informationDate?.hourEnd)}
                                                         </div>
                                                     </div>
                                                 </Col>

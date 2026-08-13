@@ -45,6 +45,7 @@ function ChangePasswordModal({
   const params = useSearchParams();
   const activeId = params.get("id");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
@@ -191,17 +192,17 @@ function ChangePasswordModal({
                       })}
                       label="Confirma la contraseña:"
                       invalid={!!errors.password2}
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword2 ? "text" : "password"}
                       className="text-left border"
                       feedBack={errors.password2?.message}
                       suffix={
                         <button
                           type="button"
-                          onClick={() => setShowPassword((prev) => !prev)}
+                          onClick={() => setShowPassword2((prev) => !prev)}
                           className="btn btn-link p-0 text-info"
                           tabIndex={10}
                         >
-                          <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                          <i className={`bi ${showPassword2 ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
                         </button>
                       }
                     />

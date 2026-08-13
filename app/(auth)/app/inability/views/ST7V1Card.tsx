@@ -30,7 +30,7 @@ function ST7V1Card({
 }: {
   st2v1Doc: IInability["sT7FillingDocumentv1"] | undefined;
   idDoc: string;
-   getData?: () => void | Promise<void>;
+  getData?: () => void | Promise<void>;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -41,7 +41,7 @@ function ST7V1Card({
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [showUpdateDateModal, setShowUpdateDateModal] = useState(false);
   const { modalConfirm } = useModals();
-
+  const hasDocument = !!st2v1Doc?.urlDocument;
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -215,14 +215,25 @@ function ST7V1Card({
                 <div className="d-flex flex-column justify-content-center gap-1">
                   {selectedFiles.length === 0 ? (
                     <>
-                      <Button onClick={handleButtonClick}>
-                        {st2v1Doc?.urlDocument ? "Reemplazar" : "Cargar"}
-                      </Button>
-                      {st2v1Doc?.urlDocument && (
-                        <Button variant="warning" onClick={handleGetDocument}>
-                          Visualizar
+                      <div className="d-flex flex-column align-items-center gap-2">
+                        <Button
+                          onClick={handleButtonClick}
+                          variant={hasDocument ? "primary" : "success"}
+                          style={{ width: "80%" }}
+                        >
+                          {hasDocument ? "Reemplazar" : "Cargar"}
                         </Button>
-                      )}
+
+                        {hasDocument && (
+                          <Button
+                            variant="secondary"
+                            onClick={handleGetDocument}
+                            style={{ width: "80%" }}
+                          >
+                            Visualizar
+                          </Button>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <>

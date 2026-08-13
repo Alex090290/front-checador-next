@@ -83,6 +83,15 @@
   border-radius: 50%;
 }
 
+/* globals.css */
+.react-datepicker__current-month {
+  text-transform: capitalize;
+}
+
+.react-datepicker__day-name {
+  text-transform: capitalize;
+}
+
 .react-datepicker__day--in-range,
 .react-datepicker__day--in-selecting-range {
   background-color: #cfe2ff;
@@ -150,4 +159,8 @@
   background-image: none !important;
   padding-right: 0.75rem !important;
   /* recupera el padding que Bootstrap reserva para su icono */
+}
+
+.no-validation-icon.is-invalid {
+  background-image: none !important;
 }

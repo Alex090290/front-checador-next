@@ -96,7 +96,7 @@ export interface IdocumentsInability{
     urlDocument: string;
     createdAt: string; // ISO
     updatedAt: string; // ISO
-    expirationDate?: string;
+    expirationDateDocument?: string;
 }
 
 interface IdaysdaysBrokenDown {

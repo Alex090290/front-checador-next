@@ -155,7 +155,6 @@ export default function InfoOneInability({
     });
   };
 
-
   return (
     <>
       <ConditionalRender cond={feedback === "loading"}>
@@ -386,7 +385,7 @@ export default function InfoOneInability({
                     </span>
                   </div>
 
-                  <Row className="g-6 justify-content-center">
+                  <Row className="g-3 justify-content-center">
                     <ST7V1Card
                       key={inhability?.sT7FillingDocumentv1.expirationDateDocument}
                       st2v1Doc={inhability?.sT7FillingDocumentv1}
@@ -416,13 +415,19 @@ export default function InfoOneInability({
                 <Card.Body>
                   <div className="d-flex align-items-center justify-content-between mb-4">
                     <h6 className="mb-0 fw-bold">Documentos CITT</h6>
-                    <Button
-                      onClick={() => setModalUploadDoc(!modalUploadDoc)}
-                      variant="success"
-                    >
-                      <i className="bi bi-plus-lg me-2" />
-                      Nuevo documento CITT
-                    </Button>
+
+                    <OverLay string="Agregar documento">
+                      <Button
+                        onClick={() => setModalUploadDoc(!modalUploadDoc)}
+                        className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                        variant="success"
+                      >
+                        <i className="bi bi-plus-lg" />
+                        <span className="d-none d-md-inline ms-2">
+                          Nuevo documento CITT
+                        </span>
+                      </Button>
+                    </OverLay>
                   </div>
 
                   <Row className="g-2">
@@ -437,6 +442,7 @@ export default function InfoOneInability({
                         dateInit={doc.dateInit}
                         dateEnd={doc.dateEnd}
                         folio={doc.folio}
+                        getData={refreshData}
                       />
                     ))}
                   </Row>
@@ -464,6 +470,7 @@ export default function InfoOneInability({
           <ModalAddDocuments
             onHide={() => setModalUploadDoc(false)}
             idDoc={id}
+            getData={refreshData}
           />
         </ModalBlur>
       </ConditionalRender>

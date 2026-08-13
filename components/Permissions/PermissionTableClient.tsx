@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import { formatDate } from "date-fns";
-
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 
@@ -14,6 +12,7 @@ import Loading from "@/components/LoadingSpinner";
 import AlertSignaturesP from "./AlertSignatures";
 import { ISignatures } from "@/lib/overTime/interface";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import { formatCreatedAt } from "@/lib/helpers";
 
 export const leaderApproval = {
   APPROVED: "APROBADO",
@@ -126,11 +125,10 @@ export default function PermissionsTableClient({
       render: (row) => (
         <div className="text-start">
           {row.createdAt
-            ? formatDate(row.createdAt, "dd-MM-yyyy HH:mm")
+            ? formatCreatedAt(row.createdAt)
             : "No Definido"}
         </div>
       ),
-      type: "date",
     },
     {
       key: "leaderApproval",

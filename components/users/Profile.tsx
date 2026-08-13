@@ -2,25 +2,14 @@
 
 import { useState } from "react";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import toast from "react-hot-toast";
 import ModalBlur from "@/components/ModalBlur";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
-import { updateUser } from "@/app/actions/user-actions";
 import { User } from "@/lib/definitions";
-import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import FormUpdateProfile from "./UpdateProfile";
 import ChangePasswordModal from "@/app/(auth)/app/users/views/ModalChangePassword";
 import ProfileError from "./profileMessageError";
 
-type TInputsProfile = {
-  name: string;
-  lastName: string;
-  email: string;
-  gender: "MASCULINO" | "FEMENINO" | null;
-  phone: PhoneNumberFormat | string | null;
-  imageUrl?: string | null;
-};
 
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
@@ -50,35 +39,6 @@ export default function UserProfileView({
       <ProfileError />
     );
   }
-
-  const handleUpdateProfile = async (
-    data: TInputsProfile
-  ): Promise<{ success: boolean; message: string; data: boolean | null }> => {
-    const res = await updateUser({
-      ...data,
-      id: user.id,
-      role: user.role,
-      permissions: user.permissions,
-      status: user.status,
-      idEmployee: user.idEmployee || null,
-    });
-
-    if (!res) {
-      return {
-        success: false,
-        message: "No se pudo actualizar el perfil",
-        data: null,
-      };
-    }
-
-    toast.success("Perfil actualizado correctamente");
-
-    return {
-      success: true,
-      message: "Perfil actualizado correctamente",
-      data: true,
-    };
-  };
 
   const upperCase = (text?: string) => {
     return text?.toUpperCase() || "";
@@ -266,8 +226,8 @@ export default function UserProfileView({
             <FormUpdateProfile
               show={showUpdateProfileModal}
               onHide={() => setShowUpdateProfileModal(false)}
-              sendData={handleUpdateProfile}
               user={user}
+              id={user.id}
             />
           </ModalBlur>
         </ConditionalRender>

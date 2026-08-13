@@ -12,6 +12,7 @@ import Loading from "../LoadingSpinner";
 import OverLay from "../templates/OverLay";
 import UserOneError from "./usersMessageError";
 import moment from "moment-timezone";
+import { formatParse } from "@/lib/helpers";
 
 function formatPermission(text?: string | null) {
   if (!text) return "—";
@@ -50,7 +51,6 @@ export default function ShowInfoOneUser({
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
   const CreatedHour = moment.utc(user?.createdAt).format("HH:mm A");
-  const CreatedDate = moment.utc(user?.createdAt, "DD/MM/YYYY HH:mm").tz("America/Mexico_City").format("DD/MM/YYYY");
   const router = useRouter();
 
   if (!user) {
@@ -83,7 +83,7 @@ export default function ShowInfoOneUser({
     setMessageLoading("Cargando datos...");
     router.push("/app/users");
   }
-
+  
   return (
     <>
       <ConditionalRender cond={loading}>
@@ -299,7 +299,7 @@ export default function ShowInfoOneUser({
                         </div>
 
                         <span className="fw-semibold text-end">
-                          {(CreatedDate) ?? "—"}
+                          {formatParse(user.createdAt) ?? "—"}
                         </span>
                       </div>
 

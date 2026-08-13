@@ -5,11 +5,10 @@ import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
 import FaceCheckPanel from "@/components/checador/FaceCheckPanel";
 import Clock from "@/components/top-nav/Clock";
 import { signOut } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { formatDate } from "date-fns";
 import { Alert, Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { formatDatelocal } from "@/lib/helpers";
-import toast from "react-hot-toast";
 import { ActionResponse, ICheckInFeedback, INewsletter } from "@/lib/definitions";
 import useSWR from "swr";
 import Image from "next/image";
@@ -28,9 +27,6 @@ export default function ChecadorFormView({
 }) {
   const { data: activeNotice } = useSWR("/api/notice", fetcher);
   const { data: checkData, mutate } = useSWR(`/api/checador?limit=${limit}`, fetcher);
-
-
-  const toastIdRef = useRef<string>("");
 
 
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
@@ -73,39 +69,39 @@ export default function ChecadorFormView({
 
 
   const receiveCheckData = async (data: TCheckData): Promise<ActionResponse<string>> => {
-    toastIdRef.current = toast.loading("Enviando datos...", { position: "top-center" });
+    // toastIdRef.current = toast.loading("Enviando datos...", { position: "top-center" });
 
     const newObj = { ...data, lat: location?.lat || 0, lng: location?.lon || 0 };
 
     const res = await checkIn(newObj);
     mutate();
-    toast.dismiss(toastIdRef.current);
+    // toast.dismiss(toastIdRef.current);
 
     if (!res.success) {
       return res;
     }
 
     setMessage(res?.data || "");
-    await handleFetchFeedback();
+    // await handleFetchFeedback();
 
     return res;
   };
 
-  const handleFetchFeedback = useCallback(async () => {
-    let toastLoading = "";
+  // const handleFetchFeedback = useCallback(async () => {
+  //   let toastLoading = "";
 
-    if (toastIdRef.current !== "") {
-      toast.loading("Esperando respuesta...", { id: toastIdRef.current });
-    } else {
-      toastLoading = toast.loading("Cargando registros...");
-    }
+  //   if (toastIdRef.current !== "") {
+  //     toast.loading("Esperando respuesta...", { id: toastIdRef.current });
+  //   } else {
+  //     toastLoading = toast.loading("Cargando registros...");
+  //   }
 
-    if (toastIdRef.current !== "") {
-      toast.success("Registro completado...", { id: toastIdRef.current });
-    } else {
-      toast.success("Se han cargado los registros...", { id: toastLoading });
-    }
-  }, []);
+  //   if (toastIdRef.current !== "") {
+  //     toast.success("Registro completado...", { id: toastIdRef.current });
+  //   } else {
+  //     toast.success("Se han cargado los registros...", { id: toastLoading });
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (!activeNotice) return;
@@ -147,7 +143,7 @@ export default function ChecadorFormView({
     setManualEnabled(false);
     mutate()
     setMessage(faceMessage);
-    await handleFetchFeedback();
+    // await handleFetchFeedback();
   };
 
   const handleDisableManual = () => {

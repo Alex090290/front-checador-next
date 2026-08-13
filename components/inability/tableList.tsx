@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import moment from "moment-timezone";
-
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TablePage";
 import { IInability } from "@/lib/inhability/interface";
+import { formatParse } from "@/lib/helpers";
 
 function statusVariant(status: string | null) {
   switch ((status ?? "").toLowerCase()) {
@@ -88,6 +87,18 @@ export default function TableInabilityComponent({
 
   const columns: TableTemplateColumn<IInability>[] = [
     {
+      key: "id",
+      label: "ID",
+      accessor: (r) => r.id,
+      filterable: true,
+      type: "string",
+      render: (r) => (
+        <div className="text-uppercase">
+          #{r.id}
+        </div>
+      ),
+    },
+    {
       key: "employee",
       label: "Empleado",
       accessor: (r) =>
@@ -150,7 +161,9 @@ export default function TableInabilityComponent({
       type: "date",
       render: (r) => (
         <div className="text-start">
-          {r.createdAt ? moment.utc(r.createdAt).format("DD/MM/YYYY") : ""}
+          {r.createdAt
+            ? formatParse(r.createdAt)
+            : ""}
         </div>
       ),
     },

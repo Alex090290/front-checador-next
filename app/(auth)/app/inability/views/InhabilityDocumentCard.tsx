@@ -23,6 +23,7 @@ import ErrorOverlay from "@/components/ErrorOverlay";
 import ModalBlur from "@/components/ModalBlur";
 import FormUpdateDocumenstInhability from "@/components/inability/FormUpdateDocumenstInhability";
 import { IdocumentsInability } from "@/lib/inhability/interface";
+import { formatCreatedAt } from "@/lib/helpers";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -34,7 +35,8 @@ function InhabilityDocCard({
   urlDocument,
   dateInit,
   dateEnd,
-  folio
+  folio,
+  getData
 }: {
   doc: IdocumentsInability;
   selfId: string | null;
@@ -43,6 +45,7 @@ function InhabilityDocCard({
   dateInit: string;
   dateEnd: string;
   folio: string;
+  getData?: () => void | Promise<void>;
 }) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,6 +58,7 @@ function InhabilityDocCard({
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const hasDocument = !!urlDocument;
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,6 +74,7 @@ function InhabilityDocCard({
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
+  
 
   //SUBIR
   const handleUpload = async () => {
@@ -146,7 +151,6 @@ function InhabilityDocCard({
           message={feedbackMsg}
           onDone={() => {
             setFeedback(null);
-
           }}
         />
       </ConditionalRender>
@@ -158,7 +162,7 @@ function InhabilityDocCard({
         />
       </ConditionalRender>
 
-      <Col xs={12} sm={6} md={4} xl={2}>
+      <Col xs={12} sm={6} md={4} xl={3}>
         <Card className="rounded shadow-sm bg-body-tertiary h-100">
           <Card.Header className="d-flex justify-content-end align-items-end">
             <DropdownButton
@@ -170,8 +174,8 @@ function InhabilityDocCard({
                 <Button
                   type="button"
                   onClick={() => setShowUpdateModal(true)}>
-                  <i className="bi bi-calendar-minus me-1" />
-                  Fecha de expiración
+                  <i className="bi bi-pencil me-1" />
+                  Actualizar
                 </Button>
               </Dropdown.Item>
             </DropdownButton>
@@ -219,15 +223,36 @@ function InhabilityDocCard({
                 <div className="d-flex flex-column justify-content-center gap-1">
                   {selectedFiles.length === 0 ? (
                     <>
-                      <p>Folio: {folio}</p>
-                      <Button onClick={handleButtonClick}>
-                        {urlDocument ? "Reemplazar" : "Cargar"}
-                      </Button>
-                      {urlDocument && (
-                        <Button variant="warning" onClick={handleGetDocument}>
-                          Visualizar
+                      <div className="mb-3 text-center">
+                        <p className="mb-1">
+                          <span className="fw-semibold">Folio: </span> 
+                          {folio || "Sin folio"}
+                        </p>
+                        <p className="mb-0">
+                          <span className="fw-semibold">Expira: </span>
+                          {doc.expirationDateDocument ? formatCreatedAt(doc.expirationDateDocument) : "Sin fecha"}
+                        </p>
+                      </div>
+
+                      <div className="d-flex flex-column align-items-center gap-2">
+                        <Button
+                          onClick={handleButtonClick}
+                          variant={hasDocument ? "primary" : "success"}
+                          style={{ width: "80%" }}
+                        >
+                          {hasDocument ? "Reemplazar" : "Cargar"}
                         </Button>
-                      )}
+
+                        {hasDocument && (
+                          <Button
+                            variant="secondary"
+                            onClick={handleGetDocument}
+                            style={{ width: "80%" }}
+                          >
+                            Visualizar
+                          </Button>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <>
@@ -247,13 +272,15 @@ function InhabilityDocCard({
               </Card.Body>
             )}
           </Card.Body>
+
           <Card.Footer>
-            <div className="fw-semibold d-flex justify-content-center gap-2">
-              <div>{formatDate(dateInit, "dd/MM/yyyy")}</div>
+            <div className="d-flex justify-content-center gap-2">
+              <p>{formatDate(dateInit, "yyyy/MM/dd")}</p>
               <span> - </span>
-              <div>{formatDate(dateEnd, "dd/MM/yyyy")}</div>
+              <p>{formatDate(dateEnd, "yyyy/MM/dd")}</p>
             </div>
           </Card.Footer>
+
         </Card>
         <PDFViewerModal
           show={showPdfModal}
@@ -270,6 +297,7 @@ function InhabilityDocCard({
             onHide={() => setShowUpdateModal(false)}
             id={Number(idDoc)}
             selfId={Number(selfId)}
+            getData={getData}
           />
         </ModalBlur>
       </ConditionalRender>

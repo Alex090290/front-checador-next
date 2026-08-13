@@ -712,7 +712,7 @@ export async function updateDocumentsInhability({
         folio: data.folio,
         dateInit: data.dateInit,
         dateEnd: data.dateEnd,
-        expirationDate: data.expirationDate
+        expirationDate: data.expirationDateDocument
       },
       {
         headers: {

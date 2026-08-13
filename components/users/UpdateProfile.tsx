@@ -10,7 +10,12 @@ import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { loadAvatar } from "@/app/actions/user-actions";
+import { loadAvatar, updateUser } from "@/app/actions/user-actions";
+import { useRouter } from "next/navigation";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputsProfile = {
   name: string;
@@ -22,10 +27,8 @@ type TInputsProfile = {
 };
 
 type ModalAction = {
-  sendData: (
-    data: TInputsProfile
-  ) => Promise<{ success: boolean; message: string; data: boolean | null }>;
   user?: User | null;
+  id: number;
 };
 
 function getDefaultValues(user?: User | null): TInputsProfile {
@@ -41,11 +44,10 @@ function getDefaultValues(user?: User | null): TInputsProfile {
 
 export default function FormUpdateProfile({
   onHide,
-  sendData,
   user,
+  id
 }: ModalBasicProps & ModalAction) {
   const {
-    reset,
     register,
     handleSubmit,
     control,
@@ -55,50 +57,92 @@ export default function FormUpdateProfile({
     defaultValues: getDefaultValues(user),
   });
 
-  const [loading, setLoading] = useState(false);
-  const { modalError } = useModals();
+  const [loading] = useState(false);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const { modalConfirm } = useModals();
+  const router = useRouter();
 
-  useEffect(() => {
-    setLoading(true);
-
-    try {
-      reset(getDefaultValues(user));
-    } catch {
-      modalError("No se pudo cargar la información del perfil");
-    } finally {
-      setLoading(false);
-    }
-  }, [user, reset, modalError]);
 
   useEffect(() => {
     const run = async () => {
       const res = await loadAvatar();
-
-      if (!res.success) {
-        return;
-      }
-
+      if (!res.success) return;
       setValue("imageUrl", res.data, { shouldDirty: false });
     };
-
     run();
   }, [setValue]);
 
-  const onSubmit: SubmitHandler<TInputsProfile> = async (data) => {
-    const res = await sendData(data);
+  useEffect(() => {
+    let active = true;
+    const run = async () => {
+      const res = await loadAvatar();
+      if (!active || !res.success) return;
+      setValue("imageUrl", res.data, { shouldDirty: false });
+    };
+    run();
+    return () => { active = false; };
+  }, [setValue]);
 
-    if (!res.success) {
-      modalError(res.message);
+  const onSubmit: SubmitHandler<TInputsProfile> = async (data) => {
+    if (!user) {
+      setFeedbackMsg("No se encontró la información del usuario");
+      setFeedback("error");
       return;
     }
 
-    onHide();
+    modalConfirm("¿Seguro que quieres guardar el usuario?", async () => {
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Actualizando usuario...");
+
+        const res = await updateUser({
+          ...data,
+          id: id,
+          role: user.role,
+          permissions: user.permissions,
+          status: user.status,
+          idEmployee: user.idEmployee || null,
+        });
+
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo actualizar el usuario");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Usuario actualizado correctamente");
+        setFeedback("success");
+        router.refresh();
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
+      }
+    });
   };
 
   return (
     <>
-      <ConditionalRender cond={loading || isSubmitting}>
-        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+            router.refresh();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <div className="p-2">
@@ -178,7 +222,7 @@ export default function FormUpdateProfile({
                       invalid={!!errors.email}
                       feedBack={errors.email?.message}
                       type="email"
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
 
@@ -202,7 +246,7 @@ export default function FormUpdateProfile({
                       label="Género:"
                       invalid={!!errors.gender}
                       feedBack={errors.gender?.message}
-                      className="border"
+                      className="border text-uppercase"
                     />
                   </Col>
                 </Row>

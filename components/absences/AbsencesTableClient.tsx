@@ -20,6 +20,7 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { es } from "date-fns/locale";
+import { formatCreatedAt } from "@/lib/helpers";
 
 registerLocale("es", es);
 
@@ -148,12 +149,6 @@ export default function AbsencesTableClient({
             ? `${capitalize(e.employee.lastName)} ${capitalize(e.employee.name)}`
             : `${e.idEmployee}`;
     };
-
-    const getDate = (e: IAbsence) => {
-        return e.dateOfAbsence
-            ? moment.utc(e.dateOfAbsence).format("DD/MM/YYYY")
-            : `${e.idEmployee}`
-    }
 
 
     const renderCell = (row: IAbsence, column: TableTemplateColumn<IAbsence>) => {
@@ -433,13 +428,13 @@ export default function AbsencesTableClient({
         },
         {
             key: "dateOfAbsence",
-            label: "Fecha de la falta",
-            accessor: getDate,
+            label: "Fecha del registro",
+            accessor: (e) => e.createdAt,
             filterable: true,
             type: "string",
             render: (e) => (
                 <div className="text-uppercase">
-                    {getDate(e) || "-"}
+                    {formatCreatedAt(e.createdAt)|| "-"}
                 </div>
             )
         }

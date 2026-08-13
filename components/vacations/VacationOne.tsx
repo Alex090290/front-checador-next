@@ -249,7 +249,6 @@ export default function ShowInfoVacation({
     );
   }
   const overallStatus = vacation.status ?? "PENDING";
-  const createdAt = safeDate(vacation.createdAt, "dd/MM/yyyy");
 
   return (
     <>
@@ -422,7 +421,7 @@ export default function ShowInfoVacation({
                           <i className="bi bi-calendar-plus text-primary" />
                           <span className="text-muted">Creada</span>
                         </div>
-                        <span className="fw-semibold text-end">{createdAt}</span>
+                        <span className="fw-semibold text-end">{formatCreatedAt(vacation.createdAt)}</span>
                       </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">

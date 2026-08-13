@@ -3,8 +3,6 @@
 import { useMemo, useState } from "react";
 import { IPermissionRequest } from "@/lib/definitions";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import { formatDate } from "date-fns";
-
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { FormBook, FormPage } from "../templates/FormView";
 import SignaturesView from "@/app/(auth)/app/permissions/views/SignaturesView";
@@ -18,6 +16,7 @@ import Loading from "../LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { ISignatures } from "@/lib/overTime/interface";
 import PermissionsOneError from "./permissionsMessageError";
+import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -50,15 +49,6 @@ function statusVariant(status?: string | null) {
       return (
         <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
       )
-  }
-}
-
-function safeDate(date?: string | Date | null, fmt = "dd/MM/yyyy") {
-  if (!date) return "—";
-  try {
-    return formatDate(new Date(date), fmt);
-  } catch {
-    return "—";
   }
 }
 
@@ -139,9 +129,6 @@ export default function ShowInfoPermissionRequest({
   }
 
   const overallStatus = permission.status ?? "PENDING";
-  const createdAt = safeDate(permission.createdAt, "dd/MM/yyyy");
-  const createdHour = safeDate(permission.createdAt, "HH:mm")
-
   const handleApprove = () => setApproveModal(true);
   const handleSignatureDoh = () => setSignatureModal(true);
   const handleEmployeeSignature = () => setEmployeeSignatureModal(true);
@@ -299,7 +286,7 @@ export default function ShowInfoPermissionRequest({
                           <i className="bi bi-calendar-plus text-primary" />
                           <span className="text-muted">Creada</span>
                         </div>
-                        <span className="fw-semibold text-end">{createdAt}</span>
+                        <span className="fw-semibold text-end">{formatCreatedAt(permission.createdAt)}</span>
                       </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
@@ -307,7 +294,7 @@ export default function ShowInfoPermissionRequest({
                           <i className="bi bi-clock" />
                           <span className="text-muted">Hora de creación</span>
                         </div>
-                        <span className="fw-semibold text-end">{createdHour}</span>
+                        <span className="fw-semibold text-end">{formatCreatedAtOnlyHours(permission.createdAt)}</span>
                       </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
@@ -379,7 +366,7 @@ export default function ShowInfoPermissionRequest({
                             <i className="bi bi-calendar-event text-success fs-5 mb-2 d-block" />
                             <div className="text-muted small">Fecha inicio</div>
                             <div className="fw-semibold">
-                              {safeDate(permission.informationDate.dateInit)}
+                              {formatCreatedAt(permission.informationDate.dateInit)}
                             </div>
                           </div>
                         </Col>
@@ -389,7 +376,7 @@ export default function ShowInfoPermissionRequest({
                             <i className="bi bi-calendar-x text-danger fs-5 mb-2 d-block" />
                             <div className="text-muted small">Fecha fin</div>
                             <div className="fw-semibold">
-                              {safeDate(permission.informationDate.dateEnd)}
+                              {formatCreatedAt(permission.informationDate.dateEnd)}
                             </div>
                           </div>
                         </Col>

@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import { formatDate } from "date-fns";
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 import { Vacations } from "@/lib/definitions";
@@ -12,6 +11,7 @@ import Loading from "@/components/LoadingSpinner";
 import AlertSignaturesV from "./AlertSignatures";
 import { ISignatures } from "@/lib/overTime/interface";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import { formatCreatedAt } from "@/lib/helpers";
 
 export default function VacationsTableClient({
   vacations,
@@ -120,7 +120,7 @@ export default function VacationsTableClient({
       type: "string",
       render: (row) => (
         <div className="text-left">
-          {formatDate(row.dateInit, "dd/MM/yyyy")}
+          {formatCreatedAt(row.dateInit)}
         </div>
       ),
     },
@@ -132,7 +132,7 @@ export default function VacationsTableClient({
       type: "string",
       render: (row) => (
         <div className="text-left">
-          {formatDate(row.dateEnd, "dd/MM/yyyy")}
+          {formatCreatedAt(row.dateEnd)}
         </div>
       ),
     },

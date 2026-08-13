@@ -62,7 +62,7 @@ function NavUserInfo() {
     })
   }
 
-  const singOutHanddle = ()=>{
+  const singOutHanddle = () => {
     localStorage.removeItem("menu-data");
     signOut()
   }
@@ -77,7 +77,8 @@ function NavUserInfo() {
     }`;
 
   return (
-    <> <style>{` #nav-user-dropdown-toggle::after { display: none; }`}</style>
+    <>
+      <style>{` #nav-user-dropdown-toggle::after { display: none; }`}</style>
 
       <Stack
         direction="horizontal"
@@ -123,7 +124,7 @@ function NavUserInfo() {
               zIndex: 2000,
             }}
           >
-            
+
             <Dropdown.Item
               as={Link}
               href={`/app/users/profile?id=${session?.user?.id}`}
@@ -131,9 +132,9 @@ function NavUserInfo() {
               <i className="bi bi-person-circle me-2"></i>
               <span>Perfil</span>
             </Dropdown.Item>
-            
 
-            <Dropdown.Item onClick={() =>singOutHanddle()}>
+
+            <Dropdown.Item onClick={() => singOutHanddle()}>
               <i className="bi bi-box-arrow-right me-2"></i>
               <span>Cerrar sesión</span>
             </Dropdown.Item>

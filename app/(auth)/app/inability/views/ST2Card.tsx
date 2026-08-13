@@ -42,6 +42,8 @@ function ST2Card({
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [showUpdateDateModal, setShowUpdateDateModal] = useState(false);
   const { modalConfirm } = useModals();
+  const hasDocument = !!st2Doc?.urlDocument;
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -214,14 +216,25 @@ function ST2Card({
                 <div className="d-flex flex-column justify-content-center gap-1">
                   {selectedFiles.length === 0 ? (
                     <>
-                      <Button onClick={handleButtonClick}>
-                        {st2Doc?.urlDocument ? "Reemplazar" : "Cargar"}
-                      </Button>
-                      {st2Doc?.urlDocument && (
-                        <Button variant="warning" onClick={handleGetDocument}>
-                          Visualizar
+                      <div className="d-flex flex-column align-items-center gap-2">
+                        <Button
+                          onClick={handleButtonClick}
+                          variant={hasDocument ? "primary" : "success"}
+                          style={{ width: "80%" }}
+                        >
+                          {hasDocument ? "Reemplazar" : "Cargar"}
                         </Button>
-                      )}
+
+                        {hasDocument && (
+                          <Button
+                            variant="secondary"
+                            onClick={handleGetDocument}
+                            style={{ width: "80%" }}
+                          >
+                            Visualizar
+                          </Button>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <>
