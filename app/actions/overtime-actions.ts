@@ -157,7 +157,8 @@ export async function createOverTime({
       date: data.date,
       hourInit: data.hourInit,
       hourEnd: data.hourEnd,
-      status: data.status
+      status: data.status,
+      notes: data.notes
     }
 
     const headers = {

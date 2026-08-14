@@ -13,6 +13,10 @@ import { Department, Branch, Position } from "@/lib/definitions";
 import ModalBlur from "../ModalBlur";
 import UpdateSalaryModal from "./UpdateSalaryModal";
 
+const employeeStatus = {
+  1: "activo",
+  2: "baja",
+};
 
 export default function EmployeeSalariesTableClient({
     total,
@@ -50,7 +54,7 @@ export default function EmployeeSalariesTableClient({
     const currentPosition = sp.get("idPosition") ?? "";
     const currentBranch = sp.get("branch") ?? "";
     const [showModalSalary, setShowModalSalary] = useState(false);
-
+    const [, setSalaryUpdate] = useState<number | null>(null);
 
     useEffect(() => {
         setLoading(false);
@@ -245,27 +249,33 @@ export default function EmployeeSalariesTableClient({
 
 
     // Seleccion de empleados
-    const handleToggleSelect = (row: ISalariesEmployees) => {
-        const rowId = String(row.id);
-        const isSelected = selectedIds.includes(rowId);
+    // const handleToggleSelect = (row: ISalariesEmployees) => {
+    //     const rowId = String(row.id);
+    //     const isSelected = selectedIds.includes(rowId);
 
-        // Deseleccionar siempre se permite, sin validar nada
-        if (isSelected) {
-            setSelectedIds((prev) => prev.filter((id) => id !== rowId));
-            return;
-        }
+    //     // Deseleccionar siempre se permite, sin validar nada
+    //     if (isSelected) {
+    //         setSelectedIds((prev) => prev.filter((id) => id !== rowId));
+    //         return;
+    //     }
 
-        setSelectedIds((prev) => [...prev, rowId]);
-    };
+    //     setSelectedIds((prev) => [...prev, rowId]);
+    // };
 
-    const actionUpdateSalaries = () => {
-        const selectedRows = (employees ?? []).filter((row) =>
-            selectedIds.includes(String(row.id))
-        );
+    // const actionUpdateSalaries = () => {
+    //     const selectedRows = (employees ?? []).filter((row) =>
+    //         selectedIds.includes(String(row.id))
+    //     );
 
-        if (selectedRows.length > 0) {
-            setShowModalSalary(true);
-        }
+    //     if (selectedRows.length > 0) {
+    //         setShowModalSalary(true);
+    //     }
+    // };
+
+    const handleUpdate = (row: ISalariesEmployees) => {
+        setSelectedIds([String(row.id)]);
+        setSalaryUpdate(Number(row.id));
+        setShowModalSalary(true);
     };
 
 
@@ -310,13 +320,37 @@ export default function EmployeeSalariesTableClient({
             ),
         },
         {
+            key: "status",
+            label: "Estatus",
+            accessor: (u) => employeeStatus[u.status as keyof typeof employeeStatus] ?? "",
+            filterable: false,
+            type: "string",
+            render: (u) => {
+                const estado = u.status
+                switch (estado) {
+                    case 1:
+                        return (
+                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                                ACTIVO
+                            </span>
+                        );
+                    case 2:
+                        return (
+                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                BAJA
+                            </span>
+                        );
+                }
+            }
+        },
+        {
             key: "dailyWage",
             label: "Salario diario",
             accessor: (u) => u.dailyWage,
             filterable: false,
             type: "string",
             render: (u) => (
-                <div className="text-uppercase">${u.dailyWage}</div>
+                <div className="text-uppercase text-center">${u.dailyWage}</div>
             ),
         }
     ];
@@ -328,7 +362,7 @@ export default function EmployeeSalariesTableClient({
             </ConditionalRender>
 
             <Container className="py-3" style={{ maxWidth: "1600px" }}>
-                <Button
+                {/* <Button
                     variant="primary"
                     className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
                     onClick={actionUpdateSalaries}
@@ -336,7 +370,7 @@ export default function EmployeeSalariesTableClient({
                 >
                     <i className="bi bi-pencil" />
                     Actualizar Salario Diario
-                </Button>
+                </Button> */}
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
@@ -571,12 +605,20 @@ export default function EmployeeSalariesTableClient({
                                                                     <div className="d-flex justify-content-center align-items-center gap-2">
 
 
-                                                                        <button
+                                                                        {/* <button
                                                                             className={isSelected ? "btn btn-info btn-sm" : "btn btn-sm btn-outline-info"}
                                                                             onClick={() => handleToggleSelect(row)}
                                                                         >
                                                                             {isSelected ? "Seleccionado" : "Seleccionar"}
-                                                                        </button>
+                                                                        </button> */}
+
+                                                                        <Button
+                                                                            variant="outline-info"
+                                                                            className="btn-sm"
+                                                                            onClick={() => handleUpdate(row)}
+                                                                        >
+                                                                            Actualizar
+                                                                        </Button>
 
                                                                     </div>
                                                                 </td>

@@ -11,7 +11,7 @@ import { INewSalary, ISalariesEmployees } from "@/lib/salaries/interface";
 import { updateSalary } from "@/app/actions/salaries-actions";
 import ErrorOverlay from "../ErrorOverlay";
 import SuccessOverlay from "../SuccessOverlay";
-import { Entry } from "../fields";
+import { EntryNumber } from "../fields/EntryFieldNumber";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -141,7 +141,7 @@ export default function UpdateSalaryModal({
                         <Col md={12}>
                             <Card.Body className="p-4">
                                 <Form.Group>
-                                    <Entry
+                                    <EntryNumber
                                         register={register("salary", { required: "El nuevo salario es requerido" })}
                                         invalid={!!errors.salary}
                                         label="Nuevo salario Diario"

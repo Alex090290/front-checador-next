@@ -25,6 +25,7 @@ import ErrorOverlay from "../ErrorOverlay";
 type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
+  notes: string;
   motive: string;
   type: string;
   forHours: boolean;
@@ -52,6 +53,7 @@ const DEFAULT_VALUES: TInputs = {
   hourInit: "",
   incidence: "PERMISOS",
   motive: "",
+  notes: "",
   type: "",
   idEmployee: null,
   idLeader: null,
@@ -303,50 +305,50 @@ export default function CreatePermissionComponent({
     }
   }, [dateInit, setValue]);
 
-  // useEffect(() => {
-  //   if (!idEmployeeSelected) return;
+  useEffect(() => {
+    if (!idEmployeeSelected) return;
 
-  //   let cancelled = false;
+    let cancelled = false;
 
-  //   const run = async () => {
-  //     try {
-  //       const employeeId = Number(idEmployeeSelected);
-  //       if (!employeeId || Number.isNaN(employeeId)) return;
+    const run = async () => {
+      try {
+        const employeeId = Number(idEmployeeSelected);
+        if (!employeeId || Number.isNaN(employeeId)) return;
 
-  //       const emp = await findEmployeeById({ id: employeeId });
+        const emp = await findEmployeeById({ id: employeeId });
 
-  //       if (cancelled || !emp) return;
+        if (cancelled || !emp) return;
 
-  //       const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+        const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
 
-  //       if (emp.isLeader) {
-  //         if (!leaderFromConfig) return;
+        if (emp.isLeader) {
+          if (!leaderFromConfig) return;
 
-  //         setValue("idLeader", Number(leaderFromConfig), {
-  //           shouldDirty: true,
-  //           shouldValidate: true,
-  //         });
-  //         return;
-  //       }
+          setValue("idLeader", Number(leaderFromConfig), {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+          return;
+        }
 
-  //       const leaderId = emp?.leader?.id ?? null;
+        const leaderId = emp?.leader?.id ?? null;
 
 
-  //       setValue("idLeader", leaderId ? Number(leaderId) : null, {
-  //         shouldDirty: true,
-  //         shouldValidate: true,
-  //       });
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
+        setValue("idLeader", leaderId ? Number(leaderId) : null, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-  //   run();
+    run();
 
-  //   return () => {
-  //     cancelled = true;
-  //   };
-  // }, [idEmployeeSelected, config, setValue]);
+    return () => {
+      cancelled = true;
+    };
+  }, [idEmployeeSelected, config, setValue]);
 
   useEffect(() => {
     const dohFromConfig = config?.permissions?.approvalDoh?.idPerson;
@@ -381,6 +383,7 @@ export default function CreatePermissionComponent({
           incidence: data.incidence,
           type: data.type,
           motive: data.motive,
+          notes: data.notes,
           dateInit: data.dateInit,
           dateEnd: data.dateEnd,
           signature: data.signature,
@@ -411,7 +414,7 @@ export default function CreatePermissionComponent({
   return (
     <>
       <ConditionalRender cond={feedback === "loading" || isSubmitting}>
-        <Loading message={feedbackMsg } />
+        <Loading message={feedbackMsg} />
       </ConditionalRender>
 
       <ConditionalRender cond={feedback === "success"}>
@@ -670,6 +673,28 @@ export default function CreatePermissionComponent({
                       </Card>
 
                       <Card className="border rounded-4">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-journal-text text-info" />
+                            <h6 className="mb-0 fw-bold">Notas</h6>
+                          </div>
+
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <Entry
+                                label="Notas adicionales:"
+                                register={register("notes")}
+                                invalid={!!errors.notes}
+                                className="border text-uppercase"
+                                as={"textarea"}
+                                rows={3}
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+
+                      <Card className="border rounded-4 mt-3">
                         <Card.Body>
                           <div className="d-flex align-items-center gap-2 mb-4">
                             <i className="bi bi-pen text-info" />

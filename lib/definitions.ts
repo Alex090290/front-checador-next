@@ -269,6 +269,7 @@ export interface IPermissionRequest {
   leaderApproval: PermissionRequestStatus;
   dohApproval: PermissionRequestStatus;
   motive: string;
+  notes: string;
   incidence: string;
   type: string;
   forHours: boolean;
@@ -342,6 +343,7 @@ export interface Vacations {
   dateEnd: string;
   isAutomatic: boolean;
   holidayName: string;
+  notes: string;
 
   createForPerson: {
     _id: string;

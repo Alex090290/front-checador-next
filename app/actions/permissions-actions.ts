@@ -127,6 +127,7 @@ export async function createPermission({
     incidence: string;
     type: string;
     motive: string;
+    notes: string;
     dateInit: string;
     dateEnd: string;
     hourInit: string;
@@ -148,6 +149,7 @@ export async function createPermission({
           incidence: "PERMISOS",
           type: data.type,
           motive: data.motive,
+          notes: data.notes,
           dateInit: data.dateInit,
           dateEnd: data.dateEnd,
           hourInit: data.hourInit,

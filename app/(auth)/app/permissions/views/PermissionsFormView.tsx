@@ -45,6 +45,7 @@ type TInputs = {
   idPersonDoh: number | null;
   modeSelect: string;
   signature: string;
+  notes: string;
 };
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -153,6 +154,7 @@ function PermissionsFormView({
         idPersonDoh: null,
         modeSelect: "",
         signature: "",
+        notes: ""
       };
       reset(values);
       originalValuesRef.current = values;
@@ -172,6 +174,7 @@ function PermissionsFormView({
         idPersonDoh: permission.personDoh.id || null,
         modeSelect: permission.forDays ? "forDays" : "forHours",
         signature: "",
+        notes: permission.notes
       };
       reset(values);
       originalValuesRef.current = values;

@@ -77,7 +77,7 @@ export default function CreatePenaltyComponent({
             return;
         }
         setDateError("");
-        
+
 
         const payload: IPenalty = {
             idEmployee: absence[0]?.employee?.id ?? 0,
@@ -87,9 +87,12 @@ export default function CreatePenaltyComponent({
             ),
             PenaltyForOffensesType: String(data.PenaltyForOffensesType),
             motive: String(data.motive),
+            notes: String(data.notes)
         };
 
         modalConfirm("¿Seguro que quieres guardar la penalización?", async () => {
+            console.log("se envia:", payload);
+            
             try {
                 setFeedback("loading");
                 setFeedbackMsg("Guardando penalización...");
@@ -269,12 +272,35 @@ export default function CreatePenaltyComponent({
 
                                     <Col md={12}>
                                         <Form.Group>
-                                            <Form.Label className="fw-semibold mt-2">Motivo</Form.Label>
+                                            <Form.Label className="fw-semibold mt-2">Motivo:</Form.Label>
                                             <Form.Control
                                                 as="textarea"
                                                 className="border text-uppercase"
                                                 rows={3}
                                                 {...register("motive")}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            </Card.Body>
+                        </Card>
+
+                        <Card className="border rounded-4 mb-3">
+                            <Card.Body>
+                                <div className="d-flex align-items-center gap-2 mb-4">
+                                    <i className="bi bi-journal-text text-info" />
+                                    <h6 className="mb-0 fw-bold">Notas</h6>
+                                </div>
+
+                                <Row className="g-3">
+                                    <Col md={12}>
+                                        <Form.Group>
+                                            <Form.Label className="fw-semibold mt-2">Notas adicionales:</Form.Label>
+                                            <Form.Control
+                                                as="textarea"
+                                                className="border text-uppercase"
+                                                rows={3}
+                                                {...register("notes")}
                                             />
                                         </Form.Group>
                                     </Col>

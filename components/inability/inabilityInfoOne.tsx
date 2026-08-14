@@ -338,7 +338,7 @@ export default function InfoOneInability({
                       <div>
                         <h6 className="mb-1 fw-bold">Detalles del registro</h6>
                         <p className="text-muted mb-0 small">
-                          Consulta las fechas y el folio de la incapacidad.
+                          Consulta las fechas, el folio y las notas extra de la incapacidad.
                         </p>
                       </div>
                       <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
@@ -347,6 +347,17 @@ export default function InfoOneInability({
                     </div>
 
                     <div className="d-flex flex-column gap-4">
+
+                      <div className="border rounded-3 p-3">
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <i className="bi bi-journal-text text-primary" />
+                          <span className="text-muted fw-semibold">Notas adicionales</span>
+                        </div>
+                        <div className="text-uppercase">
+                          {inhability.notes ? inhability.notes : "No hay notas adicionaless"}
+                        </div>
+                      </div>
+
                       <Row className="g-3">
                         <Col xs={12} md={6} xl={6}>
                           <div className="border rounded-3 p-3 text-center h-100">

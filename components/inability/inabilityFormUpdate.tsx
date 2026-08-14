@@ -28,6 +28,7 @@ export type TInputsInability = {
   dateInit: string;
   dateEnd: string;
   firstDoc: FileList | null;
+  notes: string | null;
 };
 
 type ModalAction = {
@@ -50,6 +51,7 @@ function getDefaultValues(
       dateEnd: "",
       firstDoc: null,
       folio: "",
+      notes: "",
     };
   }
 
@@ -61,6 +63,7 @@ function getDefaultValues(
     typeOfDisability: inhability.typeOfDisability,
     firstDoc: null,
     folio: inhability.folio || firstDocument?.folio || "",
+    notes: inhability.notes || "",
     dateInit: firstDocument?.dateInit
       ? formatDate(firstDocument.dateInit, "yyyy-MM-dd")
       : "",

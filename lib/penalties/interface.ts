@@ -13,6 +13,7 @@ export interface IPenaltyForOffeses {
     createdAt: string;
     updatedAt: string;
     PenaltyForOffensesType?: string;
+    notes?: string;
 
     createForPerson?: {
         _id?: string;
@@ -38,6 +39,7 @@ export interface IPenalty {
     PenaltyForOffensesType: string;
     dateOfAbsence: string[];
     motive?: string;
+    notes: string | null;
 }
 
 export interface ISignaturesPenalties {

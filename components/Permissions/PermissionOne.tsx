@@ -318,13 +318,23 @@ export default function ShowInfoPermissionRequest({
                         </span>
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2">
                           <i className="bi bi-person-check text-info" />
                           <span className="text-muted">D.O.H.</span>
                         </div>
                         <span className="fw-semibold text-end">
                           {fullName(permission.personDoh)}
+                        </span>
+                      </div>
+                      
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-chat-left-text text-primary" />
+                          <span className="text-muted">Motivo</span>
+                        </div>
+                        <span className="fw-semibold text-end text-uppercase">
+                          {permission.motive ?? "—"}
                         </span>
                       </div>
                     </div>
@@ -341,7 +351,7 @@ export default function ShowInfoPermissionRequest({
                       <div>
                         <h6 className="mb-1 fw-bold">Detalles del registro</h6>
                         <p className="text-muted mb-0 small">
-                          Consulta el tipo, vigencia y motivo registrado.
+                          Consulta el tipo, vigencia y notas extra registradas.
                         </p>
                       </div>
                       <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
@@ -352,11 +362,11 @@ export default function ShowInfoPermissionRequest({
                     <div className="d-flex flex-column gap-4">
                       <div className="border rounded-3 p-3">
                         <div className="d-flex align-items-center gap-2 mb-2">
-                          <i className="bi bi-chat-left-text text-primary" />
-                          <span className="text-muted fw-semibold">Motivo</span>
+                          <i className="bi bi-journal-text text-primary" />
+                          <span className="text-muted fw-semibold">Notas adicionales</span>
                         </div>
                         <div className="text-uppercase">
-                          {permission.motive ?? "—"}
+                          {permission.notes ? permission.notes : "No hay notas adicionaless"}
                         </div>
                       </div>
 

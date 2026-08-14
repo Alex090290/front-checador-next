@@ -8,6 +8,7 @@ export interface IInability {
   typeOfDisability: string;
   folio: string;
   documentsInability: IdocumentsInability[];
+  notes: string | null;
 
   sT2DischargeDocument: IsT2DischargeDocument;
 
@@ -68,13 +69,13 @@ export interface IsT7FillingDocumentv2 {
 };
 
 export interface IsT2DischargeDocument {
-    id: number;
-    whoUploadId: number;
-    urlDocument: string;
-    createdAt: string; // ISO
-    updatedAt: string; // ISO
-    expirationDateDocument?: string;
-  };
+  id: number;
+  whoUploadId: number;
+  urlDocument: string;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  expirationDateDocument?: string;
+};
 
 export type InabilityPayload = {
   idEmployee: number | null;
@@ -83,25 +84,26 @@ export type InabilityPayload = {
   typeOfDisability: string;
   dateInit: string; // yyyy-MM-dd
   dateEnd: string; // yyyy-MM-dd
+  notes: string | null;
 };
 
-export interface IdocumentsInability{
-     id: number;
-    whoUploadId: number;
-    dateInit: string; // ISO
-    dateEnd: string; // ISO
-    folio: string;
-    daysdaysBrokenDown: IdaysdaysBrokenDown[];
-    inProgress: boolean;
-    urlDocument: string;
-    createdAt: string; // ISO
-    updatedAt: string; // ISO
-    expirationDateDocument?: string;
+export interface IdocumentsInability {
+  id: number;
+  whoUploadId: number;
+  dateInit: string; // ISO
+  dateEnd: string; // ISO
+  folio: string;
+  daysdaysBrokenDown: IdaysdaysBrokenDown[];
+  inProgress: boolean;
+  urlDocument: string;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  expirationDateDocument?: string;
 }
 
 interface IdaysdaysBrokenDown {
-    id: number;
-    year: string;
-    fortnightlyPeriod: number;
-    day: string;
+  id: number;
+  year: string;
+  fortnightlyPeriod: number;
+  day: string;
 }

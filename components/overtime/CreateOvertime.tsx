@@ -7,7 +7,7 @@ import { OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
-import { Entry, FieldSelect, SignatureInput } from "../fields";
+import { Entry, FieldSelect, RelationField, SignatureInput } from "../fields";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { SubmitHandler, useForm } from "react-hook-form";
 import ConditionalRender from "../ConditionalRender";
@@ -29,6 +29,7 @@ const DEFAULT_VALUES: TInputsOvertime = {
     date: "",
     hourInit: "",
     hourEnd: "",
+    notes: ""
 };
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -251,13 +252,103 @@ export default function CreateOvertimeComponent({
         });
     }, [config, currentDoh, setValue]);
 
+    useEffect(() => {
+        if (!idEmployeeSelected) return;
+
+        let cancelled = false;
+
+        const run = async () => {
+            try {
+                const employeeId = Number(idEmployeeSelected);
+                if (!employeeId || Number.isNaN(employeeId)) return;
+
+                const emp = await findEmployeeById({ id: employeeId });
+
+                if (cancelled || !emp) return;
+
+                const leaderFromConfig = config?.permissions?.approvalLeaders?.idPerson;
+
+                if (emp.isLeader) {
+                    if (!leaderFromConfig) return;
+
+                    setValue("idLeader", Number(leaderFromConfig), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                    });
+                    return;
+                }
+
+                const leaderId = emp?.leader?.id ?? null;
+
+
+                setValue("idLeader", leaderId ? Number(leaderId) : null, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        run();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [idEmployeeSelected, config, setValue]);
+
+    useEffect(() => {
+        const employeeId = Number(session?.uid?.id);
+        if (!employeeId) return;
+
+
+        if (roles?.isLeader && !roles?.isExtra) {
+            const values: TInputsOvertime = {
+                ...DEFAULT_VALUES,
+                idEmployee: employeeId,
+                idLeader: Number(directionList?.[0]?.id)
+            };
+
+            reset(values);
+            return
+        }
+
+        if (roles?.isExtra || roles?.isDoh && !roles?.isLeader) {
+            const values: TInputsOvertime = {
+                ...DEFAULT_VALUES,
+                idEmployee: null,
+                idLeader: null
+            };
+            reset(values);
+            return
+        }
+
+        const values: TInputsOvertime = {
+            ...DEFAULT_VALUES,
+            idEmployee: employeeId,
+            idLeader: employees.find((e) => Number(e.id) === Number(employeeId))?.leader?.id || null,
+        };
+
+        reset(values);
+    }, [reset, employees, session, directionList, roles]);
+
+    useEffect(() => {
+        const dohFromConfig = config?.permissions?.approvalDoh?.idPerson;
+        if (!dohFromConfig) return;
+        if (currentDoh) return;
+
+        setValue("idPersonDoh", Number(dohFromConfig), {
+            shouldDirty: false,
+            shouldValidate: false,
+        });
+    }, [config, currentDoh, setValue]);
+
     const handleBack = () => {
         setFeedback("loading");
         setFeedbackMsg("Cargando...");
         router.push("/app/overtime");
     };
 
-    console.log("ROL:", roles);
 
     const onSubmit: SubmitHandler<TInputsOvertime> = async (data) => {
         if (!data.signature || data.signature === "") {
@@ -381,18 +472,18 @@ export default function CreateOvertimeComponent({
 
                                                     <Row className="g-3">
                                                         <Col md={12}>
-                                                            <FieldSelect
-                                                                register={register("idEmployee", {
-                                                                    required: true,
-                                                                    setValueAs: (v) => (v === "" ? null : Number(v)),
-                                                                })}
+                                                            <RelationField
+                                                                readonly={readInput}
+                                                                register={register("idEmployee")}
                                                                 options={filteredEmployees.map((e) => ({
-                                                                    value: e.id!,
-                                                                    label: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                                                    id: Number(e.id),
+                                                                    displayName: `${e.lastName} ${e.name}`.toUpperCase(),
+                                                                    name: `${e.lastName} ${e.name}`.toUpperCase()
                                                                 }))}
+                                                                control={control}
+                                                                callBackMode="id"
                                                                 label="Empleado:"
                                                                 className="text-uppercase border"
-                                                                readonly={readInput}
                                                             />
                                                         </Col>
 
@@ -484,6 +575,27 @@ export default function CreateOvertimeComponent({
                                                                 invalid={!!errors.hourEnd}
                                                                 feedBack={errors.hourEnd?.message}
                                                                 className="border"
+                                                            />
+                                                        </Col>
+                                                    </Row>
+                                                </Card.Body>
+                                            </Card>
+
+                                            <Card className="border rounded-4 mb-3">
+                                                <Card.Body>
+                                                    <div className="d-flex align-items-center gap-2 mb-4">
+                                                        <i className="bi bi-journal-text text-info" />
+                                                        <h6 className="mb-0 fw-bold">Notas</h6>
+                                                    </div>
+
+                                                    <Row className="g-3">
+                                                        <Col md={12}>
+                                                            <Entry
+                                                                label="Notas adicionales:"
+                                                                register={register("notes")}
+                                                                className="border text-uppercase"
+                                                                as={"textarea"}
+                                                                rows={3}
                                                             />
                                                         </Col>
                                                     </Row>

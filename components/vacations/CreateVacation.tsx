@@ -34,6 +34,7 @@ type TInputs = Pick<
   | "periodDescription"
   | "dateInit"
   | "dateEnd"
+  | "notes"
 > & {
   incidence: string;
   signature: string;
@@ -48,7 +49,8 @@ const DEFAULT_VALUES: TInputs = {
   dateEnd: "",
   dateInit: "",
   incidence: "",
-  signature: ""
+  signature: "",
+  notes: ""
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -314,6 +316,7 @@ function CreateVacationComponent({
       idPeriod: null,
       dateEnd: "",
       dateInit: "",
+      notes: "",
       incidence: "VACACIONES",
       periodDescription: "",
       signature: "",
@@ -605,6 +608,27 @@ function CreateVacationComponent({
                                 register={register("dateEnd")}
                                 min={dateInit}
                                 className="border text-uppercase"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-journal-text text-info" />
+                            <h6 className="mb-0 fw-bold">Notas</h6>
+                          </div>
+
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <Entry
+                                label="Notas adicionales:"
+                                register={register("notes")}
+                                className="border text-uppercase"
+                                as={"textarea"}
+                                rows={3}
                               />
                             </Col>
                           </Row>

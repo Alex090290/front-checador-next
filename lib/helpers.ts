@@ -60,14 +60,14 @@ export function formatDateHours(value?: string) {
 
 export function formatCreatedAt(value?: string) {
   const m = moment.utc(value);
-  return m.isValid() ? m.format("YYYY/MM/DD") : "—";
+  return m.isValid() ? m.format("DD/MM/YYYY") : "—";
 }
 
 export function formatParse(value?: string) {
   if (!value) return "—";
 
   const m = moment.tz(value, "DD/MM/YYYY HH:mm", "America/Mexico_City");
-  return m.isValid() ? m.format("YYYY/MM/DD") : "—";
+  return m.isValid() ? m.format("DD/MM/YYYY") : "—";
 }
 export function formatParseHours(value?: string) {
   if (!value) return "—";

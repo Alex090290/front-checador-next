@@ -54,9 +54,6 @@ function statusLabel(status?: string | null) {
 }
 
 
-
-
-
 //En esta funcion colocaremos las sesiones para identificar quien firma 
 export function OvertimeOne({
     overtime,
@@ -67,7 +64,7 @@ export function OvertimeOne({
     connfigSystem: IConfigSystem[];
 }) {
 
-    
+
     // Aqui los const 
     const session = useSessionSnapshot();
     const [loading, setLoading] = useState(false);
@@ -85,7 +82,7 @@ export function OvertimeOne({
 
     // Configuración de overtime del sistema
     const configOvertime = connfigSystem[0].overTime;
-        
+
     // Firmas del registro de overtime (array vacío si no existe)
     const signatures: ISignatures[] = useMemo(() => overtime?.signatures ?? [], [overtime?.signatures]);
 
@@ -135,8 +132,8 @@ export function OvertimeOne({
             && !!currentSignature
             && hasNotSigned;
     }, [session, idEmployee, configOvertime, currentSignature, hasNotSigned]);
-        const overallStatus = overtime?.status ?? "PENDING";
-        
+    const overallStatus = overtime?.status ?? "PENDING";
+
     // ============ Aqui los helpers ===============
 
     //crear
@@ -383,7 +380,7 @@ export function OvertimeOne({
                                                 </span>
                                             </div>
 
-                                            <div className="d-flex align-items-center justify-content-between">
+                                            <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                                                 <div className="d-flex align-items-center gap-2">
                                                     <i className="bi bi-person-check text-info" />
                                                     <span className="text-muted">D.O.H.</span>
@@ -391,6 +388,17 @@ export function OvertimeOne({
 
                                                 <span className="fw-semibold text-end">
                                                     {fullName(overtime.personDoh)}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-chat-left-text text-info" />
+                                                    <span className="text-muted">Motivo</span>
+                                                </div>
+
+                                                <span className="fw-semibold text-end text-uppercase">
+                                                    {overtime.motive ? overtime.motive : "No se registró un motivo"}
                                                 </span>
                                             </div>
                                         </div>
@@ -421,14 +429,11 @@ export function OvertimeOne({
                                         <div className="d-flex flex-column gap-4">
                                             <div className="border rounded-3 p-3">
                                                 <div className="d-flex align-items-center gap-2 mb-2">
-                                                    <i className="bi bi-chat-left-text text-primary" />
-                                                    <span className="text-muted fw-semibold">
-                                                        Motivo
-                                                    </span>
+                                                    <i className="bi bi-journal-text text-primary" />
+                                                    <span className="text-muted fw-semibold">Notas adicionales</span>
                                                 </div>
-
                                                 <div className="text-uppercase">
-                                                    {overtime.motive ?? "—"}
+                                                    {overtime.notes ? overtime.notes : "No hay notas adicionales"}
                                                 </div>
                                             </div>
 

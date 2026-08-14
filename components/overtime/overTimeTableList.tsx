@@ -26,7 +26,7 @@ export default function OverTimeTableClient({
     search?: string;
     overtime?: OverTime[];
     overtimes?: OverTime | null;
-}) { 
+}) {
     //Aqui van los const 
 
     const session = useSessionSnapshot();
@@ -110,7 +110,7 @@ export default function OverTimeTableClient({
             ? `${capitalize(e.employee.lastName)} ${capitalize(e.employee.name)}`
             : `${e.idEmployee}`;
     };
-    
+
 
     const clearSelectedIds = useCallback(() => {
         isClearingSelectionRef.current = true;
@@ -173,7 +173,7 @@ export default function OverTimeTableClient({
             type: "string",
             render: (e) => (
                 <div className="text-uppercase">
-                    {`#${e.id}` || "-"}
+                    {`${e.id}` || "-"}
                 </div>
             )
         },
@@ -234,6 +234,27 @@ export default function OverTimeTableClient({
                 <div className="text-uppercase">
                     {formatParseHours(e.informationDate?.hourEnd) || "-"}
                 </div>
+        },
+        {
+            key: "signatures",
+            label: "Firmado",
+            accessor: (row) => row.signatures,
+            filterable: true,
+            render: (row) => {
+                const mySignature = (row.signatures ?? []).find(
+                    (s) => Number(s.idSignatory) === idEmployee
+                );
+
+                if (!mySignature) {
+                    return <span className="text-muted text-center">Este permiso no corresponde a este perfil</span>;
+                }
+
+                return mySignature.url === "" ? (
+                    <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
+                ) : (
+                    <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
+                );
+            },
         },
         {
             key: "status",

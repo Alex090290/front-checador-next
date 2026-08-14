@@ -452,13 +452,23 @@ export default function ShowInfoVacation({
                         </span>
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                         <div className="d-flex align-items-center gap-2">
                           <i className="bi bi-person-check text-info" />
                           <span className="text-muted">D.O.H.</span>
                         </div>
                         <span className="fw-semibold text-end">
                           {fullName(vacation.personDoh)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-calendar-range text-info" />
+                          <span className="text-muted"> Periodo vacacional </span>
+                        </div>
+                        <span className="fw-semibold text-end">
+                          {`${safeDate(vacation.period.dateInitPeriod)} - ${safeDate(vacation.period.dateEndPeriod)}`}
                         </span>
                       </div>
                     </div>
@@ -474,7 +484,7 @@ export default function ShowInfoVacation({
                       <div>
                         <h6 className="mb-1 fw-bold">Detalles del registro</h6>
                         <p className="text-muted mb-0 small">
-                          Consulta el periodo vacacional y los días solicitados.
+                          Consulta los días solicitados y las notas extra registras.
                         </p>
                       </div>
                       <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
@@ -485,13 +495,11 @@ export default function ShowInfoVacation({
                     <div className="d-flex flex-column gap-4">
                       <div className="border rounded-3 p-3">
                         <div className="d-flex align-items-center gap-2 mb-2">
-                          <i className="bi bi-calendar-range text-primary" />
-                          <span className="text-muted fw-semibold">
-                            Periodo vacacional
-                          </span>
+                          <i className="bi bi-journal-text text-primary" />
+                          <span className="text-muted fw-semibold">Notas adicionales</span>
                         </div>
                         <div className="text-uppercase">
-                          {`${safeDate(vacation.period.dateInitPeriod)} - ${safeDate(vacation.period.dateEndPeriod)}`}
+                          {vacation.notes ? vacation.notes : "No hay notas adicionaless"}
                         </div>
                       </div>
 

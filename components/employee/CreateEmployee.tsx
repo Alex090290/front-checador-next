@@ -31,6 +31,7 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import { EntryNumber } from "../fields/EntryFieldNumber";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -761,7 +762,7 @@ export default function CreateEmployeeComponent({
                                 (p) => p.text === "visualizar_salario"
                               ) && (
                                   <Col md={6}>
-                                    <Entry
+                                    <EntryNumber
                                       className="border"
                                       register={register("dailyWage", { required: true })}
                                       label="Salario diario:"

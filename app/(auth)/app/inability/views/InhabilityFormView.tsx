@@ -36,6 +36,7 @@ type TInputs = {
   dateInit: string;
   dateEnd: string;
   firstDoc: FileList | null;
+  notes: string | null;
 };
 
 function InhabilityFormView({
@@ -98,7 +99,8 @@ function InhabilityFormView({
         dateInit: "",
         dateEnd: "",
         firstDoc: null,
-        folio: ''
+        folio: "",
+        notes: ""
       };
       reset(values);
       originalValuesRef.current = values;
@@ -109,6 +111,7 @@ function InhabilityFormView({
         typeOfDisability: inhability.typeOfDisability,
         firstDoc: null,
         folio: inhability.folio,
+        notes: inhability.notes,
         dateInit: formatDate(
           inhability.documentsInability[0].dateInit,
           "yyyy-MM-dd",

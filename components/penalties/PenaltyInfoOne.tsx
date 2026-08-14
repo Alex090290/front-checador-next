@@ -246,6 +246,17 @@ export function PenaltyOne({
                                                     {fullName(penalty?.createForPerson)}
                                                 </span>
                                             </div>
+                                            
+                                            <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className="bi bi-chat-left-text text-primary" />
+                                                    <span className="text-muted">Motivo</span>
+                                                </div>
+
+                                                <span className="fw-semibold text-end text-uppercase">
+                                                    {penalty?.motive || "--"}
+                                                </span>
+                                            </div>
                                         </div>
                                     </Card.Body>
                                 </Card>
@@ -273,15 +284,14 @@ export function PenaltyOne({
 
                                         <div className="d-flex flex-column gap-4">
                                             <div className="border rounded-3 p-3">
-                                                <div className="d-flex align-items-center gap-2 mb-2">
-                                                    <i className="bi bi-chat-left-text text-primary" />
-                                                    <span className="text-muted fw-semibold">
-                                                        Motivo
-                                                    </span>
-                                                </div>
-
-                                                <div className="text-uppercase border rounded-2 p-2">
-                                                    {penalty?.motive || "--"}
+                                                <div className="border rounded-3 p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                                        <i className="bi bi-journal-text text-primary" />
+                                                        <span className="text-muted fw-semibold">Notas adicionales</span>
+                                                    </div>
+                                                    <div className="text-uppercase">
+                                                        {penalty.notes ? penalty.notes : "No hay notas adicionaless"}
+                                                    </div>
                                                 </div>
 
 
@@ -318,8 +328,8 @@ export function PenaltyOne({
                                                                 {activeCheck && (
 
                                                                     <div
-                                                                    key={activeCheck.id} 
-                                                                    className="border rounded-3 p-3 mt-3 me-2 ms-1 collapse-detail-enter"
+                                                                        key={activeCheck.id}
+                                                                        className="border rounded-3 p-3 mt-3 me-2 ms-1 collapse-detail-enter"
                                                                     >
                                                                         <Row className="g-3">
                                                                             {/* Columna de estadísticas */}

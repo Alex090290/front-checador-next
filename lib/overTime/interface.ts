@@ -7,11 +7,11 @@ export interface OverTime {
     hourInit: string;
     hourEnd: string;
     status: OvertimeRequestStatus;
-    informationDate?: informationDate; 
+    informationDate?: informationDate;
     createdAt?: string;
     incidence?: string;
     signatures?: ISignatures[];
-
+    notes: string | null;
 
     createForPerson?: {
         _id: string;
@@ -49,7 +49,7 @@ export interface OverTimeAxios {
     id: number
 }
 
-export type OvertimeRequestStatus = 
+export type OvertimeRequestStatus =
     | "APPROVED"
     | "REFUSED"
     | "PENDING"
@@ -65,6 +65,7 @@ export type TInputsOvertime = {
     hourEnd: string;
     signature?: string;
     status?: OvertimeRequestStatus;
+    notes: string | null;
 };
 
 type informationDate = {
@@ -74,7 +75,7 @@ type informationDate = {
     dateInit: string;
     dateEnd: string;
     hourInit: string;
-    hourEnd: string; 
+    hourEnd: string;
 }
 
 export interface ISignatures {

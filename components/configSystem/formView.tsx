@@ -171,14 +171,14 @@ export default function ConfigSystemView({
               />
             </div>
 
-            <div className="col-12 col-md-6">
+            {/* <div className="col-12 col-md-6">
               <BlockView
                 title="Constancias"
                 doh={data.constancy?.approvalDoh}
                 leaders={data.constancy?.approvalLeaders}
                 extras={data.constancy?.extra}
               />
-            </div>
+            </div> */}
 
             <div className="col-12 col-md-6">
               <BlockView

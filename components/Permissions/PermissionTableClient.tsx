@@ -21,7 +21,6 @@ export const leaderApproval = {
   EMPLOYEE: "EMPLEADO",
 };
 
-
 export default function PermissionsTableClient({
   permissions,
   total,
@@ -42,6 +41,7 @@ export default function PermissionsTableClient({
   const [messageLoading, setMessageLoading] = useState('');
   const [hideSignatures, setHideSignatures] = useState(false);
   const idEmployee = Number(session?.uid?.idEmployee);
+
 
   const pendingPermissions = useMemo(() => {
     return (permissions ?? []).filter((o: IPermissionRequest) => {
@@ -88,7 +88,7 @@ export default function PermissionsTableClient({
       type: "string",
       render: (e) => (
         <div className="text-uppercase">
-          {`#${e.id}` || "-"}
+          {`${e.id}` || "-"}
         </div>
       )
     },
@@ -129,6 +129,27 @@ export default function PermissionsTableClient({
             : "No Definido"}
         </div>
       ),
+    },
+    {
+      key: "signatures",
+      label: "Firmado",
+      accessor: (row) => row.signatures,
+      filterable: true,
+      render: (row) => {
+        const mySignature = (row.signatures ?? []).find(
+          (s) => Number(s.idSignatory) === idEmployee
+        );
+
+        if (!mySignature) {
+          return <span className="text-muted">Este permiso no corresponde a este perfil</span>;
+        }
+
+        return mySignature.url === "" ? (
+          <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
+        ) : (
+          <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
+        );
+      },
     },
     {
       key: "leaderApproval",

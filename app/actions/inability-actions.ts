@@ -146,7 +146,7 @@ export async function createInability(
             formData: document,
             id: res.data.data.id,
             idDoc: res.data.data.idDocument,
-            folio: data.folio
+            folio: data.folio,
           });
         }
         return res.data;

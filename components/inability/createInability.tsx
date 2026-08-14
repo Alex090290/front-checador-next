@@ -24,6 +24,7 @@ type TInputs = {
   dateInit: string;
   dateEnd: string;
   firstDoc: FileList | null;
+  notes: string | null;
 };
 
 const DEFAULT_VALUES: TInputs = {
@@ -34,6 +35,7 @@ const DEFAULT_VALUES: TInputs = {
   dateInit: "",
   dateEnd: "",
   firstDoc: null,
+  notes: ""
 };
 
 
@@ -79,15 +81,16 @@ export default function CreateInabilityComponent({
     && !roles?.isApproverLeaders
     && !roles?.isApproverDoh;
 
+  const isPlainEmployee = readInput; // ya calculado: sin roles elevados 
+
   useEffect(() => {
     const values: TInputs = {
       ...DEFAULT_VALUES,
-      idEmployee:
-        session?.uid?.role === "EMPLOYEE" ? sessionEmployeeId || null : null,
+      idEmployee: isPlainEmployee ? sessionEmployeeId || null : null,
     };
-
     reset(values);
-  }, [reset, session?.uid?.role, sessionEmployeeId]);
+  }, [reset, isPlainEmployee, sessionEmployeeId]);
+
 
   useEffect(() => {
     if (onChangeDateInit) {
@@ -117,17 +120,18 @@ export default function CreateInabilityComponent({
       setFilteredEmployees(employees);
     }
   }, [session, roles, idEmployee, employees]);
-
+  
   useEffect(() => {
-    if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);
+    if (isPlainEmployee) setValue("idEmployee", sessionEmployeeId);
+  }, [isPlainEmployee, sessionEmployeeId, setValue]);
 
-  }, [session, setValue]);
 
   const handleBack = () => {
     setLoading(true);
     setMessageLoading("Cargando...");
     router.push("/app/inability");
   };
+
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
 
@@ -314,6 +318,27 @@ export default function CreateInabilityComponent({
                                 invalid={!!errors.dateEnd}
                                 // readonly={session?.uid?.role === "EMPLOYEE"}
                                 className="border text-uppercase"
+                              />
+                            </Col>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+
+                      <Card className="border rounded-4 mb-3">
+                        <Card.Body>
+                          <div className="d-flex align-items-center gap-2 mb-4">
+                            <i className="bi bi-journal-text text-info" />
+                            <h6 className="mb-0 fw-bold">Notas</h6>
+                          </div>
+
+                          <Row className="g-3">
+                            <Col md={12}>
+                              <Entry
+                                label="Notas adicionales:"
+                                register={register("notes")}
+                                className="border text-uppercase"
+                                as={"textarea"}
+                                rows={3}
                               />
                             </Col>
                           </Row>

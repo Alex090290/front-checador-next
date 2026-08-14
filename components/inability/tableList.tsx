@@ -94,7 +94,7 @@ export default function TableInabilityComponent({
       type: "string",
       render: (r) => (
         <div className="text-uppercase">
-          #{r.id}
+          {r.id}
         </div>
       ),
     },
@@ -132,15 +132,6 @@ export default function TableInabilityComponent({
       ),
     },
     {
-      key: "status",
-      label: "Estatus",
-      accessor: (r) => r.status,
-      filterable: true,
-      type: "string",
-      render: (r) => (
-        <div className="text-uppercase text-start"> {statusVariant(r.status)}</div>)
-    },
-    {
       key: "whoCreate",
       label: "Creado por",
       accessor: (r) =>
@@ -166,6 +157,15 @@ export default function TableInabilityComponent({
             : ""}
         </div>
       ),
+    },
+    {
+      key: "status",
+      label: "Estatus",
+      accessor: (r) => r.status,
+      filterable: true,
+      type: "string",
+      render: (r) => (
+        <div className="text-uppercase text-start"> {statusVariant(r.status)}</div>)
     },
   ];
 

@@ -247,6 +247,7 @@ export async function createVacation({
     dateInit: string;
     dateEnd: string;
     signature: string;
+    notes: string;
   };
 }): Promise<ActionResponse<string>> {
   try {
@@ -266,6 +267,7 @@ export async function createVacation({
           biWeeklyPeriodVacationBonus: 1,
           dateInit: data.dateInit,
           dateEnd: data.dateEnd,
+          notes: data.notes ?? null,
         },
         {
           headers: {

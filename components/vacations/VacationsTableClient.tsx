@@ -78,7 +78,7 @@ export default function VacationsTableClient({
       type: "string",
       render: (e) => (
         <div className="text-uppercase">
-          {`#${e.id}` || "-"}
+          {`${e.id}` || "-"}
         </div>
       )
     },
@@ -137,6 +137,27 @@ export default function VacationsTableClient({
       ),
     },
     {
+      key: "signatures",
+      label: "Firmado",
+      accessor: (row) => row.signatures,
+      filterable: true,
+      render: (row) => {
+        const mySignature = (row.signatures ?? []).find(
+          (s) => Number(s.idSignatory) === idEmployee
+        );
+
+        if (!mySignature) {
+          return <span className="text-muted text-center">Este permiso no corresponde a este perfil</span>;
+        }
+
+        return mySignature.url === "" ? (
+          <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
+        ) : (
+          <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
+        );
+      },
+    },
+    {
       key: "status",
       label: "Estado",
       accessor: (row) => row.status,
@@ -166,7 +187,7 @@ export default function VacationsTableClient({
       },
     },
   ],
-    []
+    [idEmployee]
   );
 
   const handleCreate = () => {

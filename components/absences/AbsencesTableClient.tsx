@@ -380,7 +380,7 @@ export default function AbsencesTableClient({
             type: "string",
             render: (e) => (
                 <div className="text-uppercase">
-                    {`#${e.id}` || "-"}
+                    {`${e.id}` || "-"}
                 </div>
             )
         },

@@ -44,10 +44,10 @@ type TInputs = {
   overTime_managementPerson_idPerson: null;
   overTime_extra_ids: number[];
 
-  constancy_approvalDoh_idPerson: number;
-  constancy_approvalLeaders_idPerson: number;
-  constancy_managementPerson_idPerson: null;
-  constancy_extra_ids: number[];
+  // constancy_approvalDoh_idPerson: number;
+  // constancy_approvalLeaders_idPerson: number;
+  // constancy_managementPerson_idPerson: null;
+  // constancy_extra_ids: number[];
 
   penalties_approvalDoh_idPerson: number;
   penalties_approvalLeaders_idPerson: number;
@@ -345,8 +345,8 @@ function EmployeeField({
   | "penalty_approvalLeaders_idPerson"
   | "overTime_approvalDoh_idPerson"
   | "overTime_approvalLeaders_idPerson"
-  | "constancy_approvalDoh_idPerson"
-  | "constancy_approvalLeaders_idPerson"
+  // | "constancy_approvalDoh_idPerson"
+  // | "constancy_approvalLeaders_idPerson"
   | "penalties_approvalDoh_idPerson"
   | "penalties_approvalLeaders_idPerson"
   | "penalties_managementPerson_idPerson"
@@ -395,7 +395,7 @@ function EmployeeExtraField({
   | "vacations_extra_ids"
   | "penalty_extra_ids"
   | "overTime_extra_ids"
-  | "constancy_extra_ids"
+  // | "constancy_extra_ids"
   | "penalties_extra_ids"
   ;
   placeholder?: string;
@@ -442,7 +442,7 @@ export default function ConfigSystemUpdate({
     vacations: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
     penaltyForUnjustifiedAbsence: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
     overTime: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
-    constancy: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
+    // constancy: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: null; idsExtra: number[] };
     penalties: { idPersonApproveDoh: number; idPersonApproveLeaders: number; managementPersonId: number; idsExtra: number[] };
   }) => Promise<ActionResponse<IConfigSystem>>;
 }) {
@@ -469,9 +469,9 @@ export default function ConfigSystemUpdate({
       overTime_approvalLeaders_idPerson: toNum(initialData.overTime?.approvalLeaders?.idPerson),
       overTime_extra_ids: initialData.overTime?.extra?.ids ?? [],
 
-      constancy_approvalDoh_idPerson: toNum(initialData.constancy?.approvalDoh?.idPerson),
-      constancy_approvalLeaders_idPerson: toNum(initialData.constancy?.approvalLeaders?.idPerson),
-      constancy_extra_ids: initialData.constancy?.extra?.ids ?? [],
+      // constancy_approvalDoh_idPerson: toNum(initialData.constancy?.approvalDoh?.idPerson),
+      // constancy_approvalLeaders_idPerson: toNum(initialData.constancy?.approvalLeaders?.idPerson),
+      // constancy_extra_ids: initialData.constancy?.extra?.ids ?? [],
 
       penalties_approvalDoh_idPerson: toNum(initialData.penalties?.approvalDoh?.idPerson),
       penalties_approvalLeaders_idPerson: toNum(initialData.penalties?.approvalLeaders?.idPerson),
@@ -498,9 +498,9 @@ export default function ConfigSystemUpdate({
       overTime_approvalLeaders_idPerson: toNum(initialData.overTime?.approvalLeaders?.idPerson),
       overTime_extra_ids: initialData.overTime?.extra?.ids ?? [],
 
-      constancy_approvalDoh_idPerson: toNum(initialData.constancy?.approvalDoh?.idPerson),
-      constancy_approvalLeaders_idPerson: toNum(initialData.constancy?.approvalLeaders?.idPerson),
-      constancy_extra_ids: initialData.constancy?.extra?.ids ?? [],
+      // constancy_approvalDoh_idPerson: toNum(initialData.constancy?.approvalDoh?.idPerson),
+      // constancy_approvalLeaders_idPerson: toNum(initialData.constancy?.approvalLeaders?.idPerson),
+      // constancy_extra_ids: initialData.constancy?.extra?.ids ?? [],
 
       penalties_approvalDoh_idPerson: toNum(initialData.penalties?.approvalDoh?.idPerson),
       penalties_approvalLeaders_idPerson: toNum(initialData.penalties?.approvalLeaders?.idPerson),
@@ -543,12 +543,12 @@ export default function ConfigSystemUpdate({
         managementPersonId: null,
         idsExtra: formData.overTime_extra_ids ?? [],
       },
-      constancy: {
-        idPersonApproveDoh: toNum(formData.constancy_approvalDoh_idPerson),
-        idPersonApproveLeaders: toNum(formData.constancy_approvalLeaders_idPerson),
-        managementPersonId: null,
-        idsExtra: formData.constancy_extra_ids ?? [],
-      },
+      // constancy: {
+      //   idPersonApproveDoh: toNum(formData.constancy_approvalDoh_idPerson),
+      //   idPersonApproveLeaders: toNum(formData.constancy_approvalLeaders_idPerson),
+      //   managementPersonId: null,
+      //   idsExtra: formData.constancy_extra_ids ?? [],
+      // },
 
       penalties: {
         idPersonApproveDoh: toNum(formData.penalties_approvalDoh_idPerson),
@@ -771,7 +771,7 @@ export default function ConfigSystemUpdate({
                 </div>
 
                 {/* CONSTANCIAS */}
-                <div className="col-12 col-md-6">
+                {/* <div className="col-12 col-md-6">
                   <Card className="bg-body-tertiary border-0">
                     <Card.Body>
                       <h6 className="mb-3">Constancias</h6>
@@ -786,7 +786,7 @@ export default function ConfigSystemUpdate({
                         />
                       </Form.Group>
 
-                      {/* <Form.Group className="mb-3">
+                      <Form.Group className="mb-3">
                         <Form.Label className="small text-muted">Revisión Dirección A Lideres</Form.Label>
                         <EmployeeField
                           control={control}
@@ -794,7 +794,7 @@ export default function ConfigSystemUpdate({
                           placeholder="Buscar empleado..."
                           initialLabel={fullNameFromConfig(initialData.constancy?.approvalLeaders?.employee)}
                         />
-                      </Form.Group> */}
+                      </Form.Group>
 
                       <Form.Group>
                         <Form.Label className="small text-muted">Dirección</Form.Label>
@@ -802,7 +802,7 @@ export default function ConfigSystemUpdate({
                       </Form.Group>
                     </Card.Body>
                   </Card>
-                </div>
+                </div> */}
 
                 {/* Penalizaciones */}
                 <div className="col-12 col-md-6">
