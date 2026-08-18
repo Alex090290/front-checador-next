@@ -200,6 +200,22 @@ export default function CreateDeviceComponent({
                                                         className="text-uppercase border"
                                                     />
                                                 </Col>
+
+                                                <Col md={6}>
+                                                    <FieldSelect
+                                                        register={register("status", {
+                                                            required: "El status es requerido",
+                                                        })}
+                                                        options={[
+                                                            { value: "activo", label: "ACTIVO" },
+                                                            { value: "inactivo", label: "INACTIVO" }
+                                                        ]}
+                                                        label="Estatus"
+                                                        invalid={!!errors.type}
+                                                        feedBack={errors.type?.message}
+                                                        className="text-uppercase border"
+                                                    />
+                                                </Col>
                                             </Row>
                                         </Card.Body>
                                     </Card>
