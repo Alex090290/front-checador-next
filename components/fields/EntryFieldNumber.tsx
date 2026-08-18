@@ -45,6 +45,7 @@ export const EntryNumber = ({
     if (invisible) return null;
 
     const autoCompleteValue = type === "password" ? "new-password" : "off";
+    const isNumber = type === "number";
 
     return (
         <Form.Group controlId={label} className="mb-2">
@@ -63,6 +64,12 @@ export const EntryNumber = ({
                     size="sm"
                     {...register}
                     type={type}
+                    // Fuerza a que este input use "." como separador decimal
+                    // sin importar el idioma configurado en el navegador/SO.
+                    lang="en"
+                    // "any" permite cualquier cantidad de decimales (evita que
+                    // el navegador marque el campo como inválido al escribir puntos).
+                    step={isNumber ? "any" : undefined}
                     autoComplete={autoCompleteValue}
                     disabled={readonly}
                     required={required}
@@ -71,13 +78,16 @@ export const EntryNumber = ({
                     as={as}
                     cols={cols}
                     rows={rows}
-                    min={type === "number" ? (min ?? "0") : min}
+                    min={isNumber ? (min ?? "0") : min}
                     max={max}
-                    //Desactiva el scroll
-                    onWheel={(e) => type === "number" && e.currentTarget.blur()}  
-                    //No permite numeros negativos
+                    // Desactiva el scroll para no cambiar el valor sin querer
+                    onWheel={(e) => isNumber && e.currentTarget.blur()}
+                    // No permite números negativos ni notación científica (e/E),
+                    // pero SÍ deja pasar el punto decimal.
                     onKeyDown={(e) => {
-                        if (type === "number" && e.key === "-") e.preventDefault();
+                        if (isNumber && (e.key === "-" || e.key === "e" || e.key === "E")) {
+                            e.preventDefault();
+                        }
                     }}
                 />
                 {suffix && (
