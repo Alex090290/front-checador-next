@@ -259,6 +259,7 @@ export default function OverTimeTableClient({
         {
             key: "status",
             label: "Estatus",
+            align: "center",
             accessor: (e) => e.status,
             filterable: true,
             type: "string",
@@ -267,21 +268,27 @@ export default function OverTimeTableClient({
                 switch (estado) {
                     case "APPROVED":
                         return (
-                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                                APROBADO
-                            </span>
+                            <div className="text-center">
+                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                                    APROBADO
+                                </span>
+                            </div>
                         );
                     case "PENDING":
                         return (
-                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                                PENDIENTE
-                            </span>
+                            <div className="text-center">
+                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                    PENDIENTE
+                                </span>
+                            </div>
                         );
                     case "REFUSED":
                         return (
-                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                                RECHAZADO
-                            </span>
+                            <div className="text-center">
+                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                    RECHAZADO
+                                </span>
+                            </div>
                         );
                 }
             },
@@ -352,7 +359,7 @@ export default function OverTimeTableClient({
                                                         {columns.map((column) => (
                                                             <th
                                                                 key={String(column.key)}
-                                                                className=" fw-bold text-left"
+                                                                className={`fw-bold ${column.align === "center" ? "text-center" : "text-left"}`}
                                                             >
                                                                 {column.label}
                                                             </th>

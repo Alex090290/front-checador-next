@@ -164,3 +164,55 @@
 .no-validation-icon.is-invalid {
   background-image: none !important;
 }
+
+/* Variante rosa */
+/* globals.css */
+:root {
+  --bs-pink-subtle: #f7d6e6;
+  --bs-pink-emphasis: #99206a;
+  --bs-pink-border-subtle: #f0aed0;
+}
+
+[data-bs-theme="dark"] {
+  --bs-pink-subtle: #4a1338;
+  --bs-pink-emphasis: #ff8fc7;
+  --bs-pink-border-subtle: #a83c7c;
+}
+
+.bg-pink-subtle {
+  background-color: var(--bs-pink-subtle) !important;
+}
+
+.text-pink-emphasis {
+  color: var(--bs-pink-emphasis) !important;
+}
+
+.border-pink-subtle {
+  border-color: var(--bs-pink-border-subtle) !important;
+}
+
+/* Variante NARANJA */
+/* globals.css */
+:root {
+  --bs-orange-subtle: #ffe3cc;
+  --bs-orange-emphasis: #9a4c00;
+  --bs-orange-border-subtle: #fd9843;
+}
+
+[data-bs-theme="dark"] {
+  --bs-orange-subtle: #4d2600;
+  --bs-orange-emphasis: #ffb066;
+  --bs-orange-border-subtle: #a35300;
+}
+
+.bg-orange-subtle {
+  background-color: var(--bs-orange-subtle) !important;
+}
+
+.text-orange-emphasis {
+  color: var(--bs-orange-emphasis) !important;
+}
+
+.border-orange-subtle {
+  border-color: var(--bs-orange-border-subtle) !important;
+}

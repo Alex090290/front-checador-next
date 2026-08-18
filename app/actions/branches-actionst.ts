@@ -45,6 +45,7 @@ export async function fetchBranches(): Promise<Branch[]> {
     return [];
   }
 }
+
 export async function fetchBranchesQueries(args: FetchUsersArgs = {}): Promise<{
   data: Branch[];
   total: number;
@@ -98,6 +99,7 @@ export async function fetchBranchesQueries(args: FetchUsersArgs = {}): Promise<{
     return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
   }
 }
+
 export async function findBranchById({
   id,
   _id,

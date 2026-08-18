@@ -44,6 +44,7 @@ export interface EmployeeBiometricPhoto {
   createdAt?: string | Date;
   active?: boolean;
 }
+
 export async function fetchEmployees(
   args: FetchVacationsArgs & {
     search?: string
@@ -106,7 +107,6 @@ export async function fetchEmployees(
     };
   }
 }
-
 
 export async function enrollEmployeeFace({
   idEmployee,

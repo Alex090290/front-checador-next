@@ -23,6 +23,7 @@ export type TableTemplateColumn<T> = {
   accessor: (row: T) => any;
   render?: (row: T) => React.ReactNode;
   groupFormat?: string;
+  align?: "left" | "center" | "right";
 };
 
 export type TableTemplateRef = {
@@ -319,9 +320,8 @@ function TableTemplateServerInner<T>(
                 )}
 
                 <i
-                  className={`bi bi-collection ${
-                    groupBy === col.key ? "text-warning" : "text-muted"
-                  }`}
+                  className={`bi bi-collection ${groupBy === col.key ? "text-warning" : "text-muted"
+                    }`}
                   style={{ cursor: "pointer" }}
                   onClick={() => toggleGroupBy(col.key)}
                   title={`Agrupar por ${col.label}`}
@@ -355,9 +355,8 @@ function TableTemplateServerInner<T>(
                     {columns.find((c) => c.key === groupBy)?.label}: {group} (
                     {rows.length}){" "}
                     <i
-                      className={`bi ${
-                        isCollapsed ? "bi-caret-down-fill" : "bi-caret-up-fill"
-                      }`}
+                      className={`bi ${isCollapsed ? "bi-caret-down-fill" : "bi-caret-up-fill"
+                        }`}
                     />
                   </td>
                 </tr>

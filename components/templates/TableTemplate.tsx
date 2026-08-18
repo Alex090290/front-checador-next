@@ -20,6 +20,7 @@ export type TableTemplateColumn<T> = {
   accessor: (row: T) => any;
   render?: (row: T) => React.ReactNode;
   groupFormat?: string;
+  align?: "left" | "center" | "right"; 
 };
 
 export type TableTemplateRef = {

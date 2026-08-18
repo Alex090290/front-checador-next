@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import Loading from "@/components/LoadingSpinner";
 import { Suspense } from "react";
-import ListSalariesEmployees from "./ListSalariesEmployees";
+import ListSalariesEmployees from "./views/ListSalariesEmployees";
 
 
 type SearchParams = {

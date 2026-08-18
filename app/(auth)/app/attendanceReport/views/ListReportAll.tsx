@@ -41,7 +41,7 @@ export default async function ListAttendanceAll({
             periodInitial={id}
             periods={periodsList ?? []}
             limit={limitParse}
-            basePath="/app/attendanceReport" // <-- ajusta a tu ruta real
+            basePath="/app/attendanceReport" 
           />
         </div>
 

@@ -213,6 +213,7 @@ export default function PenaltiesTableClient({
         {
             key: "type",
             label: "Tipo",
+            align: "center",
             accessor: (e) => e.type,
             filterable: true,
             type: "string",
@@ -221,7 +222,7 @@ export default function PenaltiesTableClient({
                 switch (estado) {
                     case "retardos":
                         return (
-                            <div>
+                            <div className="text-center">
                                 <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
                                     RETARDO
                                 </span>
@@ -229,7 +230,7 @@ export default function PenaltiesTableClient({
                         );
                     case "faltas_injustificadas":
                         return (
-                            <div>
+                            <div className="text-center">
                                 <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
                                     FALTA INJUSTIFICADA
                                 </span>
@@ -298,7 +299,7 @@ export default function PenaltiesTableClient({
                                                         {columns.map((column) => (
                                                             <th
                                                                 key={String(column.key)}
-                                                                className=" fw-bold text-left"
+                                                                className={`fw-bold ${column.align === "center" ? "text-center" : "text-left"}`}
                                                             >
                                                                 {column.label}
                                                             </th>

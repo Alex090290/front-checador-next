@@ -379,7 +379,15 @@ export function AbsenceOne({
 
                 <div>
                     <h1 className="mb-1 ms-1">{getEmployeeName(absence)}</h1>
+
+                    <ConditionalRender cond={absence.type !== "retardo"}> 
                     <p className="text-muted mb-1 ms-1"> Informacion de la {absence.type}.</p>
+                    </ConditionalRender>
+                    
+                    <ConditionalRender cond={absence.type === "retardo"}> 
+                    <p className="text-muted mb-1 ms-1"> Informacion del {absence.type}.</p>
+                    </ConditionalRender>
+
                 </div>
 
                 <Card className="border shadow-sm rounded-4 mt-2">

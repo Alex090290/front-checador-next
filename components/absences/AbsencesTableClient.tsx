@@ -32,7 +32,7 @@ function statusVariant(type: string, category?: string) {
     switch ((type ?? "").toLowerCase()) {
         case "asistencia":
             return (
-                <span className="ms-3 badge rounded-pill px-2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
                     ASISTENCIA
                 </span>
             )
@@ -40,7 +40,7 @@ function statusVariant(type: string, category?: string) {
         case "falta":
             if (category === "injustificada") {
                 return (
-                    <span className="ms-4 badge rounded-pill px-2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                    <span className="badge rounded-pill px-2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
                         FALTA
                     </span>
                 )
@@ -54,7 +54,7 @@ function statusVariant(type: string, category?: string) {
 
         case "retardo":
             return (
-                <span className="ms-3 badge rounded-pill px-2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
                     RETARDO
                 </span>
             )
@@ -421,10 +421,11 @@ export default function AbsencesTableClient({
         {
             key: "type",
             label: "Tipo",
+            align: "center",
             accessor: (e) => e.type,
             filterable: true,
             type: "string",
-            render: (e) => statusVariant(e.type, e.category),
+            render: (e) => <div className="text-center"> {statusVariant(e.type, e.category)} </div>,
         },
         {
             key: "dateOfAbsence",
@@ -433,8 +434,8 @@ export default function AbsencesTableClient({
             filterable: true,
             type: "string",
             render: (e) => (
-                <div className="text-uppercase">
-                    {formatCreatedAt(e.createdAt)|| "-"}
+                <div className="text-uppercase text-center">
+                    {formatCreatedAt(e.createdAt) || "-"}
                 </div>
             )
         }
@@ -497,9 +498,9 @@ export default function AbsencesTableClient({
                         <Card className="rounded-4 shadow-sm">
                             <Card.Body className="p-4 p-md-5">
                                 <div className="mb-4">
-                                    <Row className="mb-4 g-5 align-items-between">
+                                    <Row className="mb-4 g-3 align-items-between">
                                         {/* Filtrar por empleado */}
-                                        <Col xs={12} md={6} lg={4}>
+                                        <Col xs={12} md={4} lg={4}>
                                             <Card className="border rounded-4 h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -525,7 +526,7 @@ export default function AbsencesTableClient({
                                         </Col>
 
                                         {/* Filtrar por fechas */}
-                                        <Col xs={12} md={6} lg={4}>
+                                        <Col xs={12} md={4} lg={4}>
                                             <Card className="rounded-4 border h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -601,7 +602,7 @@ export default function AbsencesTableClient({
                                         </Col>
 
                                         {/* Filtrar por tipo */}
-                                        <Col xs={12} md={6} lg={4}>
+                                        <Col xs={12} md={4} lg={4}>
                                             <Card className="rounded-4 border h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -661,7 +662,7 @@ export default function AbsencesTableClient({
                                                         {columns.map((column) => (
                                                             <th
                                                                 key={String(column.key)}
-                                                                className=" fw-bold text-left"
+                                                                className={`fw-bold ${column.align === "center" ? "text-center" : "text-left"}`}
                                                             >
                                                                 {column.label}
                                                             </th>

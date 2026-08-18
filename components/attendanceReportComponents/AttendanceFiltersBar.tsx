@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Period = {
+export type IPeriod = {
   id: number;
   year: string;
   numberPeriod: number;
@@ -22,7 +22,7 @@ export default function AttendanceFiltersBar({
 }: {
   yearInitial: string;
   periodInitial: string; // "null" | "2"
-  periods: Period[];
+  periods: IPeriod[];
   limit: number;
   basePath?: string;
 }) {

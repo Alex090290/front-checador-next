@@ -398,7 +398,8 @@ export default function EvenstsTableClient({
         },
         {
             key: "status",
-            label: "Status",
+            label: "Estatus",
+            align: "center",
             accessor: (row) =>
                 row.checks.status
                     ? row.checks.status.replace(/_/g, " ").toUpperCase()
@@ -420,10 +421,10 @@ export default function EvenstsTableClient({
                                         : "badge rounded-pill px2 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle";
 
                 return (
-                    <div
-                        className={`text-uppercase text-center ${bgClass}`}
-                    >
-                        {status?.replace(/_/g, " ").toUpperCase()}
+                    <div className="text-center">
+                        <span className={`text-uppercase ${bgClass}`}>
+                            {status?.replace(/_/g, " ").toUpperCase()}
+                        </span>
                     </div>
                 );
             },
@@ -610,9 +611,9 @@ export default function EvenstsTableClient({
                     <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
                         <Card className="rounded-4 shadow-sm border">
                             <Card.Body className="p-4 p-md-5">
-                                <Row className="justify-content-center mb-3">
+                                <Row className="justify-content-center mb-3 g-3">
                                     {/* FILTRO POR EMPLEADO */}
-                                    <Col xs={12} md={6} lg={4}>
+                                    <Col xs={12} md={4} lg={4}>
                                         <Card className="border rounded-4 h-100">
                                             <Card.Body className="p-3">
                                                 <div className="d-flex align-items-center gap-2 mb-3">
@@ -638,7 +639,7 @@ export default function EvenstsTableClient({
                                     </Col>
 
                                     {/* FILTRO POR FECHA */}
-                                    <Col xs={12} md={6} lg={4}>
+                                    <Col xs={12} md={4} lg={4}>
                                         <Card className="border rounded-4 h-100">
                                             <Card.Body className="p-3">
                                                 <div className="d-flex align-items-center gap-2 mb-3">
@@ -706,7 +707,7 @@ export default function EvenstsTableClient({
                                     </Col>
 
                                     {/* FILTRO POR CHECADOR */}
-                                    <Col xs={12} md={6} lg={4} style={{ minWidth: 0 }}>
+                                    <Col xs={12} md={4} lg={4} style={{ minWidth: 0 }}>
                                         <Card className="rounded-4 border h-100">
                                             <Card.Body className="p-3">
                                                 <div className="d-flex align-items-center gap-2 mb-3">
@@ -758,7 +759,7 @@ export default function EvenstsTableClient({
                                                         {columns.map((column) => (
                                                             <th
                                                                 key={String(column.key)}
-                                                                className=" fw-bold text-left"
+                                                                className={`fw-bold ${column.align === "center" ? "text-center" : "text-left"}`}
                                                             >
                                                                 {column.label}
                                                             </th>

@@ -302,20 +302,25 @@ export default function EmployeeTableClient({
       accessor: (u) => employeeStatus[u.status as keyof typeof employeeStatus] ?? "",
       filterable: false,
       type: "string",
+      align: "center",
       render: (u) => {
         const estado = u.status
         switch (estado) {
           case 1:
             return (
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                ACTIVO
-              </span>
+              <div className="text-center">
+                <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                  ACTIVO
+                </span>
+              </div>
             );
           case 2:
             return (
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                BAJA
-              </span>
+              <div className="text-center">
+                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                  BAJA
+                </span>
+              </div>
             );
         }
       }
@@ -370,7 +375,7 @@ export default function EmployeeTableClient({
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">
                 <div className="mb-4">
-                  <Row className="mb-4 g-5 align-items-between">
+                  <Row className="mb-4 g-3 align-items-between">
 
                     {/* FILTRO DE EMPLEADOS */}
                     <Col xs={12} sm={6} md={6} lg={3} style={{ minWidth: 0 }}>
@@ -583,7 +588,7 @@ export default function EmployeeTableClient({
                             {columns.map((column) => (
                               <th
                                 key={String(column.key)}
-                                className="fw-bold text-left"
+                                className={`fw-bold ${column.align === "center" ? "text-center" : "text-left"}`}
                               >
                                 {column.label}
                               </th>

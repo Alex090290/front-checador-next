@@ -70,7 +70,7 @@ export default function UserTableClient({
     setMessageLoading("");
   }, [searchParamsString]);
 
-  
+
   const goToPage = (nextPage: number) => {
     setLoading(true);
     setMessageLoading("Cargando...");
@@ -157,26 +157,33 @@ export default function UserTableClient({
       accessor: (u) => userStatus[u.status as keyof typeof userStatus] ?? "",
       filterable: true,
       type: "string",
+      align: "center",
       render: (u) => {
         const estado = u.status
         switch (estado) {
           case 1:
             return (
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                ACTIVO
-              </span>
+              <div className="text-center">
+                <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                  ACTIVO
+                </span>
+              </div>
             );
           case 2:
             return (
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                SUSPENDIDO
-              </span>
+              <div className="text-center">
+                <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                  SUSPENDIDO
+                </span>
+              </div>
             );
           case 3:
             return (
-              <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                ELIMINADO
-              </span>
+              <div className="text-center">
+                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                  ELIMINADO
+                </span>
+              </div>
             );
         }
       },
@@ -277,7 +284,7 @@ export default function UserTableClient({
                             {columns.map((column) => (
                               <th
                                 key={String(column.key)}
-                                className="fw-bold text-left"
+                                className={`fw-bold ${column.align === "center" ? "text-center" : "text-left"}`}
                               >
                                 {column.label}
                               </th>

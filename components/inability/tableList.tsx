@@ -161,11 +161,12 @@ export default function TableInabilityComponent({
     {
       key: "status",
       label: "Estatus",
+      align: "center",
       accessor: (r) => r.status,
       filterable: true,
       type: "string",
       render: (r) => (
-        <div className="text-uppercase text-start"> {statusVariant(r.status)}</div>)
+        <div className="text-uppercase text-center"> {statusVariant(r.status)}</div>)
     },
   ];
 
@@ -228,7 +229,7 @@ export default function TableInabilityComponent({
                             {columns.map((column) => (
                               <th
                                 key={String(column.key)}
-                                className="fw-bold text-left"
+                                className={`fw-bold ${column.align === "center" ? "text-center" : "text-left"}`}
                               >
                                 {column.label}
                               </th>

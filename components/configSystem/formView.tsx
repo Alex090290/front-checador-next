@@ -43,14 +43,16 @@ function BlockView({
         <div className="d-flex flex-column gap-3">
 
           <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 me-2">
               <i className="bi bi-person-check text-success" />
               <span className="text-muted">Revisión DOH</span>
             </div>
 
-            <span className="fw-semibold me-5">
-              {fullName(doh?.employee)}
-            </span>
+            <div className="text-left me-5">
+              <span className="fw-semibold">
+                {fullName(doh?.employee)}
+              </span>
+            </div>
           </div>
 
           {/* <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
@@ -80,7 +82,7 @@ function BlockView({
           </ConditionalRender> */}
 
           <div className="d-flex align-items-start justify-content-between">
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 me-2">
               <i className="bi bi-building text-warning" />
               <span className="text-muted">Dirección</span>
             </div>
@@ -114,7 +116,7 @@ export default function ConfigSystemView({
   return (
     //Bloque para bloquear pagina y mostrar mensaje cargando
     <>
-    
+
 
       <Card className="border-0 shadow-sm">
 
