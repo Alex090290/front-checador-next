@@ -5,7 +5,7 @@ export interface IPrePayroll{
     idIncidence: number;
     idEmployee: number;
     incidenceRef: string;
-    claveNomiPaq:string;
+    claveNomipaq:string;
     duracion: number;
     fechaNomina: string | null;
     data: Idata;

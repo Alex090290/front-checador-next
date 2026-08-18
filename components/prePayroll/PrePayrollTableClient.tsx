@@ -346,12 +346,12 @@ export default function PrePayrollTableClient({
             {
                 key: "dateOfAbsence",
                 label: "Fecha Incidente",
-                accessor: (row) => row.data.dateOfAbsence,
+                accessor: (row) => row.fechaIncidencia,
                 filterable: true,
                 type: "number",
                 render: (row) => (
                     <div className="text-left fw-semibold">
-                        {formatCreatedAt(row.data.dateOfAbsence)}
+                        {formatCreatedAt(row.fechaIncidencia)}
                     </div>
                 ),
             },
@@ -370,12 +370,12 @@ export default function PrePayrollTableClient({
             {
                 key: "claveNomipaq",
                 label: "Clave Nomipaq",
-                accessor: (row) => row.claveNomiPaq,
+                accessor: (row) => row.claveNomipaq,
                 filterable: true,
                 type: "number",
                 render: (row) => (
                     <div className="text-left fw-semibold text-uppercase">
-                        {row.claveNomiPaq}
+                        {row.claveNomipaq}
                     </div>
                 ),
             },
