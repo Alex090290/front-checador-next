@@ -1,5 +1,5 @@
 import { ModalBasicProps } from "@/lib/definitions";
-import { IPrePayroll, IUpdatePrepayroll } from "@/lib/prePayroll/interface";
+import { IUpdatePrepayroll } from "@/lib/prePayroll/interface";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
@@ -11,6 +11,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 import { updatePrepayroll } from "@/app/actions/prePayroll-actions";
+import { formatCreatedAt } from "@/lib/helpers";
+import { useRouter } from "next/navigation";
 
 moment.locale("es");
 
@@ -23,29 +25,30 @@ export default function UpdateModal({
     prenom: IUpdatePrepayroll[];
 }) {
     const {
-        register,
         handleSubmit,
         watch,
         setValue,
-        formState: { errors, isSubmitting },
-    } = useForm<IUpdatePrepayroll>();
+        formState: { isSubmitting },
+    } = useForm<IUpdatePrepayroll>({
+        defaultValues: {
+            idPeriod: prenom[0]?.idPeriod,
+            idUnique: prenom[0]?.idUnique,
+            fechaNomina: prenom[0]?.fechaNomina ?? "",
+        },
+    });
 
+    const router = useRouter();
     const { modalConfirm } = useModals();
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const dateButtonRef = useRef<HTMLButtonElement>(null);
     const [showCalendar, setShowCalendar] = useState(false);
     const [overlayContainer, setOverlayContainer] = useState<HTMLElement | null>(null);
+    const originalDate = prenom[0]?.fechaNomina ?? null;
 
     useEffect(() => {
         setOverlayContainer(document.body);
     }, []);
-
-    useEffect(() => {
-        if (prenom?.[0]) {
-            setValue("fechaNomina", prenom[0].fechaNomina ?? "");
-        }
-    }, [prenom, setValue]);
 
     const selectedDateHour = watch("fechaNomina");
 
@@ -72,8 +75,7 @@ export default function UpdateModal({
 
                 const payload: IUpdatePrepayroll = {
                     idPeriod: prenom[0].idPeriod,
-                    idIncidence: prenom[0].idIncidence,
-                    incidenceRef: prenom[0].incidenceRef.trim(),
+                    idUnique: prenom[0].idUnique,
                     fechaNomina: data.fechaNomina,
                 };
 
@@ -108,6 +110,7 @@ export default function UpdateModal({
                     onDone={() => {
                         setFeedback(null);
                         onHide();
+                        router.refresh();
                     }}
                 />
             </ConditionalRender>
@@ -202,10 +205,10 @@ export default function UpdateModal({
                                             </div>
                                         )}
                                     </Overlay>
-                                    {/* <div className="text-muted small mb-2">
+                                    <div className="text-muted small mb-2">
                                         <i className="bi bi-info-circle me-1" />
-                                        Registro original: {originalDateLabel}
-                                    </div> */}
+                                        Registro original: {originalDate ? formatCreatedAt(originalDate) : "Sin registro de fecha"}
+                                    </div>
                                 </Form.Group>
                             </Col>
                         </Card.Body>

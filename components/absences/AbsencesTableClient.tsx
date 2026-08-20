@@ -292,8 +292,8 @@ export default function AbsencesTableClient({
         );
 
         const hasAsistencia = selectedRows.some((row) => row.type === "asistencia");
-        const allFaltas = selectedRows.every((row) => row.type === "falta");
-        const allRetardos = selectedRows.every((row) => row.type === "retardo");
+        // const allFaltas = selectedRows.every((row) => row.type === "falta");
+        // const allRetardos = selectedRows.every((row) => row.type === "retardo");
         const ambos = selectedRows.every((row) => row.type === "retardo" || "falta");
         
         const sameEmployee = selectedRows.every((row) => row.idEmployee === selectedRows[0].idEmployee)
@@ -306,21 +306,21 @@ export default function AbsencesTableClient({
             return modalError("Para generar una penalización debes seleccionar únicamente FALTAS");
         }
 
-        if (allFaltas && allRetardos && !sameEmployee) {
-            return modalError("La selección de faltas debe pertenecer al mismo empleado")
-        }
+        // if (allFaltas && !sameEmployee) {
+        //     return modalError("La selección de faltas debe pertenecer al mismo empleado")
+        // }
 
-        if (allFaltas && sameEmployee) {
-            setShowModalPenalty(true);
-        }
+        // if (allFaltas && sameEmployee) {
+        //     setShowModalPenalty(true);
+        // }
 
-        if (allRetardos && !sameEmployee) {
-            return modalError("El retardo debe pertenecer al mismo empleado")
-        }
+        // if (allRetardos && !sameEmployee) {
+        //     return modalError("El retardo debe pertenecer al mismo empleado")
+        // }
 
-        if (allRetardos && sameEmployee) {
-            setShowModalPenalty(true)
-        }
+        // if (allRetardos && sameEmployee) {
+        //     setShowModalPenalty(true)
+        // }
 
          if (ambos && !sameEmployee) {
             return modalError("La selección de faltas debe pertenecer al mismo empleado")
@@ -480,6 +480,7 @@ export default function AbsencesTableClient({
                     onDone={() => setFeedback(null)}
                 />
             </ConditionalRender>
+            
             <Container className="py-3 " style={{ maxWidth: "1600px" }}>
 
                 <ConditionalRender cond={!isLeader}>

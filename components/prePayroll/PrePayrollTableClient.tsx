@@ -2,8 +2,8 @@
 
 import { IPrePayroll, IUpdatePrepayroll } from "@/lib/prePayroll/interface";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { formatCreatedAt } from "@/lib/helpers";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, Dropdown, InputGroup, Row } from "react-bootstrap";
@@ -13,11 +13,25 @@ import GenericSearchInput from "../employee/GenericSearchInput";
 import { IPeriod } from "../attendanceReportComponents/AttendanceFiltersBar";
 import ModalBlur from "../ModalBlur";
 import UpdateModal from "./UpdateModal";
+import { useModals } from "@/context/ModalContext";
+import { completePrepayroll, downloadDocumentPrenom, generateDocumentPrenom } from "@/app/actions/prePayroll-actions";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
-type UpdatePayload = Pick<IPrePayroll, "idPeriod" | "idIncidence" | "incidenceRef">;
+type UpdatePayload = Pick<IPrePayroll, "idPeriod" | "idUnique" | "fechaNomina">;
 
+interface IDataExtra {
+    complete: boolean;
+    document: {
+        id: number;
+        whoUploadId: number;
+        urlDocument: string;
+        createdAt: string;
+        updatedAt: string;
+    }
+}
 
 function statusVariant(incidenceRef?: string | null) {
     switch ((incidenceRef ?? "")) {
@@ -57,7 +71,7 @@ function statusVariant(incidenceRef?: string | null) {
                     PERMISOS
                 </span>
             )
-        case "PENALIZACION":
+        case "falta_por_penalizacion":
             return (
                 <span className="badge rounded-pill px-2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
                     PENALIZACIÓN
@@ -73,7 +87,8 @@ export default function PrePayrollTableClient({
     search = "",
     prepayroll,
     periods,
-    periodoActual
+    periodoActual,
+    prepayrollextra,
 }: {
     total: number;
     page: number;
@@ -82,6 +97,7 @@ export default function PrePayrollTableClient({
     prepayroll: IPrePayroll[];
     periods: IPeriod[];
     periodoActual: IPeriod | null;
+    prepayrollextra: IDataExtra;
 }) {
 
     //CONST
@@ -91,6 +107,7 @@ export default function PrePayrollTableClient({
 
     const isClearingSelectionRef = useRef(false);
     const [, setTableResetKey] = useState(0);
+    const { modalError, modalConfirm } = useModals();
     const [selectedRow, setSelectedRow] = useState<UpdatePayload | null>(null);
     const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
@@ -101,8 +118,11 @@ export default function PrePayrollTableClient({
     const currentYear = sp.get("year") ?? "";
     const [showModalUpdate, setShowModalUpdate] = useState(false);
     const hasAppliedDefaultFilters = useRef(false);
-
-
+    const [isPending, startTransition] = useTransition();
+    const dates = prepayroll.map((f) => f.fechaNomina);
+    const datesComplete = dates.every((n) => n !== null);
+    const [docBase64Url, setDocBase64Url] = useState<string | null>(null);
+    const documentAlreadyGenerated = !!prepayrollextra?.document?.urlDocument;
 
     const selectedPeriod = useMemo(
         () => periods.find((p) => String(p.id) === currentPeriod),
@@ -115,13 +135,17 @@ export default function PrePayrollTableClient({
         setFeedbackMsg("");
     }, [searchParamsString]);
 
+    useEffect(() => {
+        setDocBase64Url(null);
+    }, [searchParamsString]);
+
     //Al montar: si no hay filtros en la URL, usar periodo actual y año en curso
     useEffect(() => {
         if (hasAppliedDefaultFilters.current) return;
         hasAppliedDefaultFilters.current = true;
 
-        if (currentPeriod || currentYear) return; // ya viene con filtros, no tocar
-        if (!periodoActual) return; // no hay periodo actual que aplicar
+        if (currentPeriod || currentYear) return;
+        if (!periodoActual) return;
 
         const params = new URLSearchParams(searchParamsString);
         params.set("idPeriod", String(periodoActual.id));
@@ -130,7 +154,9 @@ export default function PrePayrollTableClient({
         params.set("page", "1");
         params.set("limit", String(limit));
 
-        router.replace(`/app/prePayroll?${params.toString()}`);
+        startTransition(() => {
+            router.replace(`/app/prePayroll?${params.toString()}`);
+        });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -267,11 +293,112 @@ export default function PrePayrollTableClient({
     const handleUpdate = (row: IUpdatePrepayroll) => {
         setSelectedRow({
             idPeriod: row.idPeriod,
-            idIncidence: row.idIncidence,
-            incidenceRef: row.incidenceRef,
+            idUnique: row.idUnique,
+            fechaNomina: row.fechaNomina,
         });
         setShowModalUpdate(true);
     };
+
+    //COMPLETAR PRENOMINA 
+    const handleComplete = () => {
+        modalConfirm("¿Seguro que deseas validar?", async () => {
+            try {
+                setFeedback("loading")
+                setFeedbackMsg("Completando validación...")
+
+                const res = await completePrepayroll(
+                    {
+                        idPrePayRoll: prepayroll[0].idPrePayRoll,
+                        data: {
+                            complete: true
+                        }
+                    }
+                );
+
+                if (!res.success) {
+                    setFeedbackMsg(res.message || "No se pudieron generar las faltas");
+                    setFeedback("error");
+                    return;
+                }
+
+                setFeedbackMsg(res.message || "Faltas generadas correctamente");
+                setFeedback("success");
+
+                router.refresh();
+            } catch {
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
+                setFeedback("error");
+            }
+        })
+    }
+
+    //GENERAR DOCUMENTO
+    const handleGetDocument = async () => {
+        const idPrePayRoll = prepayroll[0]?.idPrePayRoll;
+        if (!idPrePayRoll) return;
+
+        if (docBase64Url) {
+            triggerDownload(docBase64Url, idPrePayRoll);
+            return;
+        }
+
+        setFeedback("loading");
+        setFeedbackMsg(documentAlreadyGenerated ? "Obteniendo documento..." : "Generando documento...");
+
+        const res = await generateDocumentPrenom({
+            idPrePayRoll
+        });
+
+        if (!res.success || !res.data) {
+            setFeedbackMsg(res.message || "Error al obtener el documento");
+            setFeedback("error");
+            return;
+        }
+
+        setDocBase64Url(res.data.base64Url);
+        setFeedback(null);
+        triggerDownload(res.data.base64Url, idPrePayRoll);
+    };
+
+    //Descargar DOCUMENTO
+    const handleDownloadDocument = async () => {
+        const idPrePayRoll = prepayroll[0]?.idPrePayRoll;
+        if (!idPrePayRoll) return;
+
+        if (docBase64Url) {
+            triggerDownload(docBase64Url, idPrePayRoll);
+            return;
+        }
+
+        setFeedback("loading");
+        setFeedbackMsg(documentAlreadyGenerated ? "Obteniendo documento..." : "Generando documento...");
+
+        const res = await downloadDocumentPrenom({
+            idPrePayRoll
+        });
+
+        if (!res.success || !res.data) {
+            setFeedbackMsg(res.message || "Error al obtener el documento");
+            setFeedback("error");
+            return;
+        }
+
+        setDocBase64Url(res.data.base64Url);
+        setFeedback(null);
+        triggerDownload(res.data.base64Url, idPrePayRoll);
+    };
+
+
+    const triggerDownload = useCallback((base64Url: string, idPrePayRoll: number) => {
+        const link = document.createElement("a");
+        link.href = base64Url;
+        link.download = `prenomina-${idPrePayRoll}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }, []);
+
+
 
     //Tabla
     const columns: TableTemplateColumn<IPrePayroll>[] = useMemo(
@@ -321,60 +448,63 @@ export default function PrePayrollTableClient({
                 align: "center",
                 render: (row) => <div className="text-center">{statusVariant(row.incidenceRef)} </div>
             },
-            //   {
-            //     key: "notes",
-            //     label: "Notas",
-            //     accessor: (row) => row.notes,
-            //     filterable: true,
-            //     type: "number",
-            //     render: (row) => (
-            //       <div className="text-center fw-semibold">{row.notes}</div>
-            //     ),
-            //   },
             {
                 key: "notes",
-                label: "Concepto",
-                accessor: (row) => row.notes,
+                label: "Notas",
+                accessor: (row) => row.data.notes,
                 filterable: true,
                 type: "string",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-uppercase">
-                        {row.notes}
+                    <div className="text-left fw-semibold text-uppercase text-wrap" style={{maxWidth: "200px"}}>
+                        {row.data.notes}
                     </div>
                 ),
             },
             {
                 key: "dateOfAbsence",
                 label: "Fecha Incidente",
+                align: "center",
                 accessor: (row) => row.fechaIncidencia,
                 filterable: true,
                 type: "number",
                 render: (row) => (
-                    <div className="text-left fw-semibold">
+                    <div className="text-left fw-semibold text-center">
                         {formatCreatedAt(row.fechaIncidencia)}
                     </div>
                 ),
             },
             {
-                key: "createdAt",
+                key: "fechaNomina",
                 label: "Fecha Nomina",
+                align: "center",
                 accessor: (row) => row.fechaNomina,
                 filterable: true,
-                type: "number",
+                type: "string",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-uppercase">
-                        {row.fechaNomina ? row.fechaNomina : "Falta de completar"}
+                    <div className="text-left fw-semibold text-uppercase text-center">
+                        {row.fechaNomina ? (
+                            <>
+                                <i className="bi bi-calendar-check text-success me-1" />
+                                {formatCreatedAt(row.fechaNomina)}
+                            </>
+                        ) : (
+                            <span className="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                <i className="bi bi-exclamation-triangle me-1" />
+                                Falta de completar
+                            </span>
+                        )}
                     </div>
                 ),
             },
             {
                 key: "claveNomipaq",
                 label: "Clave Nomipaq",
+                align: "center",
                 accessor: (row) => row.claveNomipaq,
                 filterable: true,
-                type: "number",
+                type: "string",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-uppercase">
+                    <div className="text-left fw-semibold text-uppercase text-center">
                         {row.claveNomipaq}
                     </div>
                 ),
@@ -396,14 +526,63 @@ export default function PrePayrollTableClient({
         []
     );
 
-
     return (
         <>
-            <ConditionalRender cond={feedback === "loading"}>
-                <Loading message={feedbackMsg || "Generando..."} />
+            <ConditionalRender cond={feedback === "loading" || isPending}>
+                <Loading message={feedbackMsg || "Buscando..."} />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
             </ConditionalRender>
 
             <Container className="py-3" style={{ maxWidth: "1600px" }}>
+
+                <ConditionalRender cond={prepayrollextra.complete === false}>
+                    <Button
+                        variant="success"
+                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+                        onClick={handleComplete}
+                        disabled={!datesComplete}
+                    >
+                        <i className="bi bi-check2-circle" />
+                        Validar
+                    </Button>
+                </ConditionalRender>
+
+                <ConditionalRender cond={documentAlreadyGenerated !== true && prepayrollextra.complete !== false}>
+                    <Button
+                        variant="primary"
+                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+                        onClick={handleGetDocument}
+                        disabled={!prepayroll[0]?.idPrePayRoll}
+                    >
+                        <i className="vi bi-check2-circle" />
+                        Obtener documento
+                    </Button>
+                </ConditionalRender>
+
+                <ConditionalRender cond={documentAlreadyGenerated === true}>
+                    <Button
+                        variant="dark"
+                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
+                        onClick={handleDownloadDocument}
+                        disabled={!prepayroll[0]?.idPrePayRoll}
+                    >
+                        <i className="bi bi-file-earmark-excel" />
+                        Desacargar documento
+                    </Button>
+                </ConditionalRender>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
@@ -505,7 +684,7 @@ export default function PrePayrollTableClient({
                                                             {selectedPeriod ? selectedPeriod.numberPeriod : "SELECCIONA UN PERIODO"}
                                                         </Dropdown.Toggle>
 
-                                                        <Dropdown.Menu className="w-100">
+                                                        <Dropdown.Menu className="w-100" style={{ maxHeight: "300px", overflowY: "auto" }}>
                                                             <Dropdown.Item
                                                                 active={currentPeriod === ""}
                                                                 onClick={() => handleClear()}
@@ -545,7 +724,9 @@ export default function PrePayrollTableClient({
                                                             </th>
                                                         ))}
 
-                                                        <th className="fw-bold">Detalles</th>
+                                                        <ConditionalRender cond={prepayrollextra.complete === false}>
+                                                            <th className="fw-bold">Detalles</th>
+                                                        </ConditionalRender>
                                                     </tr>
                                                 </thead>
 
@@ -560,17 +741,19 @@ export default function PrePayrollTableClient({
                                                                 </td>
                                                             ))}
 
-                                                            <td className="align-middle">
-                                                                <div className="d-flex justify-content-center align-items-center gap-2">
-                                                                    <Button
-                                                                        variant="outline-info"
-                                                                        className="btn-sm"
-                                                                        onClick={() => handleUpdate(row)}
-                                                                    >
-                                                                        Actualizar
-                                                                    </Button>
-                                                                </div>
-                                                            </td>
+                                                            <ConditionalRender cond={prepayrollextra.complete === false}>
+                                                                <td className="align-middle">
+                                                                    <div className="d-flex justify-content-center align-items-center gap-2">
+                                                                        <Button
+                                                                            variant="outline-info"
+                                                                            className="btn-sm"
+                                                                            onClick={() => handleUpdate(row)}
+                                                                        >
+                                                                            Actualizar
+                                                                        </Button>
+                                                                    </div>
+                                                                </td>
+                                                            </ConditionalRender>
                                                         </tr>
                                                     ))}
                                                 </tbody>

@@ -1,29 +1,31 @@
-export interface IPrePayroll{
+export interface IPrePayroll {
     _id?: string;
     idPrePayRoll: number;
+    idUnique: number;
     idPeriod: number;
     idIncidence: number;
     idEmployee: number;
     incidenceRef: string;
-    claveNomipaq:string;
+    claveNomipaq: string;
     duracion: number;
     fechaNomina: string | null;
     data: Idata;
     fechaIncidencia: string;
     day: string | null;
-    complete?: boolean;
     notes?: string;
+    complete?: boolean;
 }
 
-interface Idata{
+interface Idata {
     _id?: string;
     id: number;
     idEmployee: number;
     category: string | null;
     type: string;
     dateOfAbsence: string;
-    createdAt:string;
+    createdAt: string;
     updatedAt: string;
+    notes: string;
     incidenceRef: string;
     employee: {
         id: number;
@@ -40,9 +42,17 @@ interface Idata{
     }
 }
 
-export interface IUpdatePrepayroll{
+export interface IUpdatePrepayroll {
     idPeriod: number;
-    idIncidence: number;
-    incidenceRef: string;
-    fechaNomina?: string | null;
+    idUnique: number;
+    fechaNomina: string | null;
+}
+
+export interface IGenerateDoc {
+    idPrePayRoll: number;
+    base64Url: string;
+}
+
+export interface IComplete {
+    complete?: boolean;
 }

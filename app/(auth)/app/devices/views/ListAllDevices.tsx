@@ -1,6 +1,5 @@
 import { ListDevices } from "@/app/actions/devices-actions";
 import DevicesTableClient from "@/components/devices/DevicesTableClient";
-import moment from "moment-timezone";
 import DevicesInfoOne from "./DevicesInfoOne";
 
 export default async function ListAllDevices({

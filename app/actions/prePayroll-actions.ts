@@ -1,11 +1,12 @@
 "use server"
 
-import { IPrePayroll, IUpdatePrepayroll } from "@/lib/prePayroll/interface";
+import { IComplete, IGenerateDoc, IPrePayroll, IUpdatePrepayroll } from "@/lib/prePayroll/interface";
 import { storeAction } from "./storeActions";
 import { FetchUsersArgs } from "@/lib/constancy/interface";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
+import { storeToken } from "@/lib/useToken";
 
 //LISTAR PRENOMINA
 export async function listPrePayroll(args: FetchUsersArgs & {
@@ -19,6 +20,16 @@ export async function listPrePayroll(args: FetchUsersArgs & {
     page: number;
     limit: number;
     pages: number;
+    dataExtra: {
+        complete: boolean;
+        document: {
+            id: number;
+            whoUploadId: number;
+            urlDocument: string;
+            createdAt: string;
+            updatedAt: string;
+        }
+    }
 }> {
     try {
         const { apiToken, API_URL } = await storeAction();
@@ -72,11 +83,28 @@ export async function listPrePayroll(args: FetchUsersArgs & {
             page: pageNum,
             limit: limitNum,
             pages,
+            dataExtra: response.dataExtra
         };
 
     } catch (error) {
         console.log(error);
-        return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
+        return {
+            data: [],
+            total: 0,
+            page: 1,
+            limit: 20,
+            pages: 1,
+            dataExtra: {
+                complete: false,
+                document: {
+                    id: 0,
+                    whoUploadId: 0,
+                    urlDocument: "",
+                    createdAt: "",
+                    updatedAt: "",
+                }
+            }
+        };
     }
 }
 
@@ -95,8 +123,7 @@ export async function updatePrepayroll({
             `${API_URL}/prePayroll`,
             {
                 idPeriod: data.idPeriod,
-                idIncidence: data.idIncidence,
-                incidenceRef: data.incidenceRef,
+                idUnique: data.idUnique,
                 fechaNomina: data.fechaNomina
             },
             {
@@ -134,16 +161,18 @@ export async function updatePrepayroll({
 
 //COMPLETAR PRENOMINA
 export async function completePrepayroll({
-    data,
+    idPrePayRoll,
+    data
 }: {
-    data: IPrePayroll;
+    idPrePayRoll: number;
+    data: IComplete;
 }): Promise<ActionResponse<boolean | null>> {
 
     try {
 
         const { apiToken, API_URL } = await storeAction();
         await axios.put(
-            `${API_URL}/prePayroll`,
+            `${API_URL}/prePayroll-complete/${idPrePayRoll}`,
             {
                 complete: data.complete,
             },
@@ -180,4 +209,112 @@ export async function completePrepayroll({
     }
 }
 
-//GENERAR DOCUMENTO
+export async function generateDocumentPrenom({
+    idPrePayRoll
+}: {
+    idPrePayRoll: number;
+}): Promise<ActionResponse<IGenerateDoc>> {
+    try {
+        const { apiToken, apiUrl } = await storeToken();
+
+        let base64Url = '';
+
+           await axios.get(`${apiUrl}/generateDocumentprePayroll/${idPrePayRoll}`, {
+                headers: { Authorization: `Bearer ${apiToken}` },
+            }).then(async () => {
+                           await axios.get(`${apiUrl}/documentprePayroll/${idPrePayRoll}`, {
+                                headers: { Authorization: `Bearer ${apiToken}` },
+                                responseType: "arraybuffer",
+                            }).then((res) => {
+                                const base64 = Buffer.from(res.data).toString("base64");
+                                base64Url = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
+                            }).catch((err) => {
+                                throw new Error(
+                                    err.response?.data?.message
+                                        ? err.response.data.message
+                                        : "Error al obtener el documento"
+                                );
+                            });
+            }).catch((err) => { 
+                throw new Error(
+                    err.response?.data?.message
+                        ? err.response.data.message
+                        : "Error al generar el documento"
+                );
+            });
+        revalidatePath("/app/prePayroll");
+
+        return {
+            success: true,
+            message: "Documento generado",
+            data: { base64Url, idPrePayRoll },
+        };
+
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+        };
+    }
+}
+
+export async function downloadDocumentPrenom({
+    idPrePayRoll
+}: {
+    idPrePayRoll: number;
+}): Promise<ActionResponse<IGenerateDoc>> {
+    try {
+        const { apiToken, apiUrl } = await storeToken();
+
+        let base64Url = '';
+
+            await axios.get(`${apiUrl}/documentprePayroll/${idPrePayRoll}`, {
+                headers: { Authorization: `Bearer ${apiToken}` },
+                responseType: "arraybuffer",
+            }).then((res) => {
+                const base64 = Buffer.from(res.data).toString("base64");
+                base64Url = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
+            }).catch((err) => {
+                throw new Error(
+                    err.response?.data?.message
+                        ? err.response.data.message
+                        : "Error al obtener el documento"
+                );
+            });
+
+
+        revalidatePath("/app/prePayroll");
+
+        return {
+            success: true,
+            message: "Documento generado",
+            data: { base64Url, idPrePayRoll },
+        };
+
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+        };
+    }
+}

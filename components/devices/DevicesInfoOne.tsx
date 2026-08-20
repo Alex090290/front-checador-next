@@ -3,7 +3,7 @@
 import { IDevices } from "@/lib/devices/interface"
 import { Button, Card, Col, Collapse, Container, Row } from "react-bootstrap"
 import OverLay from "../templates/OverLay"
-import { act, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";

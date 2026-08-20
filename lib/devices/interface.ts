@@ -4,7 +4,7 @@ type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
     "switch" | "router" | "telefono_ip" | "camara" |
     "access_point" | "celular" | "television" | "otro";
 
-type DeviceStatus = "activo" | "inactivo" | "en_reparacion" | "baja";
+// type DeviceStatus = "activo" | "inactivo" | "en_reparacion" | "baja";
 
 export interface IDevices {
     _id?: string;
@@ -12,7 +12,18 @@ export interface IDevices {
     name: string;
     type: DeviceType[] | null;
     status: string | "activo";
-    networkInfo: INetworkInfo[];
+
+    networkInfo: {
+        id?: number;
+        mac: string;
+        ip: string;
+        description: string;
+        hostname: string;
+        gateway: string;
+        dns: string[];
+        vlan: string;
+        port: string;
+    }[];
 
     specs: {
         brand: string;
