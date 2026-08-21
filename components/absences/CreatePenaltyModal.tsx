@@ -223,9 +223,9 @@ export default function CreatePenaltyComponent({
                                             <i className="bi bi-calendar3" />
                                         </Button>
 
-                                        {dateError && (
+                                        <ConditionalRender cond={!dateError}> 
                                             <small className="text-danger d-block mt-1">{dateError}</small>
-                                        )}
+                                        </ConditionalRender>
 
                                         <Overlay
                                             target={dateButtonRef.current}

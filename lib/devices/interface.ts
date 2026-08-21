@@ -6,11 +6,14 @@ type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
 
 // type DeviceStatus = "activo" | "inactivo" | "en_reparacion" | "baja";
 
+type OSType = "windows_10" | "windows_11" | "windows_server" | 
+    "linux" | "macos" | "android" | "ios" | "otro" | null;
+
 export interface IDevices {
     _id?: string;
     id: number;
     name: string;
-    type: DeviceType[] | null;
+    type: DeviceType | null;
     status: string | "activo";
 
     networkInfo: {
@@ -25,20 +28,20 @@ export interface IDevices {
         port: string;
     }[];
 
-    specs: {
+    specs?: {
         brand: string;
         model: string;
         serialNumber: string;
         processor: string;
         ram: string;
         storage: string;
-        os: string;
+        os: OSType | null;
         osVersion: string;
         purchaseDate: string;
         warrantyExpiration: string;
     }
 
-    currentAssignment: {
+    currentAssignment?: {
         id: number | null;
         idEmployee?: number | null;
         idBranch: number | null;
@@ -60,12 +63,12 @@ export interface IDevices {
         lastName: string;
     }
 
-    department: {
+    department?: {
         id: number;
         nameDepartment: string;
     }
 
-    branch: {
+    branch?: {
         id: number;
         name: string;
     }

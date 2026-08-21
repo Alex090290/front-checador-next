@@ -17,6 +17,10 @@ import { useModals } from "@/context/ModalContext";
 import { completePrepayroll, downloadDocumentPrenom, generateDocumentPrenom } from "@/app/actions/prePayroll-actions";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import { es } from "date-fns/locale";
+import { registerLocale } from "react-datepicker";
+
+registerLocale("es", es);
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -107,9 +111,9 @@ export default function PrePayrollTableClient({
 
     const isClearingSelectionRef = useRef(false);
     const [, setTableResetKey] = useState(0);
-    const { modalError, modalConfirm } = useModals();
+    const { modalConfirm } = useModals();
     const [selectedRow, setSelectedRow] = useState<UpdatePayload | null>(null);
-    const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
+    const [, setSelectedIds] = useState<Array<string | number>>([]);
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
@@ -403,18 +407,18 @@ export default function PrePayrollTableClient({
     //Tabla
     const columns: TableTemplateColumn<IPrePayroll>[] = useMemo(
         () => [
-            {
-                key: "id",
-                label: "ID",
-                accessor: (row) => row.idPrePayRoll,
-                filterable: true,
-                type: "string",
-                render: (row) => (
-                    <div className="text-uppercase fw-semibold">
-                        {row.idPrePayRoll}
-                    </div>
-                ),
-            },
+            // {
+            //     key: "id",
+            //     label: "ID",
+            //     accessor: (row) => row.idPrePayRoll,
+            //     filterable: true,
+            //     type: "string",
+            //     render: (row) => (
+            //         <div className="text-uppercase fw-semibold">
+            //             {row.idPrePayRoll}
+            //         </div>
+            //     ),
+            // },
             {
                 key: "idEmployee",
                 label: "ID Empleado",

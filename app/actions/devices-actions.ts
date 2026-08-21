@@ -11,83 +11,83 @@ import { revalidatePath } from "next/cache";
 
 //LISTAR TODOS LOS DISPOSITIVOS
 export async function ListDevices(args: FetchUsersArgs & {
-    search?: string;
-    type?: string;
-    status?: string;
-    idEmployee?: string;
-    idDepartment?: string;
-    idBranch?: string;
+  search?: string;
+  type?: string;
+  status?: string;
+  idEmployee?: string;
+  idDepartment?: string;
+  idBranch?: string;
 } = {}): Promise<{
-    data: IDevices[];
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
+  data: IDevices[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
 }> {
-    try {
-        const { apiToken, API_URL } = await storeAction();
+  try {
+    const { apiToken, API_URL } = await storeAction();
 
-        const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
-        const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
+    const pageNum = Math.max(Number(args.page ?? 1) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(args.limit ?? 20) || 20, 1), 100);
 
 
-        const params = new URLSearchParams();
-        params.set("page", String(pageNum));
-        params.set("limit", String(limitNum));
+    const params = new URLSearchParams();
+    params.set("page", String(pageNum));
+    params.set("limit", String(limitNum));
 
-        if (args.search?.trim()) {
-            params.set("search", args.search.trim());
-        }
-        if (args.type?.trim()) {
-            params.set("type", args.type.trim());
-        }
-        if (args.status?.trim()) {
-            params.set("status", args.status.trim());
-        }
-        if (args.idEmployee !== undefined && !Number.isNaN(Number(args.idEmployee))) {
-            params.set("idEmployee", String(args.idEmployee));
-        }
-        if (args.idDepartment !== undefined && !Number.isNaN(Number(args.idDepartment))) {
-            params.set("idDepartment", String(args.idDepartment));
-        }
-        if (args.idBranch !== undefined && !Number.isNaN(Number(args.idBranch))) {
-            params.set("idBranch", String(args.idBranch));
-        }
-        
-
-        const response = await axios
-            .get(`${API_URL}/devices?${params.toString()}`, {
-                headers: {
-                    Authorization: `Bearer ${apiToken}`,
-                },
-            })
-            .then((res) => {
-                return res.data;
-            })
-            .catch((err) => {
-                console.log(err);
-                throw new Error(
-                    err.response.data.message
-                        ? err.response.data.message
-                        : "Error en la respuesta"
-                );
-            });
-
-        const total = Number(response.total ?? 0);
-        const pages = Math.max(Math.ceil(total / limitNum), 1);
-
-        return {
-            data: response.data ?? [],
-            total,
-            page: pageNum,
-            limit: limitNum,
-            pages,
-        };
-
-    } catch (error) {
-        console.log(error);
-        return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
+    if (args.search?.trim()) {
+      params.set("search", args.search.trim());
     }
+    if (args.type?.trim()) {
+      params.set("type", args.type.trim());
+    }
+    if (args.status?.trim()) {
+      params.set("status", args.status.trim());
+    }
+    if (args.idEmployee !== undefined && !Number.isNaN(Number(args.idEmployee))) {
+      params.set("idEmployee", String(args.idEmployee));
+    }
+    if (args.idDepartment !== undefined && !Number.isNaN(Number(args.idDepartment))) {
+      params.set("idDepartment", String(args.idDepartment));
+    }
+    if (args.idBranch !== undefined && !Number.isNaN(Number(args.idBranch))) {
+      params.set("idBranch", String(args.idBranch));
+    }
+
+
+    const response = await axios
+      .get(`${API_URL}/devices?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    const total = Number(response.total ?? 0);
+    const pages = Math.max(Math.ceil(total / limitNum), 1);
+
+    return {
+      data: response.data ?? [],
+      total,
+      page: pageNum,
+      limit: limitNum,
+      pages,
+    };
+
+  } catch (error) {
+    console.log(error);
+    return { data: [], total: 0, page: 1, limit: 20, pages: 1 };
+  }
 }
 
 //LISTAR UN DISPOSITIVO
@@ -133,18 +133,26 @@ export async function ListOneDevice({
 
 //CREAR DISPOSITIVO
 export async function createDevice({
-  device,
+  data,
 }: {
-  device: IDevices;
+  data: IDevices;
 }): Promise<ActionResponse<IDevices | null>> {
   try {
     const { apiToken, API_URL } = await storeAction();
+    console.log("action:", data);
 
-    await axios
+    const device: IDevices = await axios
       .post(
-        `${API_URL}/branch`,
+        `${API_URL}/devices`,
         {
-            device          
+          name: data.name,
+          type: data.type,
+          status: data.status,
+          networkInfo: data.networkInfo,
+          specs: data.specs,
+          currentAssignment: data.currentAssignment,
+          idIt: data.idIt,
+          notes: data.notes,
         },
         {
           headers: {
@@ -152,15 +160,12 @@ export async function createDevice({
           },
         }
       )
-      .then((res) => {
-        return res.data;
-      })
+      .then((res) => res.data)
       .catch((err) => {
         console.log(err);
+        const msg = err.response?.data?.message;
         throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
+          Array.isArray(msg) ? msg.join(", ") : msg || "Error en la respuesta"
         );
       });
 
@@ -169,15 +174,16 @@ export async function createDevice({
     return {
       success: true,
       message: "Dispositivo creado correctamente",
+      data: device,
     };
-
   } catch (error: unknown) {
     console.log(error);
 
     let message = "Error en la respuesta";
 
     if (axios.isAxiosError(error)) {
-      message = error.response?.data?.message || error.message || message;
+      const msg = error.response?.data?.message;
+      message = Array.isArray(msg) ? msg.join(", ") : msg || error.message || message;
     } else if (error instanceof Error) {
       message = error.message;
     }

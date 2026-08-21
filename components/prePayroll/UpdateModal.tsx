@@ -7,14 +7,16 @@ import ErrorOverlay from "../ErrorOverlay";
 import { useModals } from "@/context/ModalContext";
 import { useEffect, useRef, useState } from "react";
 import { Badge, Button, Card, Col, Form, Overlay } from "react-bootstrap";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 import { updatePrepayroll } from "@/app/actions/prePayroll-actions";
 import { formatCreatedAt } from "@/lib/helpers";
 import { useRouter } from "next/navigation";
+import { es } from "date-fns/locale";
+import { registerLocale } from "react-datepicker";
 
-moment.locale("es");
+registerLocale("es", es);
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -28,7 +30,10 @@ export default function UpdateModal({
         handleSubmit,
         watch,
         setValue,
-        formState: { isSubmitting },
+        setError,
+        clearErrors,
+        control,
+        formState: { isSubmitting, errors },
     } = useForm<IUpdatePrepayroll>({
         defaultValues: {
             idPeriod: prenom[0]?.idPeriod,
@@ -62,11 +67,24 @@ export default function UpdateModal({
 
 
     const handleDateHourChange = (date: Date | null) => {
-        setValue("fechaNomina", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+        const value = date ? moment(date).format("YYYY-MM-DD") : "";
+        setValue("fechaNomina", value, { shouldDirty: true });
+
+        if (value) {
+            clearErrors("fechaNomina"); // quita el rojo en cuanto elige fecha válida
+        }
     };
 
 
     const onSubmit: SubmitHandler<IUpdatePrepayroll> = async (data) => {
+
+        if (!data.fechaNomina) {
+            setError("fechaNomina", {
+                type: "manual",
+                message: "La fecha es requerida",
+            });
+            return; // detiene aquí, modalConfirm no se llama
+        }
 
         modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
             try {
@@ -159,6 +177,13 @@ export default function UpdateModal({
                                         <i className="bi bi-chevron-down text-muted flex-shrink-0" />
                                     </Button>
 
+                                    {errors.fechaNomina && (
+                                        <div className="text-danger small mt-1">
+                                            <i className="bi bi-exclamation-triangle-fill me-1" />
+                                            {errors.fechaNomina.message}
+                                        </div>
+                                    )}
+
                                     <Overlay
                                         target={dateButtonRef.current}
                                         show={showCalendar}
@@ -187,12 +212,20 @@ export default function UpdateModal({
                                                 style={{ ...style, zIndex: 2100 }}
                                                 className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light"
                                             >
-                                                <DatePicker
-                                                    inline
-                                                    selected={parsedDateHour}
-                                                    onChange={handleDateHourChange}
-                                                    dateFormat="dd-MM-yyyy"
+                                                <Controller
+                                                    name="fechaNomina"
+                                                    control={control}
+                                                    render={() => (
+                                                        <DatePicker
+                                                            inline
+                                                            selected={parsedDateHour}
+                                                            onChange={handleDateHourChange}
+                                                            dateFormat="dd-MM-yyyy"
+                                                            locale="es"
+                                                        />
+                                                    )}
                                                 />
+
                                                 <div className="p-2">
                                                     <Button
                                                         variant="primary"

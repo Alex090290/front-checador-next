@@ -50,10 +50,9 @@ export default function DevicesTableClient({
     const searchParamsString = sp.toString();
 
 
-    const [feedbackMsg, setFeedbackMsg] = useState("");
-    const [feedback, setFeedback] = useState<FeedbackState>(null);
-    const [loading, setLoading] = useState(false);
-    const statusC = devices.map((s) => s.status);
+    const [, setFeedbackMsg] = useState("");
+    const [, setFeedback] = useState<FeedbackState>(null);
+    const [loading] = useState(false);
 
     useEffect(() => {
         setFeedback(null);
