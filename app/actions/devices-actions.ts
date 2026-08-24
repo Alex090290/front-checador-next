@@ -1,7 +1,7 @@
 "use server"
 
 import { FetchUsersArgs } from "@/lib/constancy/interface";
-import { IDevices } from "@/lib/devices/interface";
+import { IAssignDevice, IDevices } from "@/lib/devices/interface";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
@@ -192,6 +192,122 @@ export async function createDevice({
       success: false,
       message,
       data: null,
+    };
+  }
+}
+
+//ASIGNAR UN DISPOSITIVO A UN EMPLEADO
+export async function AssignDevice({
+  idDevice,
+  data
+}: {
+  idDevice: number;
+  data: IAssignDevice;
+}): Promise<ActionResponse<boolean | null>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+    await axios.put(
+      `${API_URL}/devices-assignment/${idDevice}`,
+      {
+        idEmployee: data.idEmployee,
+        idIt: data.idIt,
+        idBranch: data.idBranch,
+        idDepartment: data.idDepartment,
+        location: data.location,
+        assignedAt: data.assignedAt
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      }
+    );
+
+    revalidatePath("/app/devices");
+
+    return {
+      success: true,
+      message: "Empleado asignado correctamente",
+      data: true,
+    };
+  } catch (error: unknown) {
+    console.log(error);
+
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return {
+      success: false,
+      message,
+      data: null,
+    };
+  }
+}
+
+//ACTUALIZAR DISPOSITIVO
+export async function updateDevice({
+  data,
+  idDevice,
+}: {
+  data: IDevices;
+  idDevice: number;
+}): Promise<ActionResponse<IDevices | null>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    if (!idDevice) {
+      throw new Error("No se ha definido ID");
+    }
+    await axios
+      .put(
+        `${API_URL}/devices/${idDevice}`,
+        {
+          name: data.name,
+          type: data.type,
+          status: data.status,
+          ...(data.networkInfo?.length > 0 && { networkInfo: data.networkInfo }),
+          specs: data.specs,
+          notes: data.notes ?? "",
+          ...(data.currentAssignment?.idEmployee != null && {
+            currentAssignment: data.currentAssignment,
+          }),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response?.data?.message
+            ? Array.isArray(err.response.data.message)
+              ? err.response.data.message.join(", ")
+              : err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    revalidatePath("/app/devices");
+
+    return {
+      success: true,
+      message: "Dispositivo actualizado",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
     };
   }
 }

@@ -17,6 +17,7 @@ import { es } from "date-fns/locale";
 import { storeAction } from "@/app/actions/storeActions";
 import { useModals } from "@/context/ModalContext";
 import { createDevice } from "@/app/actions/devices-actions";
+import DnsBadgeInput from "./DnsBadgeInput";
 
 
 registerLocale("es", es);
@@ -25,7 +26,7 @@ type FeedbackState = "loading" | "success" | "error" | null;
 
 const DEFAULT_VALUES: Partial<IDevices> = {
     name: "",
-    type: null,
+    type: "",
     status: "activo",
     networkInfo: [{
         mac: "",
@@ -33,7 +34,7 @@ const DEFAULT_VALUES: Partial<IDevices> = {
         description: "",
         hostname: "",
         gateway: "",
-        dns: [""],
+        dns: [],
         vlan: "",
         port: "",
     }],
@@ -177,10 +178,8 @@ export default function CreateDeviceComponent({
     useEffect(() => {
         handleStaging();
     }, [handleStaging]);
-    
-    const onSubmit: SubmitHandler<IDevices> = async (data) => {
 
-        console.log("SE MANDA:", data);
+    const onSubmit: SubmitHandler<IDevices> = async (data) => {
 
         modalConfirm("¿Seguro que quieres guardar el dispositivo?", async () => {
             try {
@@ -672,16 +671,6 @@ export default function CreateDeviceComponent({
                                                             </Col>
 
                                                             <Col md={6}>
-                                                                <Entry
-                                                                    register={register(`networkInfo.${index}.dns`, { required: true })}
-                                                                    invalid={!!errors.type}
-                                                                    feedBack={errors.type?.message}
-                                                                    label="Dns:"
-                                                                    className="text-uppercase border"
-                                                                />
-                                                            </Col>
-
-                                                            <Col md={6}>
                                                                 <FieldSelect
                                                                     register={register(`networkInfo.${index}.vlan`, { required: true })}
                                                                     options={[
@@ -705,6 +694,18 @@ export default function CreateDeviceComponent({
                                                                 />
                                                             </Col>
                                                         </Row>
+
+                                                        <Card className="border rounded-4 mt-3">
+                                                            <Card.Body>
+                                                                <Row>
+                                                                    <DnsBadgeInput
+                                                                        networkIndex={index}
+                                                                        control={control}
+                                                                        errors={errors}
+                                                                    />
+                                                                </Row>
+                                                            </Card.Body>
+                                                        </Card>
                                                     </div>
                                                 ))}
                                             </Card.Body>

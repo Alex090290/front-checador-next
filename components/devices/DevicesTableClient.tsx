@@ -6,6 +6,8 @@ import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -17,13 +19,36 @@ function statusVariant(status: string) {
                     ACTIVO
                 </span>
             )
-        case "retardo":
+        case "inactivo":
             return (
-                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
-                    RETARDO
+                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                    INACTIVO
+                </span>
+            )
+        case "en_reparacion":
+            return (
+                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                    EN REPARACIÓN
+                </span>
+            )
+        case "baja":
+            return (
+                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                    BAJA
                 </span>
             )
     }
+}
+
+function getNetworkInfo(u: IDevices) {
+    return Array.isArray(u.networkInfo) ? u.networkInfo : [];
+}
+
+function formatLabel(value: string) {
+    return value
+        .replace(/_/g, " ")
+        .replace(/-/g, " ")
+        .trim();
 }
 
 export default function DevicesTableClient({
@@ -50,8 +75,8 @@ export default function DevicesTableClient({
     const searchParamsString = sp.toString();
 
 
-    const [, setFeedbackMsg] = useState("");
-    const [, setFeedback] = useState<FeedbackState>(null);
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
+    const [feedbackMsg, setFeedbackMsg] = useState("");
     const [loading] = useState(false);
 
     useEffect(() => {
@@ -128,64 +153,69 @@ export default function DevicesTableClient({
         {
             key: "mac",
             label: "Mac",
-            accessor: (u) => u.networkInfo.find((e) => e.mac)?.mac ?? "-",
+            accessor: (u) => getNetworkInfo(u).find((e) => e.mac)?.mac ?? "-",
             filterable: false,
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {u.networkInfo.filter((e) => e.mac).map((e) => e.mac)}
+                    {getNetworkInfo(u).filter((e) => e.mac).map((e) => e.mac)}
                 </div>
             ),
         },
         {
             key: "vlan1",
             label: "VLAN 1",
-            accessor: (u) => u.networkInfo.find((e) => e.vlan === "1")?.vlan ?? "-",
+            accessor: (u) => getNetworkInfo(u).find((e) => e.vlan === "1")?.vlan ?? "-",
             filterable: false,
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {u.networkInfo.filter((e) => e.vlan === "1").map((e) => e.ip)}
+                    {getNetworkInfo(u).filter((e) => e.vlan === "1").map((e) => e.ip)}
                 </div>
             ),
         },
         {
             key: "vlan20",
             label: "VLAN 20",
-            accessor: (u) => u.networkInfo.find((e) => e.vlan === "20")?.vlan ?? "-",
+            accessor: (u) => getNetworkInfo(u).find((e) => e.vlan === "20")?.vlan ?? "-",
             filterable: false,
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {u.networkInfo.filter((e) => e.vlan === "20").map((e) => e.ip)}
+                    {getNetworkInfo(u).filter((e) => e.vlan === "20").map((e) => e.ip)}
                 </div>
             ),
         },
         {
             key: "type",
             label: "Tipo",
+            align: "center",
             accessor: (u) => u.type,
             filterable: false,
             type: "string",
             render: (u) => (
-                <div className="text-uppercase">{u.type}</div>
+                <div className="text-uppercase text-center">{formatLabel(u.type!)}</div>
             ),
         },
         {
             key: "status",
             label: "Estatus",
+            align: "center",
             accessor: (u) => u.status,
             filterable: false,
             type: "string",
             render: (u) => (
-                <div className="text-uppercase">{statusVariant(u.status)}</div>
+                <div className="text-uppercase text-center">{statusVariant(u.status)}</div>
             ),
         },
-
     ];
 
     return (
         <>
+            <ConditionalRender cond={feedback === "loading"}>
+                <Loading message={feedbackMsg || "Guardando..."} />
+            </ConditionalRender>
+
             <Container className="py-3" style={{ maxWidth: "1600px" }}>
 
                 <Button

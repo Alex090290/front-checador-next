@@ -1,12 +1,12 @@
 import { ISignatures } from "../overTime/interface";
 
-type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
+ type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
     "switch" | "router" | "telefono_ip" | "camara" |
-    "access_point" | "celular" | "television" | "otro";
+    "access_point" | "celular" | "television" | "otro" | "";
 
 // type DeviceStatus = "activo" | "inactivo" | "en_reparacion" | "baja";
 
-type OSType = "windows_10" | "windows_11" | "windows_server" | 
+type OSType = "windows_10" | "windows_11" | "windows_server" |
     "linux" | "macos" | "android" | "ios" | "otro" | null;
 
 export interface IDevices {
@@ -54,6 +54,19 @@ export interface IDevices {
         returnedAt?: string | null;
     }
 
+    assignmentHistory?: {
+        id: number;
+        idEmployee: number;
+        idBranch: number;
+        idDepartment: number;
+        loacation: string;
+        signatures: ISignatures[] | null;
+        deliveryDocument: string | null;
+        documentReceived: string | null;
+        assignedAt: string;
+        returnedAt: string | null;
+    }[];
+
     createdAt: string;
     updatedAt: string;
 
@@ -87,4 +100,13 @@ export interface INetworkInfo {
     dns: string[];
     vlan: string;
     port: string;
+}
+
+export interface IAssignDevice {
+    idEmployee: number;
+    idIt: number;
+    idBranch: number;
+    idDepartment: number;
+    location: string;
+    assignedAt: string;
 }

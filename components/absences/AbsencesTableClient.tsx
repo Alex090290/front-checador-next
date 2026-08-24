@@ -21,6 +21,7 @@ import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { es } from "date-fns/locale";
 import { formatCreatedAt } from "@/lib/helpers";
+import GenerateModal from "./GenerateModal";
 
 registerLocale("es", es);
 
@@ -113,6 +114,7 @@ export default function AbsencesTableClient({
     const [, setTypeUpdate] = useState("");
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
+    const [showGenerateModal, setShowGenerateModal] = useState(false);
 
     const { mutate } = useSWR<ICheckInFeedback[]>(
         "/api/eventos",
@@ -292,44 +294,22 @@ export default function AbsencesTableClient({
         );
 
         const hasAsistencia = selectedRows.some((row) => row.type === "asistencia");
-        // const allFaltas = selectedRows.every((row) => row.type === "falta");
-        // const allRetardos = selectedRows.every((row) => row.type === "retardo");
         const ambos = selectedRows.every((row) => row.type === "retardo" || "falta");
-        
         const sameEmployee = selectedRows.every((row) => row.idEmployee === selectedRows[0].idEmployee)
 
-        // if (selectedRows.length < 3) {
-        //     return modalError("Debes seleccionar mínimo 3 FALTAS para generar una penalización");
-        // }
 
         if (hasAsistencia) {
             return modalError("Para generar una penalización debes seleccionar únicamente FALTAS");
         }
 
-        // if (allFaltas && !sameEmployee) {
-        //     return modalError("La selección de faltas debe pertenecer al mismo empleado")
-        // }
-
-        // if (allFaltas && sameEmployee) {
-        //     setShowModalPenalty(true);
-        // }
-
-        // if (allRetardos && !sameEmployee) {
-        //     return modalError("El retardo debe pertenecer al mismo empleado")
-        // }
-
-        // if (allRetardos && sameEmployee) {
-        //     setShowModalPenalty(true)
-        // }
-
-         if (ambos && !sameEmployee) {
+        if (ambos && !sameEmployee) {
             return modalError("La selección de faltas debe pertenecer al mismo empleado")
         }
 
         if (ambos && sameEmployee) {
             setShowModalPenalty(true);
         }
-        
+
     };
 
     const handleToggleSelect = (row: IAbsence) => {
@@ -480,7 +460,7 @@ export default function AbsencesTableClient({
                     onDone={() => setFeedback(null)}
                 />
             </ConditionalRender>
-            
+
             <Container className="py-3 " style={{ maxWidth: "1600px" }}>
 
                 <ConditionalRender cond={!isLeader}>
@@ -501,6 +481,15 @@ export default function AbsencesTableClient({
                     >
                         <i className="bi bi-person-x" />
                         Generar faltas
+                    </Button>
+
+                    <Button
+                        variant="dark"
+                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
+                        onClick={() => setShowGenerateModal(true)}
+                    >
+                        <i className="bi bi-file-earmark-excel" />
+                        Generar Excel
                     </Button>
                 </ConditionalRender>
 
@@ -770,6 +759,17 @@ export default function AbsencesTableClient({
                             absence={(absence ?? []).filter((row) =>
                                 selectedIds.includes(String(row.id))
                             )}
+                        />
+                    </ModalBlur>
+                </ConditionalRender>
+
+                <ConditionalRender cond={showGenerateModal}>
+                    <ModalBlur onClose={() => setShowGenerateModal(false)}>
+                        <GenerateModal
+                            show={showGenerateModal}
+                            onHide={() => {setShowGenerateModal(false);}}
+                            dateInit={dateInit}
+                            dateEnd={dateEnd}
                         />
                     </ModalBlur>
                 </ConditionalRender>

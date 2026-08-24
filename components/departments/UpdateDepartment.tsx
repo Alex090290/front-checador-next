@@ -129,7 +129,7 @@ export default function FormUpdateDepartment({
           <div>
             <h4 className="mb-1 fw-bold">Departamento</h4>
             <p className="text-muted mb-0">
-              Registra el nombre, descripción y líder del departamento.
+              Actualiza el nombre, descripción y líder del departamento.
             </p>
           </div>
 

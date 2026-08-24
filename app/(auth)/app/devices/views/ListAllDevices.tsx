@@ -24,6 +24,7 @@ export default async function ListAllDevices({
     idBranch?: string;
 }) {
     if (id && id !== "null") {
+        
         return (
             <DevicesInfoOne id={id} />
         );

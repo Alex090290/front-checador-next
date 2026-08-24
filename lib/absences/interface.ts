@@ -90,3 +90,8 @@ interface listDocuments {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface FetchArgsReport {
+    dateInit: string;
+    dateEnd: string;
+}

@@ -216,3 +216,10 @@
 .border-orange-subtle {
   border-color: var(--bs-orange-border-subtle) !important;
 }
+
+.date-multi-popover {
+  z-index: 3080;
+  /* superior al modal (1055) y su backdrop (1050) */
+  position: relative;
+  /* o absolute, según cómo Popper lo esté posicionando */
+}
