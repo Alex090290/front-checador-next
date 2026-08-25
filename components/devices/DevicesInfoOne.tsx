@@ -12,7 +12,6 @@ import ModalBlur from "../ModalBlur";
 import ModalAssignDevice from "./ModalAssignDevice";
 import { Branch, Department, Employee } from "@/lib/definitions";
 import FormUpdateDevice from "./UpdateDevice";
-import ResposiveDoc from "./ResposiveDoc";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 

@@ -1,6 +1,6 @@
 "use server"
 
-import { FetchArgsReport, IAbsence } from "@/lib/absences/interface";
+import { IAbsence } from "@/lib/absences/interface";
 import { FetchUsersArgs } from "@/lib/constancy/interface";
 import { storeAction } from "./storeActions";
 import axios from "axios";

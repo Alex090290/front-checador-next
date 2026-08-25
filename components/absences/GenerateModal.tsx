@@ -1,10 +1,9 @@
 import { ModalBasicProps } from "@/lib/definitions";
 import moment from "moment";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Badge, Button, Card, Col, Container, Overlay, Row } from "react-bootstrap";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { es } from "date-fns/locale";
-import { useRouter, useSearchParams } from "next/navigation";
 import { getReport } from "@/app/actions/absences-actions";
 import ConditionalRender from "../ConditionalRender";
 import ErrorOverlay from "../ErrorOverlay";
