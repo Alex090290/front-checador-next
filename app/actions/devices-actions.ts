@@ -169,6 +169,9 @@ export async function createDevice({
             idBranch: data.currentAssignment?.idBranch,
             idDepartment: data.currentAssignment?.idDepartment,
             phoneNumber: sanitizedPhonePersonal,
+            extentionNumber: data.currentAssignment?.extentionNumber,
+            emailCompany: data.currentAssignment?.emailCompany,
+            emailGmail: data.currentAssignment?.emailGmail,
             location: data.currentAssignment?.location,
             assignedAt: data.currentAssignment?.assignedAt
           },

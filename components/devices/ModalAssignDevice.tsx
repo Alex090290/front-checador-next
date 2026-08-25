@@ -23,6 +23,7 @@ type FeedbackState = "loading" | "success" | "error" | null;
 
 type ModalAction = {
     idDevice: number;
+    device:IDevices;
     employees: Employee[];
     branches: Branch[];
     departments: Department[]
@@ -32,6 +33,7 @@ type ModalAction = {
 export default function ModalAssignDevice({
     onHide,
     idDevice,
+    device,
     employees,
     branches,
     departments
@@ -105,7 +107,11 @@ export default function ModalAssignDevice({
                         idBranch: data.idBranch,
                         idDepartment: data.idDepartment,
                         location: data.location,
-                        assignedAt: data.assignedAt
+                        assignedAt: data.assignedAt,
+                        phoneNumber: !data.phoneNumber ? null : String(data.phoneNumber).trim(),
+                        extentionNumber: !data.extentionNumber ? null : String(data.extentionNumber).trim(),
+                        emailCompany: !data.emailCompany ? null : String(data.emailCompany).trim(),
+                        emailGmail: !data.emailGmail ? null : String(data.emailGmail).trim(),
                     }
                 });
 
@@ -274,6 +280,82 @@ export default function ModalAssignDevice({
                                 </Card.Body>
                             </Card>
                         </Col>
+
+                        <ConditionalRender cond={device.type === "celular"}>
+                            <Col md={12}>
+                                <Card className="border rounded-4">
+                                    <Card.Body>
+                                    <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                        <i className="bi bi-phone-fill text-primary" />
+                                        Celular
+                                    </label>
+                                        <Entry
+                                            register={register("phoneNumber", { required: false })}
+                                            label=""
+                                            invalid={!!errors.phoneNumber}
+                                            className="border text-uppercase"
+                                        />
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        </ConditionalRender>
+
+                        <ConditionalRender cond={device.type === "telefono_ip"}>
+                            <Col md={12}>
+                                <Card className="border rounded-4">
+                                    <Card.Body>
+                                    <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                        <i className="bi bi-phone-fill text-primary" />
+                                         Extensión
+                                    </label>
+                                        <Entry
+                                            register={register("extentionNumber", { required: false })}
+                                            label=""
+                                            invalid={!!errors.extentionNumber}
+                                            className="border text-uppercase"
+                                        />
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        </ConditionalRender>
+
+                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(device.type))}>
+                            <Col md={12}>
+                                    <Card className="border rounded-4">
+                                        <Card.Body>
+                                        <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                            <i className="bi bi-phone-fill text-primary" />
+                                            Correo Corporativo
+                                        </label>
+                                            <Entry
+                                                register={register("emailCompany", { required: false })}
+                                                label=""
+                                                invalid={!!errors.emailCompany}
+                                                className="border text-uppercase"
+                                            />
+                                        </Card.Body>
+                                    </Card>
+                            </Col>
+                        </ConditionalRender>
+                        
+                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(device.type))}>
+                                <Col md={12}>
+                                        <Card className="border rounded-4">
+                                            <Card.Body>
+                                            <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                                <i className="bi bi-phone-fill text-primary" />
+                                                Correo Gmail
+                                            </label>
+                                                <Entry
+                                                    register={register("emailGmail", { required: false })}
+                                                    label=""
+                                                    invalid={!!errors.emailGmail}
+                                                    className="border text-uppercase"
+                                                />
+                                            </Card.Body>
+                                        </Card>
+                                </Col>
+                            </ConditionalRender>
 
                         <Col md={12}>
                             <Card className="border rounded-4">

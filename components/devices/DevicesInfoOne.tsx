@@ -574,6 +574,7 @@ export function DeviceOne({
                         show={showAssignDevice}
                         onHide={() => setShowAssignDevice(false)}
                         idDevice={device.id}
+                        device={device}
                         employees={employees}
                         branches={branches}
                         departments={departments}

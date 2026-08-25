@@ -55,6 +55,9 @@ const DEFAULT_VALUES: Partial<IDevices> = {
         idEmployee: null,
         idBranch: null,
         phoneNumber: null,
+        extentionNumber: null,
+        emailCompany: null,
+        emailGmail: null,
         idDepartment: null,
         location: "",
         signatures: [],
@@ -114,7 +117,7 @@ export default function CreateDeviceComponent({
     const selectedDate = watch("currentAssignment.assignedAt"); // lee el valor actual del form state
     const selectedDatePurchase = watch("specs.purchaseDate");
     const selectedDateExpiration = watch("specs.warrantyExpiration");
-
+    const selectedType = watch("type");
     //----------------
     const parsedDate = selectedDate
         ? moment(selectedDate, "YYYY-MM-DD").toDate()
@@ -843,14 +846,51 @@ export default function CreateDeviceComponent({
                                                             </Overlay>
                                                         </Col>
 
-                                                        <Col md={6} className="mt-4">
-                                                            <Entry
-                                                                register={register("currentAssignment.phoneNumber", { required: true })}
-                                                                label="Celular:"
-                                                                invalid={!!errors.currentAssignment?.phoneNumber}
-                                                                className="border text-uppercase"
-                                                            />
-                                                        </Col>
+                                                        <ConditionalRender cond={selectedType === "celular"}>
+                                                            <Col md={6} className="mt-4">
+                                                                <Entry
+                                                                    register={register("currentAssignment.phoneNumber", { required: false })}
+                                                                    label="Celular:"
+                                                                    invalid={!!errors.currentAssignment?.phoneNumber}
+                                                                    className="border text-uppercase"
+                                                                />
+                                                            </Col>
+                                                        </ConditionalRender>
+
+                                                        <ConditionalRender cond={selectedType === "telefono_ip"}>
+                                                            <Col md={6} className="mt-4">
+                                                                <Entry
+                                                                    register={register("currentAssignment.extentionNumber", { required: false })}
+                                                                    label="Numero De Extensión:"
+                                                                    invalid={!!errors.currentAssignment?.extentionNumber}
+                                                                    className="border text-uppercase"
+                                                                />
+                                                            </Col>
+                                                        </ConditionalRender>
+
+                                                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(selectedType))}>
+                                                            <Col md={6} className="mt-4">
+                                                                    <Entry
+                                                                        register={register("currentAssignment.emailCompany", { required: false })}
+                                                                        label="Correo Corporativo:"
+                                                                        invalid={!!errors.currentAssignment?.emailCompany}
+                                                                        className="border text-uppercase"
+                                                                    />
+                                                            </Col>
+                                                        </ConditionalRender>
+
+                                                        
+                                                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(selectedType))}>
+                                                            <Col md={6} className="mt-4">
+                                                                    <Entry
+                                                                        register={register("currentAssignment.emailGmail", { required: false })}
+                                                                        label="Correo Gmail:"
+                                                                        invalid={!!errors.currentAssignment?.emailGmail}
+                                                                        className="border text-uppercase"
+                                                                    />
+                                                            </Col>
+                                                        </ConditionalRender>
+ 
                                                     </Row>
                                                 </ConditionalRender>
 

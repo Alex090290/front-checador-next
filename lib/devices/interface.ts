@@ -53,6 +53,9 @@ export interface IDevices {
             countryCode: string;
             dialCode: string;
         } | null,
+        extentionNumber: string | null;
+        emailCompany: string | null;
+        emailGmail: string | null;
         idDepartment: number | null;
         location: string;
         signatures?: ISignatures[] | null;
@@ -105,6 +108,10 @@ export interface IAssignDevice {
     idDepartment: number;
     location: string;
     assignedAt: string;
+    phoneNumber: string | null;
+    extentionNumber: string | null;
+    emailCompany: string | null;
+    emailGmail: string | null;
 }
 
 export interface IPhone {
