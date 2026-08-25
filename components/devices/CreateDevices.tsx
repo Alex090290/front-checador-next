@@ -54,6 +54,7 @@ const DEFAULT_VALUES: Partial<IDevices> = {
         id: null,
         idEmployee: null,
         idBranch: null,
+        phoneNumber: null,
         idDepartment: null,
         location: "",
         signatures: [],
@@ -841,6 +842,15 @@ export default function CreateDeviceComponent({
                                                                 )}
                                                             </Overlay>
                                                         </Col>
+
+                                                        <Col md={6} className="mt-4">
+                                                            <Entry
+                                                                register={register("currentAssignment.phoneNumber", { required: true })}
+                                                                label="Celular:"
+                                                                invalid={!!errors.currentAssignment?.phoneNumber}
+                                                                className="border text-uppercase"
+                                                            />
+                                                        </Col>
                                                     </Row>
                                                 </ConditionalRender>
 
@@ -874,7 +884,7 @@ export default function CreateDeviceComponent({
                                                             displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
                                                             name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                                                         }))}
-                                                        register={register("currentAssignment.idEmployee")}
+                                                        register={register("idIt")}
                                                         control={control}
                                                         callBackMode="id"
                                                         label="Empleado relacionado:"

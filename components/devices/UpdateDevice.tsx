@@ -30,9 +30,9 @@ function getDefaultValues(device?: IDevices | null): IDevices {
         name: device?.name || "",
         type: device?.type || null,
         status: device?.status || "",
-        networkInfo: device?.networkInfo || [],
+        networkInfo: Array.isArray(device?.networkInfo) ? device.networkInfo : [],
         specs: device?.specs,
-        createdAt: formatCreatedAt(device?.createdAt)|| "",
+        createdAt: formatCreatedAt(device?.createdAt) || "",
         updatedAt: formatCreatedAt(device?.updatedAt) || "",
         employee: device?.employee,
         department: device?.department,
@@ -107,8 +107,6 @@ export default function FormUpdateDevice({
 
 
     const onSubmit: SubmitHandler<IDevices> = async (data) => {
-        console.log("SE GUARDA:", data);
-
         modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
 
             try {
@@ -133,6 +131,7 @@ export default function FormUpdateDevice({
             }
         })
     };
+    
 
     return (
         <>

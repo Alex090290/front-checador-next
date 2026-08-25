@@ -6,7 +6,19 @@ import { storeAction } from "./storeActions";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
+import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
 
+function getPhoneString(
+  value: PhoneNumberFormat | string | null | undefined
+): string {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value.internationalNumber || value.number || "";
+}
 
 
 //LISTAR TODOS LOS DISPOSITIVOS
@@ -114,7 +126,6 @@ export async function ListOneDevice({
       })
 
       .catch((err) => {
-
         throw new Error(
           err.response.data.message
             ? err.response.data.message
@@ -139,7 +150,10 @@ export async function createDevice({
 }): Promise<ActionResponse<IDevices | null>> {
   try {
     const { apiToken, API_URL } = await storeAction();
-    console.log("action:", data);
+
+    const sanitizedPhonePersonal = sanitizePhoneNumber(
+      getPhoneString(String(data.currentAssignment?.phoneNumber))
+    );
 
     const device: IDevices = await axios
       .post(
@@ -150,7 +164,14 @@ export async function createDevice({
           status: data.status,
           networkInfo: data.networkInfo,
           specs: data.specs,
-          currentAssignment: data.currentAssignment,
+          currentAssignment: {
+            idEmployee: data.currentAssignment?.idEmployee,
+            idBranch: data.currentAssignment?.idBranch,
+            idDepartment: data.currentAssignment?.idDepartment,
+            phoneNumber: sanitizedPhonePersonal,
+            location: data.currentAssignment?.location,
+            assignedAt: data.currentAssignment?.assignedAt
+          },
           idIt: data.idIt,
           notes: data.notes,
         },

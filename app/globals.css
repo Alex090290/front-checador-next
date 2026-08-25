@@ -223,3 +223,87 @@
   position: relative;
   /* o absolute, según cómo Popper lo esté posicionando */
 }
+
+/* PARA LA CARTA RESPONSIVA */
+.responsiva-wrapper {
+    /* background: #e9ecef; */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+}
+
+.responsiva-page {
+    background: #fff;
+    width: 816px;
+    max-width: 100%;
+    min-height: 1056px;
+    padding: 72px 64px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+    color: #212529;
+}
+
+.responsiva-logo {
+    margin-bottom: 24px;
+}
+
+.responsiva-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+}
+
+.responsiva-text {
+    text-align: justify;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+}
+
+.responsiva-fecha {
+    text-align: right;
+    margin-top: 48px;
+}
+
+.responsiva-firmas {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 96px;
+}
+
+.firma-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.firma-linea {
+    width: 100%;
+    border-top: 1px solid #212529;
+    margin-bottom: 8px;
+}
+
+.firma-label {
+    color: #6c757d;
+    font-size: 0.75rem;
+    margin-top: 4px;
+}
+
+@media print {
+    .responsiva-wrapper {
+        background: none;
+        padding: 0;
+    }
+    .responsiva-page {
+        box-shadow: none;
+        width: auto;
+        min-height: auto;
+    }
+}

@@ -26,6 +26,7 @@ async function PagePenalties({
     const page = params?.page ?? "1";
     const limit = params?.limit ?? "20";
     const search = params?.search ?? "";
+    const view_type = params?.view_type ?? "";
     
 
 
@@ -36,6 +37,7 @@ async function PagePenalties({
             limit={limit} 
             page={page} 
             search={search}
+            view_type={view_type}
             />
         </Suspense>
     )

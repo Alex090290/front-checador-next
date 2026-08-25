@@ -12,6 +12,7 @@ import ModalBlur from "../ModalBlur";
 import ModalAssignDevice from "./ModalAssignDevice";
 import { Branch, Department, Employee } from "@/lib/definitions";
 import FormUpdateDevice from "./UpdateDevice";
+import ResposiveDoc from "./ResposiveDoc";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -84,6 +85,7 @@ export function DeviceOne({
     const employeeTrue = device.currentAssignment !== null;
     const [showAssignDevice, setShowAssignDevice] = useState(false);
     const [UpdateDeviceModal, setUpdateDeviceModal] = useState(false);
+    const [showResponsiveDoc, setShowResponsiveDoc] = useState(false);
 
     //HELPERS
 
@@ -108,6 +110,12 @@ export function DeviceOne({
         router.push("/app/devices/create");
     };
 
+    const handleGenerateDoc = () =>{
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...")
+        router.push(`/app/devices?view_type=responsiva&id=${device.id}`);
+    }     
+    
 
     if (!device) {
         return (
@@ -431,6 +439,7 @@ export function DeviceOne({
                         </Row>
 
                         {/* SI NO HAY EMPLEADO ASIGANDO */}
+
                         <ConditionalRender cond={!employeeTrue}>
                             <Card className="border rounded-4">
                                 <Card.Body>
@@ -474,12 +483,6 @@ export function DeviceOne({
 
                                         <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                                             Empleado
-                                        </span>
-                                    </div>
-
-                                    <div className="d-flex align-items-center justify-content-end mb-2">
-                                        <span>
-                                            Generar responsiva
                                         </span>
                                     </div>
 
@@ -549,6 +552,15 @@ export function DeviceOne({
                                             </div>
                                         </Col>
                                     </Row>
+
+                                    <div className="d-flex align-items-center justify-content-end mt-2">
+                                        <Button
+                                            variant="warning"
+                                            onClick={handleGenerateDoc}>
+                                            Generar responsiva
+                                        </Button>
+                                    </div>
+
                                 </Card.Body>
                             </Card>
                         </ConditionalRender>

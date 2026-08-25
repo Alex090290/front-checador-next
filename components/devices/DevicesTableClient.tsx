@@ -40,15 +40,11 @@ function statusVariant(status: string) {
     }
 }
 
-function getNetworkInfo(u: IDevices) {
-    return Array.isArray(u.networkInfo) ? u.networkInfo : [];
-}
-
 function formatLabel(value: string) {
-    return value
-        .replace(/_/g, " ")
-        .replace(/-/g, " ")
-        .trim();
+  return value
+    .replace(/_/g, " ")
+    .replace(/-/g, " ") 
+    .trim();
 }
 
 export default function DevicesTableClient({
@@ -119,6 +115,8 @@ export default function DevicesTableClient({
         setFeedbackMsg("Cargando...");
         router.push("/app/devices/create");
     };
+    // console.log("TABLA:", devices.filter((n) => n.networkInfo))
+    
 
     //TABLA
     const columns: TableTemplateColumn<IDevices>[] = [
@@ -153,36 +151,36 @@ export default function DevicesTableClient({
         {
             key: "mac",
             label: "Mac",
-            accessor: (u) => getNetworkInfo(u).find((e) => e.mac)?.mac ?? "-",
+            accessor: (u) => u.networkInfo.find((e) => e.mac)?.mac ?? "-",
             filterable: false,
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {getNetworkInfo(u).filter((e) => e.mac).map((e) => e.mac)}
+                    {u.networkInfo.filter((e) => e.mac).map((e) => e.mac)}
                 </div>
             ),
         },
         {
             key: "vlan1",
             label: "VLAN 1",
-            accessor: (u) => getNetworkInfo(u).find((e) => e.vlan === "1")?.vlan ?? "-",
+            accessor: (u) => u.networkInfo.find((e) => e.vlan === "1")?.vlan ?? "-",
             filterable: false,
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {getNetworkInfo(u).filter((e) => e.vlan === "1").map((e) => e.ip)}
+                    {u.networkInfo.filter((e) => e.vlan === "1").map((e) => e.ip)}
                 </div>
             ),
         },
         {
             key: "vlan20",
             label: "VLAN 20",
-            accessor: (u) => getNetworkInfo(u).find((e) => e.vlan === "20")?.vlan ?? "-",
+            accessor: (u) => u.networkInfo.find((e) => e.vlan === "20")?.vlan ?? "-",
             filterable: false,
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {getNetworkInfo(u).filter((e) => e.vlan === "20").map((e) => e.ip)}
+                    {u.networkInfo.filter((e) => e.vlan === "20").map((e) => e.ip)}
                 </div>
             ),
         },
@@ -208,6 +206,7 @@ export default function DevicesTableClient({
                 <div className="text-uppercase text-center">{statusVariant(u.status)}</div>
             ),
         },
+
     ];
 
     return (

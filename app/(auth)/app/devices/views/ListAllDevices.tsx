@@ -1,9 +1,11 @@
 import { ListDevices } from "@/app/actions/devices-actions";
 import DevicesTableClient from "@/components/devices/DevicesTableClient";
 import DevicesInfoOne from "./DevicesInfoOne";
+import ResponsivePage from "./ResponsivePage";
 
 export default async function ListAllDevices({
     id,
+    view_type,
     page = "1",
     limit = "20",
     search = "",
@@ -14,6 +16,7 @@ export default async function ListAllDevices({
     idBranch
 }: {
     id: string;
+    view_type: string;
     page?: string;
     limit?: string;
     search?: string;
@@ -24,7 +27,9 @@ export default async function ListAllDevices({
     idBranch?: string;
 }) {
     if (id && id !== "null") {
-        
+        if(view_type === "responsiva"){
+            return <ResponsivePage id={id} />
+        }
         return (
             <DevicesInfoOne id={id} />
         );

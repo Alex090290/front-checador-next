@@ -1,6 +1,6 @@
 import { ISignatures } from "../overTime/interface";
 
- type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
+export type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
     "switch" | "router" | "telefono_ip" | "camara" |
     "access_point" | "celular" | "television" | "otro" | "";
 
@@ -45,6 +45,14 @@ export interface IDevices {
         id: number | null;
         idEmployee?: number | null;
         idBranch: number | null;
+        phoneNumber?: {
+            number: string;
+            internationalNumber: string;
+            nationalNumber: string;
+            e164Number: string;
+            countryCode: string;
+            dialCode: string;
+        } | null,
         idDepartment: number | null;
         location: string;
         signatures?: ISignatures[] | null;
@@ -90,18 +98,6 @@ export interface IDevices {
     notes?: string;
 }
 
-export interface INetworkInfo {
-    id: number;
-    mac: string;
-    ip: string;
-    description: string;
-    hostname: string;
-    gateway: string;
-    dns: string[];
-    vlan: string;
-    port: string;
-}
-
 export interface IAssignDevice {
     idEmployee: number;
     idIt: number;
@@ -109,4 +105,13 @@ export interface IAssignDevice {
     idDepartment: number;
     location: string;
     assignedAt: string;
+}
+
+export interface IPhone {
+    number: string;
+    internationalNumber: string;
+    nationalNumber: string;
+    e164Number: string;
+    countryCode: string;
+    dialCode: string;
 }
