@@ -75,16 +75,14 @@ export function DeviceOne({
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
 
-    const [loading, setLoading] = useState(false);
+    const [loading] = useState(false);
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
-    const [messageLoading, setMessageLoading] = useState("");
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = getNetworkInfo(device).find((c, index) => String(index) === activeCheckId);
     const employeeTrue = device.currentAssignment !== null;
     const [showAssignDevice, setShowAssignDevice] = useState(false);
     const [UpdateDeviceModal, setUpdateDeviceModal] = useState(false);
-    const [showResponsiveDoc, setShowResponsiveDoc] = useState(false);
 
     //HELPERS
 
@@ -114,6 +112,9 @@ export function DeviceOne({
         setFeedbackMsg("Cargando...")
         router.push(`/app/devices?view_type=responsiva&id=${device.id}`);
     }     
+
+    console.log("DEVICE:", device);
+    
     
 
     if (!device) {

@@ -7,6 +7,8 @@ import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { PhoneNumberFormat, sanitizePhoneNumber } from "@/lib/sinitizePhone";
+import { storeToken } from "@/lib/useToken";
+import { base64ToBlob } from "@/lib/helpers";
 
 function getPhoneString(
   value: PhoneNumberFormat | string | null | undefined
@@ -326,6 +328,112 @@ export async function updateDevice({
       success: true,
       message: "Dispositivo actualizado",
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
+//PUT DE FIRMAS
+export async function sendSignatureDevice({
+  idDevice,
+  idSignature,
+  idEmployee,
+  signature,
+}: {
+
+  idDevice: number | null;
+  idSignature: number;
+  idEmployee: number;
+  signature: string;
+
+}): Promise<ActionResponse<boolean>> {
+  try {
+    // if (!idDevice) throw new Error("Id no definido");
+    if (!signature) throw new Error("No se recibió la firma");
+
+    const { apiToken, apiUrl } = await storeToken();
+
+    const formData = new FormData();
+
+    const blob = base64ToBlob(signature, "image/png");
+
+    formData.append("signature", blob, "signature.png");
+
+    const url = `${apiUrl}/devices-signature/${idDevice}/${idSignature}/${idEmployee}`
+
+    const firma = await axios.put(url, formData, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+    console.log("firma: ", firma);
+
+    return {
+      success: true,
+      message: "Firma enviada correctamente",
+      data: true,
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+
+    return {
+      success: false,
+      message: err.message ? err.message : "Error al obtener información",
+      data: false,
+    };
+  }
+}
+
+//TRAER FIRMAS
+export async function fetchSignatureDevice({
+  idDevice,
+  idSignature,
+  idEmployee,
+}: {
+  idDevice: number;
+  idSignature: number;
+  idEmployee: number;
+}): Promise<ActionResponse<string>> {
+  try {
+    const { apiToken, apiUrl } = await storeToken();
+
+    // Obtener imagen en binario
+    const resImg = await axios
+      .get(
+        `${apiUrl}/devices-signature/${idDevice}/${idSignature}/${idEmployee}`,
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+          responseType: "arraybuffer",
+        }
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response.data.message
+            ? err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+
+    // Convertir a base64
+    const base64 = Buffer.from(resImg, "binary").toString("base64");
+    const imageBase64Url = `data:image/jpeg;base64,${base64}`;
+
+    return {
+      success: true,
+      message: "Imagen subida correctamente",
+      data: imageBase64Url,
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(error);

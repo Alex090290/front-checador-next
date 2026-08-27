@@ -49,6 +49,14 @@ const DEFAULT_VALUES: Partial<IDevices> = {
         osVersion: "",
         purchaseDate: "",
         warrantyExpiration: "",
+        idDevice: null,
+        idProduct: null,
+        architecture: "",
+        graphicCard: "",
+        userAdmin: "",
+        passwordAdmin: "",
+        user: "",
+        userPassword: ""
     },
     currentAssignment: {
         id: null,

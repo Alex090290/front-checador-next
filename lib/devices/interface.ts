@@ -39,6 +39,14 @@ export interface IDevices {
         osVersion: string;
         purchaseDate: string;
         warrantyExpiration: string;
+        idDevice: string | null;
+        idProduct: string | null;
+        architecture: string | null;
+        graphicCard: string | null;
+        userAdmin: string | null;
+        passwordAdmin: string | null;
+        user: string | null;
+        userPassword: string | null;
     }
 
     currentAssignment?: {
@@ -85,17 +93,23 @@ export interface IDevices {
         id: number;
         name: string;
         lastName: string;
-    }
+    };
+
+    personIt?: {
+        id: number;
+        name: string;
+        lastName: string;
+    };
 
     department?: {
         id: number;
         nameDepartment: string;
-    }
+    };
 
     branch?: {
         id: number;
         name: string;
-    }
+    };
 
     idIt?: number | null;
     notes?: string;

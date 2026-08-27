@@ -5,7 +5,7 @@ import ConditionalRender from "../ConditionalRender";
 import ErrorOverlay from "../ErrorOverlay";
 import SuccessOverlay from "../SuccessOverlay";
 import Loading from "../LoadingSpinner";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button, Card, Col, Form, Overlay, Row } from "react-bootstrap";
 import { Entry, FieldSelect } from "../fields";
 import DatePicker from "react-datepicker";
@@ -48,7 +48,6 @@ export default function FormUpdateDevice({
     idDevice,
 }: ModalBasicProps & ModalAction) {
     const {
-        reset,
         register,
         handleSubmit,
         control,

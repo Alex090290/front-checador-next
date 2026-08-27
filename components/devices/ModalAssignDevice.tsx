@@ -5,7 +5,6 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Card, Col, Form, Overlay, Row } from "react-bootstrap";
 import { Entry, RelationField } from "../fields";
@@ -50,8 +49,7 @@ export default function ModalAssignDevice({
     });
 
     //CONST
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const [loading] = useState(false);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [dataSystem, setDataSystem] = useState<Employee[] | []>([]);
@@ -286,7 +284,7 @@ export default function ModalAssignDevice({
                                 <Card className="border rounded-4">
                                     <Card.Body>
                                     <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
-                                        <i className="bi bi-phone-fill text-primary" />
+                                        <i className="bi bi-phone text-primary" />
                                         Celular
                                     </label>
                                         <Entry
@@ -305,7 +303,7 @@ export default function ModalAssignDevice({
                                 <Card className="border rounded-4">
                                     <Card.Body>
                                     <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
-                                        <i className="bi bi-phone-fill text-primary" />
+                                        <i className="bi bi-telephone-plus text-secondary" />
                                          Extensión
                                     </label>
                                         <Entry
@@ -324,7 +322,7 @@ export default function ModalAssignDevice({
                                     <Card className="border rounded-4">
                                         <Card.Body>
                                         <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
-                                            <i className="bi bi-phone-fill text-primary" />
+                                            <i className="bi bi-envelope-at-fill text-secondary" />
                                             Correo Corporativo
                                         </label>
                                             <Entry
@@ -343,7 +341,7 @@ export default function ModalAssignDevice({
                                         <Card className="border rounded-4">
                                             <Card.Body>
                                             <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
-                                                <i className="bi bi-phone-fill text-primary" />
+                                                <i className="bi bi-envelope-fill text-warning" />
                                                 Correo Gmail
                                             </label>
                                                 <Entry
