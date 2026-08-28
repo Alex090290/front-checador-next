@@ -51,12 +51,12 @@ const DEFAULT_VALUES: Partial<IDevices> = {
         warrantyExpiration: "",
         idDevice: null,
         idProduct: null,
-        architecture: "",
-        graphicCard: "",
-        userAdmin: "",
-        passwordAdmin: "",
-        user: "",
-        userPassword: ""
+        architecture: null,
+        graphicCard: null,
+        userAdmin: null,
+        passwordAdmin: null,
+        user: null,
+        userPassword: null
     },
     currentAssignment: {
         id: null,
@@ -108,6 +108,9 @@ export default function CreateDeviceComponent({
         control,
         name: "networkInfo",
     });
+    const selectedType = watch("type");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordAdmin, setShowPasswordAdmin] = useState(false);
 
     //PARA CALENDARIO
     const dateButtonRef = useRef(null);
@@ -125,7 +128,6 @@ export default function CreateDeviceComponent({
     const selectedDate = watch("currentAssignment.assignedAt"); // lee el valor actual del form state
     const selectedDatePurchase = watch("specs.purchaseDate");
     const selectedDateExpiration = watch("specs.warrantyExpiration");
-    const selectedType = watch("type");
     //----------------
     const parsedDate = selectedDate
         ? moment(selectedDate, "YYYY-MM-DD").toDate()
@@ -476,99 +478,192 @@ export default function CreateDeviceComponent({
                                                         />
                                                     </Col>
 
-                                                    <Col md={6}>
-                                                        <Form.Group>
-                                                            <Form.Label className="fw-semibold mt-2">Fecha de compra</Form.Label>
-                                                        </Form.Group>
+                                                    <ConditionalRender cond={selectedType === "computadora" || selectedType === "laptop"}>
 
-                                                        <Button
-                                                            ref={datePurchaseRef}
-                                                            variant="outline-secondary"
-                                                            className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
-                                                            onClick={() => setShowCalendarPurchase((s) => !s)}
-                                                        >
-                                                            <span>{selectedDatePurchase ? selectedDatePurchase : "Selecciona una fecha"}</span>
-                                                            <i className="bi bi-calendar3" />
-                                                        </Button>
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.idDevice")}
+                                                                label="Identificador de dispositivo:"
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
 
-                                                        <ConditionalRender cond={!dateError}>
-                                                            <small className="text-danger d-block mt-1">{dateError}</small>
-                                                        </ConditionalRender>
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.idProduct")}
+                                                                label="Id. del producto:"
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
 
-                                                        <Overlay
-                                                            target={datePurchaseRef.current}
-                                                            show={showCalendarPurchase}
-                                                            placement="bottom-start"
-                                                            rootClose
-                                                            container={() => document.body}
-                                                            onHide={() => setShowCalendarPurchase(false)}
-                                                        >
-                                                            {({ ref, style }) => (
-                                                                <div
-                                                                    ref={ref}
-                                                                    style={style}
-                                                                    className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
-                                                                >
-                                                                    <DatePicker
-                                                                        inline
-                                                                        selected={parseDatePurchase}
-                                                                        onChange={handleDatePurchase}
-                                                                        shouldCloseOnSelect={false}
-                                                                        disabledKeyboardNavigation
-                                                                        monthsShown={1}
-                                                                        locale="es"
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                        </Overlay>
-                                                    </Col>
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.architecture")}
+                                                                label="Tipo de sistema:"
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
 
-                                                    <Col md={6}>
-                                                        <Form.Group>
-                                                            <Form.Label className="fw-semibold mt-2">Fecha de expiración de la garantía</Form.Label>
-                                                        </Form.Group>
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.graphicCard")}
+                                                                label="Tarjeta gráfica:"
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
 
-                                                        <Button
-                                                            ref={dateExpirationRef}
-                                                            variant="outline-secondary"
-                                                            className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
-                                                            onClick={() => setShowCalendarExpiration((s) => !s)}
-                                                        >
-                                                            <span>{selectedDateExpiration ? selectedDateExpiration : "Selecciona una fecha"}</span>
-                                                            <i className="bi bi-calendar3" />
-                                                        </Button>
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.userAdmin")}
+                                                                label="Usuario administrador:"
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
 
-                                                        <ConditionalRender cond={!dateError}>
-                                                            <small className="text-danger d-block mt-1">{dateError}</small>
-                                                        </ConditionalRender>
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.passwordAdmin")}
+                                                                type={showPasswordAdmin ? "text" : "password"}
+                                                                label="Contraseña administrador:"
 
-                                                        <Overlay
-                                                            target={dateExpirationRef.current}
-                                                            show={showCalendarExpiration}
-                                                            placement="bottom-start"
-                                                            rootClose
-                                                            container={() => document.body}
-                                                            onHide={() => setShowCalendarExpiration(false)}
-                                                        >
-                                                            {({ ref, style }) => (
-                                                                <div
-                                                                    ref={ref}
-                                                                    style={style}
-                                                                    className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
-                                                                >
-                                                                    <DatePicker
-                                                                        inline
-                                                                        selected={parseDateExpiration}
-                                                                        onChange={handleDateExpiration}
-                                                                        shouldCloseOnSelect={false}
-                                                                        disabledKeyboardNavigation
-                                                                        monthsShown={1}
-                                                                        locale="es"
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                        </Overlay>
-                                                    </Col>
+                                                                className="border"
+                                                                suffix={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowPasswordAdmin((prev) => !prev)}
+                                                                        className="btn btn-link p-0 text-info"
+                                                                        tabIndex={10}
+                                                                    >
+                                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                                                    </button>
+                                                                }
+                                                            />
+                                                        </Col>
+
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.user")}
+                                                                label="Nombre de usuario"
+                                                                className="text-uppercase border"
+                                                            />
+                                                        </Col>
+
+                                                        <Col md={6}>
+                                                            <Entry
+                                                                register={register("specs.userPassword")}
+                                                                type={showPassword ? "text" : "password"}
+                                                                label="Contraseña de usuario:"
+
+                                                                className="border"
+                                                                suffix={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowPassword((prev) => !prev)}
+                                                                        className="btn btn-link p-0 text-info"
+                                                                        tabIndex={10}
+                                                                    >
+                                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                                                    </button>
+                                                                }
+                                                            />
+                                                        </Col>
+                                                    </ConditionalRender>
+
+                                                    <Row className="g-3">
+                                                        <Col md={6}>
+                                                            <Form.Group>
+                                                                <Form.Label className="fw-semibold mt-2">Fecha de compra</Form.Label>
+                                                            </Form.Group>
+
+                                                            <Button
+                                                                ref={datePurchaseRef}
+                                                                variant="outline-secondary"
+                                                                className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                                                                onClick={() => setShowCalendarPurchase((s) => !s)}
+                                                            >
+                                                                <span>{selectedDatePurchase ? selectedDatePurchase : "Selecciona una fecha"}</span>
+                                                                <i className="bi bi-calendar3" />
+                                                            </Button>
+
+                                                            <ConditionalRender cond={!dateError}>
+                                                                <small className="text-danger d-block mt-1">{dateError}</small>
+                                                            </ConditionalRender>
+
+                                                            <Overlay
+                                                                target={datePurchaseRef.current}
+                                                                show={showCalendarPurchase}
+                                                                placement="bottom-start"
+                                                                rootClose
+                                                                container={() => document.body}
+                                                                onHide={() => setShowCalendarPurchase(false)}
+                                                            >
+                                                                {({ ref, style }) => (
+                                                                    <div
+                                                                        ref={ref}
+                                                                        style={style}
+                                                                        className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                                                    >
+                                                                        <DatePicker
+                                                                            inline
+                                                                            selected={parseDatePurchase}
+                                                                            onChange={handleDatePurchase}
+                                                                            shouldCloseOnSelect={false}
+                                                                            disabledKeyboardNavigation
+                                                                            monthsShown={1}
+                                                                            locale="es"
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                            </Overlay>
+                                                        </Col>
+
+                                                        <Col md={6}>
+                                                            <Form.Group>
+                                                                <Form.Label className="fw-semibold mt-2">Fecha de expiración de la garantía</Form.Label>
+                                                            </Form.Group>
+
+                                                            <Button
+                                                                ref={dateExpirationRef}
+                                                                variant="outline-secondary"
+                                                                className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                                                                onClick={() => setShowCalendarExpiration((s) => !s)}
+                                                            >
+                                                                <span>{selectedDateExpiration ? selectedDateExpiration : "Selecciona una fecha"}</span>
+                                                                <i className="bi bi-calendar3" />
+                                                            </Button>
+
+                                                            <ConditionalRender cond={!dateError}>
+                                                                <small className="text-danger d-block mt-1">{dateError}</small>
+                                                            </ConditionalRender>
+
+                                                            <Overlay
+                                                                target={dateExpirationRef.current}
+                                                                show={showCalendarExpiration}
+                                                                placement="bottom-start"
+                                                                rootClose
+                                                                container={() => document.body}
+                                                                onHide={() => setShowCalendarExpiration(false)}
+                                                            >
+                                                                {({ ref, style }) => (
+                                                                    <div
+                                                                        ref={ref}
+                                                                        style={style}
+                                                                        className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                                                    >
+                                                                        <DatePicker
+                                                                            inline
+                                                                            selected={parseDateExpiration}
+                                                                            onChange={handleDateExpiration}
+                                                                            shouldCloseOnSelect={false}
+                                                                            disabledKeyboardNavigation
+                                                                            monthsShown={1}
+                                                                            locale="es"
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                            </Overlay>
+                                                        </Col>
+                                                    </Row>
                                                 </Row>
                                             </Card.Body>
                                         </Card>
@@ -876,29 +971,29 @@ export default function CreateDeviceComponent({
                                                             </Col>
                                                         </ConditionalRender>
 
-                                                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(selectedType))}>
+                                                        <ConditionalRender cond={["computadora", "laptop", "celular"].includes(String(selectedType))}>
                                                             <Col md={6} className="mt-4">
-                                                                    <Entry
-                                                                        register={register("currentAssignment.emailCompany", { required: false })}
-                                                                        label="Correo Corporativo:"
-                                                                        invalid={!!errors.currentAssignment?.emailCompany}
-                                                                        className="border text-uppercase"
-                                                                    />
+                                                                <Entry
+                                                                    register={register("currentAssignment.emailCompany", { required: false })}
+                                                                    label="Correo Corporativo:"
+                                                                    invalid={!!errors.currentAssignment?.emailCompany}
+                                                                    className="border text-uppercase"
+                                                                />
                                                             </Col>
                                                         </ConditionalRender>
 
-                                                        
-                                                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(selectedType))}>
+
+                                                        <ConditionalRender cond={["computadora", "laptop", "celular"].includes(String(selectedType))}>
                                                             <Col md={6} className="mt-4">
-                                                                    <Entry
-                                                                        register={register("currentAssignment.emailGmail", { required: false })}
-                                                                        label="Correo Gmail:"
-                                                                        invalid={!!errors.currentAssignment?.emailGmail}
-                                                                        className="border text-uppercase"
-                                                                    />
+                                                                <Entry
+                                                                    register={register("currentAssignment.emailGmail", { required: false })}
+                                                                    label="Correo Gmail:"
+                                                                    invalid={!!errors.currentAssignment?.emailGmail}
+                                                                    className="border text-uppercase"
+                                                                />
                                                             </Col>
                                                         </ConditionalRender>
- 
+
                                                     </Row>
                                                 </ConditionalRender>
 

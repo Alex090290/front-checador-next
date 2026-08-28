@@ -16,7 +16,7 @@ import {
 } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
-import { Form, Button, Row, Col, Card } from "react-bootstrap";
+import { Form, Button, Row, Col, Card, Badge } from "react-bootstrap";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -176,14 +176,22 @@ export default function FormUpdateUser({
         />
       </ConditionalRender>
 
-      <div className="p-2">
-        <div className="d-flex align-items-center justify-content-between mb-4">
+      <div className="p-2 mt-4">
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
             <h4 className="mb-1 fw-bold">Usuario</h4>
             <p className="text-muted mb-0">
               Edita la información y permisos del usuario.
             </p>
           </div>
+
+          <Badge
+            bg="info-subtle"
+            text="info-emphasis"
+            className="rounded-pill px-3 py-2 fw-semibold border border-info-subtle"
+          >
+            Actualizar
+          </Badge>
         </div>
 
         <Form onSubmit={handleSubmit(onSubmit)}>

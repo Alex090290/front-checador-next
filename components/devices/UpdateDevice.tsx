@@ -31,7 +31,26 @@ function getDefaultValues(device?: IDevices | null): IDevices {
         type: device?.type || null,
         status: device?.status || "",
         networkInfo: Array.isArray(device?.networkInfo) ? device.networkInfo : [],
-        specs: device?.specs,
+        specs: {
+            brand: device?.specs?.brand || "",
+            model: device?.specs?.model || "",
+            serialNumber: device?.specs?.serialNumber || "",
+            processor: device?.specs?.processor || "",
+            ram: device?.specs?.ram || "",
+            storage: device?.specs?.storage || "",
+            os: device?.specs?.os || null,
+            osVersion: device?.specs?.osVersion || "",
+            purchaseDate: formatCreatedAt(device?.specs?.purchaseDate) || "",
+            warrantyExpiration: formatCreatedAt(device?.specs?.warrantyExpiration) || "",
+            idDevice: device?.specs?.idDevice || null,
+            idProduct: device?.specs?.idProduct || null,
+            architecture: device?.specs?.architecture || null,
+            graphicCard: device?.specs?.graphicCard || null,
+            userAdmin: device?.specs?.userAdmin || null,
+            passwordAdmin: device?.specs?.passwordAdmin || null,
+            user: device?.specs?.user || null,
+            userPassword: device?.specs?.userPassword || null
+        },
         createdAt: formatCreatedAt(device?.createdAt) || "",
         updatedAt: formatCreatedAt(device?.updatedAt) || "",
         employee: device?.employee,
@@ -67,6 +86,9 @@ export default function FormUpdateDevice({
         name: "networkInfo",
     });
     const { modalConfirm } = useModals();
+    const selectedType = watch("type");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordAdmin, setShowPasswordAdmin] = useState(false);
 
 
     //PARA CALENDARIO
@@ -130,7 +152,7 @@ export default function FormUpdateDevice({
             }
         })
     };
-    
+
 
     return (
         <>
@@ -155,7 +177,7 @@ export default function FormUpdateDevice({
                 />
             </ConditionalRender>
 
-            <div className="p-2">
+            <div className="p-2 mt-4">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                     <div>
                         <h4 className="mb-1 fw-bold">Dispositivo</h4>
@@ -354,99 +376,192 @@ export default function FormUpdateDevice({
                                 />
                             </Col>
 
-                            <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label className="fw-semibold mt-2">Fecha de compra</Form.Label>
-                                </Form.Group>
+                            <ConditionalRender cond={selectedType === "computadora" || selectedType === "laptop"}>
 
-                                <Button
-                                    ref={datePurchaseRef}
-                                    variant="outline-secondary"
-                                    className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
-                                    onClick={() => setShowCalendarPurchase((s) => !s)}
-                                >
-                                    <span>{selectedDatePurchase ? selectedDatePurchase : "Selecciona una fecha"}</span>
-                                    <i className="bi bi-calendar3" />
-                                </Button>
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.idDevice")}
+                                        label="Identificador de dispositivo:"
+                                        className="text-uppercase border"
+                                    />
+                                </Col>
 
-                                <ConditionalRender cond={!dateError}>
-                                    <small className="text-danger d-block mt-1">{dateError}</small>
-                                </ConditionalRender>
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.idProduct")}
+                                        label="Id. del producto:"
+                                        className="text-uppercase border"
+                                    />
+                                </Col>
 
-                                <Overlay
-                                    target={datePurchaseRef.current}
-                                    show={showCalendarPurchase}
-                                    placement="bottom-start"
-                                    rootClose
-                                    container={() => document.body}
-                                    onHide={() => setShowCalendarPurchase(false)}
-                                >
-                                    {({ ref, style }) => (
-                                        <div
-                                            ref={ref}
-                                            style={style}
-                                            className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
-                                        >
-                                            <DatePicker
-                                                inline
-                                                selected={parseDatePurchase}
-                                                onChange={handleDatePurchase}
-                                                shouldCloseOnSelect={false}
-                                                disabledKeyboardNavigation
-                                                monthsShown={1}
-                                                locale="es"
-                                            />
-                                        </div>
-                                    )}
-                                </Overlay>
-                            </Col>
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.architecture")}
+                                        label="Tipo de sistema:"
+                                        className="text-uppercase border"
+                                    />
+                                </Col>
 
-                            <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label className="fw-semibold mt-2">Fecha de expiración de la garantía</Form.Label>
-                                </Form.Group>
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.graphicCard")}
+                                        label="Tarjeta gráfica:"
+                                        className="text-uppercase border"
+                                    />
+                                </Col>
 
-                                <Button
-                                    ref={dateExpirationRef}
-                                    variant="outline-secondary"
-                                    className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
-                                    onClick={() => setShowCalendarExpiration((s) => !s)}
-                                >
-                                    <span>{selectedDateExpiration ? selectedDateExpiration : "Selecciona una fecha"}</span>
-                                    <i className="bi bi-calendar3" />
-                                </Button>
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.userAdmin")}
+                                        label="Usuario administrador:"
+                                        className="text-uppercase border"
+                                    />
+                                </Col>
 
-                                <ConditionalRender cond={!dateError}>
-                                    <small className="text-danger d-block mt-1">{dateError}</small>
-                                </ConditionalRender>
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.passwordAdmin")}
+                                        type={showPasswordAdmin ? "text" : "password"}
+                                        label="Contraseña:"
 
-                                <Overlay
-                                    target={dateExpirationRef.current}
-                                    show={showCalendarExpiration}
-                                    placement="bottom-start"
-                                    rootClose
-                                    container={() => document.body}
-                                    onHide={() => setShowCalendarExpiration(false)}
-                                >
-                                    {({ ref, style }) => (
-                                        <div
-                                            ref={ref}
-                                            style={style}
-                                            className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
-                                        >
-                                            <DatePicker
-                                                inline
-                                                selected={parseDateExpiration}
-                                                onChange={handleDateExpiration}
-                                                shouldCloseOnSelect={false}
-                                                disabledKeyboardNavigation
-                                                monthsShown={1}
-                                                locale="es"
-                                            />
-                                        </div>
-                                    )}
-                                </Overlay>
-                            </Col>
+                                        className="border"
+                                        suffix={
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPasswordAdmin((prev) => !prev)}
+                                                className="btn btn-link p-0 text-info"
+                                                tabIndex={10}
+                                            >
+                                                <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                            </button>
+                                        }
+                                    />
+                                </Col>
+
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.user")}
+                                        label="Nombre de usuario"
+                                        className="text-uppercase border"
+                                    />
+                                </Col>
+
+                                <Col md={6}>
+                                    <Entry
+                                        register={register("specs.userPassword")}
+                                        type={showPassword ? "text" : "password"}
+                                        label="Contraseña:"
+
+                                        className="border"
+                                        suffix={
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                className="btn btn-link p-0 text-info"
+                                                tabIndex={10}
+                                            >
+                                                <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                            </button>
+                                        }
+                                    />
+                                </Col>
+                            </ConditionalRender>
+
+                            <Row>
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label className="fw-semibold mt-2">Fecha de compra</Form.Label>
+                                    </Form.Group>
+
+                                    <Button
+                                        ref={datePurchaseRef}
+                                        variant="outline-secondary"
+                                        className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                                        onClick={() => setShowCalendarPurchase((s) => !s)}
+                                    >
+                                        <span>{selectedDatePurchase ? selectedDatePurchase : "Selecciona una fecha"}</span>
+                                        <i className="bi bi-calendar3" />
+                                    </Button>
+
+                                    <ConditionalRender cond={!dateError}>
+                                        <small className="text-danger d-block mt-1">{dateError}</small>
+                                    </ConditionalRender>
+
+                                    <Overlay
+                                        target={datePurchaseRef.current}
+                                        show={showCalendarPurchase}
+                                        placement="bottom-start"
+                                        rootClose
+                                        container={() => document.body}
+                                        onHide={() => setShowCalendarPurchase(false)}
+                                    >
+                                        {({ ref, style }) => (
+                                            <div
+                                                ref={ref}
+                                                style={style}
+                                                className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                            >
+                                                <DatePicker
+                                                    inline
+                                                    selected={parseDatePurchase}
+                                                    onChange={handleDatePurchase}
+                                                    shouldCloseOnSelect={false}
+                                                    disabledKeyboardNavigation
+                                                    monthsShown={1}
+                                                    locale="es"
+                                                />
+                                            </div>
+                                        )}
+                                    </Overlay>
+                                </Col>
+
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label className="fw-semibold mt-2">Fecha de expiración de la garantía</Form.Label>
+                                    </Form.Group>
+
+                                    <Button
+                                        ref={dateExpirationRef}
+                                        variant="outline-secondary"
+                                        className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                                        onClick={() => setShowCalendarExpiration((s) => !s)}
+                                    >
+                                        <span>{selectedDateExpiration ? selectedDateExpiration : "Selecciona una fecha"}</span>
+                                        <i className="bi bi-calendar3" />
+                                    </Button>
+
+                                    <ConditionalRender cond={!dateError}>
+                                        <small className="text-danger d-block mt-1">{dateError}</small>
+                                    </ConditionalRender>
+
+                                    <Overlay
+                                        target={dateExpirationRef.current}
+                                        show={showCalendarExpiration}
+                                        placement="bottom-start"
+                                        rootClose
+                                        container={() => document.body}
+                                        onHide={() => setShowCalendarExpiration(false)}
+                                    >
+                                        {({ ref, style }) => (
+                                            <div
+                                                ref={ref}
+                                                style={style}
+                                                className="date-multi-popover mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                            >
+                                                <DatePicker
+                                                    inline
+                                                    selected={parseDateExpiration}
+                                                    onChange={handleDateExpiration}
+                                                    shouldCloseOnSelect={false}
+                                                    disabledKeyboardNavigation
+                                                    monthsShown={1}
+                                                    locale="es"
+                                                />
+                                            </div>
+                                        )}
+                                    </Overlay>
+                                </Col>
+                            </Row>
                         </Row>
                     </Card.Body>
                 </Card>
@@ -590,7 +705,7 @@ export default function FormUpdateDevice({
                                         <Row>
                                             <DnsBadgeInput
                                                 networkIndex={index}
-                                                control={control}                                               
+                                                control={control}
                                                 errors={errors}
                                             />
                                         </Row>

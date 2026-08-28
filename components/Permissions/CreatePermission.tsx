@@ -126,14 +126,13 @@ export default function CreatePermissionComponent({
   useEffect(() => {
     if (roles?.isLeader && !roles.isExtra!) {
 
-      const filtrados = employees.filter(
-        (el: Employee) => Number(el.department?.idLeader) === Number(session?.uid?.idEmployee)
-      );
+      const filtrados = employees.filter((el: Employee) => Number(el.department?.idLeader) === Number(session?.uid?.idEmployee) && Number(el.status) === 1);
       setFilteredEmployees(filtrados);
     } else {
       setFilteredEmployees(employees);
     }
   }, [session, roles, idEmployee, employees]);
+  
 
   useEffect(() => {
     if (session?.uid?.role === "EMPLOYEE") setValue("idEmployee", session?.uid?.idEmployee);

@@ -51,7 +51,27 @@ function formatLabel(value: string) {
         .trim();
 }
 
-// 👇 Protege contra networkInfo guardado como objeto en vez de array (bug de datos en backend)
+function maskValue(value?: string | null, reveal?: boolean) {
+    if (!value) return "Sin registro";
+    return reveal ? value : "•".repeat(Math.min(value.length, 10));
+}
+
+function SpecRow({ icon, label, value }: { icon: string; label: string; value?: string | null }) {
+    return (
+        <div className="border rounded-3 p-1 d-flex align-items-center gap-3">
+            <i className={`bi ${icon} text-primary fs-5`} />
+            <div>
+                <div className="small fw-bold">
+                    {label}:
+                    <span className="fw-semibold text-capitalize text-muted ms-1">
+                        {value || "Sin registro"}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function getNetworkInfo(device?: IDevices | null) {
     return Array.isArray(device?.networkInfo) ? device!.networkInfo : [];
 }
@@ -80,10 +100,11 @@ export function DeviceOne({
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
     const activeCheck = getNetworkInfo(device).find((c, index) => String(index) === activeCheckId);
-    const employeeTrue = device.currentAssignment !== null;
+    const employeeTrue = device?.currentAssignment !== null;
     const [showAssignDevice, setShowAssignDevice] = useState(false);
     const [UpdateDeviceModal, setUpdateDeviceModal] = useState(false);
-
+    const [activeSpecsSection, setActiveSpecsSection] = useState<"specs" | "credentials" | null>(null);
+    const [showPasswords, setShowPasswords] = useState(false);
     //HELPERS
 
     useEffect(() => {
@@ -107,15 +128,12 @@ export function DeviceOne({
         router.push("/app/devices/create");
     };
 
-    const handleGenerateDoc = () =>{
+    const handleGenerateDoc = () => {
         setFeedback("loading");
         setFeedbackMsg("Cargando...")
         router.push(`/app/devices?view_type=responsiva&id=${device.id}`);
-    }     
+    }
 
-    console.log("DEVICE:", device);
-    
-    
 
     if (!device) {
         return (
@@ -278,7 +296,7 @@ export function DeviceOne({
                                                 </h6>
 
                                                 <p className="text-muted mb-0 small">
-                                                    Consulta los detalles específicos del dispositivo.
+                                                    Consulta los datos de red y las notas adicionales del dispositivo.
                                                 </p>
                                             </div>
 
@@ -437,6 +455,110 @@ export function DeviceOne({
                                 </Card>
                             </Col>
                         </Row>
+
+                        <ConditionalRender cond={!!device.specs}>
+                            <Card className="border rounded-4 mt-2 mb-2">
+                                <Card.Body>
+                                    <div className="d-flex align-items-center justify-content-between mb-4">
+                                        <div>
+                                            <h6 className="mb-1 fw-bold">Especificaciones del dispositivo</h6>
+                                            <p className="text-muted mb-0 small">Hardware y credenciales de acceso.</p>
+                                        </div>
+
+                                        <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                                            Especificaciones
+                                        </span>
+                                    </div>
+
+                                    <Row className="justify-content-between">
+                                        <Row className="g-1">
+                                            <Col xs={12} sm={12} md={6} lg={6} xl={6}>
+                                                <div
+                                                    role="button"
+                                                    onClick={() => setActiveSpecsSection(activeSpecsSection === "specs" ? null : "specs")}
+                                                    className={`border rounded-3 p-3 h-100 ms-2 ${activeSpecsSection === "specs" ? "border-primary" : ""}`}
+                                                >
+                                                    <div className="d-flex align-items-between gap-2 fw-bold">
+                                                        <i className="bi bi-cpu text-primary me-2" />
+                                                        ESPECIFICACIONES TÉCNICAS
+                                                        <i className={`bi ms-auto ${activeSpecsSection === "specs" ? "bi-chevron-up" : "bi-chevron-down"}`} />
+                                                    </div>
+                                                </div>
+                                            </Col>
+
+                                            <Col xs={12} sm={12} md={6} lg={6} xl={6}>
+                                                <div
+                                                    role="button"
+                                                    onClick={() => setActiveSpecsSection(activeSpecsSection === "credentials" ? null : "credentials")}
+                                                    className={`border rounded-3 p-3 h-100 ms-2 ${activeSpecsSection === "credentials" ? "border-primary" : ""}`}
+                                                >
+                                                    <div className="d-flex align-items-between gap-2 fw-bold">
+                                                        <i className="bi bi-shield-lock text-danger me-2" />
+                                                        CREDENCIALES DE ACCESO
+                                                        <i className={`bi ms-auto ${activeSpecsSection === "credentials" ? "bi-chevron-up" : "bi-chevron-down"}`} />
+                                                    </div>
+                                                </div>
+                                            </Col>
+                                        </Row>
+
+                                        <Collapse in={activeSpecsSection !== null}>
+                                            <div>
+                                                {activeSpecsSection === "specs" && (
+                                                    <div key="specs" className="border rounded-3 p-3 mt-3 me-2 ms-1 collapse-detail-enter">
+                                                        <Row className="g-3">
+                                                            <Col xs={12} lg={12}>
+                                                                <div className="d-flex flex-column gap-2 h-100 w-100">
+                                                                    <SpecRow icon="bi-tag" label="Marca" value={device.specs?.brand} />
+                                                                    <SpecRow icon="bi-cpu-fill" label="Modelo" value={device.specs?.model} />
+                                                                    <SpecRow icon="bi-upc-scan" label="No. de serie" value={device.specs?.serialNumber} />
+                                                                    <SpecRow icon="bi-cpu" label="Procesador" value={device.specs?.processor} />
+                                                                    <SpecRow icon="bi-memory" label="RAM" value={device.specs?.ram} />
+                                                                    <SpecRow icon="bi-device-hdd" label="Almacenamiento" value={device.specs?.storage} />
+                                                                    <SpecRow icon="bi-windows" label="Sistema operativo" value={formatLabel(device.specs?.os ?? "")} />
+                                                                    <SpecRow icon="bi-info-circle" label="Versión de OS" value={device.specs?.osVersion} />
+                                                                    <SpecRow icon="bi-gpu-card" label="Tarjeta gráfica" value={device.specs?.graphicCard} />
+                                                                    <SpecRow icon="bi-diagram-3" label="Tipo de sistema" value={device.specs?.architecture} />
+                                                                    <SpecRow icon="bi-calendar-check" label="Fecha de compra" value={device.specs?.purchaseDate} />
+                                                                    <SpecRow icon="bi-calendar-x" label="Vencimiento de garantía" value={device.specs?.warrantyExpiration} />
+                                                                    <SpecRow icon="bi-hash" label="ID de dispositivo" value={device.specs?.idDevice} />
+                                                                    <SpecRow icon="bi-box-seam" label="ID de producto" value={device.specs?.idProduct} />
+                                                                </div>
+                                                            </Col>
+                                                        </Row>
+                                                    </div>
+                                                )}
+
+                                                {activeSpecsSection === "credentials" && (
+                                                    <div key="credentials" className="border rounded-3 p-3 mt-3 me-2 ms-1 collapse-detail-enter">
+                                                        <div className="d-flex justify-content-end mb-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline-secondary"
+                                                                onClick={() => setShowPasswords((prev) => !prev)}
+                                                            >
+                                                                <i className={`bi ${showPasswords ? "bi-eye-slash" : "bi-eye"} me-1`} />
+                                                                {showPasswords ? "Ocultar" : "Mostrar"} credenciales
+                                                            </Button>
+                                                        </div>
+
+                                                        <Row className="g-3">
+                                                            <Col xs={12} lg={12}>
+                                                                <div className="d-flex flex-column gap-2 h-100 w-100">
+                                                                    <SpecRow icon="bi-person-badge" label="Usuario admin" value={device.specs?.userAdmin} />
+                                                                    <SpecRow icon="bi-key" label="Contraseña admin" value={maskValue(device.specs?.passwordAdmin, showPasswords)} />
+                                                                    <SpecRow icon="bi-person" label="Usuario" value={device.specs?.user} />
+                                                                    <SpecRow icon="bi-key-fill" label="Contraseña usuario" value={maskValue(device.specs?.userPassword, showPasswords)} />
+                                                                </div>
+                                                            </Col>
+                                                        </Row>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </Collapse>
+                                    </Row>
+                                </Card.Body>
+                            </Card>
+                        </ConditionalRender>
 
                         {/* SI NO HAY EMPLEADO ASIGANDO */}
 

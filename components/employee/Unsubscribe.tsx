@@ -114,7 +114,7 @@ export default function UnsubscribeEmployeeComponent({
         />
       </ConditionalRender>
 
-      <div className="p-2">
+      <div className="p-2 mt-4">
 
         <div className="d-flex align-items-center justify-content-between mb-4">
           <div>

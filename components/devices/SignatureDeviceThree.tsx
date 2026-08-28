@@ -6,19 +6,18 @@ import { Card, Col } from "react-bootstrap";
 import { fetchSignatureDevice } from "@/app/actions/devices-actions";
 import { formatCreatedAt } from "@/lib/helpers";
 
-function SignatureDevicewOne({
+function SignatureDeviceThree({
     idDevice,
     idEmployee,
     idSignature,
-    label,
     status,
-    dateSigner
+    label,
+    dateSigner,
 }: {
     idDevice: number;
     idEmployee: number;
     idSignature: number;
     dateSigner: string;
-    dateApproveDoh?: string;
     status: string;
     label?: string;
 }) {
@@ -65,8 +64,8 @@ function SignatureDevicewOne({
 
         const normalizedStatus = status?.toUpperCase();
 
-        if (normalizedLabel === "Empleado - Recibido") {
-            if (normalizedStatus === "COMPLETE") {
+        if (normalizedLabel === "Empleado - Entregado") {
+            if (normalizedStatus === "APPROVED") {
                 return { text: "Aprobado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" };
             }
 
@@ -141,4 +140,4 @@ function SignatureDevicewOne({
     );
 }
 
-export default SignatureDevicewOne;
+export default SignatureDeviceThree;

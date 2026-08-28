@@ -90,7 +90,6 @@ export default function ModalAssignDevice({
     }, [handleStaging]);
 
     const onSubmit: SubmitHandler<IAssignDevice> = async (data) => {
-        console.log("SE MANDA:", data);
 
         modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
             try {

@@ -90,4 +90,5 @@ export interface ISignatures {
     key: string;
     signature?: string;
     dateApproved?: string;
+    dateSigner?: string;
 }

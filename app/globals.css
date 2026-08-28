@@ -51,6 +51,19 @@
   }
 }
 
+
+@keyframes hourglass-flip {
+    0%, 40% {
+        transform: rotate(0deg);
+    }
+    50%, 90% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
 .btn-needs-signature {
   animation: pulse-warning 1.8s infinite;
   position: relative;
@@ -222,4 +235,9 @@
   /* superior al modal (1055) y su backdrop (1050) */
   position: relative;
   /* o absolute, según cómo Popper lo esté posicionando */
+}
+
+.icon-hourglass-animated {
+    display: inline-block;
+    animation: hourglass-flip 3s ease-in-out infinite;
 }

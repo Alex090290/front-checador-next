@@ -83,17 +83,18 @@ export default function UpdateSalaryModal({
                 />
             </ConditionalRender>
 
-            <div className="p-2">
-                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                    <h4 className="mb-0 fw-bold">Actualizar Salario Diario</h4>
+            <div className="p-2 mt-4">
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h4 className="mb-1 fw-bold">Actualizar Salario Diario</h4>
+                        <p className="text-muted mb-0">
+                            Ajusta el salario del empleado seleccionado.
+                        </p>
+                    </div>
 
-                    <Badge
-                        bg="info-subtle"
-                        text="info-emphasis"
-                        className="rounded-pill px-3 py-2 fw-semibold border border-info-subtle"
-                    >
+                    <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                         Actualizar
-                    </Badge>
+                    </span>
                 </div>
 
                 <Form onSubmit={handleSubmit(onSubmit)}>
