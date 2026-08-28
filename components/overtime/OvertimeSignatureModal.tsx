@@ -109,6 +109,7 @@ function OvertimeSignatureModal({
                 backdrop="static"
                 onExited={handleOnExited}
                 centered
+                size="lg"
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Firma del Empleado</Modal.Title>

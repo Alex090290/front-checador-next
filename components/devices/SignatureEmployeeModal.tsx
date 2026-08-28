@@ -16,136 +16,137 @@ import { useForm, SubmitHandler } from "react-hook-form";
 type FeedbackState = "loading" | "success" | "error" | null;
 
 type TInputs = {
-    signature: string;
+  signature: string;
 };
 
 function SignatureEmployeeModal({
-    show,
-    onHide,
-    idDevice,
-    idEmployee,
-    idSignature,
+  show,
+  onHide,
+  idDevice,
+  idEmployee,
+  idSignature,
 }: ModalBasicProps & {
-    idDevice: number;
-    idEmployee: number;
-    idSignature: number;
+  idDevice: number;
+  idEmployee: number;
+  idSignature: number;
 }) {
-    const {
-        reset,
-        register,
-        handleSubmit,
-        control,
-        formState: { isSubmitting },
-    } = useForm<TInputs>();
+  const {
+    reset,
+    register,
+    handleSubmit,
+    control,
+    formState: { isSubmitting },
+  } = useForm<TInputs>();
 
-    const { modalConfirm } = useModals();
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [, setMessageLoading] = useState("");
-    const [feedbackMsg, setFeedbackMsg] = useState("");
-    const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const { modalConfirm } = useModals();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
-    const handleOnExited = () => {
-        reset({ signature: "" });
-    };
+  const handleOnExited = () => {
+    reset({ signature: "" });
+  };
 
-      const onSubmit: SubmitHandler<TInputs> = async (data) => {
-        
-        modalConfirm("¿Seguro que quieres guardar la firma?", async () => {
-          try {
-            setFeedback("loading");
-            setFeedbackMsg("Enviando firma...");
+  const onSubmit: SubmitHandler<TInputs> = async (data) => {
 
-            const res = await sendSignatureDevice({
-              idDevice: idDevice,
-              idSignature: idSignature,
-              idEmployee: idEmployee,
-              signature: data.signature,
-            });
+    modalConfirm("¿Seguro que quieres guardar la firma?", async () => {
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Enviando firma...");
 
-            if (!res.success) {
-              setFeedbackMsg(res.message || "No se pudo mandar la firma");
-              setFeedback("error");
-              return;
-            }
-
-            setFeedbackMsg(res.message || "Firma enviada correctamente");
-            setFeedback("success");
-            router.refresh();
-          } catch {
-            setFeedbackMsg("Error inesperado, intenta de nuevo");
-            setFeedback("error");
-          } finally {
-            setLoading(false);
-            setMessageLoading("");
-          }
+        const res = await sendSignatureDevice({
+          idDevice: idDevice,
+          idSignature: idSignature,
+          idEmployee: idEmployee,
+          signature: data.signature,
         });
-      };
-    
 
-   return (
-       <>
-         <ConditionalRender cond={loading || isSubmitting}>
-           <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
-         </ConditionalRender>
-   
-         <ConditionalRender cond={feedback === "loading"}>
-           <Loading message={feedbackMsg || "Guardando..."} />
-         </ConditionalRender>
-   
-         <ConditionalRender cond={feedback === "success"}>
-           <SuccessOverlay
-             message={feedbackMsg}
-             onDone={() => {
-               setFeedback(null);
-               onHide();
-             }}
-           />
-         </ConditionalRender>
-   
-         <ConditionalRender cond={feedback === "error"}>
-           <ErrorOverlay
-             message={feedbackMsg}
-             onDone={() => setFeedback(null)}
-           />
-         </ConditionalRender>
-   
-         <Modal
-           show={show}
-           onHide={onHide}
-           backdrop="static"
-           onExited={handleOnExited}
-           centered
-         >
-           <Modal.Header closeButton>
-             <Modal.Title>Firma del Empleado</Modal.Title>
-           </Modal.Header>
-           <Form onSubmit={handleSubmit(onSubmit)}>
-             <Modal.Body>
-               <Form.Group className="mb-2">
-                 <SignatureInput
-                   control={control}
-                   name="signature"
-                   register={register}
-                 />
-               </Form.Group>
-             </Modal.Body>
-             <Modal.Footer>
-               <Button variant="secondary" onClick={onHide}>
-                 Cancelar
-               </Button>
-               <Button
-                 type="submit"
-                 className="bg-success border-success"
-                 disabled={isSubmitting}
-               >
-                 Enviar
-               </Button>
-             </Modal.Footer>
-           </Form>
-         </Modal>
-       </>
-     );
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo mandar la firma");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Firma enviada correctamente");
+        setFeedback("success");
+        router.refresh();
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
+      } finally {
+        setLoading(false);
+        setMessageLoading("");
+      }
+    });
+  };
+
+
+  return (
+    <>
+      <ConditionalRender cond={loading || isSubmitting}>
+        <Loading message={isSubmitting ? "Guardando..." : "Cargando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => {
+            setFeedback(null);
+            onHide();
+          }}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
+      <Modal
+        show={show}
+        onHide={onHide}
+        backdrop="static"
+        onExited={handleOnExited}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Firma del Empleado</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <Modal.Body>
+            <Form.Group className="mb-2">
+              <SignatureInput
+                control={control}
+                name="signature"
+                register={register}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={onHide}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="bg-success border-success"
+              disabled={isSubmitting}
+            >
+              Enviar
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </>
+  );
 }
 
 export default SignatureEmployeeModal;

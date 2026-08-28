@@ -115,7 +115,6 @@ export default function DevicesTableClient({
         setFeedbackMsg("Cargando...");
         router.push("/app/devices/create");
     };
-    // console.log("TABLA:", devices.filter((n) => n.networkInfo))
     
 
     //TABLA

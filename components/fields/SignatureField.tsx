@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import {
   Controller,
@@ -30,6 +30,33 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
 }) => {
   const sigCanvasRef = useRef<SignatureCanvas | null>(null);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 450, height: 125 });
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (!containerRef.current) return;
+      const availableWidth = containerRef.current.offsetWidth;
+      const width = Math.min(availableWidth, 750);
+      const height = width < 400 ? 150 : 260;
+      setCanvasSize({ width, height });
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
+  // NUEVO: cambiar width/height de un <canvas> lo borra a transparente (comportamiento
+  // del navegador). El wrapper de react-signature-canvas no repinta el fondo automáticamente
+  // tras ese cambio, así que lo forzamos aquí. Solo si está vacío, para no borrar una firma
+  // ya dibujada o cargada.
+  useEffect(() => {
+    if (sigCanvasRef.current && sigCanvasRef.current.isEmpty()) {
+      sigCanvasRef.current.clear();
+    }
+  }, [canvasSize]);
+
   useEffect(() => {
     // Si hay una firma en base64, cargarla solo una vez al inicio
     if (sigCanvasRef.current && !sigCanvasRef.current.isEmpty()) return;
@@ -49,7 +76,7 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
   }, [control, name]);
 
   return (
-    <div>
+    <div ref={containerRef}>
       <Controller
         name={name}
         control={control}
@@ -73,8 +100,8 @@ export const SignatureInput: React.FC<SignatureInputProps> = ({
                 <SignatureCanvas
                   penColor="black"
                   canvasProps={{
-                    width: 450,
-                    height: 125,
+                    width: canvasSize.width,
+                    height: canvasSize.height,
                     className: "signature-canvas border rounded",
                   }}
                   ref={sigCanvasRef}

@@ -148,7 +148,6 @@ export async function getUserData({
             : "Error en la respuesta"
         );
       });
-    console.log("response: ", response);
 
     return {
       success: true,
@@ -435,7 +434,6 @@ export async function updateUser({
       }
 
       revalidatePath("/app/users");
-      console.log("IdEmpleado:", idEmployee);
 
       return {
         success: true,

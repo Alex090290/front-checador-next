@@ -286,7 +286,6 @@ export async function createVacation({
         );
       });
 
-    // console.log(response.data.id);
 
     if (response.data.id) {
       const datax = new FormData();
@@ -413,7 +412,6 @@ export async function fetchVacationSignature({
         console.log("Error de firmas: ", err?.response?.status ?? err.message);
         return null; // null en vez de '' para distinguir claramente "no hay imagen"
       });
-      console.log("resImg: ",resImg);
       
     if (!resImg) {
       return {

@@ -100,6 +100,7 @@ export default function ShowInfoVacation({
   const { modalError, modalConfirm } = useModals();
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const showPDF = vacation?.signatures.every((f) => f.url !== "");
 
   const signatures = useMemo(() =>
     Array.isArray(vacation?.signatures) ? vacation.signatures : [],
@@ -241,7 +242,7 @@ export default function ShowInfoVacation({
       }
     });
   };
-
+  
 
   if (!vacation || !vacation.id || !vacation.period) {
     return (
@@ -349,7 +350,7 @@ export default function ShowInfoVacation({
               </OverLay>
             </ConditionalRender>
 
-            <ConditionalRender cond={vacation.status === "APPROVED"}>
+            <ConditionalRender cond={showPDF === true}>
               <OverLay string="Descargar PDF">
                 <Button
                   className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"

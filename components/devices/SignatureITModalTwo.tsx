@@ -116,9 +116,10 @@ function SignatureITModalTwo({
         backdrop="static"
         onExited={handleOnExited}
         centered
+        size="lg"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Firma del Empleado</Modal.Title>
+          <Modal.Title>Firma de IT</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit(onSubmit)}>
           <Modal.Body>

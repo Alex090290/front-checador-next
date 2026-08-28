@@ -116,6 +116,7 @@ function ApproveVacationLeaderModal({
         backdrop="static"
         onExited={handleOnExited}
         centered
+        size="lg"
       >
         <Modal.Header closeButton>
           <Modal.Title>Aprobación de vacaciones</Modal.Title>

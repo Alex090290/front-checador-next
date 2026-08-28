@@ -110,6 +110,7 @@ function SignatureDohModal({
                 backdrop="static"
                 onExited={handleOnExited}
                 centered
+                size="lg"
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Firma de enterado</Modal.Title>
