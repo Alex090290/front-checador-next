@@ -366,12 +366,11 @@ export async function sendSignatureDevice({
 
     const url = `${apiUrl}/devices-signature/${idDevice}/${idSignature}/${idEmployee}`
 
-    const firma = await axios.put(url, formData, {
+    await axios.put(url, formData, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
     });
-    console.log("firma: ", firma);
 
     return {
       success: true,

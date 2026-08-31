@@ -9,7 +9,7 @@ import { Suspense } from "react";
 export default async function CreateVacation() {
       
       const [ employeesRes ] = await Promise.all([
-        fetchEmployees({ page: 1, limit: 500 }),
+        fetchEmployees({ page: 1, limit: 500, status: "1" }),
       ]);
     
 

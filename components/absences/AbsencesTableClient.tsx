@@ -70,7 +70,8 @@ export default function AbsencesTableClient({
     absence,
     dateInit,
     dateEnd,
-    eventos
+    eventos,
+    yaGenerado
 }: {
     total: number;
     page: number;
@@ -81,6 +82,7 @@ export default function AbsencesTableClient({
     type?: string;
     absence?: IAbsence[];
     eventos?: ICheckInFeedback[];
+    yaGenerado: boolean;
 }) {
     //Aqui los const 
     const router = useRouter();
@@ -96,7 +98,7 @@ export default function AbsencesTableClient({
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const [, setTableResetKey] = useState(0);
     const isLeader = roles?.isLeader && !roles.isExtra;
-
+    
 
     //Filtro
     const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
@@ -115,6 +117,7 @@ export default function AbsencesTableClient({
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [showGenerateModal, setShowGenerateModal] = useState(false);
+    const disabled = yaGenerado || feedback === "loading" || feedback === "success";
 
     const { mutate } = useSWR<ICheckInFeedback[]>(
         "/api/eventos",
@@ -478,6 +481,7 @@ export default function AbsencesTableClient({
                         variant="warning"
                         className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
                         onClick={handleGenerateFaults}
+                        disabled={disabled}
                     >
                         <i className="bi bi-person-x" />
                         Generar faltas
@@ -767,7 +771,7 @@ export default function AbsencesTableClient({
                     <ModalBlur onClose={() => setShowGenerateModal(false)}>
                         <GenerateModal
                             show={showGenerateModal}
-                            onHide={() => {setShowGenerateModal(false);}}
+                            onHide={() => { setShowGenerateModal(false); }}
                             dateInit={dateInit}
                             dateEnd={dateEnd}
                         />

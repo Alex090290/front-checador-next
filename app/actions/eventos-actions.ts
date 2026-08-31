@@ -297,7 +297,7 @@ export async function generateFault(): Promise<ActionResponse<string[]>> {
       },
     });
 
-    revalidatePath("/app/checador"); // ajusta la ruta según tu módulo
+    revalidatePath("/app/checador"); 
 
     return {
       success: true,

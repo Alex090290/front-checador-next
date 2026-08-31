@@ -78,12 +78,35 @@ export interface IDevices {
         idEmployee: number;
         idBranch: number;
         idDepartment: number;
-        loacation: string;
+        location: string;
+        phoneNumber: string | null;
+        extentionNumber: string | null;
+        emailCompany: string | null;
+        emailGmail: string | null;
         signatures: ISignatures[] | null;
         deliveryDocument: string | null;
         documentReceived: string | null;
         assignedAt: string;
         returnedAt: string | null;
+
+        employee: {
+            id: number;
+            name: string;
+            lastName: string;
+        },
+        personIt: {
+            id: number;
+            name: string;
+            lastName: string;
+        },
+        department: {
+            id: number;
+            nameDepartment: string;
+        },
+        branch: {
+            id: number;
+            name: string;
+        }
     }[];
 
     createdAt: string;

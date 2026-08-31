@@ -12,6 +12,7 @@ import ModalBlur from "../ModalBlur";
 import ModalAssignDevice from "./ModalAssignDevice";
 import { Branch, Department, Employee } from "@/lib/definitions";
 import FormUpdateDevice from "./UpdateDevice";
+import DevicesOneError from "./DevicesOneError";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -94,7 +95,6 @@ export function DeviceOne({
     const router = useRouter();
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
-
     const [loading] = useState(false);
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
@@ -105,12 +105,15 @@ export function DeviceOne({
     const [UpdateDeviceModal, setUpdateDeviceModal] = useState(false);
     const [activeSpecsSection, setActiveSpecsSection] = useState<"specs" | "credentials" | null>(null);
     const [showPasswords, setShowPasswords] = useState(false);
-    //HELPERS
+    const noHistorial = device.assignmentHistory?.every((n) => n.returnedAt === null);
+    
 
-    useEffect(() => {
-        setFeedback(null);
-        setFeedbackMsg("");
-    }, [searchParamsString]);
+        //HELPERS
+
+        useEffect(() => {
+            setFeedback(null);
+            setFeedbackMsg("");
+        }, [searchParamsString]);
 
 
     const handleBack = () => {
@@ -134,10 +137,16 @@ export function DeviceOne({
         router.push(`/app/devices?view_type=responsiva&id=${device.id}`);
     }
 
+    const handleViewHistorial = () => {
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...")
+        router.push(`/app/devices?view_type=historial&id=${device.id}`);
+    }
+
 
     if (!device) {
         return (
-            <div> NO HAY REGISTROS</div>
+            <DevicesOneError />
         )
     }
     return (
@@ -168,7 +177,7 @@ export function DeviceOne({
                             </Button>
                         </OverLay>
 
-                        <OverLay string="Actualizar Departamento">
+                        <OverLay string="Actualizar Dispositivo">
                             <Button
                                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                                 variant="primary"
@@ -179,6 +188,21 @@ export function DeviceOne({
 
                                 <span className="d-none d-md-inline ms-2">
                                     Actualizar Dispositivo
+                                </span>
+                            </Button>
+                        </OverLay>
+
+                        <OverLay string="Ver historial del Dispositivo">
+                            <Button
+                                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                                variant="secondary"
+                                onClick={handleViewHistorial}
+                                disabled={noHistorial === true}
+                            >
+                                <i className="bi bi-hourglass-split" />
+
+                                <span className="d-none d-md-inline ms-2">
+                                    Ver historial del dispositivo
                                 </span>
                             </Button>
                         </OverLay>

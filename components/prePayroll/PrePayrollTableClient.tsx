@@ -552,7 +552,7 @@ export default function PrePayrollTableClient({
 
             <Container className="py-3" style={{ maxWidth: "1600px" }}>
 
-                <ConditionalRender cond={prepayrollextra.complete === false}>
+                <ConditionalRender cond={prepayrollextra?.complete === false}>
                     <Button
                         variant="success"
                         className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
@@ -564,7 +564,7 @@ export default function PrePayrollTableClient({
                     </Button>
                 </ConditionalRender>
 
-                <ConditionalRender cond={documentAlreadyGenerated !== true && prepayrollextra.complete !== false}>
+                <ConditionalRender cond={documentAlreadyGenerated !== true && prepayrollextra?.complete !== false}>
                     <Button
                         variant="primary"
                         className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
@@ -728,7 +728,7 @@ export default function PrePayrollTableClient({
                                                             </th>
                                                         ))}
 
-                                                        <ConditionalRender cond={prepayrollextra.complete === false}>
+                                                        <ConditionalRender cond={prepayrollextra?.complete === false}>
                                                             <th className="fw-bold">Detalles</th>
                                                         </ConditionalRender>
                                                     </tr>
@@ -745,7 +745,7 @@ export default function PrePayrollTableClient({
                                                                 </td>
                                                             ))}
 
-                                                            <ConditionalRender cond={prepayrollextra.complete === false}>
+                                                            <ConditionalRender cond={prepayrollextra?.complete === false}>
                                                                 <td className="align-middle">
                                                                     <div className="d-flex justify-content-center align-items-center gap-2">
                                                                         <Button

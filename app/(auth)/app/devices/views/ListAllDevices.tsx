@@ -2,6 +2,7 @@ import { ListDevices } from "@/app/actions/devices-actions";
 import DevicesTableClient from "@/components/devices/DevicesTableClient";
 import DevicesInfoOne from "./DevicesInfoOne";
 import ResponsivePage from "./ResponsivePage";
+import HistorialPage from "./HistorialPage";
 
 export default async function ListAllDevices({
     id,
@@ -29,6 +30,8 @@ export default async function ListAllDevices({
     if (id && id !== "null") {
         if(view_type === "responsiva"){
             return <ResponsivePage id={id} />
+        }else if(view_type === "historial"){
+            return <HistorialPage id={id}/>
         }
         return (
             <DevicesInfoOne id={id} />

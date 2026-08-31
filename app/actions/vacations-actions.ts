@@ -409,7 +409,7 @@ export async function fetchVacationSignature({
       )
       .then((res) => res.data)
       .catch((err) => {
-        console.log("Error de firmas: ", err?.response?.status ?? err.message);
+        console.log(err);
         return null; // null en vez de '' para distinguir claramente "no hay imagen"
       });
       

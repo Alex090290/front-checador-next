@@ -212,6 +212,14 @@ export interface Employee {
   biometricPhotos?: biometricPhotos[];
 }
 
+export interface reEntryEmployee{
+   _id?: string;
+    reEntryDate?: string;
+    dischargeDate?: string;
+    dischargeReason?: string;
+    typeOfDischarge?: string;
+}
+
 type EmergencyContact = {
   name: string;
   kinship: string;

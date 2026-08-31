@@ -26,14 +26,14 @@ export default async function ListAllAbsences({
         );
     }
     const currentDate = moment.tz().format("YYYY-MM-DD");
-    
+
     const pageParse = Math.max(Number(page || "1") || 1, 1);
     const limitParse = Math.min(Math.max(Number(limit || "20") || 2, 1), 100);
 
     const finalDateInit = dateInit || currentDate;
     const finalDateEnd = dateEnd || currentDate;
 
-    const [absence] = await Promise.all([
+    const [absence, faltasHoy] = await Promise.all([
         fetchAbsencesQueries({
             page: pageParse,
             limit: limitParse,
@@ -42,7 +42,16 @@ export default async function ListAllAbsences({
             dateEnd: finalDateEnd,
             type
         }),
+        fetchAbsencesQueries({
+            page: 1,
+            limit: 1,
+            dateInit: currentDate,
+            dateEnd: currentDate,
+            type: "falta"
+        })
     ]);
+
+    const yaGenerado = faltasHoy.total > 0;
 
     return (
         <AbsencesTableClient
@@ -53,6 +62,7 @@ export default async function ListAllAbsences({
             dateInit={finalDateInit}
             dateEnd={finalDateEnd}
             type={type}
+            yaGenerado={yaGenerado}
         />
     );
 }

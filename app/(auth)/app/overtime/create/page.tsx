@@ -7,6 +7,7 @@ export default async function CreateOvertimePage() {
     const employees = await fetchEmployees({
         limit: 500,
         search: "",
+        status: "1"
     });
     
 

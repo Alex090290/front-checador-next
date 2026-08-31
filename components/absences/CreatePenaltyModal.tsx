@@ -70,6 +70,11 @@ export default function CreatePenaltyComponent({
         setSelectedDates(dates ?? []);
     };
 
+    const handleRemove = (dateToRemove: Date) => {
+        setSelectedDates((prev) =>
+            prev.filter((d) => d.getTime() !== dateToRemove.getTime())
+        );
+    };
 
     const onSubmit: SubmitHandler<IPenalty> = async (data) => {
         if (selectedDates.length === 0) {
@@ -91,8 +96,6 @@ export default function CreatePenaltyComponent({
         };
 
         modalConfirm("¿Seguro que quieres guardar la penalización?", async () => {
-            console.log("se envia:", payload);
-            
             try {
                 setFeedback("loading");
                 setFeedbackMsg("Guardando penalización...");
@@ -141,7 +144,7 @@ export default function CreatePenaltyComponent({
                 />
             </ConditionalRender>
 
-            <div className="p-2">
+            <div className="p-2 mt-4">
 
                 <div className="d-flex align-items-center justify-content-between mb-4">
                     <div>
@@ -223,7 +226,7 @@ export default function CreatePenaltyComponent({
                                             <i className="bi bi-calendar3" />
                                         </Button>
 
-                                        <ConditionalRender cond={!dateError}> 
+                                        <ConditionalRender cond={!!dateError}>
                                             <small className="text-danger d-block mt-1">{dateError}</small>
                                         </ConditionalRender>
 
@@ -256,18 +259,29 @@ export default function CreatePenaltyComponent({
                                         </Overlay>
 
                                         <div className="fw-semibold mt-3"> Fecha(s) Seleccionada(s): </div>
-                                        <div>{selectedDates.length > 0 && (
+                                        <ConditionalRender cond={selectedDates.length > 0}>
                                             <div className="d-flex flex-wrap gap-2 mt-2">
                                                 {sortedSelectedDates.map((d) => (
                                                     <span
                                                         key={d.toISOString()}
-                                                        className="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle"
+                                                        className="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle position-relative pe-4"
                                                     >
                                                         {formatDate(d, "dd/MM/yyyy")}
+                                                        <i
+                                                            role="button"
+                                                            className="bi bi-x-circle-fill position-absolute"
+                                                            style={{
+                                                                cursor: "pointer",
+                                                                top: "-4px",
+                                                                right: "-3px",
+                                                                fontSize: "0.9rem",
+                                                            }}
+                                                            onClick={() => handleRemove(d)}
+                                                        />
                                                     </span>
                                                 ))}
                                             </div>
-                                        )}</div>
+                                        </ConditionalRender>
                                     </Col>
 
                                     <Col md={12}>
@@ -325,7 +339,7 @@ export default function CreatePenaltyComponent({
 
                     </fieldset>
                 </Form>
-            </div>
+            </div >
         </>
     );
 }

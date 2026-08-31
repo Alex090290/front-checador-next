@@ -26,10 +26,6 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import ModalBlur from "../ModalBlur";
 import FormUpdateEmployee from "@/app/(auth)/app/employee/views/updateEmplyee/update";
-import {
-  reEntry,
-} from "@/app/actions/employee-actions";
-import { useModals } from "@/context/ModalContext";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import RegisterBiometricModal from "./rekognition";
@@ -38,11 +34,12 @@ import NewDocumentEmployeeComponent from "./NewDocument";
 import AlertBiometrics from "../AlertBiometrics";
 import { useRouter } from "next/navigation";
 import OverLay from "../templates/OverLay";
-import { formatScheduleTime } from "@/lib/helpers";
+import { formatCreatedAt, formatScheduleTime } from "@/lib/helpers";
 import moment from "moment";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import EmployeeOneError from "./EmployeeMessageError";
+import ReEntryModal from "./reEntryModal";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -138,11 +135,10 @@ export default function EmployeeDetailsView({
   vacations,
 }: Props) {
   const router = useRouter();
-  const { modalError, modalConfirm } = useModals();
   const { data: session } = useSession();
   const [showRegisterBiometricModal, setShowRegisterBiometricModal] = useState(false);
   const [showUpdateEmployeeModal, setShowUpdateEmployeeModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [showUnsubscribeEmployeeModal, setShowUnsubscribeEmployeeModal] = useState(false);
   const [showNewDocumentEmployeeModal, setShowNewDocumentEmployeeModal] = useState(false);
   const statusOne = employee?.status === 1;
@@ -156,6 +152,7 @@ export default function EmployeeDetailsView({
   const saturdayExit = moment(employee?.scheduleSaturday?.exit, "HH:mm").format("hh:mm A");
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [showReEntryModal, setShowReEntryModal] = useState(false);
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||
@@ -165,36 +162,6 @@ export default function EmployeeDetailsView({
   const branch =
     branches.find((b) => b.id === employee?.branch?.id) || employee?.branch;
 
-
-  const handleReEntry = async () => {
-    if (!employee?.id) {
-      modalError("No se encontró el empleado");
-      return;
-    }
-
-    modalConfirm("Confirma el reingreso del empleado", async () => {
-      try {
-        setFeedback("loading");
-        setFeedbackMsg("Reingresando empleado...");
-
-        const res = await reEntry({ id: Number(employee.id) });
-
-        if (!res.success) {
-          setFeedbackMsg(res.message || "No se pudo reingresar al empleado");
-          setFeedback("error");
-          return;
-        }
-
-        setFeedbackMsg(res.message || "Empleado actualizado correctamente");
-        setFeedback("success");
-      } catch {
-        setFeedbackMsg("Error inesperado, intenta de nuevo");
-        setFeedback("error");
-      } finally {
-        setLoading(false);
-      }
-    });
-  };
 
   const upperCase = (text?: string) => {
     return text?.toUpperCase() || "";
@@ -224,11 +191,11 @@ export default function EmployeeDetailsView({
   };
 
   if (!employee) {
-      return (
-        <EmployeeOneError />
-      );
-    }
-
+    return (
+      <EmployeeOneError />
+    );
+  }
+  
 
   return (
     <>
@@ -308,7 +275,7 @@ export default function EmployeeDetailsView({
               <Button
                 className="d-inline-flex align-items-center fw-semibold px-3"
                 variant="success"
-                onClick={handleReEntry}
+                onClick={() => setShowReEntryModal(true)}
               >
                 <i className="bi bi-arrow-up me-2" />
                 Reingreso
@@ -996,7 +963,7 @@ export default function EmployeeDetailsView({
                             </span>
                           </div>
 
-                          {session?.user?.permissions.some(
+                          {session?.user?.permissions?.some(
                             (p) => p.text === "visualizar_salario"
                           ) && (
                               <div className="d-flex align-items-center justify-content-between">
@@ -1234,7 +1201,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatDateValue(employee?.admissionDate, "yyyy-MM-dd")}
+                              {formatCreatedAt(employee?.admissionDate)}
                             </span>
                           </div>
 
@@ -1245,7 +1212,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatDateValue(employee?.dischargeDate, "yyyy-MM-dd")}
+                              {formatCreatedAt(employee?.dischargeDate ?? "")}
                             </span>
                           </div>
                         </div>
@@ -1340,18 +1307,18 @@ export default function EmployeeDetailsView({
                             {employee?.reEntry?.length ? (
                               employee.reEntry.map((re) => (
                                 <tr key={re._id}>
-                                  <td className="border-bottom py-3 text-center">
+                                  <td className="border-bottom py-3 text-left">
                                     <span className="fw-semibold">
                                       {re.reEntryDate
-                                        ? formatDate(re.reEntryDate, "MM/dd/yyyy")
+                                        ? formatCreatedAt(re.reEntryDate)
                                         : "-"}
                                     </span>
                                   </td>
 
-                                  <td className="border-bottom py-3 text-center">
+                                  <td className="border-bottom py-3 text-left">
                                     <span className="fw-semibold">
                                       {re.dischargeDate
-                                        ? formatDate(re.dischargeDate, "MM/dd/yyyy")
+                                        ? formatCreatedAt(re.dischargeDate)
                                         : "-"}
                                     </span>
                                   </td>
@@ -1391,7 +1358,7 @@ export default function EmployeeDetailsView({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                           <h6 className="mb-0 fw-bold">Documentos del empleado</h6>
 
-                          {session?.user?.permissions.some(
+                          {session?.user?.permissions?.some(
                             (p) => p.text === "crear_plantilla_de_documento"
                           ) && (
                               <div className="d-flex justify-content-end mb-4">
@@ -1695,6 +1662,16 @@ export default function EmployeeDetailsView({
               </ModalBlur>
             </ConditionalRender>
 
+            <ConditionalRender cond={showReEntryModal}>
+              <ModalBlur onClose={() => setShowReEntryModal(false)}>
+                <ReEntryModal
+                  show={showReEntryModal}
+                  onHide={() => { setShowReEntryModal(false); }}
+                  employee={{ ...employee, dischargeDate: employee.dischargeDate ?? undefined }}
+                  id={Number(employee.id)}
+                />
+              </ModalBlur>
+            </ConditionalRender>
           </Card.Body>
         </Card>
         {/* </Col>

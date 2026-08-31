@@ -35,13 +35,17 @@ export default async function ListPrePayroll({
         })
     ]);
 
+    const sortedPeriods = [...(periodsList ?? [])].sort(
+    (a, b) => Number(a.numberPeriod) - Number(b.numberPeriod)
+);
+
     return (
         <PrePayrollTableClient
             total={prepayroll.total}
             page={pageParse}
             limit={limitParse}
             prepayroll={prepayroll.data}
-            periods={periodsList ?? []}
+            periods={sortedPeriods}
             periodoActual={periodoActual}
             prepayrollextra={prepayroll.dataExtra}
         />

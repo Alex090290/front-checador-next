@@ -6,7 +6,7 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 
 
-export default function EmployeeOneError() {
+export default function DevicesOneError() {
 
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -16,13 +16,13 @@ export default function EmployeeOneError() {
     const handleCreate = () => {
         setLoading(true);
         setMessageLoading('Cargando...');
-        router.push("/app/employee/create");
+        router.push("/app/devices/create");
     };
 
     const handleBack = () => {
         setLoading(true);
         setMessageLoading("Cargando datos...");
-        router.push("/app/employee");
+        router.push("/app/devices");
     }
 
     return (
@@ -30,6 +30,7 @@ export default function EmployeeOneError() {
             <ConditionalRender cond={loading}>
                 <Loading message={"Cargando..."} />
             </ConditionalRender>
+
 
             <div className="container py-5 align-items-center">
                 <div className="row justify-content-center">
@@ -39,17 +40,17 @@ export default function EmployeeOneError() {
 
                                 <div className="mb-4">
                                     <i
-                                        className="bi bi-person-bounding-box text-danger"
-                                        style={{ fontSize: "5rem" }}
+                                        className="bi bi-laptop text-danger"
+                                        style={{ fontSize: "6rem" }}
                                     />
                                 </div>
 
                                 <h2 className="fw-bold mb-3">
-                                    Empleado no encontrado
+                                    Dispositivo no encontrado
                                 </h2>
 
                                 <p className="text-muted mb-4">
-                                    El empleado que intentas consultar no existe,
+                                    El dispositivo que intentas consultar no existe,
                                     fue eliminado o no se encuentra disponible.
                                 </p>
 
@@ -67,7 +68,7 @@ export default function EmployeeOneError() {
                                         onClick={handleCreate}
                                     >
                                         <i className="bi bi-plus-lg me-2" />
-                                        Nuevo empleado
+                                        Nuevo dispositivo
                                     </Button>
                                 </div>
                             </div>

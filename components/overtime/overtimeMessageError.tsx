@@ -2,12 +2,14 @@
 import { useRouter } from "next/navigation";
 import { Button } from "react-bootstrap";
 import { useState } from "react";
+import ConditionalRender from "../ConditionalRender";
+import Loading from "../LoadingSpinner";
 
 
 export default function OvertimeOneError() {
 
     const router = useRouter();
-    const [, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [, setMessageLoading] = useState("");
 
 
@@ -27,6 +29,9 @@ export default function OvertimeOneError() {
     }
     return (
         <>
+            <ConditionalRender cond={loading}>
+                <Loading message={"Cargando..."} />
+            </ConditionalRender>
 
             <div className="container py-5 align-items-center">
                 <div className="row justify-content-center">

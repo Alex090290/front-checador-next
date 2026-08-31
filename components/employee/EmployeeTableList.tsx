@@ -63,8 +63,8 @@ export default function EmployeeTableClient({
   }, [searchParamsString]);
 
   const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading("Cargando...");
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     router.push("/app/employee/create");
   };
 

@@ -1,15 +1,15 @@
 import { ListOneDevice } from "@/app/actions/devices-actions";
 import DevicesOneError from "@/components/devices/DevicesOneError";
-import ResposiveDoc from "@/components/devices/ResposiveDoc";
+import HistorialDevice from "@/components/devices/HistorialDevice";
 
-export default async function ResponsivePage({ id }: { id: string }) {
+export default async function HistorialPage({ id }: { id: string }) {
     const res = await ListOneDevice({ id: Number(id) });
 
     if (!res) {
-        return (
+        return(
             <DevicesOneError/>
         );
     }
 
-    return <ResposiveDoc device={res} idDevice={res.id} />;
+    return <HistorialDevice device={res} idDevice={res.id} />;
 }

@@ -14,7 +14,7 @@ import {
   Position,
 } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import {
   Button,
@@ -22,6 +22,7 @@ import {
   Col,
   Container,
   Form,
+  Overlay,
   Row,
   Table,
 } from "react-bootstrap";
@@ -32,6 +33,8 @@ import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { EntryNumber } from "../fields/EntryFieldNumber";
+import DatePicker from "react-datepicker";
+import moment from "moment";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -118,6 +121,7 @@ export default function CreateEmployeeComponent({
     control,
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<TInputsEmployee>({
     defaultValues: DEFAULT_VALUES,
@@ -126,6 +130,8 @@ export default function CreateEmployeeComponent({
   const { data: session } = useSession();
   const { modalConfirm } = useModals();
   const router = useRouter();
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendarRelation, setShowCalendarRelation] = useState(false);
 
 
   const [feedbackMsg, setFeedbackMsg] = useState("");
@@ -143,6 +149,33 @@ export default function CreateEmployeeComponent({
   const [puestos, setPuestos] = useState<Position[]>([]);
   const { replace } = useFieldArray({ control, name: "emergencyContacts" });
 
+  //Calendario nacimiento
+  const [dateError] = useState("");
+  const dateButtonRef = useRef(null);
+
+  const selectedDate = watch("birthDate");
+  const parsedDate = selectedDate
+    ? moment(selectedDate, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChange = (date: Date | null) => {
+    setValue("birthDate", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
+
+  //Calendario inicio de relacion
+  const [dateErrorRelation] = useState("");
+  const dateButtonRefRelation = useRef(null);
+
+  const selectedDateRelation = watch("admissionDate");
+  const parsedDateRelation = selectedDateRelation
+    ? moment(selectedDate, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChangeRelation = (date: Date | null) => {
+    setValue("admissionDate", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
+
+
   useEffect(() => {
     if (deps) {
       const positions: Position[] =
@@ -154,6 +187,8 @@ export default function CreateEmployeeComponent({
   }, [deps, departments]);
 
   const handleBack = () => {
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     router.push("/app/employee");
   };
 
@@ -300,13 +335,51 @@ export default function CreateEmployeeComponent({
                               </Col>
 
                               <Col md={6}>
-                                <Entry
-                                  register={register("birthDate", { required: true })}
-                                  type="date"
-                                  label="Nacimiento:"
-                                  invalid={!!errors.birthDate}
-                                  className="border text-uppercase"
-                                />
+                                <Form.Group>
+                                  <Form.Label className="fw-semibold">Nacimiento:</Form.Label>
+                                </Form.Group>
+
+                                <Button
+                                  ref={dateButtonRef}
+                                  style={{ height: "35px" }}
+                                  variant="outline-secondary"
+                                  className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                                  onClick={() => setShowCalendar((s) => !s)}
+                                >
+                                  <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                  <i className="bi bi-calendar3" />
+                                </Button>
+
+                                <ConditionalRender cond={!dateError}>
+                                  <small className="text-danger d-block mt-1">{dateError}</small>
+                                </ConditionalRender>
+
+                                <Overlay
+                                  target={dateButtonRef.current}
+                                  show={showCalendar}
+                                  placement="bottom-start"
+                                  rootClose
+                                  container={() => document.body}
+                                  onHide={() => setShowCalendar(false)}
+                                >
+                                  {({ ref, style }) => (
+                                    <div
+                                      ref={ref}
+                                      style={style}
+                                      className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                    >
+                                      <DatePicker
+                                        inline
+                                        selected={parsedDate}
+                                        onChange={handleDateChange}
+                                        shouldCloseOnSelect={false}
+                                        disabledKeyboardNavigation
+                                        monthsShown={1}
+                                        locale="es"
+                                      />
+                                    </div>
+                                  )}
+                                </Overlay>
                               </Col>
 
                               <Col md={6}>
@@ -961,12 +1034,51 @@ export default function CreateEmployeeComponent({
 
                             <Row className="g-3">
                               <Col md={6}>
-                                <Entry
-                                  register={register("admissionDate")}
-                                  label="Inicio de relación:"
-                                  className="border text-uppercase"
-                                  type="date"
-                                />
+                                <Form.Group>
+                                  <Form.Label className="fw-semibold">Inicio de relación:</Form.Label>
+                                </Form.Group>
+
+                                <Button
+                                  ref={dateButtonRefRelation}
+                                  style={{ height: "35px" }}
+                                  variant="outline-secondary"
+                                  className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorRelation ? "border-danger text-danger" : ""}`}
+                                  onClick={() => setShowCalendarRelation((s) => !s)}
+                                >
+                                  <span>{selectedDateRelation ? selectedDateRelation : "Selecciona una fecha"}</span>
+                                  <i className="bi bi-calendar3" />
+                                </Button>
+
+                                <ConditionalRender cond={!dateErrorRelation}>
+                                  <small className="text-danger d-block mt-1">{dateErrorRelation}</small>
+                                </ConditionalRender>
+
+                                <Overlay
+                                  target={dateButtonRefRelation.current}
+                                  show={showCalendarRelation}
+                                  placement="bottom-start"
+                                  rootClose
+                                  container={() => document.body}
+                                  onHide={() => setShowCalendarRelation(false)}
+                                >
+                                  {({ ref, style }) => (
+                                    <div
+                                      ref={ref}
+                                      style={style}
+                                      className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                    >
+                                      <DatePicker
+                                        inline
+                                        selected={parsedDateRelation}
+                                        onChange={handleDateChangeRelation}
+                                        shouldCloseOnSelect={false}
+                                        disabledKeyboardNavigation
+                                        monthsShown={1}
+                                        locale="es"
+                                      />
+                                    </div>
+                                  )}
+                                </Overlay>
                               </Col>
 
                               {/* <Col md={6}>

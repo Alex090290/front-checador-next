@@ -52,6 +52,7 @@ export async function fetchEmployees(
     idDepartment?: string;
     idPosition?: string;
     branch?: string;
+    status?: string;
   } = {}): Promise<{
     data: Employee[];
     total: number;
@@ -68,6 +69,10 @@ export async function fetchEmployees(
     const params = new URLSearchParams();
     params.set("page", String(pageNum));
     params.set("limit", String(limitNum));
+
+    if (args.status && args.status.trim() !== "") {
+      params.set("status", args.status)
+    }
 
     if (args.search?.trim()) {
       params.set("search", args.search.trim());
@@ -629,8 +634,10 @@ export async function deleteEmployee({
 
 export async function reEntry({
   id,
+  reEntryDate
 }: {
   id: number | null;
+  reEntryDate: string;
 }): Promise<ActionResponse<boolean>> {
   try {
     if (!id) throw new Error("ID NO ESPECIFICADO");
@@ -639,7 +646,7 @@ export async function reEntry({
 
     await axios.put(
       `${API_URL}/employee/reEntry/${String(id)}`,
-      {},
+      { date: reEntryDate },
       {
         headers: {
           Authorization: `Bearer ${apiToken}`,

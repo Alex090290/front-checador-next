@@ -10,9 +10,11 @@ import SuccessOverlay from "@/components/SuccessOverlay";
 import { useModals } from "@/context/ModalContext";
 import { INewsletter } from "@/lib/definitions";
 import { formatDate } from "date-fns";
+import moment from "moment";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Overlay, Row } from "react-bootstrap";
+import DatePicker from "react-datepicker";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -49,12 +51,13 @@ function NewsletterFormView({
     reset,
     control,
     watch,
+    setValue,
     formState: { isSubmitting, isDirty },
   } = useForm<TInputs>({
     defaultValues: DEFAULT_VALUES,
   });
 
-  const [fechaInicio] = watch(["dateInitiPublish", "hourInitiPublish"]);
+  // const [fechaInicio] = watch(["dateInitiPublish", "hourInitiPublish"]);
 
   const { modalConfirm } = useModals();
   const router = useRouter();
@@ -62,8 +65,37 @@ function NewsletterFormView({
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [loading, setLoading] = useState(false);
   const [, setMessageLoading] = useState("");
-
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendarEnd, setShowCalendarEnd] = useState(false);
   const originalValuesRef = useRef<TInputs | null>(null);
+
+  //Calendario inicio
+  const [dateError] = useState("");
+  const dateButtonRef = useRef(null);
+
+  const selectedDate = watch("dateInitiPublish");
+  const parsedDate = selectedDate
+    ? moment(selectedDate, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChange = (date: Date | null) => {
+    setValue("dateInitiPublish", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
+
+
+  //Calendario fin
+  const [dateErrorEnd] = useState("");
+  const dateButtonRefEnd = useRef(null);
+
+  const selectedDateEnd = watch("dateInitiPublish");
+  const parsedDateEnd = selectedDateEnd
+    ? moment(selectedDateEnd, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChangeEnd = (date: Date | null) => {
+    setValue("dateInitiPublish", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
+
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     modalConfirm("¿Seguro que quieres guardar este boletín?", async () => {
@@ -239,24 +271,102 @@ function NewsletterFormView({
 
                           <Row className="g-3">
                             <Col md={6}>
-                              <Entry
-                                label="Fecha inicio:"
-                                register={register("dateInitiPublish")}
-                                type="date"
-                                min={formatDate(new Date(), "yyyy-MM-dd")}
-                                className="border text-uppercase"
-                              />
+                              <Form.Group>
+                                <Form.Label className="fw-semibold">Fecha Inicio:</Form.Label>
+                              </Form.Group>
+
+                              <Button
+                                ref={dateButtonRef}
+                                style={{ height: "35px" }}
+                                variant="outline-secondary"
+                                className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                                onClick={() => setShowCalendar((s) => !s)}
+                              >
+                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                <i className="bi bi-calendar3" />
+                              </Button>
+
+                              <ConditionalRender cond={!dateError}>
+                                <small className="text-danger d-block mt-1">{dateError}</small>
+                              </ConditionalRender>
+
+                              <Overlay
+                                target={dateButtonRef.current}
+                                show={showCalendar}
+                                placement="bottom-start"
+                                rootClose
+                                container={() => document.body}
+                                onHide={() => setShowCalendar(false)}
+                              >
+                                {({ ref, style }) => (
+                                  <div
+                                    ref={ref}
+                                    style={style}
+                                    className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                  >
+                                    <DatePicker
+                                      inline
+                                      selected={parsedDate}
+                                      onChange={handleDateChange}
+                                      shouldCloseOnSelect={false}
+                                      disabledKeyboardNavigation
+                                      monthsShown={1}
+                                      locale="es"
+                                      minDate={new Date()}
+                                    />
+                                  </div>
+                                )}
+                              </Overlay>
                             </Col>
 
                             <Col md={6}>
-                              <Entry
-                                label="Fecha final:"
-                                register={register("dateEndPublish")}
-                                type="date"
-                                min={fechaInicio}
-                                readonly={!fechaInicio}
-                                className="border text-uppercase"
-                              />
+                              <Form.Group>
+                                <Form.Label className="fw-semibold">Fecha Final:</Form.Label>
+                              </Form.Group>
+
+                              <Button
+                                ref={dateButtonRefEnd}
+                                style={{ height: "35px" }}
+                                variant="outline-secondary"
+                                className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEnd ? "border-danger text-danger" : ""}`}
+                                onClick={() => setShowCalendarEnd((s) => !s)}
+                              >
+                                <span>{selectedDateEnd ? selectedDateEnd : "Selecciona una fecha"}</span>
+                                <i className="bi bi-calendar3" />
+                              </Button>
+
+                              <ConditionalRender cond={!dateErrorEnd}>
+                                <small className="text-danger d-block mt-1">{dateErrorEnd}</small>
+                              </ConditionalRender>
+
+                              <Overlay
+                                target={dateButtonRefEnd.current}
+                                show={showCalendarEnd}
+                                placement="bottom-start"
+                                rootClose
+                                container={() => document.body}
+                                onHide={() => setShowCalendarEnd(false)}
+                              >
+                                {({ ref, style }) => (
+                                  <div
+                                    ref={ref}
+                                    style={style}
+                                    className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                  >
+                                    <DatePicker
+                                      inline
+                                      selected={parsedDateEnd}
+                                      onChange={handleDateChangeEnd}
+                                      readOnly={!parsedDate}
+                                      minDate={parsedDate || new Date()}
+                                      shouldCloseOnSelect={false}
+                                      disabledKeyboardNavigation
+                                      monthsShown={1}
+                                      locale="es"
+                                    />
+                                  </div>
+                                )}
+                              </Overlay>
                             </Col>
 
                             <Col md={6}>

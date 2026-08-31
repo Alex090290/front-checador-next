@@ -5,8 +5,8 @@ import { useModals } from "@/context/ModalContext";
 import { ActionResponse, Employee } from "@/lib/definitions"
 import { OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Button, Card, Col, Container, Form, Overlay, Row } from "react-bootstrap";
 import { Entry, FieldSelect, RelationField, SignatureInput } from "../fields";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -18,6 +18,8 @@ import ErrorOverlay from "../ErrorOverlay";
 import useSWR from "swr";
 import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
 import { findEmployeeById } from "@/app/actions/employee-actions";
+import DatePicker from "react-datepicker";
+import moment from "moment";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -56,6 +58,7 @@ export default function CreateOvertimeComponent({
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const { modalError, modalConfirm } = useModals();
     const router = useRouter();
+    const [showCalendar, setShowCalendar] = useState(false);
     const currentDoh = watch("idPersonDoh");
     const { data } = useSWR("/api/configsystem", fetcher);
     const config: IConfigSystem | null = useMemo(() => {
@@ -69,7 +72,18 @@ export default function CreateOvertimeComponent({
     const dohMap = config?.permissions.approvalDoh;
     const idEmployee = Number(session?.uid?.idEmployee);
 
+    //Calendario inicio
+    const [dateError] = useState("");
+    const dateButtonRef = useRef(null);
 
+    const selectedDate = watch("date");
+    const parsedDate = selectedDate
+        ? moment(selectedDate, "YYYY-MM-DD").toDate()
+        : null;
+
+    const handleDateChange = (date: Date | null) => {
+        setValue("date", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+    };
 
     const readInput = !roles?.isLeader
         && !roles?.isExtra
@@ -540,16 +554,51 @@ export default function CreateOvertimeComponent({
 
                                                     <Row className="g-3">
                                                         <Col md={4}>
-                                                            <Entry
-                                                                register={register("date", {
-                                                                    required: "La fecha del evento es requerida",
-                                                                })}
-                                                                type="date"
-                                                                label="Fecha del evento:"
-                                                                invalid={!!errors.date}
-                                                                feedBack={errors.date?.message}
-                                                                className="border text-uppercase"
-                                                            />
+                                                            <Form.Group>
+                                                                <Form.Label className="fw-semibold">Fecha del evento:</Form.Label>
+                                                            </Form.Group>
+
+                                                            <Button
+                                                                ref={dateButtonRef}
+                                                                style={{ height: "35px" }}
+                                                                variant="outline-secondary"
+                                                                className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                                                                onClick={() => setShowCalendar((s) => !s)}
+                                                            >
+                                                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                                                <i className="bi bi-calendar3" />
+                                                            </Button>
+
+                                                            <ConditionalRender cond={!dateError}>
+                                                                <small className="text-danger d-block mt-1">{dateError}</small>
+                                                            </ConditionalRender>
+
+                                                            <Overlay
+                                                                target={dateButtonRef.current}
+                                                                show={showCalendar}
+                                                                placement="bottom-start"
+                                                                rootClose
+                                                                container={() => document.body}
+                                                                onHide={() => setShowCalendar(false)}
+                                                            >
+                                                                {({ ref, style }) => (
+                                                                    <div
+                                                                        ref={ref}
+                                                                        style={style}
+                                                                        className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                                                    >
+                                                                        <DatePicker
+                                                                            inline
+                                                                            selected={parsedDate}
+                                                                            onChange={handleDateChange}
+                                                                            shouldCloseOnSelect={false}
+                                                                            disabledKeyboardNavigation
+                                                                            monthsShown={1}
+                                                                            locale="es"
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                            </Overlay>
                                                         </Col>
 
                                                         <Col md={4}>
