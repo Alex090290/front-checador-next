@@ -25,6 +25,7 @@ import ErrorOverlay from "../ErrorOverlay";
 import DatePicker, { registerLocale } from "react-datepicker";
 import moment from "moment";
 import { es } from "date-fns/locale";
+import Link from "next/link";
 
 registerLocale("es", es);
 
@@ -106,7 +107,6 @@ function CreateVacationComponent({
   const handleDateChange = (date: Date | null) => {
     setValue("dateInit", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
   };
-
 
   //Calendario fin
   const [dateErrorEnd] = useState("");
@@ -518,7 +518,7 @@ function CreateVacationComponent({
                     <Button
                       className="bg-success border-success"
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || selectedPeriod?.availableDays === 0}
                     >
                       {isSubmitting ? "Guardando..." : "Guardar"}
                     </Button>
@@ -556,60 +556,75 @@ function CreateVacationComponent({
                                 className="text-uppercase border"
                               />
                             </Col>
-
-                            <Col md={4}>
-                              <RelationField
-                                readonly={readInput}
-                                register={register("idLeader", { required: true })}
-                                options={leaderOptions}
-                                label="Líder:"
-                                className="text-uppercase border"
-                                control={control}
-                                callBackMode="id"
-                              />
-                            </Col>
-
-                            <Col md={4}>
-                              <FieldSelect
-                                register={register("idPersonDoh")}
-                                className="text-uppercase border"
-                                options={
-                                  dohMap?.employee
-                                    ? [{
-                                      value: dohMap.employee.id,
-                                      label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
-                                    }]
-                                    : []
-                                }
-                                label="D.O.H.:"
-                                readonly={!readInput || !readOnlyDoh}
-                              />
-                            </Col>
-
-                            <Col md={4}>
-                              <FieldSelect
-                                label="Periodo vacacional:"
-                                options={
-                                  periods.length > 0
-                                    ? periods.map((p) => ({
-                                      label: `${formatDate(p.dateInitPeriod, "dd/MM/yyyy")} - ${formatDate(p.dateEndPeriod, "dd/MM/yyyy")}`,
-                                      value: Number(p.id),
-                                    }))
-                                    : [
-                                      {
-                                        label: "El empleado no cuenta con periodos disponibles",
-                                        value: "",
-                                      },
-                                    ]
-                                }
-                                register={register("idPeriod", {
-                                  required: periods.length > 0,
-                                })}
-                                className="border"
-                                readonly={readInput || readOnlyDoh}
-                              />
-                            </Col>
                           </Row>
+
+                          <ConditionalRender cond={idEmployeeSelected !== null}>
+                            <Row>
+                              <Col md={4}>
+                                <RelationField
+                                  readonly={readInput}
+                                  register={register("idLeader", { required: true })}
+                                  options={leaderOptions}
+                                  label="Líder:"
+                                  className="text-uppercase border"
+                                  control={control}
+                                  callBackMode="id"
+                                />
+                              </Col>
+
+                              <Col md={4}>
+                                <FieldSelect
+                                  register={register("idPersonDoh")}
+                                  className="text-uppercase border"
+                                  options={
+                                    dohMap?.employee
+                                      ? [{
+                                        value: dohMap.employee.id,
+                                        label: `${dohMap.employee.lastName} ${dohMap.employee.name} `,
+                                      }]
+                                      : []
+                                  }
+                                  label="D.O.H.:"
+                                  readonly={!readInput || !readOnlyDoh}
+                                />
+                              </Col>
+
+                              <Col md={4}>
+                                <ConditionalRender cond={periods.length > 0}>
+                                  <FieldSelect
+                                    label="Periodo vacacional:"
+                                    options={
+                                      periods.length > 0
+                                        ? periods.map((p) => ({
+                                          label: `${formatDate(p.dateInitPeriod, "dd/MM/yyyy")} - ${formatDate(p.dateEndPeriod, "dd/MM/yyyy")}`,
+                                          value: Number(p.id),
+                                        }))
+                                        : [
+                                          {
+                                            label: "El empleado no cuenta con periodos disponibles",
+                                            value: "",
+                                          },
+                                        ]
+                                    }
+                                    register={register("idPeriod", {
+                                      required: periods.length > 0,
+                                    })}
+                                    className="border"
+                                    readonly={readInput || readOnlyDoh}
+                                  />
+                                </ConditionalRender>
+
+                                <ConditionalRender cond={periods.length <= 0}>
+                                  <div className="text-center mt-4">
+                                    <span className="w-100 h-100 badge rounded-pill fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                      No se encontro periodo
+                                    </span>
+                                  </div>
+                                </ConditionalRender>
+                              </Col>
+                            </Row>
+                          </ConditionalRender>
+
                         </Card.Body>
                       </Card>
 
@@ -621,25 +636,6 @@ function CreateVacationComponent({
                           </div>
 
                           <Row className="g-3">
-                            {/* <Col md={6}>
-                              <Entry
-                                label="Inicio:"
-                                type="date"
-                                register={register("dateInit")}
-                                className="border text-uppercase"
-                              />
-                            </Col>
-
-                            <Col md={6}>
-                              <Entry
-                                label="Final:"
-                                type="date"
-                                register={register("dateEnd")}
-                                min={dateInit}
-                                className="border text-uppercase"
-                              />
-                            </Col> */}
-
                             <Col md={6}>
                               <Form.Group>
                                 <Form.Label className="fw-semibold">Fecha Inicio:</Form.Label>
@@ -772,13 +768,24 @@ function CreateVacationComponent({
 
                             <Row className="g-3">
                               <Col md={6}>
-                                <div className="border rounded-3 p-3 text-center h-100">
-                                  <i className="bi bi-check2-circle text-success fs-5 mb-2 d-block" />
-                                  <div className="text-muted small">Días aprobados usados</div>
-                                  <div className="fw-bold fs-5">
-                                    {selectedPeriod.usedDaysApproved ?? 0}
+
+                                <Link
+                                  href={`/app/employee?view_type=form&id=${idEmployeeSelected}&tab=vacations`}
+                                  className="text-decoration-none text-reset"
+                                  target="_blank" //Para abriri en ventana nueva
+                                  rel="noopener noreferrer"
+                                >
+                                  <div
+                                    className="border rounded-3 p-3 text-center h-100 shadow=sm hover-clickable"
+                                  >
+                                    <i className="bi bi-check2-circle text-success fs-5 mb-2 d-block" />
+                                    <div className="text-muted small">Días aprobados usados</div>
+                                    <div className="fw-bold fs-5">
+                                      {selectedPeriod.usedDaysApproved ?? 0}
+                                    </div>
                                   </div>
-                                </div>
+                                </Link>
+
                               </Col>
 
                               <Col md={6}>

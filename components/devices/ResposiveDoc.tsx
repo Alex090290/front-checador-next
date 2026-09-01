@@ -136,6 +136,17 @@ export default function ResposiveDoc({
         }, 100);
     };
 
+    // useEffect(() => {
+    //     if (device.currentAssignment === null) {
+
+    //         setFeedback("loading");
+    //         setFeedbackMsg("Cargando datos...");
+    //         setTimeout(() => {
+    //             router.push(`/app/devices?view_type=form&id=${device.id}`);
+    //         }, 100);
+    //     }
+    // },[device])
+
     useEffect(() => {
         const oneComplete = firstSignatureEmployee && firstSignatureIt;
         const allComplete = oneComplete && secondSignatureEmployee && secondSignatureIt;
@@ -181,12 +192,15 @@ export default function ResposiveDoc({
 
                 setFeedbackMsg("PDF descargado correctamente");
                 setFeedback("success");
+
             } catch {
                 setFeedbackMsg("Error inesperado al generar el PDF");
                 setFeedback("error");
             }
         });
     };
+
+    
 
     return (
         <>
@@ -516,7 +530,7 @@ export default function ResposiveDoc({
                                     variant="secondary"
                                     onClick={() => setShowSecondSignatures(true)}
                                     disabled={showSecondSignatures === true || completeSignatures === true}
-                                    >
+                                >
                                     Regresar equipo
                                 </Button>
                             </ConditionalRender>

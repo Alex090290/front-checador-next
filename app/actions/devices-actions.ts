@@ -323,8 +323,9 @@ export async function updateDevice({
       });
 
     revalidatePath("/app/devices");
+      console.log("res:", data);
 
-    return {
+    return {      
       success: true,
       message: "Dispositivo actualizado",
     };

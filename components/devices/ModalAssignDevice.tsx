@@ -14,6 +14,7 @@ import moment from "moment";
 import { es } from "date-fns/locale";
 import { useModals } from "@/context/ModalContext";
 import { AssignDevice } from "@/app/actions/devices-actions";
+import { formatCreatedAt } from "@/lib/helpers";
 
 registerLocale("es", es);
 
@@ -368,7 +369,7 @@ export default function ModalAssignDevice({
                                         className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                         onClick={() => setShowCalendar((s) => !s)}
                                     >
-                                        <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                        <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                         <i className="bi bi-calendar3" />
                                     </Button>
 

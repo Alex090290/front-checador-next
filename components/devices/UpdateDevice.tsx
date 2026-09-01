@@ -40,8 +40,8 @@ function getDefaultValues(device?: IDevices | null): IDevices {
             storage: device?.specs?.storage || "",
             os: device?.specs?.os || null,
             osVersion: device?.specs?.osVersion || "",
-            purchaseDate: formatCreatedAt(device?.specs?.purchaseDate) || "",
-            warrantyExpiration: formatCreatedAt(device?.specs?.warrantyExpiration) || "",
+            purchaseDate: (device?.specs?.purchaseDate) || "",
+            warrantyExpiration: (device?.specs?.warrantyExpiration) || "",
             idDevice: device?.specs?.idDevice || null,
             idProduct: device?.specs?.idProduct || null,
             architecture: device?.specs?.architecture || null,
@@ -128,6 +128,8 @@ export default function FormUpdateDevice({
 
 
     const onSubmit: SubmitHandler<IDevices> = async (data) => {
+        console.log('se manda:', data);
+        
         modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
 
             try {
@@ -479,7 +481,7 @@ export default function FormUpdateDevice({
                                         className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                         onClick={() => setShowCalendarPurchase((s) => !s)}
                                     >
-                                        <span>{selectedDatePurchase ? selectedDatePurchase : "Selecciona una fecha"}</span>
+                                        <span>{selectedDatePurchase ? formatCreatedAt(selectedDatePurchase) : "Selecciona una fecha"}</span>
                                         <i className="bi bi-calendar3" />
                                     </Button>
 
@@ -526,7 +528,7 @@ export default function FormUpdateDevice({
                                         className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                         onClick={() => setShowCalendarExpiration((s) => !s)}
                                     >
-                                        <span>{selectedDateExpiration ? selectedDateExpiration : "Selecciona una fecha"}</span>
+                                        <span>{selectedDateExpiration ? formatCreatedAt(selectedDateExpiration) : "Selecciona una fecha"}</span>
                                         <i className="bi bi-calendar3" />
                                     </Button>
 

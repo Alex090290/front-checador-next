@@ -32,7 +32,7 @@ import RegisterBiometricModal from "./rekognition";
 import UnsubscribeEmployeeComponent from "./Unsubscribe";
 import NewDocumentEmployeeComponent from "./NewDocument";
 import AlertBiometrics from "../AlertBiometrics";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import OverLay from "../templates/OverLay";
 import { formatCreatedAt, formatScheduleTime } from "@/lib/helpers";
 import moment from "moment";
@@ -153,6 +153,8 @@ export default function EmployeeDetailsView({
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [showReEntryModal, setShowReEntryModal] = useState(false);
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||
@@ -195,7 +197,7 @@ export default function EmployeeDetailsView({
       <EmployeeOneError />
     );
   }
-  
+
 
   return (
     <>
@@ -319,7 +321,7 @@ export default function EmployeeDetailsView({
 
         <Card className="rounded-4 shadow-sm border">
           <Card.Body className="p-3 p-md-5">
-            <FormBook dKey="personalInfo">
+            <FormBook dKey={tab || "personalInfo"}>
 
               {/* =============== Informacion Personal ===================*/}
 
@@ -1607,6 +1609,7 @@ export default function EmployeeDetailsView({
                   </Col>
                 </Row>
               </FormPage>
+
               {/* =============== Aqui termina ================  */}
             </FormBook>
 

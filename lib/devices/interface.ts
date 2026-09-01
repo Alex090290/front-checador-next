@@ -84,8 +84,22 @@ export interface IDevices {
         emailCompany: string | null;
         emailGmail: string | null;
         signatures: ISignatures[] | null;
-        deliveryDocument: string | null;
-        documentReceived: string | null;
+
+
+        deliveryDocument: {
+            id: number;
+            urlDocument: string;
+            whoUploadId: string | null;
+            createdAt: string;
+        },
+
+        documentReceived: {
+            id: number;
+            urlDocument: string;
+            whoUploadId: string | null;
+            createdAt: string;
+        },
+        
         assignedAt: string;
         returnedAt: string | null;
 

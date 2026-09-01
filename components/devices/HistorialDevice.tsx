@@ -9,6 +9,7 @@ import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { formatCreatedAt } from "@/lib/helpers";
+import Link from "next/link";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -35,8 +36,6 @@ export default function HistorialDevice({
             router.push(`/app/devices?view_type=form&id=${device.id}`);
         }, 100);
     };
-
-
 
 
     return (
@@ -164,7 +163,6 @@ export default function HistorialDevice({
 
                                             <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
                                                 <span className="text-muted small">
-                                                    {/* <i className="bi bi-calendar-date me-2 text-secondary" /> */}
                                                     <i className="bi bi-envelope-at me-2 text-secondary" />
                                                     Correo
                                                 </span>
@@ -173,14 +171,16 @@ export default function HistorialDevice({
                                                 </span>
                                             </div>
 
-                                            <div className="d-flex align-items-center justify-content-between py-2">
-                                                <span className="text-muted small">
-                                                    <i className="bi bi-eye me-2 text-primary" />
-                                                    Ver más
-                                                </span>
-                                                <span className="fw-semibold small text-end">
-
-                                                </span>
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <Link
+                                                    href={filtrados.deliveryDocument.urlDocument}
+                                                    target="_blank" //Para abriri en ventana nueva
+                                                    rel="noopener noreferrer" //Buena practica de seguridad
+                                                    className="fw-semibold"
+                                                >
+                                                    <i className="bi bi-eye text-primary me-2" />
+                                                    Ver responsiva
+                                                </Link>
                                             </div>
                                         </div>
                                     </Col>

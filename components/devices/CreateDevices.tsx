@@ -18,6 +18,7 @@ import { storeAction } from "@/app/actions/storeActions";
 import { useModals } from "@/context/ModalContext";
 import { createDevice } from "@/app/actions/devices-actions";
 import DnsBadgeInput from "./DnsBadgeInput";
+import { formatCreatedAt } from "@/lib/helpers";
 
 
 registerLocale("es", es);
@@ -581,7 +582,7 @@ export default function CreateDeviceComponent({
                                                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                                                 onClick={() => setShowCalendarPurchase((s) => !s)}
                                                             >
-                                                                <span>{selectedDatePurchase ? selectedDatePurchase : "Selecciona una fecha"}</span>
+                                                                <span>{selectedDatePurchase ? formatCreatedAt(selectedDatePurchase) : "Selecciona una fecha"}</span>
                                                                 <i className="bi bi-calendar3" />
                                                             </Button>
 
@@ -628,7 +629,7 @@ export default function CreateDeviceComponent({
                                                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                                                 onClick={() => setShowCalendarExpiration((s) => !s)}
                                                             >
-                                                                <span>{selectedDateExpiration ? selectedDateExpiration : "Selecciona una fecha"}</span>
+                                                                <span>{selectedDateExpiration ? formatCreatedAt(selectedDateExpiration) : "Selecciona una fecha"}</span>
                                                                 <i className="bi bi-calendar3" />
                                                             </Button>
 

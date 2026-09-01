@@ -232,7 +232,6 @@
 
 .date-multi-popover {
   z-index: 3080;
-  /* superior al modal (1055) y su backdrop (1050) */
   position: relative;
   /* o absolute, según cómo Popper lo esté posicionando */
 }
@@ -240,4 +239,20 @@
 .icon-hourglass-animated {
     display: inline-block;
     animation: hourglass-flip 3s ease-in-out infinite;
+}
+
+/* //Boton de vacaciones */
+.hover-clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-clickable:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.hover-clickable:active {
+    transform: translateY(-1px);
+    transition: transform 0.1s ease;
 }
