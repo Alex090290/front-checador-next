@@ -136,16 +136,16 @@ export default function ResposiveDoc({
         }, 100);
     };
 
-    // useEffect(() => {
-    //     if (device.currentAssignment === null) {
+    useEffect(() => {
+        if (device.currentAssignment === null) {
 
-    //         setFeedback("loading");
-    //         setFeedbackMsg("Cargando datos...");
-    //         setTimeout(() => {
-    //             router.push(`/app/devices?view_type=form&id=${device.id}`);
-    //         }, 100);
-    //     }
-    // },[device])
+            setFeedback("loading");
+            setFeedbackMsg("Cargando datos...");
+            setTimeout(() => {
+                router.push(`/app/devices?view_type=historial&id=${device.id}`);
+            }, 100);
+        }
+    },[device, router])
 
     useEffect(() => {
         const oneComplete = firstSignatureEmployee && firstSignatureIt;

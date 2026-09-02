@@ -106,14 +106,14 @@ export function DeviceOne({
     const [activeSpecsSection, setActiveSpecsSection] = useState<"specs" | "credentials" | null>(null);
     const [showPasswords, setShowPasswords] = useState(false);
     const noHistorial = device.assignmentHistory?.every((n) => n.returnedAt === null);
-    
 
-        //HELPERS
 
-        useEffect(() => {
-            setFeedback(null);
-            setFeedbackMsg("");
-        }, [searchParamsString]);
+    //HELPERS
+
+    useEffect(() => {
+        setFeedback(null);
+        setFeedbackMsg("");
+    }, [searchParamsString]);
 
 
     const handleBack = () => {
@@ -142,7 +142,7 @@ export function DeviceOne({
         setFeedbackMsg("Cargando...")
         router.push(`/app/devices?view_type=historial&id=${device.id}`);
     }
-
+    
 
     if (!device) {
         return (
@@ -684,7 +684,7 @@ export function DeviceOne({
                                                     </span>
                                                 </div>
 
-                                                <div className="d-flex align-items-center justify-content-between py-2">
+                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
                                                     <span className="text-muted small">
                                                         <i className="bi bi-calendar-date me-2 text-secondary" />
                                                         Fecha de asignación
@@ -693,6 +693,26 @@ export function DeviceOne({
                                                         {device?.currentAssignment?.assignedAt
                                                             ? formatCreatedAt(device.currentAssignment.assignedAt)
                                                             : "Sin registro"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                    <span className="text-muted small">
+                                                        <i className="bi bi-envelope-check me-2 text-primary" />
+                                                        Correo laboral
+                                                    </span>
+                                                    <span className="fw-semibold small text-end">
+                                                        {device?.currentAssignment?.emailCompany ? device?.currentAssignment?.emailCompany : "NO HAY CORREO REGISTRADO"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="d-flex align-items-center justify-content-between py-2">
+                                                    <span className="text-muted small">
+                                                        <i className="bi bi-envelope-at me-2 text-secondary" />
+                                                        Correo institucional
+                                                    </span>
+                                                    <span className="fw-semibold small text-end">
+                                                        {device?.currentAssignment?.emailGmail ? device?.currentAssignment?.emailGmail : "NO HAY CORREO REGISTRADO"}
                                                     </span>
                                                 </div>
                                             </div>

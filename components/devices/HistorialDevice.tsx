@@ -9,7 +9,8 @@ import Loading from "../LoadingSpinner";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { formatCreatedAt } from "@/lib/helpers";
-import Link from "next/link";
+import { useModals } from "@/context/ModalContext";
+import { getHistorialDoc } from "@/app/actions/devices-actions";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -26,6 +27,7 @@ export default function HistorialDevice({
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const filtrados = device.assignmentHistory?.filter((e) => e.returnedAt !== null);
     const noHistorial = device.assignmentHistory?.every((n) => n.returnedAt === null);
+    const { modalConfirm } = useModals();
 
 
     const handleBack = () => {
@@ -37,6 +39,47 @@ export default function HistorialDevice({
         }, 100);
     };
 
+    const downloadBase64File = (base64Url: string, fileName: string) => {
+        const link = document.createElement("a");
+        link.href = base64Url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    };
+
+    const handleGenerate = async (idHistory: number) => {
+        modalConfirm("Se descargará el PDF", async () => {
+
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Descargando PDF...");
+
+                const res = await getHistorialDoc({
+                    idDoc: device.id,
+                    idHistory: idHistory,
+                });
+
+                if (!res.success || !res.data) {
+                    setFeedbackMsg(res.message || "No se pudo descargar el reporte");
+                    setFeedback("error");
+                    return;
+                }
+
+                const { base64Url, fileName } = res.data;
+                downloadBase64File(base64Url, fileName);
+
+                setFeedbackMsg("PDF descargado correctamente");
+                setFeedback("success");
+
+            } catch {
+                setFeedbackMsg("Error inesperado al generar el PDF");
+                setFeedback("error");
+            }
+        });
+    };
+
+    
 
     return (
         <>
@@ -113,7 +156,7 @@ export default function HistorialDevice({
                                 <Row
                                     key={filtrados.id}
                                     className="g-0 border rounded-4 overflow-hidden mb-3">
-                                    <Col xs={12} md={4} className="bg-pink-subtle d-flex flex-column align-items-center justify-content-center text-center p-4">
+                                    <Col xs={12} md={4} className="bg-info-subtle d-flex flex-column align-items-center justify-content-center text-center p-4">
                                         <div
                                             className="d-flex align-items-center justify-content-center rounded-circle bg-white text-primary mb-3 shadow-sm"
                                             style={{ width: 64, height: 64 }}
@@ -163,24 +206,33 @@ export default function HistorialDevice({
 
                                             <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
                                                 <span className="text-muted small">
-                                                    <i className="bi bi-envelope-at me-2 text-secondary" />
-                                                    Correo
+                                                    <i className="bi bi-envelope-check me-2 text-primary" />
+                                                    Correo laboral
                                                 </span>
                                                 <span className="fw-semibold small text-end">
                                                     {filtrados.emailCompany ? filtrados.emailCompany : "NO HAY CORREO REGISTRADO"}
                                                 </span>
                                             </div>
+                                            
+                                            <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                <span className="text-muted small">
+                                                    <i className="bi bi-envelope-at me-2 text-secondary" />
+                                                    Correo institucional
+                                                </span>
+                                                <span className="fw-semibold small text-end">
+                                                    {filtrados.emailGmail ? filtrados.emailGmail : "NO HAY CORREO REGISTRADO"}
+                                                </span>
+                                            </div>
 
-                                            <div className="d-flex align-items-center justify-content-between">
-                                                <Link
-                                                    href={filtrados.deliveryDocument.urlDocument}
-                                                    target="_blank" //Para abriri en ventana nueva
-                                                    rel="noopener noreferrer" //Buena practica de seguridad
-                                                    className="fw-semibold"
+                                            <div className="d-flex justify-content-end">
+                                                <Button
+                                                    variant="primary"
+                                                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3 mt-2"
+                                                    onClick={() => handleGenerate(filtrados.id)}
                                                 >
-                                                    <i className="bi bi-eye text-primary me-2" />
-                                                    Ver responsiva
-                                                </Link>
+                                                    <i className="bi bi-download" />
+                                                    Descargar responsiva
+                                                </Button>
                                             </div>
                                         </div>
                                     </Col>
