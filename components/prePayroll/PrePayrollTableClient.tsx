@@ -37,14 +37,23 @@ interface IDataExtra {
     }
 }
 
-function statusVariant(incidenceRef?: string | null) {
+function statusVariant(incidenceRef?: string | null, category?: string | null) {
     switch ((incidenceRef ?? "")) {
         case "falta":
-            return (
-                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                    FALTA
-                </span>
-            )
+            if(category && category === "justificada"){
+                return (
+                    <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                        FALTA JUSTIFICADA
+                    </span>
+                )
+            }else if(category && category === "injustificada"){
+                return (
+                    <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                        FALTA INJUSTIFICADA
+                    </span>
+                )
+            }
+
         case "retardo":
             return (
                 <span className="badge rounded-pill px-2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
@@ -450,7 +459,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "string",
                 align: "center",
-                render: (row) => <div className="text-center">{statusVariant(row.incidenceRef)} </div>
+                render: (row) => <div className="text-center">{statusVariant(row.incidenceRef, row.data.category)} </div>
             },
             {
                 key: "notes",
