@@ -48,7 +48,7 @@ function statusVariant(incidenceRef?: string | null, category?: string | null) {
                 )
             }else if(category && category === "injustificada"){
                 return (
-                    <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                    <span className="badge rounded-pill px-2 py-2 fw-semibold bg-purple-subtle text-purple-emphasis border border-purple-subtle">
                         FALTA INJUSTIFICADA
                     </span>
                 )
@@ -435,7 +435,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "string",
                 render: (row) => (
-                    <div className="text-uppercase fw-semibold">
+                    <div className="text-uppercase">
                         {row.data.employee.id}
                     </div>
                 ),
@@ -447,7 +447,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "string",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-uppercase">
+                    <div className="text-left text-uppercase">
                         {row.data.employee.lastName} {row.data.employee.name}
                     </div>
                 ),
@@ -468,7 +468,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "string",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-uppercase text-wrap" style={{maxWidth: "200px"}}>
+                    <div className="text-left text-uppercase text-wrap" style={{maxWidth: "200px"}}>
                         {row.data.notes}
                     </div>
                 ),
@@ -481,7 +481,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "number",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-center">
+                    <div className="text-left text-center">
                         {formatCreatedAt(row.fechaIncidencia)}
                     </div>
                 ),
@@ -494,7 +494,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "string",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-uppercase text-center">
+                    <div className="text-left text-uppercase text-center">
                         {row.fechaNomina ? (
                             <>
                                 <i className="bi bi-calendar-check text-success me-1" />
@@ -517,7 +517,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "string",
                 render: (row) => (
-                    <div className="text-left fw-semibold text-uppercase text-center">
+                    <div className="text-left text-uppercase text-center">
                         {row.claveNomipaq}
                     </div>
                 ),
@@ -530,7 +530,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "number",
                 render: (row) => (
-                    <div className="text-center fw-semibold text-uppercase">
+                    <div className="text-center text-uppercase">
                         {row.duracion}
                     </div>
                 ),

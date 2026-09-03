@@ -31,6 +31,13 @@ export interface IPenaltyForOffeses {
 
     absencesAndAttendances: IAbsencesAndAttendances[];
     status?: string;
+
+    delete?: {
+        delete: boolean;
+        whoDeleteIdEmployee: number;
+        reaseonDelete: string;
+        dateDelete: string;
+    }
 }
 
 export interface IPenalty {

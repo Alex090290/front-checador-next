@@ -16,6 +16,7 @@ import ErrorOverlay from "../ErrorOverlay";
 import { es } from "date-fns/locale";
 import DatePicker, { registerLocale } from "react-datepicker";
 import moment from "moment";
+import { formatCreatedAt } from "@/lib/helpers";
 
 registerLocale("es", es);
 
@@ -357,7 +358,7 @@ export default function CreateInabilityComponent({
                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                 onClick={() => setShowCalendar((s) => !s)}
                               >
-                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3" />
                               </Button>
 
@@ -406,7 +407,7 @@ export default function CreateInabilityComponent({
                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEnd ? "border-danger text-danger" : ""}`}
                                 onClick={() => setShowCalendarEnd((s) => !s)}
                               >
-                                <span>{selectedDateEnd ? selectedDateEnd : "Selecciona una fecha"}</span>
+                                <span>{selectedDateEnd ? formatCreatedAt(selectedDateEnd) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3" />
                               </Button>
 

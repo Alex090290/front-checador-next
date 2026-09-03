@@ -18,7 +18,6 @@ import {
   Department,
   Employee,
   IPeriod,
-  Vacations,
 } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import DocumentsGrid from "@/app/(auth)/app/employee/views/DocuementsGrid";
@@ -40,6 +39,7 @@ import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import EmployeeOneError from "./EmployeeMessageError";
 import ReEntryModal from "./reEntryModal";
+import { Vacations } from "@/lib/vactions/interface";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;

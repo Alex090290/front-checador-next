@@ -42,6 +42,13 @@ export interface OverTime {
 
     leaderApproval: OvertimeRequestStatus;
     dohApproval: OvertimeRequestStatus;
+
+    delete?: {
+        delete: boolean;
+        whoDeleteIdEmployee: number;
+        reaseonDelete: string;
+        dateDelete: string;
+    }
 }
 
 export interface OverTimeAxios {

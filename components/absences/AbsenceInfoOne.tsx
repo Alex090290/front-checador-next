@@ -18,6 +18,7 @@ import FormUpdateAbsence from "./AbsenceUpdate";
 import PDFViewerModal from "@/app/(auth)/app/employee/views/PDFViewer";
 import ErrorOverlay from "../ErrorOverlay";
 import SuccessOverlay from "../SuccessOverlay";
+import { formatLabel } from "../devices/DevicesTableClient";
 
 function formatText(value?: string | number | null) {
     if (value === null || value === undefined || value === "") return "-";
@@ -47,10 +48,17 @@ function statusVariant(type: string | null, category?: string) {
                     </span>
                 )
             }
-
-        default:
+        case "falta_por_penalizacion":
             return (
-                <span className="badge rounded-pill px2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" />
+                <span className="badge rounded-pill px2 py-2 fw-semibold bg-orange-subtle text-orange-emphasis border border-orange-subtle">
+                    FALTA POR PENALIZACIÓN
+                </span>
+            )
+        case "retardo":
+            return (
+                <span className="badge rounded-pill px-2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                    RETARDO
+                </span>
             )
     }
 }
@@ -380,12 +388,12 @@ export function AbsenceOne({
                 <div>
                     <h1 className="mb-1 ms-1">{getEmployeeName(absence)}</h1>
 
-                    <ConditionalRender cond={absence.type !== "retardo"}> 
-                    <p className="text-muted mb-1 ms-1"> Informacion de la {absence.type}.</p>
+                    <ConditionalRender cond={absence.type !== "retardo"}>
+                        <p className="text-muted mb-1 ms-1"> Información de la {formatLabel(absence.type)}.</p>
                     </ConditionalRender>
-                    
-                    <ConditionalRender cond={absence.type === "retardo"}> 
-                    <p className="text-muted mb-1 ms-1"> Informacion del {absence.type}.</p>
+
+                    <ConditionalRender cond={absence.type === "retardo"}>
+                        <p className="text-muted mb-1 ms-1"> Información del {formatLabel(absence.type)}.</p>
                     </ConditionalRender>
 
                 </div>
@@ -395,7 +403,7 @@ export function AbsenceOne({
                         <div className="d-flex align-items-center justify-content-between mb-4">
                             <div>
                                 <h5 className="mb-1 fw-bold text-capitalize">
-                                    {absence.type} #{absence.id}
+                                    {formatLabel(absence.type)} #{absence.id}
                                 </h5>
 
                             </div>
@@ -424,7 +432,7 @@ export function AbsenceOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {formatCreatedAt(absence.createdAt)}
+                                                    {formatCreatedAt(absence.dateOfAbsence)}
                                                 </span>
                                             </div>
 
@@ -450,11 +458,11 @@ export function AbsenceOne({
                                         <div className="d-flex align-items-center justify-content-between mb-4">
                                             <div>
                                                 <h6 className="mb-1 fw-bold">
-                                                    Detalles de la {absence.type}
+                                                    {absence.type === "retardo" ? `Detalles del  ${formatLabel(absence.type)}` : `Detalles de la ${formatLabel(absence.type)}`}
                                                 </h6>
 
                                                 <p className="text-muted mb-0 small">
-                                                    Consulta los detalles de la {absence.type}.
+                                                    {absence.type === "retardo" ? `Detalles del ${formatLabel(absence.type)}` : `Consulta los detalles de la ${formatLabel(absence.type)}`}
                                                 </p>
                                             </div>
 
@@ -501,7 +509,7 @@ export function AbsenceOne({
                                                         </div>
 
                                                         <div className="fw-semibold text-capitalize">
-                                                            {formatText(absence.type)}
+                                                            {formatLabel(absence.type)}
                                                         </div>
                                                     </div>
                                                 </Col>

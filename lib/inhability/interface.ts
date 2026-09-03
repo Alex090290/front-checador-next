@@ -48,6 +48,13 @@ export interface IInability {
     name: string;
     lastName: string;
   };
+
+  delete?: {
+    delete: boolean;
+    whoDeleteIdEmployee: number;
+    reaseonDelete: string;
+    dateDelete: string;
+  }
 }
 
 export interface IsT7FillingDocumentv1 {
@@ -106,4 +113,9 @@ interface IdaysdaysBrokenDown {
   year: string;
   fortnightlyPeriod: number;
   day: string;
+}
+
+export interface IDeleteInhability {
+  deletePermission: boolean;
+  reaseonDelete: string;
 }

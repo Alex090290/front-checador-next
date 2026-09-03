@@ -13,6 +13,8 @@ import Link from "next/link"
 import SignaturesViewPenalty from "./signaturesPenalties"
 import PenaltySignatureModal from "./PenaltySignatureModal"
 import PenaltyOneError from "./penaltiesMessageError"
+import ModalBlur from "../ModalBlur"
+import DeletePenaltyModal from "./DeletePenaltyModal"
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -25,6 +27,7 @@ export function PenaltyOne({
 }: {
     penalty: IPenaltyForOffeses | null;
 }) {
+    console.log("info:", penalty);
 
     //Const
     const session = useSessionSnapshot();
@@ -37,7 +40,7 @@ export function PenaltyOne({
     const activeCheck = penalty?.absencesAndAttendances.find((c) => String(c.id) === activeCheckId);
     const handlePenaltySignature = () => setPenaltySignatureModal(true);
     const fechas = penalty?.dateOfAbsence ?? [];
-
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const signatures: ISignaturesPenalties[] = useMemo(() => penalty?.signatures ?? [], [penalty?.signatures]);
 
@@ -101,6 +104,7 @@ export function PenaltyOne({
             <PenaltyOneError />
         )
     }
+    
 
 
     return (
@@ -128,23 +132,23 @@ export function PenaltyOne({
                                     Crear registro
                                 </span>
                             </Button>
-                        </OverLay>
+                        </OverLay> */}
 
 
                         <OverLay string="Eliminar registro">
                             <Button
                                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                                 variant="danger"
-                                onClick={handleDeleteOvertime}
+                                onClick={() => setShowDeleteModal(true)}
                                 disabled={loading}
                             >
                                 <i className="bi bi-trash" />
 
                                 <span className="d-none d-md-inline ms-2">
-                                    Eliminar registro
+                                    Eliminar penalización
                                 </span>
                             </Button>
-                        </OverLay> */}
+                        </OverLay>
 
                         <OverLay string="Firmar">
                             <ConditionalRender cond={showCurrentUser}>
@@ -246,7 +250,7 @@ export function PenaltyOne({
                                                     {fullName(penalty?.createForPerson)}
                                                 </span>
                                             </div>
-                                            
+
                                             <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                                                 <div className="d-flex align-items-center gap-2">
                                                     <i className="bi bi-chat-left-text text-primary" />
@@ -467,6 +471,18 @@ export function PenaltyOne({
                             onHide={() => setPenaltySignatureModal(false)}
                             id={String(penalty?.id)}
                         />
+
+                        <ConditionalRender cond={showDeleteModal}>
+                            <ModalBlur onClose={() => setShowDeleteModal(false)}>
+                                <DeletePenaltyModal
+                                    show={showDeleteModal}
+                                    onHide={() => { setShowDeleteModal(false); }}
+                                    idPenalty={penalty.id}
+                                    motive={penalty.delete?.reaseonDelete?? ""}
+                                    status={penalty.delete?.delete?? false}
+                                />
+                            </ModalBlur>
+                        </ConditionalRender>
                     </Card.Body>
                 </Card>
             </Container>

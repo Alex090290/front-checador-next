@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import { storeAction } from "./storeActions";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
-import { IdocumentsInability, IInability, InabilityPayload, IsT2DischargeDocument, IsT7FillingDocumentv1, IsT7FillingDocumentv2 } from "@/lib/inhability/interface";
+import { IDeleteInhability, IdocumentsInability, IInability, InabilityPayload, IsT2DischargeDocument, IsT7FillingDocumentv1, IsT7FillingDocumentv2 } from "@/lib/inhability/interface";
 
 
 export interface IResponseInabilityCreate {
@@ -512,10 +512,13 @@ export async function getInhabilityDocument({
   }
 }
 
+//ELIMINAR-CANCELAR INCAPACIDAD
 export async function deleteInability({
   id,
+  data
 }: {
   id: number | null;
+  data: IDeleteInhability;
 }): Promise<ActionResponse<boolean>> {
   try {
     if (!id) throw new Error("ID NO ESPECIFICADO");
@@ -523,6 +526,10 @@ export async function deleteInability({
     const { apiToken, API_URL } = await storeAction();
 
     await axios.delete(`${API_URL}/inability/${String(id)}`, {
+      data: {
+        deletePermission: true,
+        reaseonDelete: data.reaseonDelete,
+      },
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
@@ -532,7 +539,7 @@ export async function deleteInability({
 
     return {
       success: true,
-      message: "Eliminado exitosamente",
+      message: "Incapacidad eliminada exitosamente",
     };
   } catch (error: unknown) {
     console.log(error);

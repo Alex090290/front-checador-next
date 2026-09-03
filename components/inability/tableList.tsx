@@ -9,6 +9,8 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TablePage";
 import { IInability } from "@/lib/inhability/interface";
 import { formatParse } from "@/lib/helpers";
+import ModalBlur from "../ModalBlur";
+import DeleteInhabilityModal from "./DeleteInhabilityModal";
 
 function statusVariant(status: string | null) {
   switch ((status ?? "").toLowerCase()) {
@@ -60,6 +62,10 @@ export default function TableInabilityComponent({
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
+  const [showdeleteInhabilityModal, setShowDeleteInhabilityModal] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number | null>(null);
+  const [motive, setMotive] = useState<string | null>(null);
+  const [status, setStatus] = useState<boolean | null>(null);
 
   useEffect(() => {
     setLoading(false);
@@ -83,6 +89,13 @@ export default function TableInabilityComponent({
     params.set("limit", String(limit));
 
     router.push(`/app/inability?${params.toString()}`);
+  };
+
+  const handleDelete = (idInhability: number, motive: string, status: boolean) => {
+    setSelectedIds(idInhability);
+    setMotive(motive);
+    setStatus(status)
+    setShowDeleteInhabilityModal(true);
   };
 
   const columns: TableTemplateColumn<IInability>[] = [
@@ -165,8 +178,23 @@ export default function TableInabilityComponent({
       accessor: (r) => r.status,
       filterable: true,
       type: "string",
-      render: (r) => (
-        <div className="text-uppercase text-center"> {statusVariant(r.status)}</div>)
+      render: (r) => {
+        const isDelete = r.delete?.delete === true;
+
+        if (isDelete === true) {
+          return (
+            <div className="text-center">
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                CANCELADO
+              </span>
+            </div>
+          );
+        } else {
+          return (
+            <div className="text-uppercase text-center"> {statusVariant(r.status)} </div>
+          )
+        }
+      }
     },
   ];
 
@@ -251,12 +279,26 @@ export default function TableInabilityComponent({
                               ))}
 
                               <td>
-                                <a
-                                  href={`/app/inability?view_type=form&id=${row.id}`}
-                                  className="btn btn-sm btn-outline-info"
-                                >
-                                  Ver
-                                </a>
+                                <div className="d-flex align-items-center justify-content-center gap-2">
+
+                                  <a
+                                    href={row.delete?.delete === true ? undefined : `/app/inability?view_type=form&id=${row.id}`}
+                                    className={`btn btn-sm btn-outline-info ${row.delete?.delete === true ? "disabled" : ""}`}
+                                    aria-disabled={row.delete?.delete === true}
+                                    onClick={(e) => {
+                                      if (row.delete?.delete === true) e.preventDefault();
+                                    }}
+                                  >
+                                    Ver
+                                  </a>
+
+                                  <a
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(row.id, row.delete?.reaseonDelete ?? "", row.delete?.delete ?? false)}
+                                  >
+                                    {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}
+                                  </a>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -295,7 +337,19 @@ export default function TableInabilityComponent({
             </Card>
           </Col>
         </Row>
-      </Container>
+
+        <ConditionalRender cond={showdeleteInhabilityModal}>
+          <ModalBlur onClose={() => setShowDeleteInhabilityModal(false)}>
+            <DeleteInhabilityModal
+              show={showdeleteInhabilityModal}
+              onHide={() => { setShowDeleteInhabilityModal(false); }}
+              idInhability={selectedIds}
+              motive={motive}
+              status={status}
+            />
+          </ModalBlur>
+        </ConditionalRender>
+      </Container >
     </>
   );
 }

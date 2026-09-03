@@ -4,7 +4,7 @@ import { FetchUsersArgs } from "@/lib/constancy/interface";
 import { OverTime, OverTimeAxios, TInputsOvertime } from "@/lib/overTime/interface";
 import { storeAction } from "./storeActions";
 import axios from "axios";
-import { ActionResponse } from "@/lib/definitions";
+import { ActionResponse, IDeleteIncidenece } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { storeToken } from "@/lib/useToken";
 import { base64ToBlob } from "@/lib/helpers";
@@ -207,8 +207,10 @@ export async function createOverTime({
 //Funcion para borrar horas extra 
 export async function deleteOverTime({
   id,
+  data
 }: {
   id: number | null;
+  data: IDeleteIncidenece;
 }): Promise<ActionResponse<boolean>> {
   try {
     if (!id) throw new Error("ID NO ESPECIFICADO");
@@ -216,6 +218,10 @@ export async function deleteOverTime({
     const { apiToken, API_URL } = await storeAction();
 
     await axios.delete(`${API_URL}/overtime/${String(id)}`, {
+      data: {
+        deletePermission: true,
+        reaseonDelete: data.reaseonDelete,
+      },
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },

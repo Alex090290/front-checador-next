@@ -13,14 +13,14 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { useRouter } from "next/navigation";
 import FormUpdateInability from "./inabilityFormUpdate";
-import { deleteInability, getOneInability } from "@/app/actions/inability-actions";
-import { useModals } from "@/context/ModalContext";
+import { getOneInability } from "@/app/actions/inability-actions";
 import OverLay from "../templates/OverLay";
 import InabilityOneError from "./inabilityMessageError";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 import { IInability } from "@/lib/inhability/interface";
+import DeleteInhabilityModal from "./DeleteInhabilityModal";
 
 // type TInputs = {
 //   idEmployee: number | null;
@@ -91,12 +91,12 @@ export default function InfoOneInability({
   const [showUpdateInabilityModal, setShowUpdateInabilityModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [, setMessageLoading] = useState("");
-  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
-  const { modalError, modalConfirm } = useModals();
   const router = useRouter();
   const [inhability, setInhability] = useState(inhabilityProp);
   const status = inhability?.status ?? "";
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const refreshData = useCallback(async () => {
     const updated = await getOneInability(Number(id));
@@ -125,35 +125,6 @@ export default function InfoOneInability({
     setMessageLoading("Cargando datos...");
     router.push("/app/inability");
   }
-
-  const handleDeleteInability = async () => {
-    if (!inhability?.id) {
-      modalError("No se encontró el registro");
-      return;
-    }
-
-    modalConfirm("¿Deseas eliminar este registro?", async () => {
-      try {
-        setFeedback("loading");
-        setFeedbackMsg("Eliminando registro...");
-
-        const res = await deleteInability({ id: Number(inhability.id) });
-
-        if (!res.success) {
-          setFeedbackMsg(res.message || "No se pudo eliminar");
-          setFeedback("error");
-          return;
-        }
-
-        setFeedbackMsg(res.message || "Eliminado correctamente");
-        setFeedback("success");
-        router.refresh();
-      } finally {
-        setLoading(false);
-        setMessageLoading("");
-      }
-    });
-  };
 
   return (
     <>
@@ -218,7 +189,7 @@ export default function InfoOneInability({
               <Button
                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                 variant="danger"
-                onClick={handleDeleteInability}
+                onClick={() => setShowDeleteModal(true)}
                 disabled={loading}
               >
                 <i className="bi bi-trash" />
@@ -482,6 +453,18 @@ export default function InfoOneInability({
             onHide={() => setModalUploadDoc(false)}
             idDoc={id}
             getData={refreshData}
+          />
+        </ModalBlur>
+      </ConditionalRender>
+
+      <ConditionalRender cond={showDeleteModal}>
+        <ModalBlur onClose={() => setShowDeleteModal(false)}>
+          <DeleteInhabilityModal
+            show={showDeleteModal}
+            onHide={() => { setShowDeleteModal(false); }}
+            idInhability={inhability.id}
+            motive={inhability.delete?.reaseonDelete?? ""}
+            status={inhability.delete?.delete?? false}
           />
         </ModalBlur>
       </ConditionalRender>

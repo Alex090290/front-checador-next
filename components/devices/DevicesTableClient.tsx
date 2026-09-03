@@ -40,7 +40,7 @@ function statusVariant(status: string) {
     }
 }
 
-function formatLabel(value: string) {
+export function formatLabel(value: string) {
   return value
     .replace(/_/g, " ")
     .replace(/-/g, " ") 

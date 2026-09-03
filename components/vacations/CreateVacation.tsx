@@ -10,7 +10,7 @@ import {
   SignatureInput,
 } from "@/components/fields";
 import { useModals } from "@/context/ModalContext";
-import { Employee, PeriodVacation, Vacations } from "@/lib/definitions";
+import { Employee } from "@/lib/definitions";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -26,6 +26,7 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import moment from "moment";
 import { es } from "date-fns/locale";
 import Link from "next/link";
+import { PeriodVacation, Vacations } from "@/lib/vactions/interface";
 
 registerLocale("es", es);
 

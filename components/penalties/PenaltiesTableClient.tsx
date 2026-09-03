@@ -12,6 +12,8 @@ import GenericSearchInput from "../employee/GenericSearchInput";
 import ListView from "../templates/ListView";
 import AlertSignaturesPenalty from "./AlertSignatures";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import ModalBlur from "../ModalBlur";
+import DeletePenaltyModal from "./DeletePenaltyModal";
 
 export default function PenaltiesTableClient({
     total,
@@ -40,6 +42,10 @@ export default function PenaltiesTableClient({
     const [, setTableResetKey] = useState(0);
     const [hideSignatures, setHideSignatures] = useState(false);
     const idEmployee = Number(session?.uid?.idEmployee);
+    const [showdeletePenaltyModal, setShowDeletePenaltyModal] = useState(false);
+    const [selectedIds, setSelectedId] = useState<number | null>(null);
+    const [motive, setMotive] = useState<string | null>(null);
+    const [status, setStatus] = useState<boolean | null>(null);
 
 
 
@@ -150,6 +156,13 @@ export default function PenaltiesTableClient({
         },
         [currentSearch, searchParamsString, limit, router, clearSelectedIds]
     );
+
+    const handleDelete = (idPenalty: number, motive: string, status: boolean) => {
+        setSelectedId(idPenalty);
+        setMotive(motive);
+        setStatus(status)
+        setShowDeletePenaltyModal(true);
+    };
 
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IPenaltyForOffeses>[] = [
@@ -319,12 +332,26 @@ export default function PenaltiesTableClient({
                                                                 </td>
                                                             ))}
                                                             <td>
-                                                                <a
-                                                                    href={`/app/penalties?view_type=form&id=${row.id}`}
-                                                                    className="btn btn-sm btn-outline-info ms-3"
-                                                                >
-                                                                    Ver
-                                                                </a>
+                                                                <div className="d-flex align-items-center justify-content-center gap-2">
+
+                                                                    <a
+                                                                        href={row.delete?.delete === true ? undefined : `/app/penalties?view_type=form&id=${row.id}`}
+                                                                        className={`btn btn-sm btn-outline-info ${row.delete?.delete === true ? "disabled" : ""}`}
+                                                                        aria-disabled={row.delete?.delete === true}
+                                                                        onClick={(e) => {
+                                                                            if (row.delete?.delete === true) e.preventDefault();
+                                                                        }}
+                                                                    >
+                                                                        Ver
+                                                                    </a>
+
+                                                                    <a
+                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        onClick={() => handleDelete(row.id, row.delete?.reaseonDelete ?? "", row.delete?.delete ?? false)}
+                                                                    >
+                                                                        {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}
+                                                                    </a>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -363,6 +390,18 @@ export default function PenaltiesTableClient({
                         </Card>
                     </Col>
                 </Row >
+
+                <ConditionalRender cond={showdeletePenaltyModal}>
+                    <ModalBlur onClose={() => setShowDeletePenaltyModal(false)}>
+                        <DeletePenaltyModal
+                            show={showdeletePenaltyModal}
+                            onHide={() => { setShowDeletePenaltyModal(false); }}
+                            idPenalty={selectedIds}
+                            motive={motive}
+                            status={status}
+                        />
+                    </ModalBlur>
+                </ConditionalRender>
             </Container >
         </>
     )

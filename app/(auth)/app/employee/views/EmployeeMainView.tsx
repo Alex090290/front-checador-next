@@ -4,7 +4,6 @@ import EmployeeFormView from "./EmployeeFormView";
 import {
   Employee,
   IPeriod,
-  Vacations,
 } from "@/lib/definitions";
 import {
   fetchEmployees,
@@ -14,6 +13,7 @@ import { fetchDepartments } from "@/app/actions/departments-actions";
 import { fetchBranches } from "@/app/actions/branches-actionst";
 import { fetchDocumentTypes } from "@/app/actions/documents-actions";
 import { fetchVacationByEmployee } from "@/app/actions/vacations-actions";
+import { Vacations } from "@/lib/vactions/interface";
 
 async function EmployeeMainView({
   viewType,

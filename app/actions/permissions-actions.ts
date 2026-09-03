@@ -1,11 +1,12 @@
 "use server";
 
-import { ActionResponse, IPermissionRequest } from "@/lib/definitions";
+import { ActionResponse, IDeleteIncidenece } from "@/lib/definitions";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { storeToken } from "@/lib/useToken";
 import { revalidatePath } from "next/cache";
 import { base64ToBlob } from "@/lib/helpers";
+import { IPermissionRequest } from "@/lib/permissions/interface";
 
 type FetchVacationsArgs = {
   page?: number;
@@ -59,8 +60,8 @@ export async function fetchPermissionsByEmployee(
     const url = `${apiUrl}/permissionRequest/list?${params.toString()}`;
 
     const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${apiToken}` },
-      }).then((res) => res.data);
+      headers: { Authorization: `Bearer ${apiToken}` },
+    }).then((res) => res.data);
 
     const total = Number(response.total ?? 0);
     const pages = Math.max(Math.ceil(total / limitNum), 1);
@@ -529,6 +530,47 @@ export async function fetchPermissionPDF({
     return {
       success: false,
       message: error.message,
+    };
+  }
+}
+
+//ELIMICAR-CANCELAR PERMISO
+export async function deletePermission({
+  id,
+  data
+}: {
+  id: number | null;
+  data: IDeleteIncidenece;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    if (!id) {
+      throw new Error("No se ha definido ID");
+    }
+
+    await axios.delete(`${API_URL}/permissionRequest/${String(id)}`, {
+      data: {
+        deletePermission: true,
+        reaseonDelete: data.reaseonDelete,
+      },
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    revalidatePath("/app/permissions");
+
+    return {
+      success: true,
+      message: "Permiso eliminado",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message ?? "Error en la respuesta",
     };
   }
 }

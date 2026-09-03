@@ -1,11 +1,12 @@
 "use server";
 
-import { ActionResponse, PeriodVacation, Vacations } from "@/lib/definitions";
+import { ActionResponse, IDeleteIncidenece } from "@/lib/definitions";
 import axios from "axios";
 import { storeAction } from "./storeActions";
 import { storeToken } from "@/lib/useToken";
 import { revalidatePath } from "next/cache";
 import { base64ToBlob } from "@/lib/helpers";
+import { PeriodVacation, Vacations } from "@/lib/vactions/interface";
 
 // export async function fetchVacations(): Promise<Vacations[]> {
 //   try {
@@ -525,49 +526,49 @@ export async function approvedVacation({
 }
 
 
-export async function deleteVacation(idRequest: number, idPeriod: number): Promise<ActionResponse<boolean>> {
+// export async function deleteVacation(idRequest: number, idPeriod: number): Promise<ActionResponse<boolean>> {
 
-  try {
-    if (!idRequest) throw new Error("ID NOT DEFINED");
+//   try {
+//     if (!idRequest) throw new Error("ID NOT DEFINED");
 
-    const { apiToken, apiUrl } = await storeToken();
+//     const { apiToken, apiUrl } = await storeToken();
 
-    await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`, {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-      },
-    }
-    )
-      .then((res) => {
-        return res.data;
+//     await axios.delete(`${apiUrl}/vacations/${idRequest}/${idPeriod}`, {
+//       headers: {
+//         Authorization: `Bearer ${apiToken}`,
+//       },
+//     }
+//     )
+//       .then((res) => {
+//         return res.data;
 
-      })
-      .catch((err) => {
-        console.log("Error en axios delete vacations: ", err);
+//       })
+//       .catch((err) => {
+//         console.log("Error en axios delete vacations: ", err);
         
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+//         throw new Error(
+//           err.response.data.message
+//             ? err.response.data.message
+//             : "Error en la respuesta"
+//         );
+//       });
 
 
-    // revalidatePath("/app/vacationList");
+//     // revalidatePath("/app/vacationList");
 
-    return {
-      success: true,
-      message: "Proceso completado",
-      data: true,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.message,
-    };
-  }
-}
+//     return {
+//       success: true,
+//       message: "Proceso completado",
+//       data: true,
+//     };
+//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   } catch (error: any) {
+//     return {
+//       success: false,
+//       message: error.message,
+//     };
+//   }
+// }
 
 export async function approvedVacationDoh({
   data,
@@ -702,6 +703,49 @@ export async function fetchVacatiionPDF({
     return {
       success: false,
       message: error.message,
+    };
+  }
+}
+
+//BORRAR-CANCELAR VACACIONES
+export async function deleteVacations({
+  id,
+  idPeriod,
+  data
+}: {
+  id: number | null;
+  idPeriod: number | null;
+  data: IDeleteIncidenece;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    if (!id) {
+      throw new Error("No se ha definido ID");
+    }
+
+    await axios.delete(`${API_URL}/vacations/${String(id)}/${String(idPeriod)}`, {
+      data: {
+        deletePermission: true,
+        reaseonDelete: data.reaseonDelete,
+      },
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    revalidatePath("/app/vacationList");
+
+    return {
+      success: true,
+      message: "Vacación correctamene eliminada",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message ?? "Error en la respuesta",
     };
   }
 }

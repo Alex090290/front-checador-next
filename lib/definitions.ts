@@ -271,50 +271,7 @@ export interface IPeriodDocument {
   dateExpiration?: string;
 }
 
-export interface IPermissionRequest {
-  _id: string;
-  id: number;
-  leaderApproval: PermissionRequestStatus;
-  dohApproval: PermissionRequestStatus;
-  motive: string;
-  notes: string;
-  incidence: string;
-  type: string;
-  forHours: boolean;
-  forDays: boolean;
-  signatures: ISignatures[];
-  informationDate: TInformationDate;
-  createdAt?: string;
-  updatedAt?: string;
-  createForPerson: Pick<Employee, "_id" | "id" | "name" | "lastName">;
-  employee: Pick<Employee, "_id" | "id" | "name" | "lastName">;
-  dateEnd: string;
-  dateInit: string;
-  hourInt: string;
-  hourEnd: string;
-  leader: Pick<Employee, "_id" | "id" | "name" | "lastName">;
-  personDoh: Pick<Employee, "_id" | "id" | "name" | "lastName">;
-  status: PermissionRequestStatus;
-  dateApprove?: string;
-  dateApproveDoh?: string;
-}
 
-export type PermissionRequestStatus =
-  | "APPROVED"
-  | "REFUSED"
-  | "PENDING"
-  | "EMPLOYEE";
-
-export type TInformationDate = {
-  _id: string;
-  id: number;
-  totalHours: number;
-  totalDay: number;
-  dateInit: string;
-  dateEnd: string;
-  hourInit: string;
-  hourEnd: string;
-};
 
 export interface INewsletter {
   _id: string;
@@ -331,104 +288,7 @@ export interface INewsletter {
   updateAt?: string;
 };
 
-export interface Vacations {
-  _id: string;
-  id: number;
-  idEmployee: number | null;
-  dohApproval?: "APPROVED" | "REFUSED" | "PENDING";
-  periodDescription: string;
-  totalDaysPeriod: number;
-  dateInitPeriod: string;
-  dateEndPeriod: string;
-  idsVacationsRequest: number[];
-  idLeader: number | null;
-  idPersonDoh: number | null;
-  idPeriod: number | null;
-  leaderApproval: string;
-  daysRequest: number;
-  signatures: ISignatures[];
-  dateInit: string;
-  dateEnd: string;
-  isAutomatic: boolean;
-  holidayName: string;
-  notes: string;
 
-  createForPerson: {
-    _id: string;
-    id: number;
-    name: string;
-    lastName: string;
-  };
-  employee: {
-    _id: string;
-    id: number;
-    name: string;
-    lastName: string;
-  };
-  period: {
-    _id: string;
-    id: number;
-    periodDescription: string;
-    dateInitPeriod: string;
-    dateEndPeriod: string;
-  };
-  status: VacationRequestStatus;
-  vacationsRequestsData: {
-    _id: string;
-    id: number;
-    idEmployee: number;
-    idLeader: number | null;
-    idPersonDoh: number | null;
-    createFor: number;
-    leaderApproval: string;
-    dohApproval: string;
-    daysRequest: number;
-    dateInit: string;
-    dateEnd: string;
-    holidayName: string;
-  }[];
-  usedDays: number;
-  availableDays: number;
-  pendingDays: number;
-  createdAt?: string;
-  updatedAt?: string;
-  daysdaysBrokenDown?: {
-    id: number;
-    fortnightlyPeriod: number;
-    day: string; // ISO
-  }[];
-  leader?: {
-    _id: string;
-    id: number;
-    name: string;
-    lastName: string;
-  };
-  personDoh?: {
-    _id: string;
-    id: number;
-    name: string;
-    lastName: string;
-  };
-}
-
-export interface PeriodVacation {
-  _id: string;
-  id: number;
-  idEmployee: number;
-  usedDaysApproved: number;
-  availableDays: number;
-  periodDescription: string;
-  totalDaysPeriod: number;
-  dateInitPeriod: string;
-  dateEndPeriod: string;
-  idsVacationsRequest: number[];
-}
-
-export type VacationRequestStatus =
-  | "APPROVED"
-  | "REFUSED"
-  | "PENDING"
-// | "EMPLOYEE";
 
 export interface ConfigSystemUpdate {
   permissions: {
@@ -531,3 +391,9 @@ export interface AttendanceReportItem {
   totalRecords: number;
   usersCount: number;
 }
+
+export interface IDeleteIncidenece{
+  deletePermission: boolean;
+  reaseonDelete: string;
+}
+

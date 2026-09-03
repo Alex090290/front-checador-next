@@ -13,7 +13,7 @@ import FormView, {
   FormPage,
 } from "@/components/templates/FormView";
 import { useModals } from "@/context/ModalContext";
-import { Employee, IPermissionRequest } from "@/lib/definitions";
+import { Employee } from "@/lib/definitions";
 import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -29,6 +29,7 @@ import useSWR from "swr";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { findEmployeeById } from "@/app/actions/employee-actions";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
+import { IPermissionRequest } from "@/lib/permissions/interface";
 
 type TInputs = {
   motive: string;

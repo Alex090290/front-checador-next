@@ -1,6 +1,6 @@
 "use server"
 
-import { ActionResponse } from "@/lib/definitions";
+import { ActionResponse, IDeleteIncidenece } from "@/lib/definitions";
 import { IPenalty, IPenaltyAxios, IPenaltyForOffeses } from "@/lib/penalties/interface";
 import { storeAction } from "./storeActions";
 import { auth } from "@/lib/auth";
@@ -8,6 +8,7 @@ import axios from "axios";
 import { FetchUsersArgs } from "@/lib/constancy/interface";
 import { storeToken } from "@/lib/useToken";
 import { base64ToBlob } from "@/lib/helpers";
+import { revalidatePath } from "next/cache";
 
 //Funcion para crear penalizacion
 export async function createPenalty({
@@ -272,6 +273,53 @@ export async function fetchSignaturePenalties({
             message: error.message,
         };
     }
+}
+
+//Elimicar-cancelar penalizacion
+export async function deletePenalty({
+  id,
+  data
+}: {
+  id: number | null;
+  data: IDeleteIncidenece;
+}): Promise<ActionResponse<boolean>> {
+  try {
+    if (!id) throw new Error("ID NO ESPECIFICADO");
+
+    const { apiToken, API_URL } = await storeAction();
+
+    await axios.delete(`${API_URL}/penaltyForOffeses/${String(id)}`, {
+      data: {
+        deletePermission: true,
+        reaseonDelete: data.reaseonDelete,
+      },
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    revalidatePath("/app/penalties");
+
+    return {
+      success: true,
+      message: "Eliminado exitosamente",
+    };
+  } catch (error: unknown) {
+    console.log(error);
+
+    let message = "Error en la respuesta";
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || error.message || message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return {
+      success: false,
+      message,
+    };
+  }
 }
 
 

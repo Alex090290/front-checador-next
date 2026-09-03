@@ -16,7 +16,6 @@ import {
   Employee,
   IPeriod,
   Position,
-  Vacations,
 } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -39,6 +38,7 @@ import ModalUnsubscribe from "./ModalUnsubscribe";
 import { reEntryUser } from "@/app/actions/user-actions";
 import DocumentsGrid from "./DocuementsGrid";
 import { useSession } from "next-auth/react";
+import { Vacations } from "@/lib/vactions/interface";
 
 const employeeStatus = {
   1: "activo",

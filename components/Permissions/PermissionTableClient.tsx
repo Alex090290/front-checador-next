@@ -6,13 +6,15 @@ import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 
-import { IPermissionRequest } from "@/lib/definitions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import AlertSignaturesP from "./AlertSignatures";
 import { ISignatures } from "@/lib/overTime/interface";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { formatCreatedAt } from "@/lib/helpers";
+import { IPermissionRequest } from "@/lib/permissions/interface";
+import ModalBlur from "../ModalBlur";
+import DeletePermissionModal from "./DeleteModal";
 
 export const leaderApproval = {
   APPROVED: "APROBADO",
@@ -41,14 +43,16 @@ export default function PermissionsTableClient({
   const [messageLoading, setMessageLoading] = useState('');
   const [hideSignatures, setHideSignatures] = useState(false);
   const idEmployee = Number(session?.uid?.idEmployee);
+  const [showdeletePermissionModal, setShowDeletePermissionModal] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number | null>(null);
+  const [motive, setMotive] = useState<string | null>(null);
+  const [status, setStatus] = useState<boolean | null>(null);
 
 
   const pendingPermissions = useMemo(() => {
     return (permissions ?? []).filter((o: IPermissionRequest) => {
       const signatures: ISignatures[] = o.signatures ?? [];
-      const mySignature = signatures.find(
-        (i: ISignatures) => Number(i.idSignatory) === idEmployee
-      );
+      const mySignature = signatures.find((i: ISignatures) => Number(i.idSignatory) === idEmployee && o.delete?.delete !== true);
       if (!mySignature) return false;
       return mySignature.url === '';
     });
@@ -77,6 +81,13 @@ export default function PermissionsTableClient({
     params.set("page", String(nextPage));
     params.set("limit", String(limit));
     router.push(`/app/permissions?${params.toString()}`);
+  };
+
+  const handleDelete = (idPermission: number, motive: string, status: boolean) => {
+    setSelectedIds(idPermission);
+    setMotive(motive);
+    setStatus(status)
+    setShowDeletePermissionModal(true);
   };
 
   const columns: TableTemplateColumn<IPermissionRequest>[] = [
@@ -139,16 +150,28 @@ export default function PermissionsTableClient({
         const mySignature = (row.signatures ?? []).find(
           (s) => Number(s.idSignatory) === idEmployee
         );
+        const cancelado = row.delete?.delete === true;
+
 
         if (!mySignature) {
-          return <span className="text-muted">Este permiso no corresponde a este perfil</span>;
+          return (
+            <>
+              <span className="text-muted">Este permiso no corresponde a este perfil</span>
+            </>
+          );
+        } else if (cancelado === true) {
+          return (
+            <>
+              <i className="bi bi-slash-circle ms-4" />
+            </>
+          )
+        } else {
+          return mySignature.url === "" ? (
+            <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
+          ) : (
+            <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
+          );
         }
-
-        return mySignature.url === "" ? (
-          <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
-        ) : (
-          <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
-        );
       },
     },
     {
@@ -158,31 +181,43 @@ export default function PermissionsTableClient({
       accessor: (row) => leaderApproval[row.status],
       render: (e) => {
         const estado = e.status
-        switch (estado) {
-          case "APPROVED":
-            return (
-              <div className="text-center">
-                <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                  APROBADO
-                </span>
-              </div>
-            );
-          case "PENDING":
-            return (
-              <div className="text-center">
-                <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                  PENDIENTE
-                </span>
-              </div>
-            );
-          case "REFUSED":
-            return (
-              <div className="text-center">
-                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                  RECHAZADO
-                </span>
-              </div>
-            );
+        const cancelado = e.delete?.delete === true;
+
+        if (cancelado === true) {
+          return (
+            <div className="text-center">
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                CANCELADO
+              </span>
+            </div>
+          );
+        } else {
+          switch (estado) {
+            case "APPROVED":
+              return (
+                <div className="text-center">
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                    APROBADO
+                  </span>
+                </div>
+              );
+            case "PENDING":
+              return (
+                <div className="text-center">
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                    PENDIENTE
+                  </span>
+                </div>
+              );
+            case "REFUSED":
+              return (
+                <div className="text-center">
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                    RECHAZADO
+                  </span>
+                </div>
+              );
+          }
         }
       },
     },
@@ -248,7 +283,7 @@ export default function PermissionsTableClient({
                               </th>
                             ))}
 
-                            <th className="fw-bold">Detalles</th>
+                            <th className="fw-bold text-center">Acciones</th>
                           </tr>
                         </thead>
 
@@ -264,12 +299,26 @@ export default function PermissionsTableClient({
                               ))}
 
                               <td>
-                                <a
-                                  href={`/app/permissions?view_type=form&id=${row.id}`}
-                                  className="btn btn-sm btn-outline-info ms-3"
-                                >
-                                  Ver
-                                </a>
+                                <div className="d-flex align-items-center justify-content-center gap-2">
+
+                                  <a
+                                    href={row.delete?.delete === true ? undefined : `/app/permissions?view_type=form&id=${row.id}`}
+                                    className={`btn btn-sm btn-outline-info ${row.delete?.delete === true ? "disabled" : ""}`}
+                                    aria-disabled={row.delete?.delete === true}
+                                    onClick={(e) => {
+                                      if (row.delete?.delete === true) e.preventDefault();
+                                    }}
+                                  >
+                                    Ver
+                                  </a>
+
+                                  <a
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(row.id, row.delete?.reaseonDelete?? "", row.delete?.delete?? false)}
+                                  >
+                                    {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}
+                                  </a>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -307,8 +356,20 @@ export default function PermissionsTableClient({
               </Card.Body>
             </Card>
           </Col>
-        </Row>
-      </Container>
+        </Row >
+
+        <ConditionalRender cond={showdeletePermissionModal}>
+          <ModalBlur onClose={() => setShowDeletePermissionModal(false)}>
+            <DeletePermissionModal
+              show={showdeletePermissionModal}
+              onHide={() => { setShowDeletePermissionModal(false); }}
+              idPermission={selectedIds}
+              motive={motive}
+              status={status}
+            />
+          </ModalBlur>
+        </ConditionalRender>
+      </Container >
     </>
   );
 }

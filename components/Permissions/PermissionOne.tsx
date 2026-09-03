@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { IPermissionRequest } from "@/lib/definitions";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { FormBook, FormPage } from "../templates/FormView";
@@ -17,6 +16,9 @@ import { useRouter } from "next/navigation";
 import { ISignatures } from "@/lib/overTime/interface";
 import PermissionsOneError from "./permissionsMessageError";
 import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { IPermissionRequest } from "@/lib/permissions/interface";
+import ModalBlur from "../ModalBlur";
+import DeletePermissionModal from "./DeleteModal";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -67,7 +69,7 @@ export default function ShowInfoPermissionRequest({
   const [signatureModal, setSignatureModal] = useState(false);
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [permissionPDFModal, setPermissionPDFModal] = useState(false);
-
+  const [showdeletePermissionModal, setShowDeletePermissionModal] = useState(false);
 
   const signatures = useMemo(() =>
     Array.isArray(permission?.signatures) ? permission.signatures : [],
@@ -173,6 +175,21 @@ export default function ShowInfoPermissionRequest({
 
                 <span className="d-none d-md-inline ms-2">
                   Crear permiso
+                </span>
+              </Button>
+            </OverLay>
+
+            <OverLay string="Eliminar registro">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="danger"
+                onClick={()=> setShowDeletePermissionModal(true)}
+                disabled={loading}
+              >
+                <i className="bi bi-trash" />
+
+                <span className="d-none d-md-inline ms-2">
+                  Eliminar permiso
                 </span>
               </Button>
             </OverLay>
@@ -327,7 +344,7 @@ export default function ShowInfoPermissionRequest({
                           {fullName(permission.personDoh)}
                         </span>
                       </div>
-                      
+
                       <div className="d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-2">
                           <i className="bi bi-chat-left-text text-primary" />
@@ -481,6 +498,18 @@ export default function ShowInfoPermissionRequest({
         show={permissionPDFModal}
         onHide={() => setPermissionPDFModal(false)}
       />
+
+      <ConditionalRender cond={showdeletePermissionModal}>
+        <ModalBlur onClose={() => setShowDeletePermissionModal(false)}>
+          <DeletePermissionModal
+            show={showdeletePermissionModal}
+            onHide={() => { setShowDeletePermissionModal(false); }}
+            idPermission={permission.id}
+            motive={permission.delete?.reaseonDelete?? ""}
+            status={permission.delete?.delete?? false}
+          />
+        </ModalBlur>
+      </ConditionalRender>
     </>
   );
 }

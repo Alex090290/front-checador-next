@@ -8,8 +8,6 @@ import OvertimeOneError from "./overtimeMessageError";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
-import { deleteOverTime } from "@/app/actions/overtime-actions";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { IConfigSystem } from "@/app/actions/configSystem-actions";
 import { FormBook, FormPage } from "../templates/FormView";
@@ -20,6 +18,8 @@ import SignatureLeaderModal from "./SignatureLeaderModal";
 import SignatureDohModal from "./SignatureDohModal";
 import OverLay from "../templates/OverLay";
 import { formatCreatedAt, formatParseHours } from "@/lib/helpers";
+import ModalBlur from "../ModalBlur";
+import DeleteOvertimeModal from "./DeleteOvertimeModal";
 
 
 function fullName(p?: { name?: string; lastName?: string } | null) {
@@ -69,7 +69,6 @@ export function OvertimeOne({
     const session = useSessionSnapshot();
     const [loading, setLoading] = useState(false);
     const [messageLoading, setMessageLoading] = useState("");
-    const { modalError, modalConfirm } = useModals();
     const router = useRouter();
     const [overtimeSignatureModal, setOvertimeSignatureModal] = useState(false);
     const [signatureLeaderModal, setSignatureLeaderModal] = useState(false);
@@ -78,6 +77,8 @@ export function OvertimeOne({
     const handleOvertimeSignature = () => setOvertimeSignatureModal(true);
     const handleSignatureLeader = () => setSignatureLeaderModal(true);
     const handleSignatureDoh = () => setSignatureDohModal(true);
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
 
     // Configuración de overtime del sistema
@@ -143,34 +144,6 @@ export function OvertimeOne({
         router.push("/app/overtime/create");
     };
 
-    //Borrar
-    const handleDeleteOvertime = async () => {
-        if (!overtime?.id) {
-            modalError("No se encontró el registro");
-            return;
-        }
-
-        modalConfirm("¿Deseas eliminar este registro?", async () => {
-            try {
-                setLoading(true);
-                setMessageLoading("Eliminando registro...");
-
-                const res = await deleteOverTime({ id: Number(overtime.id) });
-
-                if (!res.success) {
-                    modalError(res.message);
-                    return;
-                }
-
-                toast.success(res.message);
-                router.push("/app/overtime");
-            } finally {
-                setLoading(false);
-                setMessageLoading("");
-            }
-        });
-    };
-
     //Regresar a pagina principal
     const handleBack = () => {
         setLoading(true);
@@ -230,7 +203,7 @@ export function OvertimeOne({
                             <Button
                                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                                 variant="danger"
-                                onClick={handleDeleteOvertime}
+                                onClick={() => setShowDeleteModal(true)}
                                 disabled={loading}
                             >
                                 <i className="bi bi-trash" />
@@ -551,6 +524,18 @@ export function OvertimeOne({
                             onHide={() => setSignatureDohModal(false)}
                             id={String(overtime.id)}
                         />
+
+                        <ConditionalRender cond={showDeleteModal}>
+                            <ModalBlur onClose={() => setShowDeleteModal(false)}>
+                                <DeleteOvertimeModal
+                                    show={showDeleteModal}
+                                    onHide={() => { setShowDeleteModal(false); }}
+                                    idOvertime={overtime.id}
+                                    motive={overtime.delete?.reaseonDelete?? ""}
+                                    status={overtime.delete?.delete?? false}
+                                />
+                            </ModalBlur>
+                        </ConditionalRender>
                     </Card.Body>
                 </Card>
             </Container>

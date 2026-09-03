@@ -1,10 +1,10 @@
 "use client";
 
 import { fetchSignature } from "@/app/actions/permissions-actions";
+import { PermissionRequestStatus } from "@/lib/permissions/interface";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Card, Col } from "react-bootstrap";
-import { PermissionRequestStatus } from "@/lib/definitions";
 
 function SignaturesView({
   idPermission,

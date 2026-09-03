@@ -59,6 +59,13 @@ function statusVariant(type: string, category?: string) {
                     RETARDO
                 </span>
             )
+
+        case "falta_por_penalizacion":
+            return (
+                <span className="badge rounded-pill px2 py-2 fw-semibold bg-orange-subtle text-orange-emphasis border border-orange-subtle">
+                    FALTA POR PENALIZACIÓN
+                </span>
+            )
     }
 }
 
@@ -98,7 +105,7 @@ export default function AbsencesTableClient({
     const tableRef = useRef<{ clearSelection: () => void } | null>(null);
     const [, setTableResetKey] = useState(0);
     const isLeader = roles?.isLeader && !roles.isExtra;
-    
+
 
     //Filtro
     const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
@@ -372,6 +379,7 @@ export default function AbsencesTableClient({
             }
         });
     };
+    
 
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IAbsence>[] = [
@@ -433,12 +441,12 @@ export default function AbsencesTableClient({
         {
             key: "dateOfAbsence",
             label: "Fecha del registro",
-            accessor: (e) => e.createdAt,
+            accessor: (e) => e.dateOfAbsence,
             filterable: true,
             type: "string",
             render: (e) => (
                 <div className="text-uppercase text-center">
-                    {formatCreatedAt(e.createdAt) || "-"}
+                    {formatCreatedAt(e.dateOfAbsence) || "-"}
                 </div>
             )
         }
@@ -651,6 +659,12 @@ export default function AbsencesTableClient({
                                                                 onClick={() => handleTypeFilter("falta")}
                                                             >
                                                                 FALTA
+                                                            </Dropdown.Item>
+                                                            <Dropdown.Item
+                                                                active={currentType === "falta_por_penalizacion"}
+                                                                onClick={() => handleTypeFilter("falta_por_penalizacion")}
+                                                            >
+                                                                FALTA POR PENALIZACIÓN
                                                             </Dropdown.Item>
                                                             <Dropdown.Item
                                                                 active={currentType === "retardo"}

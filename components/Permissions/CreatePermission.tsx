@@ -24,6 +24,7 @@ import ErrorOverlay from "../ErrorOverlay";
 import DatePicker, { registerLocale } from "react-datepicker";
 import moment from "moment";
 import { es } from "date-fns/locale";
+import { formatCreatedAt } from "@/lib/helpers";
 
 registerLocale("es", es);
 
@@ -98,7 +99,6 @@ export default function CreatePermissionComponent({
   const [showCalendarEnd, setShowCalendarEnd] = useState(false);
 
   const modeSelect = watch("modeSelect");
-  const dateInit = watch("dateInit");
   const currentDoh = watch("idPersonDoh");
   const { data } = useSWR("/api/configsystem", fetcher);
   const config: IConfigSystem | null = useMemo(() => {
@@ -117,7 +117,9 @@ export default function CreatePermissionComponent({
     : null;
 
   const handleDateChange = (date: Date | null) => {
-    setValue("dateInit", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+    const formatted = date ? moment(date).format("YYYY-MM-DD") : "";
+    setValue("dateInit", formatted, { shouldDirty: true });
+    setValue("dateEnd", formatted, { shouldDirty: true });
   };
 
 
@@ -133,6 +135,12 @@ export default function CreatePermissionComponent({
   const handleDateChangeEnd = (date: Date | null) => {
     setValue("dateEnd", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
   };
+
+  useEffect(() => {
+    if (modeSelect === "forHours" && selectedDate && selectedDate !== selectedDateEnd) {
+      setValue("dateEnd", selectedDate, { shouldDirty: true });
+    }
+  }, [modeSelect, selectedDate, selectedDateEnd, setValue]);
 
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>(employees);
   const idEmployeeSelected = watch("idEmployee");
@@ -334,11 +342,6 @@ export default function CreatePermissionComponent({
     reset(values);
   }, [reset, employees, session, directionList, roles]);
 
-  useEffect(() => {
-    if (dateInit && !selectedDateEnd) {
-      setValue("dateEnd", dateInit);
-    }
-  }, [dateInit]);
 
   useEffect(() => {
     if (!idEmployeeSelected) return;
@@ -409,6 +412,7 @@ export default function CreatePermissionComponent({
     }
 
     modalConfirm("¿Seguro que quieres guardar este permiso?", async () => {
+
       try {
         setFeedback("loading");
         setFeedbackMsg("Guardando permiso...");
@@ -613,6 +617,9 @@ export default function CreatePermissionComponent({
                                     value: "PERMISO PATERNIDAD",
                                   },
                                   {
+                                    label: "POR DEFUNCIÓN DE FAMILIAR DIRECTO",
+                                    value: "POR DEFUNCION DE FAMILIAR DIRECTO",
+                                  }, {
                                     label: "OTROS",
                                     value: "PERMISO OTROS",
                                   },
@@ -675,7 +682,7 @@ export default function CreatePermissionComponent({
                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                 onClick={() => setShowCalendar((s) => !s)}
                               >
-                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3" />
                               </Button>
 
@@ -711,78 +718,83 @@ export default function CreatePermissionComponent({
                               </Overlay>
                             </Col>
 
-                            <Col md={6}>
-                              <Form.Group>
-                                <Form.Label className="fw-semibold">Fecha Final:</Form.Label>
-                              </Form.Group>
+                            <ConditionalRender cond={modeSelect !== "forHours"}>
+                              <Col md={6}>
+                                <Form.Group>
+                                  <Form.Label className="fw-semibold">Fecha Final:</Form.Label>
+                                </Form.Group>
 
-                              <Button
-                                ref={dateButtonRefEnd}
-                                style={{ height: "35px" }}
-                                variant="outline-secondary"
-                                className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEnd ? "border-danger text-danger" : ""}`}
-                                onClick={() => setShowCalendarEnd((s) => !s)}
-                              >
-                                <span>{selectedDateEnd ? selectedDateEnd : "Selecciona una fecha"}</span>
-                                <i className="bi bi-calendar3" />
-                              </Button>
+                                <Button
+                                  ref={dateButtonRefEnd}
+                                  style={{ height: "35px" }}
+                                  variant="outline-secondary"
+                                  className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEnd ? "border-danger text-danger" : ""}`}
+                                  onClick={() => setShowCalendarEnd((s) => !s)}
+                                >
+                                  <span>{selectedDateEnd ? formatCreatedAt(selectedDateEnd) : "Selecciona una fecha"}</span>
+                                  <i className="bi bi-calendar3" />
+                                </Button>
 
-                              <ConditionalRender cond={!dateErrorEnd}>
-                                <small className="text-danger d-block mt-1">{dateErrorEnd}</small>
-                              </ConditionalRender>
+                                <ConditionalRender cond={!dateErrorEnd}>
+                                  <small className="text-danger d-block mt-1">{dateErrorEnd}</small>
+                                </ConditionalRender>
 
-                              <Overlay
-                                target={dateButtonRefEnd.current}
-                                show={showCalendarEnd}
-                                placement="bottom-start"
-                                rootClose
-                                container={() => document.body}
-                                onHide={() => setShowCalendarEnd(false)}
-                              >
-                                {({ ref, style }) => (
-                                  <div
-                                    ref={ref}
-                                    style={style}
-                                    className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
-                                  >
-                                    <DatePicker
-                                      inline
-                                      selected={parsedDateEnd}
-                                      onChange={handleDateChangeEnd}
-                                      readOnly={!parsedDate}
-                                      minDate={parsedDate || new Date()}
-                                      shouldCloseOnSelect={false}
-                                      disabledKeyboardNavigation
-                                      monthsShown={1}
-                                      locale="es"
-                                    />
-                                  </div>
-                                )}
-                              </Overlay>
-                            </Col>
-
-                            <ConditionalRender cond={modeSelect === "forHours"}>
-                              <>
-                                <Col md={6}>
-                                  <Entry
-                                    register={register("hourInit")}
-                                    label="Hora inicial:"
-                                    className="text-left border"
-                                    type="time"
-                                  />
-                                </Col>
-
-                                <Col md={6}>
-                                  <Entry
-                                    label="Hora final:"
-                                    register={register("hourEnd")}
-                                    className="text-left border"
-                                    type="time"
-                                  />
-                                </Col>
-                              </>
+                                <Overlay
+                                  target={dateButtonRefEnd.current}
+                                  show={showCalendarEnd}
+                                  placement="bottom-start"
+                                  rootClose
+                                  container={() => document.body}
+                                  onHide={() => setShowCalendarEnd(false)}
+                                >
+                                  {({ ref, style }) => (
+                                    <div
+                                      ref={ref}
+                                      style={style}
+                                      className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                                    >
+                                      <DatePicker
+                                        inline
+                                        selected={parsedDateEnd}
+                                        onChange={handleDateChangeEnd}
+                                        readOnly={!parsedDate}
+                                        minDate={parsedDate || new Date()}
+                                        shouldCloseOnSelect={false}
+                                        disabledKeyboardNavigation
+                                        monthsShown={1}
+                                        locale="es"
+                                      />
+                                    </div>
+                                  )}
+                                </Overlay>
+                              </Col>
                             </ConditionalRender>
                           </Row>
+
+                          <ConditionalRender cond={modeSelect === "forHours"}>
+                            <Row className="g-3">
+                              <Col md={6}>
+                                <Entry
+                                  register={register("hourInit")}
+                                  label="Hora inicial:"
+                                  className="text-left border"
+                                  type="time"
+                                />
+                              </Col>
+
+                              <Col md={6}>
+                                <Entry
+                                  label="Hora final:"
+                                  register={register("hourEnd")}
+                                  className="text-left border"
+                                  type="time"
+                                />
+                              </Col>
+                            </Row>
+                          </ConditionalRender>
+
+
+
                         </Card.Body>
                       </Card>
 

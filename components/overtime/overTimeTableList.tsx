@@ -12,6 +12,8 @@ import GenericSearchInput from "../employee/GenericSearchInput";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import AlertSignatures from "./AlertSignatures";
 import { formatCreatedAt, formatParseHours } from "@/lib/helpers";
+import ModalBlur from "../ModalBlur";
+import DeleteOvertimeModal from "./DeleteOvertimeModal";
 
 export default function OverTimeTableClient({
     total,
@@ -42,6 +44,10 @@ export default function OverTimeTableClient({
     const router = useRouter();
     const [hideSignatures, setHideSignatures] = useState(false);
     const idEmployee = Number(session?.uid?.idEmployee);
+    const [showdeleteInhabilityModal, setShowDeleteInhabilityModal] = useState(false);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [motive, setMotive] = useState<string | null>(null);
+    const [status, setStatus] = useState<boolean | null>(null);
 
 
     useEffect(() => {
@@ -52,9 +58,7 @@ export default function OverTimeTableClient({
     const pendingOvertimes = useMemo(() => {
         return (overtime ?? []).filter((o: OverTime) => {
             const signatures: ISignatures[] = o.signatures ?? [];
-            const mySignature = signatures.find(
-                (i: ISignatures) => Number(i.idSignatory) === idEmployee
-            );
+            const mySignature = signatures.find((i: ISignatures) => Number(i.idSignatory) === idEmployee && o.delete?.delete !== true);
             if (!mySignature) return false;
             return mySignature.url === '';
         });
@@ -162,6 +166,12 @@ export default function OverTimeTableClient({
         return String(row[column.key as keyof OverTime] ?? "-");
     };
 
+    const handleDelete = (idOvertime: number, motive: string, status: boolean) => {
+        setSelectedId(idOvertime);
+        setMotive(motive);
+        setStatus(status)
+        setShowDeleteInhabilityModal(true);
+    };
 
 
     const columns: TableTemplateColumn<OverTime>[] = [
@@ -244,16 +254,28 @@ export default function OverTimeTableClient({
                 const mySignature = (row.signatures ?? []).find(
                     (s) => Number(s.idSignatory) === idEmployee
                 );
+                const cancelado = row.delete?.delete === true;
+
 
                 if (!mySignature) {
-                    return <span className="text-muted text-center">Este permiso no corresponde a este perfil</span>;
+                    return (
+                        <>
+                            <span className="text-muted">Este permiso no corresponde a este perfil</span>
+                        </>
+                    );
+                } else if (cancelado === true) {
+                    return (
+                        <>
+                            <i className="bi bi-slash-circle ms-4" />
+                        </>
+                    )
+                } else {
+                    return mySignature.url === "" ? (
+                        <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
+                    ) : (
+                        <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
+                    );
                 }
-
-                return mySignature.url === "" ? (
-                    <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
-                ) : (
-                    <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
-                );
             },
         },
         {
@@ -265,31 +287,43 @@ export default function OverTimeTableClient({
             type: "string",
             render: (e) => {
                 const estado = e.status
-                switch (estado) {
-                    case "APPROVED":
-                        return (
-                            <div className="text-center">
-                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                                    APROBADO
-                                </span>
-                            </div>
-                        );
-                    case "PENDING":
-                        return (
-                            <div className="text-center">
-                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                                    PENDIENTE
-                                </span>
-                            </div>
-                        );
-                    case "REFUSED":
-                        return (
-                            <div className="text-center">
-                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                                    RECHAZADO
-                                </span>
-                            </div>
-                        );
+                const cancelado = e.delete?.delete === true;
+
+                if (cancelado === true) {
+                    return (
+                        <div className="text-center">
+                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                                CANCELADO
+                            </span>
+                        </div>
+                    );
+                } else {
+                    switch (estado) {
+                        case "APPROVED":
+                            return (
+                                <div className="text-center">
+                                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                                        APROBADO
+                                    </span>
+                                </div>
+                            );
+                        case "PENDING":
+                            return (
+                                <div className="text-center">
+                                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                        PENDIENTE
+                                    </span>
+                                </div>
+                            );
+                        case "REFUSED":
+                            return (
+                                <div className="text-center">
+                                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                        RECHAZADO
+                                    </span>
+                                </div>
+                            );
+                    }
                 }
             },
         }
@@ -379,12 +413,26 @@ export default function OverTimeTableClient({
                                                                 </td>
                                                             ))}
                                                             <td>
-                                                                <a
-                                                                    href={`/app/overtime?view_type=form&id=${row.id}`}
-                                                                    className="btn btn-sm btn-outline-info ms-3"
-                                                                >
-                                                                    Ver
-                                                                </a>
+                                                                <div className="d-flex align-items-center justify-content-center gap-2">
+
+                                                                    <a
+                                                                        href={row.delete?.delete === true ? undefined : `/app/overtime?view_type=form&id=${row.id}`}
+                                                                        className={`btn btn-sm btn-outline-info ${row.delete?.delete === true ? "disabled" : ""}`}
+                                                                        aria-disabled={row.delete?.delete === true}
+                                                                        onClick={(e) => {
+                                                                            if (row.delete?.delete === true) e.preventDefault();
+                                                                        }}
+                                                                    >
+                                                                        Ver
+                                                                    </a>
+
+                                                                    <a
+                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        onClick={() => handleDelete(row.id, row.delete?.reaseonDelete ?? "", row.delete?.delete ?? false)}
+                                                                    >
+                                                                        {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}
+                                                                    </a>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -423,6 +471,18 @@ export default function OverTimeTableClient({
                         </Card>
                     </Col>
                 </Row>
+
+                <ConditionalRender cond={showdeleteInhabilityModal}>
+                    <ModalBlur onClose={() => setShowDeleteInhabilityModal(false)}>
+                        <DeleteOvertimeModal
+                            show={showdeleteInhabilityModal}
+                            onHide={() => { setShowDeleteInhabilityModal(false); }}
+                            idOvertime={selectedId}
+                            motive={motive}
+                            status={status}
+                        />
+                    </ModalBlur>
+                </ConditionalRender>
             </Container>
         </>
     );

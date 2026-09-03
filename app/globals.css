@@ -53,15 +53,20 @@
 
 
 @keyframes hourglass-flip {
-    0%, 40% {
-        transform: rotate(0deg);
-    }
-    50%, 90% {
-        transform: rotate(180deg);
-    }
-    100% {
-        transform: rotate(180deg);
-    }
+
+  0%,
+  40% {
+    transform: rotate(0deg);
+  }
+
+  50%,
+  90% {
+    transform: rotate(180deg);
+  }
+
+  100% {
+    transform: rotate(180deg);
+  }
 }
 
 .btn-needs-signature {
@@ -204,6 +209,32 @@
   border-color: var(--bs-pink-border-subtle) !important;
 }
 
+/* Variante morado */
+/* globals.css */
+:root {
+  --bs-purple-subtle: #ecdcf8;
+  --bs-purple-emphasis: #4b1c73;
+  --bs-purple-border-subtle: #d5b3ef;
+}
+
+[data-bs-theme="dark"] {
+  --bs-purple-subtle: #2b1740;
+  --bs-purple-emphasis: #d9b3f7;
+  --bs-purple-border-subtle: #6a3d99;
+}
+
+.bg-purple-subtle {
+  background-color: var(--bs-purple-subtle) !important;
+}
+
+.text-purple-emphasis {
+  color: var(--bs-purple-emphasis) !important;
+}
+
+.border-purple-subtle {
+  border-color: var(--bs-purple-border-subtle) !important;
+}
+
 /* Variante NARANJA */
 /* globals.css */
 :root {
@@ -237,22 +268,30 @@
 }
 
 .icon-hourglass-animated {
-    display: inline-block;
-    animation: hourglass-flip 3s ease-in-out infinite;
+  display: inline-block;
+  animation: hourglass-flip 3s ease-in-out infinite;
 }
 
 /* //Boton de vacaciones */
 .hover-clickable {
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .hover-clickable:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 
 .hover-clickable:active {
-    transform: translateY(-1px);
-    transition: transform 0.1s ease;
+  transform: translateY(-1px);
+  transition: transform 0.1s ease;
+}
+
+/* PARA BOTON DE VER DESAHILITADO */
+
+.btn-outline-info.disabled {
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+  background-color: transparent !important;
 }

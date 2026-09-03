@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Card, Col } from "react-bootstrap";
-import { VacationRequestStatus } from "@/lib/definitions";
 import { fetchVacationSignature } from "@/app/actions/vacations-actions";
+import { VacationRequestStatus } from "@/lib/vactions/interface";
 
 function SignaturesVacationView({
   idSolicitud,

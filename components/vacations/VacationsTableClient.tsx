@@ -5,13 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { Vacations } from "@/lib/definitions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import AlertSignaturesV from "./AlertSignatures";
 import { ISignatures } from "@/lib/overTime/interface";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import { formatCreatedAt } from "@/lib/helpers";
+import { Vacations } from "@/lib/vactions/interface";
+import ModalBlur from "../ModalBlur";
+import DeleteVacationModal from "./DeleteVactionsModal";
 
 export default function VacationsTableClient({
   vacations,
@@ -34,13 +36,16 @@ export default function VacationsTableClient({
   const [messageLoading, setMessageLoading] = useState('');
   const [hideSignatures, setHideSignatures] = useState(false);
   const idEmployee = Number(session?.uid?.idEmployee);
+  const [showdeletePermissionModal, setShowDeletePermissionModal] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number | null>(null);
+  const [period, setPeriod] = useState<number | null>(null);
+  const [motive, setMotive] = useState<string | null>(null);
+  const [status, setStatus] = useState<boolean | null>(null);
 
   const pendingVacations = useMemo(() => {
     return (vacations ?? []).filter((o: Vacations) => {
       const signatures: ISignatures[] = o.signatures ?? [];
-      const mySignature = signatures.find(
-        (i: ISignatures) => Number(i.idSignatory) === idEmployee
-      );
+      const mySignature = signatures.find((i: ISignatures) => Number(i.idSignatory) === idEmployee && o.delete?.delete !== true);
       if (!mySignature) return false;
       return mySignature.url === '';
     });
@@ -67,6 +72,14 @@ export default function VacationsTableClient({
     params.set("page", String(nextPage));
     params.set("limit", String(limit));
     router.push(`/app/vacationList?${params.toString()}`);
+  };
+
+  const handleDelete = (idVacation: number, idPeriod: number, motive: string, status: boolean) => {
+    setSelectedIds(idVacation);
+    setPeriod(idPeriod);
+    setMotive(motive);
+    setStatus(status)
+    setShowDeletePermissionModal(true);
   };
 
   const columns: TableTemplateColumn<Vacations>[] = useMemo(() => [
@@ -145,16 +158,28 @@ export default function VacationsTableClient({
         const mySignature = (row.signatures ?? []).find(
           (s) => Number(s.idSignatory) === idEmployee
         );
+        const cancelado = row.delete?.delete === true;
+
 
         if (!mySignature) {
-          return <span className="text-muted text-center">Este permiso no corresponde a este perfil</span>;
+          return (
+            <>
+              <span className="text-muted">Este permiso no corresponde a este perfil</span>
+            </>
+          );
+        } else if (cancelado === true) {
+          return (
+            <>
+              <i className="bi bi-slash-circle ms-4" />
+            </>
+          )
+        } else {
+          return mySignature.url === "" ? (
+            <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
+          ) : (
+            <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
+          );
         }
-
-        return mySignature.url === "" ? (
-          <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
-        ) : (
-          <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
-        );
       },
     },
     {
@@ -165,33 +190,45 @@ export default function VacationsTableClient({
       type: "string",
       render: (e) => {
         const estado = e.status
-        switch (estado) {
-          case "APPROVED":
-            return (
-              <div className="text-center">
-                <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
-                  APROBADO
-                </span>
-              </div>
-            );
-          case "PENDING":
-            return (
-              <div className="text-center">
-                <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                  PENDIENTE
-                </span>
-              </div>
-            );
-          case "REFUSED":
-            return (
-              <div className="text-center">
-                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                  RECHAZADO
-                </span>
-              </div>
-            );
+        const cancelado = e.delete?.delete === true;
+
+        if (cancelado === true) {
+          return (
+            <div className="text-center">
+              <span className="badge rounded-pill px3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                CANCELADO
+              </span>
+            </div>
+          );
+        } else {
+          switch (estado) {
+            case "APPROVED":
+              return (
+                <div className="text-center">
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle">
+                    APROBADO
+                  </span>
+                </div>
+              );
+            case "PENDING":
+              return (
+                <div className="text-center">
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                    PENDIENTE
+                  </span>
+                </div>
+              );
+            case "REFUSED":
+              return (
+                <div className="text-center">
+                  <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                    RECHAZADO
+                  </span>
+                </div>
+              );
+          }
         }
-      },
+      }
     },
   ],
     [idEmployee]
@@ -276,12 +313,25 @@ export default function VacationsTableClient({
                               ))}
 
                               <td>
-                                <a
-                                  href={`/app/vacationList?view_type=form&id=${row.id}`}
-                                  className="btn btn-sm btn-outline-info"
-                                >
-                                  Ver
-                                </a>
+                                <div className="d-flex align-items-center justify-content-center gap-2">
+                                  <a
+                                    href={row.delete?.delete === true ? undefined : `/app/vacationList?view_type=form&id=${row.id}`}
+                                    className={`btn btn-sm btn-outline-info ${row.delete?.delete === true ? "disabled" : ""}`}
+                                    aria-disabled={row.delete?.delete === true}
+                                    onClick={(e) => {
+                                      if (row.delete?.delete === true) e.preventDefault();
+                                    }}
+                                  >
+                                    Ver
+                                  </a>
+
+                                  <a
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(row.id, Number(row.idPeriod), row.delete?.reaseonDelete ?? "", row.delete?.delete ?? false)}
+                                  >
+                                    {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}
+                                  </a>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -320,6 +370,19 @@ export default function VacationsTableClient({
             </Card>
           </Col>
         </Row>
+
+        <ConditionalRender cond={showdeletePermissionModal}>
+          <ModalBlur onClose={() => setShowDeletePermissionModal(false)}>
+            <DeleteVacationModal
+              show={showdeletePermissionModal}
+              onHide={() => { setShowDeletePermissionModal(false); }}
+              idVacation={selectedIds}
+              motive={motive}
+              status={status}
+              idPeriod={period}
+            />
+          </ModalBlur>
+        </ConditionalRender>
       </Container>
     </>
   );

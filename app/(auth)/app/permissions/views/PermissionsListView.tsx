@@ -4,7 +4,7 @@ import ListView from "@/components/templates/ListView";
 import TableTemplate, {
   TableTemplateColumn,
 } from "@/components/templates/TableTemplate";
-import { IPermissionRequest } from "@/lib/definitions";
+import { IPermissionRequest } from "@/lib/permissions/interface";
 import { formatDate } from "date-fns";
 import { Badge } from "react-bootstrap";
 

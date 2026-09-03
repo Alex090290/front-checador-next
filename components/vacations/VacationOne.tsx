@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PeriodVacation, Vacations } from "@/lib/definitions";
 import {
   Button,
   Card,
@@ -19,18 +18,20 @@ import SignatureVacationDohModal from "@/components/vacations/SignatureDohModal"
 import VacationPDFownload from "@/components/vacations/VacationPDFownload";
 
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { deleteVacation, fetchPeriods } from "@/app/actions/vacations-actions";
+import { fetchPeriods } from "@/app/actions/vacations-actions";
 import ConditionalRender from "../ConditionalRender";
 import OverLay from "../templates/OverLay";
 import Loading from "../LoadingSpinner";
 import { useRouter } from "next/navigation";
-import { useModals } from "@/context/ModalContext";
 import { ISignatures } from "@/lib/overTime/interface";
 import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
 import VacationsOneError from "./vacationsMessageError";
 import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import { PeriodVacation, Vacations } from "@/lib/vactions/interface";
+import ModalBlur from "../ModalBlur";
+import DeleteVacationModal from "./DeleteVactionsModal";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -97,10 +98,10 @@ export default function ShowInfoVacation({
   const [vacationPDFModal, setVacationPDFModal] = useState(false);
   const [employeeSignatureModal, setEmployeeSignatureModal] = useState(false);
   const [, setPeriods] = useState<PeriodVacation[]>([]);
-  const { modalError, modalConfirm } = useModals();
-  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const showPDF = vacation?.signatures.every((f) => f.url !== "");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const signatures = useMemo(() =>
     Array.isArray(vacation?.signatures) ? vacation.signatures : [],
@@ -204,45 +205,7 @@ export default function ShowInfoVacation({
     router.push("/app/vacationList");
   }
 
-  //Borrar
-  const handleDeleteVacations = async () => {
 
-    if (!vacation?.id) {
-      modalError("No se encontró el registro");
-      return;
-    }
-
-    modalConfirm("¿Deseas eliminar este registro?", async () => {
-      try {
-        setFeedback("loading");
-        setFeedbackMsg("Eliminando registro...");
-
-
-
-        const res = await deleteVacation(
-          Number(vacation.id),
-          Number(vacation.idPeriod)
-        );
-
-        if (!res.success) {
-          setFeedbackMsg(res.message || "No se pudo eliminar el registro");
-          setFeedback("error");
-          return;
-        }
-
-        setFeedbackMsg(res.message || "Registro eliminado correctamente");
-        setFeedback("success");
-        router.push("/app/vacationsList");
-      } catch {
-        setFeedbackMsg("Error inesperado, intenta de nuevo");
-        setFeedback("error");
-      } finally {
-        setLoading(false);
-        setMessageLoading("");
-      }
-    });
-  };
-  
 
   if (!vacation || !vacation.id || !vacation.period) {
     return (
@@ -299,13 +262,13 @@ export default function ShowInfoVacation({
               <Button
                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                 variant="danger"
-                onClick={handleDeleteVacations}
+                onClick={() => setShowDeleteModal(true)}
                 disabled={loading}
               >
                 <i className="bi bi-trash" />
 
                 <span className="d-none d-md-inline ms-2">
-                  Eliminar registro
+                  Eliminar solicitud
                 </span>
               </Button>
             </OverLay>
@@ -646,6 +609,19 @@ export default function ShowInfoVacation({
         onHide={() => setVacationPDFModal(false)}
         id={String(vacation.id)}
       />
+
+      <ConditionalRender cond={showDeleteModal}>
+        <ModalBlur onClose={() => setShowDeleteModal(false)}>
+          <DeleteVacationModal
+            show={showDeleteModal}
+            onHide={() => { setShowDeleteModal(false); }}
+            idVacation={vacation.id}
+            motive={vacation.delete?.reaseonDelete ?? ""}
+            status={vacation.delete?.delete ?? false}
+            idPeriod={vacation.idPeriod}
+          />
+        </ModalBlur>
+      </ConditionalRender>
     </>
   );
 }
