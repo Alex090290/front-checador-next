@@ -57,9 +57,7 @@ export default function PenaltiesTableClient({
     const pendingOvertimes = useMemo(() => {
         return (penalty ?? []).filter((o: IPenaltyForOffeses) => {
             const signatures: ISignaturesPenalties[] = o.signatures ?? [];
-            const mySignature = signatures.find(
-                (i: ISignaturesPenalties) => Number(i.idSignatory) === idEmployee
-            );
+            const mySignature = signatures.find((i: ISignaturesPenalties) => Number(i.idSignatory) === idEmployee && o.delete?.delete !== true);
             if (!mySignature) return false;
             return mySignature.url === '';
         });
@@ -211,16 +209,28 @@ export default function PenaltiesTableClient({
                 const mySignature = (row.signatures ?? []).find(
                     (s) => Number(s.idSignatory) === idEmployee
                 );
+                const cancelado = row.delete?.delete === true;
+
 
                 if (!mySignature) {
-                    return <span className="text-muted text-center">Este permiso no corresponde a este perfil</span>;
+                    return (
+                        <>
+                            <span className="text-muted">Este permiso no corresponde a este perfil</span>
+                        </>
+                    );
+                } else if (cancelado === true) {
+                    return (
+                        <>
+                            <i className="bi bi-slash-circle ms-4" />
+                        </>
+                    )
+                } else {
+                    return mySignature.url === "" ? (
+                        <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
+                    ) : (
+                        <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
+                    );
                 }
-
-                return mySignature.url === "" ? (
-                    <i className="bi bi-x-lg text-danger ms-4" title="Pendiente de tu firma" />
-                ) : (
-                    <i className="bi bi-check-lg text-success ms-4" title="Firmado" />
-                );
             },
         },
         {
@@ -232,23 +242,35 @@ export default function PenaltiesTableClient({
             type: "string",
             render: (e) => {
                 const estado = e.type
-                switch (estado) {
-                    case "retardos":
-                        return (
-                            <div className="text-center">
-                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                                    RETARDO
-                                </span>
-                            </div>
-                        );
-                    case "faltas_injustificadas":
-                        return (
-                            <div className="text-center">
-                                <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                                    FALTA INJUSTIFICADA
-                                </span>
-                            </div>
-                        );
+                const isCancel = e.delete?.delete;
+
+                if (isCancel === true) {
+                    return (
+                        <div className="text-center">
+                            <span className="badge rounded-pill px3 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                                CANCELADO
+                            </span>
+                        </div>
+                    )
+                } else {
+                    switch (estado) {
+                        case "retardos":
+                            return (
+                                <div className="text-center">
+                                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                        RETARDO
+                                    </span>
+                                </div>
+                            );
+                        case "faltas_injustificadas":
+                            return (
+                                <div className="text-center">
+                                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
+                                        FALTA INJUSTIFICADA
+                                    </span>
+                                </div>
+                            );
+                    }
                 }
             }
         },
@@ -317,8 +339,8 @@ export default function PenaltiesTableClient({
                                                                 {column.label}
                                                             </th>
                                                         ))}
-                                                        <th className=" fw-bold">
-                                                            Detalles
+                                                        <th className="text-center fw-bold">
+                                                            Acciones
                                                         </th>
                                                     </tr>
                                                 </thead>

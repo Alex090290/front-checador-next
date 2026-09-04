@@ -155,7 +155,7 @@ export default function DevicesTableClient({
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {u.networkInfo.filter((e) => e.mac).map((e) => e.mac)}
+                    {u.networkInfo.filter((e) => e.mac).map((e) => e.mac).join(",  ")}
                 </div>
             ),
         },

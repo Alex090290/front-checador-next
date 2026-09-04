@@ -19,7 +19,6 @@ import {
   Employee,
   IPeriod,
 } from "@/lib/definitions";
-import { formatDate } from "date-fns";
 import DocumentsGrid from "@/app/(auth)/app/employee/views/DocuementsGrid";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -44,15 +43,6 @@ import { Vacations } from "@/lib/vactions/interface";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
-function formatDateValue(value?: string | Date | null, pattern = "dd/MM/yyyy") {
-  if (!value) return "-";
-
-  try {
-    return formatDate(value, pattern);
-  } catch {
-    return String(value);
-  }
-}
 
 function formatText(value?: string | number | null) {
   if (value === null || value === undefined || value === "") return "-";
@@ -523,7 +513,7 @@ export default function EmployeeDetailsView({
                             </div>
 
                             <span className="fw-semibold">
-                              {formatDateValue(employee?.birthDate)}
+                              {formatCreatedAt(employee.birthDate)}
                             </span>
                           </div>
 
@@ -1473,7 +1463,7 @@ export default function EmployeeDetailsView({
                                         </div>
 
                                         <div className="fw-semibold">
-                                          {formatDate(v.dateInitPeriod, "dd/MM/yyyy")}
+                                          {formatCreatedAt(v.dateInitPeriod)}
                                         </div>
                                       </div>
                                     </div>
@@ -1485,7 +1475,7 @@ export default function EmployeeDetailsView({
                                         </div>
 
                                         <div className="fw-semibold">
-                                          {formatDate(v.dateEndPeriod, "dd/MM/yyyy")}
+                                          {formatCreatedAt(v.dateEndPeriod)}
                                         </div>
                                       </div>
                                     </div>
@@ -1516,7 +1506,7 @@ export default function EmployeeDetailsView({
                                                   </div>
 
                                                   <div className="fw-semibold">
-                                                    {formatDate(vr.dateInit, "dd/MM/yyyy")}
+                                                    {formatCreatedAt(vr.dateInit)}
                                                   </div>
                                                 </div>
                                               </div>
@@ -1528,7 +1518,7 @@ export default function EmployeeDetailsView({
                                                   </div>
 
                                                   <div className="fw-semibold">
-                                                    {formatDate(vr.dateEnd, "dd/MM/yyyy")}
+                                                    {formatCreatedAt(vr.dateEnd)}
                                                   </div>
                                                 </div>
                                               </div>

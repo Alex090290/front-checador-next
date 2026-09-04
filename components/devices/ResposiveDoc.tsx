@@ -101,6 +101,7 @@ export default function ResposiveDoc({
     const macVlan20 = device.networkInfo.filter((m) => m.vlan === "20").map((m) => m.mac).join(", ");
     const number = device.currentAssignment?.phoneNumber?.nationalNumber
     const isPhone = device.type === "telefono_ip" || device.type === "celular";
+    const hasNotes = device.notes ?? "";
 
     const isSignatureComplete = (label: string) => {
         const matches = device.currentAssignment?.signatures?.filter((l) => l.label === label) ?? [];
@@ -145,7 +146,7 @@ export default function ResposiveDoc({
                 router.push(`/app/devices?view_type=historial&id=${device.id}`);
             }, 100);
         }
-    },[device, router])
+    }, [device, router])
 
     useEffect(() => {
         const oneComplete = firstSignatureEmployee && firstSignatureIt;
@@ -200,7 +201,7 @@ export default function ResposiveDoc({
         });
     };
 
-    
+
 
     return (
         <>
@@ -291,6 +292,10 @@ export default function ResposiveDoc({
                                         </ConditionalRender>
                                         <ConditionalRender cond={isPhone !== false}>
                                             <>, y número Telcel: <strong>{number}</strong></>
+                                        </ConditionalRender>
+
+                                        <ConditionalRender cond={hasNotes !== ""}>
+                                            <>, <strong>{hasNotes}.</strong></>
                                         </ConditionalRender>
                                     </p>
 

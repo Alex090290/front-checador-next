@@ -50,17 +50,17 @@ export const EntryNumber = ({
     return (
         <Form.Group controlId={label} className="mb-2">
             <Form.Label className="fw-semibold">{label}</Form.Label>
-            <div className="position-relative">
+            <div className="d-flex align-items-stretch position-relative">
                 {prefix && (
                     <span
-                        className="position-absolute text-muted"
-                        style={{ left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", zIndex: 2 }}
+                        className="d-flex align-items-center px-2 bg-body-secondary border border-end-0 rounded-start text-muted fw-semibold"
+                        style={{ fontSize: "0.875rem", whiteSpace: "nowrap" }}
                     >
                         {prefix}
                     </span>
                 )}
                 <Form.Control
-                    className={`w-100 ${prefix ? "ps-4" : ""} ${suffix ? "pe-5 no-validation-icon" : ""} ${className}`}
+                    className={`w-100 ${prefix ? "rounded-start-0" : ""} ${suffix ? "pe-5 no-validation-icon" : ""} ${className}`}
                     size="sm"
                     {...register}
                     type={type}

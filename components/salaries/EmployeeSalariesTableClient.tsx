@@ -482,7 +482,7 @@ export default function EmployeeSalariesTableClient({
                                                             {selectedDepartmentName}
                                                         </Dropdown.Toggle>
 
-                                                        <Dropdown.Menu>
+                                                        <Dropdown.Menu className="w-100" style={{ maxHeight: "300px", overflowY: "auto" }}>
                                                             <Dropdown.Item
                                                                 active={!currentIdDepartment}
                                                                 onClick={() => handleDepartmentFilter("")}

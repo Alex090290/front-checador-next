@@ -57,7 +57,8 @@ const DEFAULT_VALUES: Partial<IDevices> = {
         userAdmin: null,
         passwordAdmin: null,
         user: null,
-        userPassword: null
+        userPassword: null,
+        currentStatus: null,
     },
     currentAssignment: {
         id: null,
@@ -67,6 +68,8 @@ const DEFAULT_VALUES: Partial<IDevices> = {
         extentionNumber: null,
         emailCompany: null,
         emailGmail: null,
+        passwordEmail: null,
+        pinPhone: null,
         idDepartment: null,
         location: "",
         signatures: [],
@@ -112,6 +115,8 @@ export default function CreateDeviceComponent({
     const selectedType = watch("type");
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordAdmin, setShowPasswordAdmin] = useState(false);
+    const [showPasswordGmail, setShowPasswordGmail] = useState(false);
+    const [showPin, setShowPin] = useState(false);
 
     //PARA CALENDARIO
     const dateButtonRef = useRef(null);
@@ -156,7 +161,12 @@ export default function CreateDeviceComponent({
     };
     //=================/
 
-
+    useEffect(() => {
+        if (selectedType !== "laptop" || "computadora") {
+            setValue("specs.passwordAdmin", null);
+            setValue("specs.userPassword", null);
+        }
+    }, [selectedType, setValue])
 
     //HELPERS
     const handleBack = () => {
@@ -195,6 +205,8 @@ export default function CreateDeviceComponent({
     }, [handleStaging]);
 
     const onSubmit: SubmitHandler<IDevices> = async (data) => {
+
+        console.log("se manda:", data);
 
         modalConfirm("¿Seguro que quieres guardar el dispositivo?", async () => {
             try {
@@ -333,6 +345,7 @@ export default function CreateDeviceComponent({
                                                                 { value: "access_point", label: "ACCESS POINT" },
                                                                 { value: "celular", label: "CELULAR" },
                                                                 { value: "television", label: "TELEVISIÓN" },
+                                                                { value: "tablet", label: "TABLET" },
                                                                 { value: "otro", label: "OTRO" },
                                                             ]}
                                                             label="Tipo:"
@@ -354,8 +367,8 @@ export default function CreateDeviceComponent({
                                                                 { value: "baja", label: "BAJA" },
                                                             ]}
                                                             label="Estatus"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.status}
+                                                            feedBack={errors.status?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -378,8 +391,8 @@ export default function CreateDeviceComponent({
                                                                 required: "Campo requerido"
                                                             })}
                                                             label="Marca:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.brand}
+                                                            feedBack={errors.specs?.brand?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -390,8 +403,8 @@ export default function CreateDeviceComponent({
                                                                 required: "Campo requerido"
                                                             })}
                                                             label="Modelo:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.model}
+                                                            feedBack={errors.specs?.model?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -403,8 +416,8 @@ export default function CreateDeviceComponent({
                                                                 required: "Campo requerido"
                                                             })}
                                                             label="Número de serie:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.serialNumber}
+                                                            feedBack={errors.specs?.serialNumber?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -415,8 +428,8 @@ export default function CreateDeviceComponent({
                                                                 required: "Campo requerido"
                                                             })}
                                                             label="Procesador:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.processor}
+                                                            feedBack={errors.specs?.processor?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -427,8 +440,8 @@ export default function CreateDeviceComponent({
                                                                 required: "Campo requerido"
                                                             })}
                                                             label="Ram:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.ram}
+                                                            feedBack={errors.specs?.ram?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -439,8 +452,8 @@ export default function CreateDeviceComponent({
                                                                 required: "Campo requerido"
                                                             })}
                                                             label="Almacenamiento:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.storage}
+                                                            feedBack={errors.specs?.storage?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -461,8 +474,8 @@ export default function CreateDeviceComponent({
                                                                 { value: "otro", label: "OTRO" },
                                                             ]}
                                                             label="Os:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.os}
+                                                            feedBack={errors.specs?.os?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -473,8 +486,8 @@ export default function CreateDeviceComponent({
                                                                 required: "Campo requerido"
                                                             })}
                                                             label="Versión os:"
-                                                            invalid={!!errors.type}
-                                                            feedBack={errors.type?.message}
+                                                            invalid={!!errors.specs?.osVersion}
+                                                            feedBack={errors.specs?.osVersion?.message}
                                                             className="text-uppercase border"
                                                         />
                                                     </Col>
@@ -535,7 +548,7 @@ export default function CreateDeviceComponent({
                                                                         className="btn btn-link p-0 text-info"
                                                                         tabIndex={10}
                                                                     >
-                                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                                                        <i className={`bi ${showPasswordAdmin ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
                                                                     </button>
                                                                 }
                                                             />
@@ -663,6 +676,18 @@ export default function CreateDeviceComponent({
                                                                     </div>
                                                                 )}
                                                             </Overlay>
+                                                        </Col>
+
+                                                        <Col md={12}>
+                                                            <Entry
+                                                                label="Estatus actual:"
+                                                                register={register("specs.currentStatus", { required: true })}
+                                                                invalid={!!errors.type}
+                                                                feedBack={errors.type?.message}
+                                                                className="border text-uppercase"
+                                                                as={"textarea"}
+                                                                rows={3}
+                                                            />
                                                         </Col>
                                                     </Row>
                                                 </Row>
@@ -914,7 +939,7 @@ export default function CreateDeviceComponent({
                                                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                                                 onClick={() => setShowCalendar((s) => !s)}
                                                             >
-                                                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                                                <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                                                 <i className="bi bi-calendar3" />
                                                             </Button>
 
@@ -957,6 +982,29 @@ export default function CreateDeviceComponent({
                                                                     label="Celular:"
                                                                     invalid={!!errors.currentAssignment?.phoneNumber}
                                                                     className="border text-uppercase"
+                                                                    prefix="+52"
+                                                                />
+                                                            </Col>
+                                                        </ConditionalRender>
+
+                                                        <ConditionalRender cond={selectedType === "celular" || selectedType === "tablet"}>
+                                                            <Col md={6} className="mt-4">
+                                                                <Entry
+                                                                    register={register("currentAssignment.pinPhone", { required: false })}
+                                                                    label="Pin:"
+                                                                    type={showPin ? "text" : "password"}
+                                                                    invalid={!!errors.currentAssignment?.pinPhone}
+                                                                    className="border text-uppercase"
+                                                                    suffix={
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setShowPin((prev) => !prev)}
+                                                                            className="btn btn-link p-0 text-info"
+                                                                            tabIndex={10}
+                                                                        >
+                                                                            <i className={`bi ${showPin ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                                                        </button>
+                                                                    }
                                                                 />
                                                             </Col>
                                                         </ConditionalRender>
@@ -991,6 +1039,25 @@ export default function CreateDeviceComponent({
                                                                     label="Correo Gmail:"
                                                                     invalid={!!errors.currentAssignment?.emailGmail}
                                                                     className="border text-uppercase"
+                                                                />
+                                                            </Col>
+
+                                                            <Col md={6} className="mt-4">
+                                                                <Entry
+                                                                    register={register("currentAssignment.passwordEmail")}
+                                                                    label="Contraseña Correo Gmail:"
+                                                                    type={showPasswordGmail ? "text" : "password"}
+                                                                    className="border"
+                                                                    suffix={
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setShowPasswordGmail((prev) => !prev)}
+                                                                            className="btn btn-link p-0 text-info"
+                                                                            tabIndex={10}
+                                                                        >
+                                                                            <i className={`bi ${showPasswordGmail ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                                                        </button>
+                                                                    }
                                                                 />
                                                             </Col>
                                                         </ConditionalRender>

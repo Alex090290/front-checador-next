@@ -49,7 +49,8 @@ function getDefaultValues(device?: IDevices | null): IDevices {
             userAdmin: device?.specs?.userAdmin || null,
             passwordAdmin: device?.specs?.passwordAdmin || null,
             user: device?.specs?.user || null,
-            userPassword: device?.specs?.userPassword || null
+            userPassword: device?.specs?.userPassword || null,
+            currentStatus: device?.specs?.currentStatus || null,
         },
         createdAt: formatCreatedAt(device?.createdAt) || "",
         updatedAt: formatCreatedAt(device?.updatedAt) || "",

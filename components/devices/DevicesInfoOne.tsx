@@ -105,7 +105,8 @@ export function DeviceOne({
     const [UpdateDeviceModal, setUpdateDeviceModal] = useState(false);
     const [activeSpecsSection, setActiveSpecsSection] = useState<"specs" | "credentials" | null>(null);
     const [showPasswords, setShowPasswords] = useState(false);
-    const noHistorial = device.assignmentHistory?.every((n) => n.returnedAt === null);
+    const [showPassword, setShowPassword] = useState(false);
+    const noHistorial = device?.assignmentHistory?.every((n) => n.returnedAt === null);
 
 
     //HELPERS
@@ -142,7 +143,8 @@ export function DeviceOne({
         setFeedbackMsg("Cargando...")
         router.push(`/app/devices?view_type=historial&id=${device.id}`);
     }
-    
+
+
 
     if (!device) {
         return (
@@ -542,8 +544,8 @@ export function DeviceOne({
                                                                     <SpecRow icon="bi-info-circle" label="Versión de OS" value={device.specs?.osVersion} />
                                                                     <SpecRow icon="bi-gpu-card" label="Tarjeta gráfica" value={device.specs?.graphicCard} />
                                                                     <SpecRow icon="bi-diagram-3" label="Tipo de sistema" value={device.specs?.architecture} />
-                                                                    <SpecRow icon="bi-calendar-check" label="Fecha de compra" value={device.specs?.purchaseDate} />
-                                                                    <SpecRow icon="bi-calendar-x" label="Vencimiento de garantía" value={device.specs?.warrantyExpiration} />
+                                                                    <SpecRow icon="bi-calendar-check" label="Fecha de compra" value={formatCreatedAt(device.specs?.purchaseDate)} />
+                                                                    <SpecRow icon="bi-calendar-x" label="Vencimiento de garantía" value={formatCreatedAt(device.specs?.warrantyExpiration)} />
                                                                     <SpecRow icon="bi-hash" label="ID de dispositivo" value={device.specs?.idDevice} />
                                                                     <SpecRow icon="bi-box-seam" label="ID de producto" value={device.specs?.idProduct} />
                                                                 </div>
@@ -568,10 +570,16 @@ export function DeviceOne({
                                                         <Row className="g-3">
                                                             <Col xs={12} lg={12}>
                                                                 <div className="d-flex flex-column gap-2 h-100 w-100">
-                                                                    <SpecRow icon="bi-person-badge" label="Usuario admin" value={device.specs?.userAdmin} />
-                                                                    <SpecRow icon="bi-key" label="Contraseña admin" value={maskValue(device.specs?.passwordAdmin, showPasswords)} />
-                                                                    <SpecRow icon="bi-person" label="Usuario" value={device.specs?.user} />
-                                                                    <SpecRow icon="bi-key-fill" label="Contraseña usuario" value={maskValue(device.specs?.userPassword, showPasswords)} />
+                                                                    <ConditionalRender cond={device.type === "laptop" || device.type === "computadora"}>
+                                                                        <SpecRow icon="bi-person-badge" label="Usuario admin" value={device.specs?.userAdmin} />
+                                                                        <SpecRow icon="bi-key" label="Contraseña admin" value={maskValue(device.specs?.passwordAdmin, showPasswords)} />
+                                                                        <SpecRow icon="bi-person" label="Usuario" value={device.specs?.user} />
+                                                                        <SpecRow icon="bi-key-fill" label="Contraseña usuario" value={maskValue(device.specs?.userPassword, showPasswords)} />
+                                                                    </ConditionalRender>
+
+                                                                    <ConditionalRender cond={device.type === "celular" || device.type === "tablet"}>
+                                                                        <SpecRow icon="bi-phone" label="Pin" value={maskValue(device.currentAssignment?.pinPhone, showPasswords)} />
+                                                                    </ConditionalRender>
                                                                 </div>
                                                             </Col>
                                                         </Row>
@@ -654,6 +662,18 @@ export function DeviceOne({
                                         {/* Datos tipo ficha */}
                                         <Col xs={12} md={8}>
                                             <div className="p-4 h-100 d-flex flex-column justify-content-center">
+
+                                                <div className="d-flex justify-content-end mb-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline-secondary"
+                                                        onClick={() => setShowPassword((prev) => !prev)}
+                                                    >
+                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"} me-1`} />
+                                                        {showPassword ? "Ocultar" : "Mostrar"} contraseña
+                                                    </Button>
+                                                </div>
+
                                                 <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
                                                     <span className="text-muted small">
                                                         <i className="bi bi-building me-2 text-warning" />
@@ -696,23 +716,45 @@ export function DeviceOne({
                                                     </span>
                                                 </div>
 
+                                                <ConditionalRender cond={device.type === "celular"}>
+                                                    <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                        <span className="text-muted small">
+                                                            <i className="bi bi-telephone me-2 text-info" />
+                                                            Número de celular
+                                                        </span>
+                                                        <span className="fw-semibold small text-end text-uppercase">
+                                                            {device?.currentAssignment?.phoneNumber?.number ? device?.currentAssignment?.phoneNumber.number : "NO SE REGISTRO UN NÚMERO"}
+                                                        </span>
+                                                    </div>
+                                                </ConditionalRender>
+
                                                 <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
                                                     <span className="text-muted small">
                                                         <i className="bi bi-envelope-check me-2 text-primary" />
                                                         Correo laboral
                                                     </span>
-                                                    <span className="fw-semibold small text-end">
+                                                    <span className="fw-semibold small text-end text-uppercase">
                                                         {device?.currentAssignment?.emailCompany ? device?.currentAssignment?.emailCompany : "NO HAY CORREO REGISTRADO"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                    <span className="text-muted small">
+                                                        <i className="bi bi-envelope-at me-2 text-warning" />
+                                                        Correo Gmail
+                                                    </span>
+                                                    <span className="fw-semibold small text-end text-uppercase">
+                                                        {device?.currentAssignment?.emailGmail ? device?.currentAssignment?.emailGmail : "NO HAY CORREO REGISTRADO"}
                                                     </span>
                                                 </div>
 
                                                 <div className="d-flex align-items-center justify-content-between py-2">
                                                     <span className="text-muted small">
-                                                        <i className="bi bi-envelope-at me-2 text-secondary" />
-                                                        Correo institucional
+                                                        <i className="bi bi-shield-lock me-2 text-info" />
+                                                        Contraseña Correo Gmail
                                                     </span>
                                                     <span className="fw-semibold small text-end">
-                                                        {device?.currentAssignment?.emailGmail ? device?.currentAssignment?.emailGmail : "NO HAY CORREO REGISTRADO"}
+                                                        {device?.currentAssignment?.passwordEmail ? maskValue(device?.currentAssignment?.passwordEmail, showPassword) : "NO HAY CONTRASEÑA REGISTRADA"}
                                                     </span>
                                                 </div>
                                             </div>

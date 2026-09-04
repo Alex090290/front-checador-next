@@ -2,7 +2,7 @@ import { ISignatures } from "../overTime/interface";
 
 export type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
     "switch" | "router" | "telefono_ip" | "camara" |
-    "access_point" | "celular" | "television" | "otro" | "";
+    "access_point" | "celular" | "television" | "tablet" | "otro" | "";
 
 // type DeviceStatus = "activo" | "inactivo" | "en_reparacion" | "baja";
 
@@ -47,6 +47,7 @@ export interface IDevices {
         passwordAdmin: string | null;
         user: string | null;
         userPassword: string | null;
+        currentStatus: string | null;
     }
 
     currentAssignment?: {
@@ -64,6 +65,8 @@ export interface IDevices {
         extentionNumber: string | null;
         emailCompany: string | null;
         emailGmail: string | null;
+        passwordEmail: string | null;
+        pinPhone: string | null;
         idDepartment: number | null;
         location: string;
         signatures?: ISignatures[] | null;

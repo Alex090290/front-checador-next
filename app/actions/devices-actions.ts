@@ -174,6 +174,8 @@ export async function createDevice({
             extentionNumber: data.currentAssignment?.extentionNumber,
             emailCompany: data.currentAssignment?.emailCompany,
             emailGmail: data.currentAssignment?.emailGmail,
+            passwordEmail: data.currentAssignment?.passwordEmail,
+            pinPhone: data.currentAssignment?.pinPhone,
             location: data.currentAssignment?.location,
             assignedAt: data.currentAssignment?.assignedAt
           },
@@ -321,6 +323,7 @@ export async function updateDevice({
       )
       .then((res) => {
         return res.data;
+
       })
       .catch((err) => {
         throw new Error(
@@ -331,11 +334,10 @@ export async function updateDevice({
             : "Error en la respuesta"
         );
       });
-
     revalidatePath("/app/devices");
-      console.log("res:", data);
 
-    return {      
+
+    return {
       success: true,
       message: "Dispositivo actualizado",
     };
