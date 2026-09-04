@@ -101,7 +101,7 @@ export default function ResposiveDoc({
     const macVlan20 = device.networkInfo.filter((m) => m.vlan === "20").map((m) => m.mac).join(", ");
     const number = device.currentAssignment?.phoneNumber?.nationalNumber
     const isPhone = device.type === "telefono_ip" || device.type === "celular";
-    const hasNotes = device.notes ?? "";
+    const hasNotes = device.specs?.currentStatus ?? "";
 
     const isSignatureComplete = (label: string) => {
         const matches = device.currentAssignment?.signatures?.filter((l) => l.label === label) ?? [];

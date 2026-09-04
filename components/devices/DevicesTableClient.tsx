@@ -155,7 +155,7 @@ export default function DevicesTableClient({
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {u.networkInfo.filter((e) => e.mac).map((e) => e.mac).join(",  ")}
+                    {u.networkInfo.filter((e) => e.mac).map((e) => e.mac).join(" -  ")}
                 </div>
             ),
         },
@@ -167,7 +167,7 @@ export default function DevicesTableClient({
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {u.networkInfo.filter((e) => e.vlan === "1").map((e) => e.ip)}
+                    {u.networkInfo.filter((e) => e.vlan === "1").map((e) => e.ip).join(" - ")}
                 </div>
             ),
         },
@@ -179,7 +179,7 @@ export default function DevicesTableClient({
             type: "string",
             render: (u) => (
                 <div className="text-uppercase">
-                    {u.networkInfo.filter((e) => e.vlan === "20").map((e) => e.ip)}
+                    {u.networkInfo.filter((e) => e.vlan === "20").map((e) => e.ip).join(" - ")}
                 </div>
             ),
         },
