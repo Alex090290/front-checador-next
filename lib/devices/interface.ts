@@ -51,9 +51,9 @@ export interface IDevices {
     }
 
     currentAssignment?: {
-        id: number | null;
+        id?: number | null;
         idEmployee?: number | null;
-        idBranch: number | null;
+        idBranch?: number | null;
         phoneNumber?: {
             number: string;
             internationalNumber: string;
@@ -62,17 +62,17 @@ export interface IDevices {
             countryCode: string;
             dialCode: string;
         } | null,
-        extentionNumber: string | null;
-        emailCompany: string | null;
-        emailGmail: string | null;
-        passwordEmail: string | null;
-        pinPhone: string | null;
-        idDepartment: number | null;
-        location: string;
+        extentionNumber?: string | null;
+        emailCompany?: string | null;
+        emailGmail?: string | null;
+        passwordEmail?: string | null;
+        pinPhone?: string | null;
+        idDepartment?: number | null;
+        location?: string;
         signatures?: ISignatures[] | null;
         deliveryDocument?: string | null;
         documentReceived?: string | null;
-        assignedAt: string | null;
+        assignedAt?: string | null;
         returnedAt?: string | null;
     }
 
@@ -102,7 +102,7 @@ export interface IDevices {
             whoUploadId: string | null;
             createdAt: string;
         },
-        
+
         assignedAt: string;
         returnedAt: string | null;
 
@@ -175,4 +175,14 @@ export interface IPhone {
     e164Number: string;
     countryCode: string;
     dialCode: string;
+}
+
+export interface IUpdateCurrentUser {
+    phoneNumber?: string | null;
+    extentionNumber?: string | null;
+    emailCompany?: string | null;
+    emailGmail?: string | null;
+    passwordEmail?: string | null;
+    pinPhone?: string | null;
+    location?: string | null;
 }

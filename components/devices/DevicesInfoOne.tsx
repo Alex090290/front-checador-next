@@ -1,6 +1,6 @@
 "use client"
 
-import { IDevices } from "@/lib/devices/interface"
+import { IDevices, IUpdateCurrentUser } from "@/lib/devices/interface"
 import { Button, Card, Col, Collapse, Container, Row } from "react-bootstrap"
 import OverLay from "../templates/OverLay"
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import ModalAssignDevice from "./ModalAssignDevice";
 import { Branch, Department, Employee } from "@/lib/definitions";
 import FormUpdateDevice from "./UpdateDevice";
 import DevicesOneError from "./DevicesOneError";
+import UpdateCurrentUser from "./UpdateCurrentUser";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -103,6 +104,7 @@ export function DeviceOne({
     const employeeTrue = device?.currentAssignment !== null;
     const [showAssignDevice, setShowAssignDevice] = useState(false);
     const [UpdateDeviceModal, setUpdateDeviceModal] = useState(false);
+    const [showUpdateCurrent, setShowUpdateCurrent] = useState(false);
     const [activeSpecsSection, setActiveSpecsSection] = useState<"specs" | "credentials" | null>(null);
     const [showPasswords, setShowPasswords] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -144,6 +146,7 @@ export function DeviceOne({
         router.push(`/app/devices?view_type=historial&id=${device.id}`);
     }
 
+    console.log("device:", device.currentAssignment);
 
 
     if (!device) {
@@ -654,9 +657,15 @@ export function DeviceOne({
                                                     ? `${device.employee.lastName ?? ""} ${device.employee.name ?? ""}`.trim()
                                                     : "Sin empleado asignado"}
                                             </div>
-                                            <span className="badge rounded-pill mt-2 px-3 py-2 fw-semibold bg-white text-primary border border-primary-subtle">
-                                                Responsable actual
-                                            </span>
+
+                                            <Button
+                                                className="hover-clickable mt-2"
+                                                variant="outline-primary"
+                                                onClick={() => setShowUpdateCurrent(true)}
+                                            >
+                                                <i className="bi bi-pencil me-1" />
+                                                Actualizar empleado
+                                            </Button>
                                         </Col>
 
                                         {/* Datos tipo ficha */}
@@ -796,6 +805,27 @@ export function DeviceOne({
                         show={UpdateDeviceModal}
                         onHide={() => setUpdateDeviceModal(false)}
                         device={device}
+                        idDevice={device.id}
+                    />
+                </ModalBlur>
+            </ConditionalRender>
+
+            <ConditionalRender cond={showUpdateCurrent}>
+                <ModalBlur onClose={() => setShowUpdateCurrent(false)}>
+                    <UpdateCurrentUser
+                        show={showUpdateCurrent}
+                        onHide={() => setShowUpdateCurrent(false)}
+                        device={
+                            {
+                                phoneNumber: device?.currentAssignment?.phoneNumber?.number,
+                                extentionNumber: device?.currentAssignment?.extentionNumber,
+                                emailCompany: device?.currentAssignment?.emailCompany,
+                                emailGmail: device?.currentAssignment?.emailGmail,
+                                passwordEmail: device?.currentAssignment?.passwordEmail,
+                                pinPhone: device?.currentAssignment?.pinPhone,
+                                location: device?.currentAssignment?.location
+                            }
+                        }
                         idDevice={device.id}
                     />
                 </ModalBlur>

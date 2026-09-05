@@ -1,7 +1,7 @@
 "use server"
 
 import { FetchUsersArgs } from "@/lib/constancy/interface";
-import { IAssignDevice, IDevices } from "@/lib/devices/interface";
+import { IAssignDevice, IDevices, IUpdateCurrentUser } from "@/lib/devices/interface";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
@@ -625,6 +625,73 @@ export async function getHistorialDoc({
     return {
       success: false,
       message,
+    };
+  }
+}
+
+//ACTUALIZAR EMPLEADO ASIGNADO
+export async function updateCurrentUser({
+  idDevice,
+  data
+}: {
+  data: IUpdateCurrentUser;
+  idDevice: number;
+}): Promise<ActionResponse<IDevices | null>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+
+    const sanitizedPhonePersonal = sanitizePhoneNumber(
+      getPhoneString(String(data.phoneNumber ?? ""))
+    );
+
+    if (!idDevice) {
+      throw new Error("No se ha definido ID");
+    }
+    const update = {
+      phoneNumber: sanitizedPhonePersonal,
+      extentionNumber: data.extentionNumber,
+      emailCompany: data.emailCompany,
+      emailGmail: data.emailGmail,
+      passwordEmail: data.passwordEmail,
+      pinPhone: data.pinPhone,
+      location: data.location
+    }
+
+    await axios
+      .put(
+        `${API_URL}/devices/currentAssignment/${idDevice}`, update,
+        {
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        return res.data;
+
+      })
+      .catch((err) => {
+        throw new Error(
+          err.response?.data?.message
+            ? Array.isArray(err.response.data.message)
+              ? err.response.data.message.join(", ")
+              : err.response.data.message
+            : "Error en la respuesta"
+        );
+      });
+    revalidatePath("/app/devices");
+
+
+    return {
+      success: true,
+      message: "Actualizado correctamente",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.message,
     };
   }
 }

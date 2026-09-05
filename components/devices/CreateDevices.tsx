@@ -1020,7 +1020,7 @@ export default function CreateDeviceComponent({
                                                             </Col>
                                                         </ConditionalRender>
 
-                                                        <ConditionalRender cond={["computadora", "laptop", "celular"].includes(String(selectedType))}>
+                                                        <ConditionalRender cond={["computadora", "laptop", "celular", "tablet"].includes(String(selectedType))}>
                                                             <Col md={6} className="mt-4">
                                                                 <Entry
                                                                     register={register("currentAssignment.emailCompany", { required: false })}
@@ -1032,7 +1032,7 @@ export default function CreateDeviceComponent({
                                                         </ConditionalRender>
 
 
-                                                        <ConditionalRender cond={["computadora", "laptop", "celular"].includes(String(selectedType))}>
+                                                        <ConditionalRender cond={["computadora", "laptop", "celular", "tablet"].includes(String(selectedType))}>
                                                             <Col md={6} className="mt-4">
                                                                 <Entry
                                                                     register={register("currentAssignment.emailGmail", { required: false })}

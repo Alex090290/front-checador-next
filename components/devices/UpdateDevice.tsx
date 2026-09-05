@@ -129,7 +129,6 @@ export default function FormUpdateDevice({
 
 
     const onSubmit: SubmitHandler<IDevices> = async (data) => {
-        console.log('se manda:', data);
         
         modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
 
@@ -208,7 +207,7 @@ export default function FormUpdateDevice({
                             <Col md={12}>
                                 <Entry
                                     register={register("name", { required: "El nombre es requerido" })}
-                                    label={"Nombre del dispositivo:"}
+                                    label="Nombre del dispositivo:"
                                     type="string"
                                     invalid={!!errors.name}
                                     feedBack={errors.name?.message}
