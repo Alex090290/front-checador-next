@@ -513,19 +513,21 @@ export function DeviceOne({
                                                 </div>
                                             </Col>
 
-                                            <Col xs={12} sm={12} md={6} lg={6} xl={6}>
-                                                <div
-                                                    role="button"
-                                                    onClick={() => setActiveSpecsSection(activeSpecsSection === "credentials" ? null : "credentials")}
-                                                    className={`border rounded-3 p-3 h-100 ms-2 ${activeSpecsSection === "credentials" ? "border-primary" : ""}`}
-                                                >
-                                                    <div className="d-flex align-items-between gap-2 fw-bold">
-                                                        <i className="bi bi-shield-lock text-danger me-2" />
-                                                        CREDENCIALES DE ACCESO
-                                                        <i className={`bi ms-auto ${activeSpecsSection === "credentials" ? "bi-chevron-up" : "bi-chevron-down"}`} />
+                                            <ConditionalRender cond={["computadora", "laptop", "tablet", "celular", "telefono_ip"].includes(String(device.type))}>
+                                                <Col xs={12} sm={12} md={6} lg={6} xl={6}>
+                                                    <div
+                                                        role="button"
+                                                        onClick={() => setActiveSpecsSection(activeSpecsSection === "credentials" ? null : "credentials")}
+                                                        className={`border rounded-3 p-3 h-100 ms-2 ${activeSpecsSection === "credentials" ? "border-primary" : ""}`}
+                                                    >
+                                                        <div className="d-flex align-items-between gap-2 fw-bold">
+                                                            <i className="bi bi-shield-lock text-danger me-2" />
+                                                            CREDENCIALES DE ACCESO
+                                                            <i className={`bi ms-auto ${activeSpecsSection === "credentials" ? "bi-chevron-up" : "bi-chevron-down"}`} />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </Col>
+                                                </Col>
+                                            </ConditionalRender>
                                         </Row>
 
                                         <Collapse in={activeSpecsSection !== null}>
@@ -571,14 +573,16 @@ export function DeviceOne({
                                                         <Row className="g-3">
                                                             <Col xs={12} lg={12}>
                                                                 <div className="d-flex flex-column gap-2 h-100 w-100">
-                                                                    <ConditionalRender cond={device.type === "laptop" || device.type === "computadora"}>
+                                                                    <ConditionalRender cond={["computadora", "laptop", "telefono_ip"].includes(String(device.type))}>
                                                                         <SpecRow icon="bi-person-badge" label="Usuario admin" value={device.specs?.userAdmin} />
                                                                         <SpecRow icon="bi-key" label="Contraseña admin" value={maskValue(device.specs?.passwordAdmin, showPasswords)} />
+                                                                    </ConditionalRender>
+                                                                    <ConditionalRender cond={["computadora", "laptop"].includes(String(device.type))}>
                                                                         <SpecRow icon="bi-person" label="Usuario" value={device.specs?.user} />
                                                                         <SpecRow icon="bi-key-fill" label="Contraseña usuario" value={maskValue(device.specs?.userPassword, showPasswords)} />
                                                                     </ConditionalRender>
 
-                                                                    <ConditionalRender cond={device.type === "celular" || device.type === "tablet"}>
+                                                                    <ConditionalRender cond={["celular", "tablet"].includes(String(device.type))}>
                                                                         <SpecRow icon="bi-phone" label="Pin" value={maskValue(device.currentAssignment?.pinPhone, showPasswords)} />
                                                                     </ConditionalRender>
                                                                 </div>
@@ -825,7 +829,7 @@ export function DeviceOne({
                             }
                         }
                         idDevice={device.id}
-                        type={device.type?? ""}
+                        type={device.type ?? ""}
                     />
                 </ModalBlur>
             </ConditionalRender>

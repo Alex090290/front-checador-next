@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { getCurrentPeriod } from "@/app/actions/periods-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import moment from "moment-timezone";
+import NotificationsBell from "./NotificationsBell";
 
 function NavUserInfo() {
   const { data: session } = useSession();
@@ -140,6 +141,9 @@ function NavUserInfo() {
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
+
+        {/* NOTIFICACIONES */}
+        {/* <NotificationsBell /> */}
 
         <div className="vr flex-shrink-0 mx-1" />
 

@@ -129,7 +129,7 @@ export default function FormUpdateDevice({
 
 
     const onSubmit: SubmitHandler<IDevices> = async (data) => {
-        
+
         modalConfirm("¿Seguro que quieres guardar los cambios?", async () => {
 
             try {
@@ -378,7 +378,7 @@ export default function FormUpdateDevice({
                                 />
                             </Col>
 
-                            <ConditionalRender cond={selectedType === "computadora" || selectedType === "laptop"}>
+                            <ConditionalRender cond={["computadora", "laptop"].includes(String(selectedType))}>
 
                                 <Col md={6}>
                                     <Entry
@@ -411,6 +411,9 @@ export default function FormUpdateDevice({
                                         className="text-uppercase border"
                                     />
                                 </Col>
+                            </ConditionalRender>
+
+                            <ConditionalRender cond={["computadora", "laptop", "telefono_ip"].includes(String(selectedType))}>
 
                                 <Col md={6}>
                                     <Entry
@@ -440,6 +443,9 @@ export default function FormUpdateDevice({
                                     />
                                 </Col>
 
+                            </ConditionalRender>
+
+                            <ConditionalRender cond={["computadora", "laptop"].includes(String(selectedType))}>
                                 <Col md={6}>
                                     <Entry
                                         register={register("specs.user")}
@@ -755,7 +761,7 @@ export default function FormUpdateDevice({
                         {isSubmitting ? "Actualizando..." : "Actualizar"}
                     </Button>
                 </div>
-            </Form>
+            </Form >
         </>
     );
 }

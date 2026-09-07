@@ -235,7 +235,6 @@ export default function CreateDeviceComponent({
 
     const onSubmit: SubmitHandler<IDevices> = async (data) => {
 
-        console.log("se manda:", data);
 
         modalConfirm("¿Seguro que quieres guardar el dispositivo?", async () => {
             try {
@@ -521,7 +520,7 @@ export default function CreateDeviceComponent({
                                                         />
                                                     </Col>
 
-                                                    <ConditionalRender cond={selectedType === "computadora" || selectedType === "laptop"}>
+                                                    <ConditionalRender cond={["computadora", "laptop"].includes(String(selectedType))}>
 
                                                         <Col md={6}>
                                                             <Entry
@@ -554,6 +553,8 @@ export default function CreateDeviceComponent({
                                                                 className="text-uppercase border"
                                                             />
                                                         </Col>
+                                                    </ConditionalRender>
+                                                    <ConditionalRender cond={["computadora", "laptop", "telefono_ip"].includes(String(selectedType))}>
 
                                                         <Col md={6}>
                                                             <Entry
@@ -562,6 +563,7 @@ export default function CreateDeviceComponent({
                                                                 className="text-uppercase border"
                                                             />
                                                         </Col>
+
 
                                                         <Col md={6}>
                                                             <Entry
@@ -582,7 +584,9 @@ export default function CreateDeviceComponent({
                                                                 }
                                                             />
                                                         </Col>
+                                                    </ConditionalRender>
 
+                                                    <ConditionalRender cond={["computadora", "laptop"].includes(String(selectedType))}>
                                                         <Col md={6}>
                                                             <Entry
                                                                 register={register("specs.user")}
