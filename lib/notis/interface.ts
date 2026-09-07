@@ -1,4 +1,4 @@
-export interface INotifies {
+export interface INotifications {
     _id?: string;
     idIncidence: number;
     idSign: number;

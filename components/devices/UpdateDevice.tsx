@@ -453,12 +453,14 @@ export default function FormUpdateDevice({
                                         className="text-uppercase border"
                                     />
                                 </Col>
+                            </ConditionalRender>
 
+                            <ConditionalRender cond={["computadora", "laptop", "telefono_ip"].includes(String(selectedType))}>
                                 <Col md={6}>
                                     <Entry
                                         register={register("specs.userPassword")}
                                         type={showPassword ? "text" : "password"}
-                                        label="Contraseña:"
+                                        label={selectedType === "telefono_ip" ? "Contraseña Issabel:" : "Contraseña de usuario:"}
 
                                         className="border"
                                         suffix={

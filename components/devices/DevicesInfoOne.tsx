@@ -577,9 +577,13 @@ export function DeviceOne({
                                                                         <SpecRow icon="bi-person-badge" label="Usuario admin" value={device.specs?.userAdmin} />
                                                                         <SpecRow icon="bi-key" label="Contraseña admin" value={maskValue(device.specs?.passwordAdmin, showPasswords)} />
                                                                     </ConditionalRender>
+
                                                                     <ConditionalRender cond={["computadora", "laptop"].includes(String(device.type))}>
                                                                         <SpecRow icon="bi-person" label="Usuario" value={device.specs?.user} />
-                                                                        <SpecRow icon="bi-key-fill" label="Contraseña usuario" value={maskValue(device.specs?.userPassword, showPasswords)} />
+                                                                    </ConditionalRender>
+
+                                                                    <ConditionalRender cond={["computadora", "laptop", "telefono_ip"].includes(String(device.type))}>
+                                                                        <SpecRow icon="bi-key-fill" label={device.type === "telefono_ip" ? "Contraseña Issabel" : "Contraseña de usuario"} value={maskValue(device.specs?.userPassword, showPasswords)} />
                                                                     </ConditionalRender>
 
                                                                     <ConditionalRender cond={["celular", "tablet"].includes(String(device.type))}>

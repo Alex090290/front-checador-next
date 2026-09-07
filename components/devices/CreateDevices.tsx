@@ -594,12 +594,14 @@ export default function CreateDeviceComponent({
                                                                 className="text-uppercase border"
                                                             />
                                                         </Col>
+                                                    </ConditionalRender>
 
+                                                    <ConditionalRender cond={["computadora", "laptop", "telefono_ip"].includes(String(selectedType))}>
                                                         <Col md={6}>
                                                             <Entry
                                                                 register={register("specs.userPassword")}
                                                                 type={showPassword ? "text" : "password"}
-                                                                label="Contraseña de usuario:"
+                                                                label={selectedType === "telefono_ip" ? "Contraseña Issabel:" : "Contraseña de usuario:"}
 
                                                                 className="border"
                                                                 suffix={
@@ -1020,7 +1022,7 @@ export default function CreateDeviceComponent({
                                                             </Col>
                                                         </ConditionalRender>
 
-                                                        <ConditionalRender cond={selectedType === "celular" || selectedType === "tablet"}>
+                                                        <ConditionalRender cond={["celular", "tablet"].includes(String(selectedType))}>
                                                             <Col md={6} className="mt-4">
                                                                 <Entry
                                                                     register={register("currentAssignment.pinPhone", { required: false })}
@@ -1165,8 +1167,8 @@ export default function CreateDeviceComponent({
                             </fieldset>
                         </Form>
                     </Col>
-                </Row>
-            </Container>
+                </Row >
+            </Container >
 
         </>
     )

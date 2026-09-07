@@ -1,20 +1,21 @@
-import { ListNotifies, ReadNotifies } from "@/app/actions/notifies-actions";
-import { INotifies } from "@/lib/notis/interface";
+import { ListNotifications, ReadNotifications } from "@/app/actions/notifies-actions";
+import { INotifications } from "@/lib/notis/interface";
+import { Dropdown } from "react-bootstrap";
 import useSWR from "swr";
 
 function NotificationsBell() {
-    const { data, mutate, isLoading } = useSWR<INotifies[]>(
+    const { data, mutate, isLoading } = useSWR<INotifications[]>(
         "notifications",
-        ListNotifies,
+        ListNotifications,
         { refreshInterval: 30000 }
     );
 
     const notifications = data ?? [];
     const unreadCount = notifications.filter((n) => !n.read).length;
 
-    const handleClickNotification = async (n: INotifies) => {
+    const handleClickNotification = async (n: INotifications) => {
         if (!n.read) {
-            await ReadNotifies({ idNotifie: String(n._id) });
+            await ReadNotifications({ idNotifie: String(n._id) });
             mutate();
         }
     };
@@ -29,13 +30,15 @@ function NotificationsBell() {
                 {unreadCount > 0 && (
                     <span
                         className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                        style={{ fontSize: "0.65rem"}}
+                        style={{ fontSize: "0.65rem" }}
                     >
                         {unreadCount}
                         <span className="visually-hidden">notificaciones no leídas</span>
                     </span>
                 )}
             </div>
+
+            
         </>
     )
 }

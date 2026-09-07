@@ -1,13 +1,13 @@
 "use server"
 
-import { INotifies } from "@/lib/notis/interface";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
+import { INotifications } from "@/lib/notis/interface";
 
 //LISTAR NOTIFICACIONES
-export async function ListNotifies(): Promise<INotifies[]> {
+export async function ListNotifications(): Promise<INotifications[]> {
     try {
         const { apiToken, API_URL } = await storeAction();
 
@@ -37,11 +37,11 @@ export async function ListNotifies(): Promise<INotifies[]> {
 }
 
 //LEER NOTIFICACION 
-export async function ReadNotifies({
+export async function ReadNotifications({
     idNotifie,
 }: {
     idNotifie: string;
-}): Promise<ActionResponse<INotifies | null>> {
+}): Promise<ActionResponse<INotifications | null>> {
     try {
         const { apiToken, API_URL } = await storeAction();
 
