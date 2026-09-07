@@ -166,6 +166,8 @@ export interface IAssignDevice {
     extentionNumber: string | null;
     emailCompany: string | null;
     emailGmail: string | null;
+    passwordEmail: string | null;
+    pinPhone: string | null;
 }
 
 export interface IPhone {

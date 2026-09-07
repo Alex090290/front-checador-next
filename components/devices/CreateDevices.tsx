@@ -95,6 +95,7 @@ export default function CreateDeviceComponent({
         watch,
         control,
         setValue,
+        getValues,
         handleSubmit,
         formState: { errors, isSubmitting, isDirty },
     } = useForm<IDevices>({
@@ -162,11 +163,39 @@ export default function CreateDeviceComponent({
     //=================/
 
     useEffect(() => {
-        if (selectedType !== "laptop" || "computadora") {
-            setValue("specs.passwordAdmin", null);
-            setValue("specs.userPassword", null);
-        }
-    }, [selectedType, setValue])
+        const current = getValues();
+
+        reset(
+            {
+                ...current,
+                specs: {
+                    ...current.specs,
+                    idDevice: null,
+                    idProduct: null,
+                    architecture: null,
+                    graphicCard: null,
+                    userAdmin: null,
+                    passwordAdmin: null,
+                    user: null,
+                    userPassword: null,
+                },
+                currentAssignment: {
+                    ...current.currentAssignment,
+                    phoneNumber: null,
+                    pinPhone: null,
+                    extentionNumber: null,
+                    emailCompany: null,
+                    passwordEmail: null,
+                    emailGmail: null,
+                },
+            },
+            {
+                keepDefaultValues: true,
+                keepErrors: false,
+                keepDirty: false,
+            }
+        );
+    }, [selectedType, getValues, reset]);
 
     //HELPERS
     const handleBack = () => {
@@ -505,7 +534,7 @@ export default function CreateDeviceComponent({
                                                         <Col md={6}>
                                                             <Entry
                                                                 register={register("specs.idProduct")}
-                                                                label="Id. del producto:"
+                                                                label="Id del producto:"
                                                                 className="text-uppercase border"
                                                             />
                                                         </Col>

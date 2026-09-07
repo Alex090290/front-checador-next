@@ -1,6 +1,6 @@
 "use client"
 
-import { IDevices, IUpdateCurrentUser } from "@/lib/devices/interface"
+import { IDevices } from "@/lib/devices/interface"
 import { Button, Card, Col, Collapse, Container, Row } from "react-bootstrap"
 import OverLay from "../templates/OverLay"
 import { useEffect, useState } from "react";
@@ -145,8 +145,6 @@ export function DeviceOne({
         setFeedbackMsg("Cargando...")
         router.push(`/app/devices?view_type=historial&id=${device.id}`);
     }
-
-    console.log("device:", device.currentAssignment);
 
 
     if (!device) {
@@ -827,6 +825,7 @@ export function DeviceOne({
                             }
                         }
                         idDevice={device.id}
+                        type={device.type?? ""}
                     />
                 </ModalBlur>
             </ConditionalRender>

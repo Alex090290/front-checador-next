@@ -23,7 +23,7 @@ type FeedbackState = "loading" | "success" | "error" | null;
 
 type ModalAction = {
     idDevice: number;
-    device:IDevices;
+    device: IDevices;
     employees: Employee[];
     branches: Branch[];
     departments: Department[]
@@ -68,6 +68,8 @@ export default function ModalAssignDevice({
     const handleDateChange = (date: Date | null) => {
         setValue("assignedAt", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
     };
+    const [showPasswordGmail, setShowPasswordGmail] = useState(false);
+    const [showPin, setShowPin] = useState(false);
 
 
     const handleStaging = useCallback(async () => {
@@ -110,6 +112,8 @@ export default function ModalAssignDevice({
                         extentionNumber: !data.extentionNumber ? null : String(data.extentionNumber).trim(),
                         emailCompany: !data.emailCompany ? null : String(data.emailCompany).trim(),
                         emailGmail: !data.emailGmail ? null : String(data.emailGmail).trim(),
+                        passwordEmail: !data.passwordEmail ? null : String(data.passwordEmail).trim(),
+                        pinPhone: !data.pinPhone ? null : String(data.pinPhone).trim(),
                     }
                 });
 
@@ -155,7 +159,7 @@ export default function ModalAssignDevice({
                 />
             </ConditionalRender>
 
-            <div className="p-2">
+            <div className="p-2 mt-4">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                     <div>
                         <h4 className="mb-1 fw-bold">Asignación de Empleado</h4>
@@ -283,15 +287,16 @@ export default function ModalAssignDevice({
                             <Col md={12}>
                                 <Card className="border rounded-4">
                                     <Card.Body>
-                                    <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
-                                        <i className="bi bi-phone text-primary" />
-                                        Celular
-                                    </label>
+                                        <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                            <i className="bi bi-phone text-primary" />
+                                            Celular
+                                        </label>
                                         <Entry
                                             register={register("phoneNumber", { required: false })}
                                             label=""
                                             invalid={!!errors.phoneNumber}
                                             className="border text-uppercase"
+                                            prefix="+52"
                                         />
                                     </Card.Body>
                                 </Card>
@@ -302,10 +307,10 @@ export default function ModalAssignDevice({
                             <Col md={12}>
                                 <Card className="border rounded-4">
                                     <Card.Body>
-                                    <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
-                                        <i className="bi bi-telephone-plus text-secondary" />
-                                         Extensión
-                                    </label>
+                                        <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                            <i className="bi bi-telephone-plus text-secondary" />
+                                            Extensión
+                                        </label>
                                         <Entry
                                             register={register("extentionNumber", { required: false })}
                                             label=""
@@ -317,43 +322,98 @@ export default function ModalAssignDevice({
                             </Col>
                         </ConditionalRender>
 
-                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(device.type))}>
+                        <ConditionalRender cond={["computadora", "laptop", "celular", "tablet"].includes(String(device.type))}>
                             <Col md={12}>
-                                    <Card className="border rounded-4">
-                                        <Card.Body>
+                                <Card className="border rounded-4">
+                                    <Card.Body>
                                         <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
                                             <i className="bi bi-envelope-at-fill text-secondary" />
                                             Correo Corporativo
                                         </label>
-                                            <Entry
-                                                register={register("emailCompany", { required: false })}
-                                                label=""
-                                                invalid={!!errors.emailCompany}
-                                                className="border text-uppercase"
-                                            />
-                                        </Card.Body>
-                                    </Card>
+                                        <Entry
+                                            register={register("emailCompany", { required: false })}
+                                            label=""
+                                            invalid={!!errors.emailCompany}
+                                            className="border text-uppercase"
+                                        />
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+
+                            <Col md={12}>
+                                <Card className="border rounded-4">
+                                    <Card.Body>
+                                        <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                            <i className="bi bi-envelope-fill text-warning" />
+                                            Correo Gmail
+                                        </label>
+                                        <Entry
+                                            register={register("emailGmail", { required: false })}
+                                            label=""
+                                            invalid={!!errors.emailGmail}
+                                            className="border text-uppercase"
+                                        />
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+
+                            <Col md={12}>
+                                <Card className="border rounded-4">
+                                    <Card.Body>
+                                        <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                            <i className="bi bi-shield-lock text-info" />
+                                            Contraseña Correo Gmail
+                                        </label>
+                                        <Entry
+                                            register={register("passwordEmail")}
+                                            label=""
+                                            type={showPasswordGmail ? "text" : "password"}
+                                            className="border"
+                                            suffix={
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPasswordGmail((prev) => !prev)}
+                                                    className="btn btn-link p-0 text-info"
+                                                    tabIndex={10}
+                                                >
+                                                    <i className={`bi ${showPasswordGmail ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                                </button>
+                                            }
+                                        />
+                                    </Card.Body>
+                                </Card>
                             </Col>
                         </ConditionalRender>
-                        
-                        <ConditionalRender cond={["computadora","laptop","celular"].includes(String(device.type))}>
-                                <Col md={12}>
-                                        <Card className="border rounded-4">
-                                            <Card.Body>
-                                            <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
-                                                <i className="bi bi-envelope-fill text-warning" />
-                                                Correo Gmail
-                                            </label>
-                                                <Entry
-                                                    register={register("emailGmail", { required: false })}
-                                                    label=""
-                                                    invalid={!!errors.emailGmail}
-                                                    className="border text-uppercase"
-                                                />
-                                            </Card.Body>
-                                        </Card>
-                                </Col>
-                            </ConditionalRender>
+
+                        <ConditionalRender cond={["tablet", "celular"].includes(String(device.type))}>
+                            <Col md={12}>
+                                <Card className="border rounded-4">
+                                    <Card.Body>
+                                        <label className="d-flex align-items-center gap-2 mb-2 fw-bold">
+                                            <i className="bi bi-key text-primary" />
+                                            Pin
+                                        </label>
+                                        <Entry
+                                            register={register("pinPhone")}
+                                            label=""
+                                            type={showPin ? "text" : "password"}
+                                            className="border text-uppercase"
+                                            suffix={
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPin((prev) => !prev)}
+                                                    className="btn btn-link p-0 text-info"
+                                                    tabIndex={10}
+                                                >
+                                                    <i className={`bi ${showPin ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: "1.3rem" }} />
+                                                </button>
+                                            }
+                                        />
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        </ConditionalRender>
+
 
                         <Col md={12}>
                             <Card className="border rounded-4">
