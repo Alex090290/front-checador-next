@@ -135,24 +135,22 @@ function NotificationsBell() {
                         padding: 0,
                     }}
                 >
-                    <div className="px-3 py-2 border-bottom">
+                    <div className="px-3 py-2 border-bottom d-flex align-items-center justify-content-between">
                         <span className="small fw-bold text-uppercase">
                             Notificaciones
+                        </span>
 
-                            <span
-                                className="btn btn-danger rounded-pill position-absolute d-flex align-items-center justify-content-center"
-                                style={{
-                                    top: "10px",
-                                    right: "135px",
-                                    minWidth: "20px",
-                                    height: "20px",
-                                    padding: "0 5px",
-                                    fontSize: "0.7rem",
-                                    lineHeight: 1,
-                                }}
-                            >
-                                {noti.length > 99 ? "99+" : noti.length}
-                            </span>
+                        <span
+                            className="btn btn-danger rounded-pill d-flex align-items-center justify-content-center"
+                            style={{
+                                minWidth: "20px",
+                                height: "20px",
+                                padding: "0 5px",
+                                fontSize: "0.7rem",
+                                lineHeight: 1,
+                            }}
+                        >
+                            {noti.length > 99 ? "99+" : noti.length}
                         </span>
                     </div>
 
