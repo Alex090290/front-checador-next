@@ -219,7 +219,6 @@ export default function EvenstsTableClient({
     );
 
     const handleToggleSelect = (row: ICheckInFeedback) => {
-        // console.log(row);
         setStatusUpdate(row.checks.status!)
         setTypeUpdate(row.checks.type)
         setDateModify(row.checks.timestamp)

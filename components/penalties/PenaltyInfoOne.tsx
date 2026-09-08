@@ -27,7 +27,6 @@ export function PenaltyOne({
 }: {
     penalty: IPenaltyForOffeses | null;
 }) {
-    console.log("info:", penalty);
 
     //Const
     const session = useSessionSnapshot();

@@ -16,7 +16,5 @@ export default async function ConstancyInfoOne({ id }: { id: string }) {
         lastName: e.lastName ?? "",
     }));
 
-    console.log("EMPLOYEESRES: ", employeesResponse)
-
     return <ConstancyOne constancy={constancy} employees={employees} />;
 }

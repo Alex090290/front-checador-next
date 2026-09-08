@@ -9,6 +9,7 @@ import { User } from "@/lib/definitions";
 import FormUpdateProfile from "./UpdateProfile";
 import ChangePasswordModal from "@/app/(auth)/app/users/views/ModalChangePassword";
 import ProfileError from "./profileMessageError";
+import { formatLabel } from "../devices/DevicesTableClient";
 
 
 function formatText(value?: string | number | null) {
@@ -170,7 +171,7 @@ export default function UserProfileView({
                           <span>Correo</span>
                         </div>
 
-                        <span className="fw-semibold text-end text-break">
+                        <span className="fw-semibold text-end text-break text-uppercase">
                           {formatText(user.email)}
                         </span>
                       </div>
@@ -182,7 +183,7 @@ export default function UserProfileView({
                         </div>
 
                         <span className="fw-semibold text-end">
-                          {formatText(user.role)}
+                          {formatLabel(user.role)}
                         </span>
                       </div>
 

@@ -273,12 +273,11 @@ export async function sendSignatureOverTime({
 
     formData.append("img", blob, "signature.png");
 
-    const firma = await axios.post(`${apiUrl}/overtime/signature/${id}`, formData, {
+    await axios.post(`${apiUrl}/overtime/signature/${id}`, formData, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
     });
-    console.log("firma: ", firma);
 
     return {
       success: true,

@@ -361,12 +361,11 @@ export async function sendSignatureVacations({
 
     formData.append("img", blob, "signature.png");
 
-    const firma = await axios.post(`${apiUrl}/vacations/signature/${id}/${idPeriod}`, formData, {
+    await axios.post(`${apiUrl}/vacations/signature/${id}/${idPeriod}`, formData, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
     });
-    console.log("firma: ", firma);
 
     return {
       success: true,

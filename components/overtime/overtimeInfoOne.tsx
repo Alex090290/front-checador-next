@@ -81,7 +81,7 @@ export function OvertimeOne({
 
 
     // Configuración de overtime del sistema
-    const configOvertime = connfigSystem[0].overTime;
+    const configOvertime = connfigSystem[0]?.overTime;
 
     // Firmas del registro de overtime (array vacío si no existe)
     const signatures: ISignatures[] = useMemo(() => overtime?.signatures ?? [], [overtime?.signatures]);

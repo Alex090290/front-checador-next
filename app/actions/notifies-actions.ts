@@ -3,7 +3,6 @@
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
-import { revalidatePath } from "next/cache";
 import { INotifications } from "@/lib/notis/interface";
 
 //LISTAR NOTIFICACIONES
@@ -49,6 +48,7 @@ export async function ReadNotifications({
         ) {
             throw new Error("No se ha definido ID");
         }
+        
         await axios
             .put(
                 `${API_URL}/notification-read/${idNotifie}`,

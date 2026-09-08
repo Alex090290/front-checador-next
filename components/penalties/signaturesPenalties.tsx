@@ -36,7 +36,6 @@ function SignaturesViewPenalty({
 
                 if (res.success && res.data) {
                     setImgUrl(res.data);
-                    console.log("IMG:", setImgUrl);
                     
                 } else {
                     setImgUrl(null);

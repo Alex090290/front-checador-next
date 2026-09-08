@@ -7,6 +7,7 @@ import ConditionalRender from "../ConditionalRender";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import Loading from "../LoadingSpinner";
+import { formatLabel } from "../devices/DevicesTableClient";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 type Props = {
@@ -177,7 +178,7 @@ export default function FaceCheckPanel({
 
       setMessage(successMessage);
       setFeedback("success");
-      setFeedbackMsg(successMessage);
+      setFeedbackMsg(formatLabel(successMessage));
       onFaceSuccess(successMessage);
 
       resetForNextEmployee();

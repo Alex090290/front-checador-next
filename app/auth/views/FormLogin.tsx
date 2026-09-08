@@ -53,7 +53,7 @@ function FormLogin() {
       setFeedback("error");
       return;
     }
-    setFeedbackMsg(res.message || "Inicio de sesión exitoso");
+    setFeedbackMsg("Inicio de sesión exitoso");
     setFeedback("success");
     // router.replace("/app/checador?view_type=form");
     router.replace("/");

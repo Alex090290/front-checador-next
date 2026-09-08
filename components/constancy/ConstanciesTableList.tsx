@@ -46,8 +46,6 @@ export default function ConstanciesTableClient({
                 constancies.map(async (constancy) => {
                     const detail = await findConstancyById({ id: Number(constancy.id) });
 
-                    console.log("DETAIL:", detail);
-
                     return [
                         Number(constancy.id),
                         detail?.backgrounds?.length ?? 0,
