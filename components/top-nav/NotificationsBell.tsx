@@ -45,7 +45,7 @@ function typeVariant(incidenceRef: string) {
 function NotificationsBell() {
     const { data, mutate } = useSWR("/api/notifications", fetcher);
 
-    const noti = data?.data;
+    const noti = data?.data ?? [];
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
 
@@ -99,6 +99,7 @@ function NotificationsBell() {
 
             <Dropdown className="flex-shrink-0">
                 <Dropdown.Toggle
+                    id="notifications-dropdown-toggle"
                     variant="light"
                     className="w-100 border-0 bg-transparent text-primary"
                 >
