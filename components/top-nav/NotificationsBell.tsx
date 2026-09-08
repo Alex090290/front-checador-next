@@ -104,19 +104,18 @@ function NotificationsBell() {
                     className="w-100 border-0 bg-transparent text-primary"
                 >
                     <span
-                        className="btn btn-danger rounded-circle position-absolute"
+                        className="btn btn-danger rounded-pill position-absolute d-flex align-items-center justify-content-center"
                         style={{
-                            top: "-6px",
+                            top: "-5px",
                             right: "-5px",
-                            width: "20px",
+                            minWidth: "20px",
                             height: "20px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: 10,
+                            padding: "0 5px",
+                            fontSize: "0.7rem",
+                            lineHeight: 1,
                         }}
                     >
-                        {noti?.length}
+                        {noti.length > 99 ? "99+" : noti.length}
                     </span>
                     <i className="bi bi-bell fs-6 text-primary" />
                 </Dropdown.Toggle>
@@ -141,19 +140,18 @@ function NotificationsBell() {
                             Notificaciones
 
                             <span
-                                className="btn btn-danger rounded-circle position-absolute"
+                                className="btn btn-danger rounded-pill position-absolute d-flex align-items-center justify-content-center"
                                 style={{
-                                    top: "8px",
-                                    right: "140px",
-                                    width: "20px",
+                                    top: "10px",
+                                    right: "135px",
+                                    minWidth: "20px",
                                     height: "20px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    padding: 10,
+                                    padding: "0 5px",
+                                    fontSize: "0.7rem",
+                                    lineHeight: 1,
                                 }}
                             >
-                                {noti?.length}
+                                {noti.length > 99 ? "99+" : noti.length}
                             </span>
                         </span>
                     </div>
