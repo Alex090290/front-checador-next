@@ -1,12 +1,7 @@
 import moment from "moment-timezone";
 
-export const hourClock = (): string => {
-  const time = new Date();
-  return time.toLocaleString("es-MX", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+export const hourClock = (date: Date = new Date()): string => {
+  return moment(date).tz("America/Mexico_City").format("hh:mm A");
 };
 
 export const formatDatelocal = (
