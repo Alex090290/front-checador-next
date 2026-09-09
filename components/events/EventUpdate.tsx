@@ -300,9 +300,14 @@ export default function FormUpdateEvent({
                                                         onChange={handleDateHourChange}
                                                         showTimeSelect
                                                         timeFormat="HH:mm"
-                                                        timeIntervals={5}
+                                                        timeIntervals={1}
                                                         timeCaption="Hora"
                                                         dateFormat="dd-MM-yyyy hh:mm aa"
+                                                        showMonthDropdown
+                                                        showYearDropdown
+                                                        dropdownMode="select"
+                                                        yearDropdownItemNumber={10}
+                                                        scrollableYearDropdown
                                                     />
                                                     <div className="p-2">
                                                         <Button

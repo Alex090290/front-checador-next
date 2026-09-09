@@ -34,6 +34,23 @@ function typeVariant(incidenceRef: string) {
     }
 }
 
+function normalizeView(view: string){
+    switch(view){
+         case "HORAS_EXTRAS":
+            return "overtime";
+        case "PENALIZACION":
+            return "penalties";
+        case "PERMISOS":
+            return "permissions";
+        case "VACACIONES":
+            return "vacationList";
+        case "DEVICE_IT":
+            return "devices";
+        case "INCAPACIDAD":
+            return "inability";
+    }   
+}
+
 // export type NotificationIncidenceType =
 //     | "PERMISOS"
 //     | "VACACIONES"
@@ -66,6 +83,8 @@ function NotificationsBell() {
     //     }
     //     setFeedback(null);
     // }
+
+    
 
     const handleMarkAsRead = async (idNotification: string) => {
         try {
@@ -169,7 +188,7 @@ function NotificationsBell() {
                             <Dropdown.Item
                                 key={el._id}
                                 as="a"
-                                href={el.url}
+                                href={`/app/${normalizeView(el.incidenceRef)}?view_type=form&id=${el.idIncidence}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={() => handleMarkAsRead(String(el._id))}

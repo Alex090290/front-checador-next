@@ -5,12 +5,15 @@ import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry, FieldSelect } from "@/components/fields";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Button, Form, Alert, Card, Row, Col } from "react-bootstrap";
+import { useRef, useState } from "react";
+import { Button, Form, Alert, Card, Row, Col, Overlay } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { useModals } from "@/context/ModalContext";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import { formatCreatedAt } from "@/lib/helpers";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -33,6 +36,8 @@ export default function UnsubscribeEmployeeComponent({
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<TInputs>({
     defaultValues: {
@@ -47,7 +52,20 @@ export default function UnsubscribeEmployeeComponent({
   const [, setMessageLoading] = useState("");
   const router = useRouter();
   const { modalConfirm } = useModals();
+  const [showCalendarEndRelation, setShowCalendarEndRelation] = useState(false);
 
+  //Calendario fin de relacion
+  const [dateErrorEndRelation] = useState("");
+  const dateButtonRefEndRelation = useRef(null);
+
+  const selectedDateEndRelation = watch("dischargeDate");
+  const parsedDateEndRelation = selectedDateEndRelation
+    ? moment(selectedDateEndRelation, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChangeEndRelation = (date: Date | null) => {
+    setValue("dischargeDate", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
 
   const upperCase = (text?: string) => {
     return text?.toUpperCase() || "";
@@ -165,17 +183,57 @@ export default function UnsubscribeEmployeeComponent({
                   </Col>
 
                   <Col md={6}>
-                    <Entry
-                      register={register("dischargeDate", {
-                        required: "La fecha de baja es requerida",
-                      })}
-                      label="Fecha de baja:"
-                      type="date"
-                      invalid={!!errors.dischargeDate}
-                      feedBack={errors.dischargeDate?.message}
-                      className="border text-uppercase"
-                    />
-                  </Col>
+                        <Form.Group>
+                          <Form.Label className="fw-semibold">Fecha de baja:</Form.Label>
+                        </Form.Group>
+
+                        <Button
+                          ref={dateButtonRefEndRelation}
+                          style={{ height: "35px" }}
+                          variant="outline-secondary"
+                          className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEndRelation ? "border-danger text-danger" : ""}`}
+                          onClick={() => setShowCalendarEndRelation((s) => !s)}
+                        >
+                          <span>{selectedDateEndRelation ? formatCreatedAt(selectedDateEndRelation) : "Selecciona una fecha"}</span>
+                          <i className="bi bi-calendar3" />
+                        </Button>
+
+                        <ConditionalRender cond={!dateErrorEndRelation}>
+                          <small className="text-danger d-block mt-1">{dateErrorEndRelation}</small>
+                        </ConditionalRender>
+
+                        <Overlay
+                          target={dateButtonRefEndRelation.current}
+                          show={showCalendarEndRelation}
+                          placement="bottom-start"
+                          rootClose
+                          container={() => document.body}
+                          onHide={() => setShowCalendarEndRelation(false)}
+                        >
+                          {({ ref, style }) => (
+                            <div
+                              ref={ref}
+                              style={style}
+                              className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                            >
+                              <DatePicker
+                                inline
+                                selected={parsedDateEndRelation}
+                                onChange={handleDateChangeEndRelation}
+                                shouldCloseOnSelect={false}
+                                disabledKeyboardNavigation
+                                monthsShown={1}
+                                locale="es"
+                                showMonthDropdown
+                                showYearDropdown
+                                dropdownMode="select"
+                                yearDropdownItemNumber={10}
+                                scrollableYearDropdown
+                              />
+                            </div>
+                          )}
+                        </Overlay>
+                      </Col>
 
                   <Col md={12}>
                     <Entry

@@ -39,12 +39,13 @@ export function RelationField({
           control={control}
           callBackMode={callBackMode}
           size="sm"
-          className={`${className ?? ""} pe-4`}
+          className={`${className ?? ""} pe-4 no-native-invalid-icon`}
           isInvalid={invalid}
         />
+
         {!readonly && (
           <i
-            className="bi bi-chevron-down position-absolute text-muted"
+            className={`bi bi-chevron-down position-absolute ${invalid ? "text-danger" : "text-muted"}`}
             style={{
               right: "12px",
               top: "50%",

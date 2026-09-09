@@ -35,6 +35,7 @@ import ErrorOverlay from "../ErrorOverlay";
 import { EntryNumber } from "../fields/EntryFieldNumber";
 import DatePicker from "react-datepicker";
 import moment from "moment";
+import { formatCreatedAt } from "@/lib/helpers";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -168,7 +169,7 @@ export default function CreateEmployeeComponent({
 
   const selectedDateRelation = watch("admissionDate");
   const parsedDateRelation = selectedDateRelation
-    ? moment(selectedDate, "YYYY-MM-DD").toDate()
+    ? moment(selectedDateRelation, "YYYY-MM-DD").toDate()
     : null;
 
   const handleDateChangeRelation = (date: Date | null) => {
@@ -346,7 +347,7 @@ export default function CreateEmployeeComponent({
                                   className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                   onClick={() => setShowCalendar((s) => !s)}
                                 >
-                                  <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                  <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                   <i className="bi bi-calendar3" />
                                 </Button>
 
@@ -376,6 +377,11 @@ export default function CreateEmployeeComponent({
                                         disabledKeyboardNavigation
                                         monthsShown={1}
                                         locale="es"
+                                        showMonthDropdown
+                                        showYearDropdown
+                                        dropdownMode="select"
+                                        yearDropdownItemNumber={10}
+                                        scrollableYearDropdown
                                       />
                                     </div>
                                   )}
@@ -1045,7 +1051,7 @@ export default function CreateEmployeeComponent({
                                   className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorRelation ? "border-danger text-danger" : ""}`}
                                   onClick={() => setShowCalendarRelation((s) => !s)}
                                 >
-                                  <span>{selectedDateRelation ? selectedDateRelation : "Selecciona una fecha"}</span>
+                                  <span>{selectedDateRelation ? formatCreatedAt(selectedDateRelation) : "Selecciona una fecha"}</span>
                                   <i className="bi bi-calendar3" />
                                 </Button>
 
@@ -1075,6 +1081,11 @@ export default function CreateEmployeeComponent({
                                         disabledKeyboardNavigation
                                         monthsShown={1}
                                         locale="es"
+                                        showMonthDropdown
+                                        showYearDropdown
+                                        dropdownMode="select"
+                                        yearDropdownItemNumber={10}
+                                        scrollableYearDropdown
                                       />
                                     </div>
                                   )}

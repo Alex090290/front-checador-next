@@ -17,8 +17,8 @@ import {
 } from "@/lib/definitions";
 
 import { formatDate } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
-import { Button, Card, Col, Form, Row, Table } from "react-bootstrap";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Button, Card, Col, Form, Overlay, Row, Table } from "react-bootstrap";
 import {
   SubmitErrorHandler,
   SubmitHandler,
@@ -30,6 +30,9 @@ import { useRouter } from "next/navigation";
 import { updateEmploye } from "@/app/actions/employee-actions";
 import SuccessOverlay from "@/components/SuccessOverlay";
 import ErrorOverlay from "@/components/ErrorOverlay";
+import DatePicker from "react-datepicker";
+import moment from "moment";
+import { formatCreatedAt } from "@/lib/helpers";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -129,6 +132,7 @@ export default function FormUpdateEmployee({
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TInputsEmployee>({
     defaultValues: formatEmployeeValues(employee),
@@ -140,6 +144,9 @@ export default function FormUpdateEmployee({
   const router = useRouter();
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendarRelation, setShowCalendarRelation] = useState(false);
+  const [showCalendarEndRelation, setShowCalendarEndRelation] = useState(false);
 
   const {
     append: appendContact,
@@ -215,6 +222,46 @@ export default function FormUpdateEmployee({
     [puestos]
   );
 
+  //Calendario nacimiento
+  const [dateError] = useState("");
+  const dateButtonRef = useRef(null);
+
+  const selectedDate = watch("birthDate");
+  const parsedDate = selectedDate
+    ? moment(selectedDate, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChange = (date: Date | null) => {
+    setValue("birthDate", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
+
+  //Calendario inicio de relacion
+  const [dateErrorRelation] = useState("");
+  const dateButtonRefRelation = useRef(null);
+
+  const selectedDateRelation = watch("admissionDate");
+  const parsedDateRelation = selectedDateRelation
+    ? moment(selectedDateRelation, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChangeRelation = (date: Date | null) => {
+    setValue("admissionDate", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
+
+  //Calendario fin de relacion
+  const [dateErrorEndRelation] = useState("");
+  const dateButtonRefEndRelation = useRef(null);
+
+  const selectedDateEndRelation = watch("dischargeDate");
+  const parsedDateEndRelation = selectedDateEndRelation
+    ? moment(selectedDateEndRelation, "YYYY-MM-DD").toDate()
+    : null;
+
+  const handleDateChangeEndRelation = (date: Date | null) => {
+    setValue("dischargeDate", date ? moment(date).format("YYYY-MM-DD") : "", { shouldDirty: true });
+  };
+
+
   const onSubmit: SubmitHandler<TInputsEmployee> = async (data) => {
     modalConfirm("¿Seguro que quieres guardar el usuario?", async () => {
       try {
@@ -231,7 +278,7 @@ export default function FormUpdateEmployee({
 
         setFeedbackMsg(res.message || "Empleado actualizado correctamente");
         setFeedback("success");
-          router.refresh();      
+        router.refresh();
       } catch {
         setFeedbackMsg("Error inesperado, intenta de nuevo");
         setFeedback("error");
@@ -320,16 +367,6 @@ export default function FormUpdateEmployee({
                       </Col>
                       <Col md={6}>
                         <Entry
-                          register={register("birthDate", { required: "Fecha de nacimiento requerida" })}
-                          type="date"
-                          label="Nacimiento:"
-                          invalid={!!errors.birthDate}
-                          feedBack={errors.birthDate?.message}
-                          className="border"
-                        />
-                      </Col>
-                      <Col md={6}>
-                        <Entry
                           register={register("nationality", { required: "Nacionalidad requerida" })}
                           label="Nacionalidad:"
                           invalid={!!errors.nationality}
@@ -349,6 +386,59 @@ export default function FormUpdateEmployee({
                           feedBack={errors.gender?.message}
                           className="border text-uppercase"
                         />
+                      </Col>
+
+                      <Col md={6}>
+                        <Form.Group>
+                          <Form.Label className="fw-semibold">Nacimiento:</Form.Label>
+                        </Form.Group>
+
+                        <Button
+                          ref={dateButtonRef}
+                          style={{ height: "35px" }}
+                          variant="outline-secondary"
+                          className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
+                          onClick={() => setShowCalendar((s) => !s)}
+                        >
+                          <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
+                          <i className="bi bi-calendar3" />
+                        </Button>
+
+                        <ConditionalRender cond={!dateError}>
+                          <small className="text-danger d-block mt-1">{dateError}</small>
+                        </ConditionalRender>
+
+                        <Overlay
+                          target={dateButtonRef.current}
+                          show={showCalendar}
+                          placement="bottom-start"
+                          rootClose
+                          container={() => document.body}
+                          onHide={() => setShowCalendar(false)}
+                        >
+                          {({ ref, style }) => (
+                            <div
+                              ref={ref}
+                              style={style}
+                              className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                            >
+                              <DatePicker
+                                inline
+                                selected={parsedDate}
+                                onChange={handleDateChange}
+                                shouldCloseOnSelect={false}
+                                disabledKeyboardNavigation
+                                monthsShown={1}
+                                locale="es"
+                                showMonthDropdown
+                                showYearDropdown
+                                dropdownMode="select"
+                                yearDropdownItemNumber={10}
+                                scrollableYearDropdown
+                              />
+                            </div>
+                          )}
+                        </Overlay>
                       </Col>
                     </Row>
                   </Card.Body>
@@ -911,11 +1001,111 @@ export default function FormUpdateEmployee({
 
                     <Row className="g-3">
                       <Col md={6}>
-                        <Entry register={register("admissionDate")} label="Inicio de relación:" type="date" className="border text-uppercase" />
+                        <Form.Group>
+                          <Form.Label className="fw-semibold">Inicio de relación:</Form.Label>
+                        </Form.Group>
+
+                        <Button
+                          ref={dateButtonRefRelation}
+                          style={{ height: "35px" }}
+                          variant="outline-secondary"
+                          className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorRelation ? "border-danger text-danger" : ""}`}
+                          onClick={() => setShowCalendarRelation((s) => !s)}
+                        >
+                          <span>{selectedDateRelation ? formatCreatedAt(selectedDateRelation) : "Selecciona una fecha"}</span>
+                          <i className="bi bi-calendar3" />
+                        </Button>
+
+                        <ConditionalRender cond={!dateErrorRelation}>
+                          <small className="text-danger d-block mt-1">{dateErrorRelation}</small>
+                        </ConditionalRender>
+
+                        <Overlay
+                          target={dateButtonRefRelation.current}
+                          show={showCalendarRelation}
+                          placement="bottom-start"
+                          rootClose
+                          container={() => document.body}
+                          onHide={() => setShowCalendarRelation(false)}
+                        >
+                          {({ ref, style }) => (
+                            <div
+                              ref={ref}
+                              style={style}
+                              className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                            >
+                              <DatePicker
+                                inline
+                                selected={parsedDateRelation}
+                                onChange={handleDateChangeRelation}
+                                shouldCloseOnSelect={false}
+                                disabledKeyboardNavigation
+                                monthsShown={1}
+                                locale="es"
+                                showMonthDropdown
+                                showYearDropdown
+                                dropdownMode="select"
+                                yearDropdownItemNumber={10}
+                                scrollableYearDropdown
+                              />
+                            </div>
+                          )}
+                        </Overlay>
                       </Col>
+
                       <Col md={6}>
-                        <Entry register={register("dischargeDate")} label="Fin de relación:" type="date" className="border text-uppercase" />
+                        <Form.Group>
+                          <Form.Label className="fw-semibold">Fin de relación:</Form.Label>
+                        </Form.Group>
+
+                        <Button
+                          ref={dateButtonRefEndRelation}
+                          style={{ height: "35px" }}
+                          variant="outline-secondary"
+                          className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEndRelation ? "border-danger text-danger" : ""}`}
+                          onClick={() => setShowCalendarEndRelation((s) => !s)}
+                        >
+                          <span>{selectedDateEndRelation ? formatCreatedAt(selectedDateEndRelation) : "Selecciona una fecha"}</span>
+                          <i className="bi bi-calendar3" />
+                        </Button>
+
+                        <ConditionalRender cond={!dateErrorEndRelation}>
+                          <small className="text-danger d-block mt-1">{dateErrorEndRelation}</small>
+                        </ConditionalRender>
+
+                        <Overlay
+                          target={dateButtonRefEndRelation.current}
+                          show={showCalendarEndRelation}
+                          placement="bottom-start"
+                          rootClose
+                          container={() => document.body}
+                          onHide={() => setShowCalendarEndRelation(false)}
+                        >
+                          {({ ref, style }) => (
+                            <div
+                              ref={ref}
+                              style={style}
+                              className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
+                            >
+                              <DatePicker
+                                inline
+                                selected={parsedDateEndRelation}
+                                onChange={handleDateChangeEndRelation}
+                                shouldCloseOnSelect={false}
+                                disabledKeyboardNavigation
+                                monthsShown={1}
+                                locale="es"
+                                showMonthDropdown
+                                showYearDropdown
+                                dropdownMode="select"
+                                yearDropdownItemNumber={10}
+                                scrollableYearDropdown
+                              />
+                            </div>
+                          )}
+                        </Overlay>
                       </Col>
+
                       <Col md={12}>
                         <Entry register={register("typeOfDischarge")} label="Tipo de baja:" className="border text-uppercase" />
                       </Col>

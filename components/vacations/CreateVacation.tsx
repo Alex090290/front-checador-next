@@ -27,6 +27,8 @@ import moment from "moment";
 import { es } from "date-fns/locale";
 import Link from "next/link";
 import { PeriodVacation, Vacations } from "@/lib/vactions/interface";
+import { formatCreatedAt } from "@/lib/helpers";
+import TestAnimationComponent from "../helpers/testAnimations";
 
 registerLocale("es", es);
 
@@ -86,6 +88,9 @@ function CreateVacationComponent({
   const idPeriodSelected = watch("idPeriod");
   const session = useSessionSnapshot();
   const { data } = useSWR("/api/configsystem", fetcher);
+  const isDOH = session?.uid?.roles.isDoh !== false;
+  const isExtra = session?.uid?.roles.isExtra !== false;
+
 
   const config: IConfigSystem | null = useMemo(() => {
     const maybe = data?.data?.[0];
@@ -96,6 +101,8 @@ function CreateVacationComponent({
   const router = useRouter();
 
   const [periods, setPeriods] = useState<PeriodVacation[]>([]);
+  const [isLoadingPeriods, setIsLoadingPeriods] = useState(true);
+
   //Calendario inicio
   const [dateError] = useState("");
   const dateButtonRef = useRef(null);
@@ -404,6 +411,7 @@ function CreateVacationComponent({
   }, [config, setValue, watch]);
 
   const getPeriods = useCallback(async () => {
+    setIsLoadingPeriods(true);
     try {
       if (!idEmployeeSelected) {
         setPeriods([]);
@@ -425,13 +433,14 @@ function CreateVacationComponent({
     } catch (error) {
       console.error(error);
       setPeriods([]);
+    } finally {
+      setIsLoadingPeriods(false);
     }
   }, [idEmployeeSelected, setValue]);
 
   useEffect(() => {
     getPeriods();
   }, [getPeriods]);
-
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     if (!data.signature || data.signature && data.signature === "") {
@@ -591,34 +600,35 @@ function CreateVacationComponent({
                               </Col>
 
                               <Col md={4}>
-                                <ConditionalRender cond={periods.length > 0}>
+                                <ConditionalRender cond={isLoadingPeriods}>
+                                  <TestAnimationComponent />
+                                </ConditionalRender>
+
+                                <ConditionalRender cond={!isLoadingPeriods && periods.length > 0}>
                                   <FieldSelect
                                     label="Periodo vacacional:"
-                                    options={
-                                      periods.length > 0
-                                        ? periods.map((p) => ({
-                                          label: `${formatDate(p.dateInitPeriod, "dd/MM/yyyy")} - ${formatDate(p.dateEndPeriod, "dd/MM/yyyy")}`,
-                                          value: Number(p.id),
-                                        }))
-                                        : [
-                                          {
-                                            label: "El empleado no cuenta con periodos disponibles",
-                                            value: "",
-                                          },
-                                        ]
-                                    }
-                                    register={register("idPeriod", {
-                                      required: periods.length > 0,
-                                    })}
+                                    options={periods.map((p) => ({
+                                      label: `${formatDate(p.dateInitPeriod, "dd/MM/yyyy")} - ${formatDate(p.dateEndPeriod, "dd/MM/yyyy")}`,
+                                      value: Number(p.id),
+                                    }))}
+                                    register={register("idPeriod", { required: periods.length > 0 })}
                                     className="border"
                                     readonly={readInput || readOnlyDoh}
                                   />
                                 </ConditionalRender>
 
-                                <ConditionalRender cond={periods.length <= 0}>
-                                  <div className="text-center mt-4">
-                                    <span className="w-100 h-100 badge rounded-pill fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle">
-                                      No se encontro periodo
+                                <ConditionalRender cond={!isLoadingPeriods && periods.length <= 0}>
+                                  <Form.Group>
+                                    <Form.Label className="fw-semibold">Periodo vacacional:</Form.Label>
+                                  </Form.Group>
+
+                                  <div
+                                    className="d-flex align-items-center gap-2 px-3 border border-danger-subtle rounded-3 bg-danger-subtle text-danger-emphasis"
+                                    style={{ height: "35px" }}
+                                  >
+                                    <i className="bi bi-exclamation-circle-fill flex-shrink-0" />
+                                    <span className="small text-truncate">
+                                      No se encontró un periodo disponible
                                     </span>
                                   </div>
                                 </ConditionalRender>
@@ -649,7 +659,7 @@ function CreateVacationComponent({
                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                 onClick={() => setShowCalendar((s) => !s)}
                               >
-                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3" />
                               </Button>
 
@@ -697,7 +707,7 @@ function CreateVacationComponent({
                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEnd ? "border-danger text-danger" : ""}`}
                                 onClick={() => setShowCalendarEnd((s) => !s)}
                               >
-                                <span>{selectedDateEnd ? selectedDateEnd : "Selecciona una fecha"}</span>
+                                <span>{selectedDateEnd ? formatCreatedAt(selectedDateEnd) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3" />
                               </Button>
 
@@ -773,11 +783,16 @@ function CreateVacationComponent({
                                 <Link
                                   href={`/app/employee?view_type=form&id=${idEmployeeSelected}&tab=vacations`}
                                   className="text-decoration-none text-reset"
+                                  style={{ cursor: !isDOH && !isExtra ? "default" : "pointer" }}
                                   target="_blank" //Para abriri en ventana nueva
                                   rel="noopener noreferrer"
+                                  onClick={(e) => {
+                                    if (!isDOH && !isExtra) e.preventDefault();
+                                  }}
+
                                 >
                                   <div
-                                    className="border rounded-3 p-3 text-center h-100 shadow=sm hover-clickable"
+                                    className={!isDOH && !isExtra ? "border rounded-3 p-3 text-center h-100" : "border rounded-3 p-3 text-center h-100 shadow=sm hover-clickable"}
                                   >
                                     <i className="bi bi-check2-circle text-success fs-5 mb-2 d-block" />
                                     <div className="text-muted small">Días aprobados usados</div>
