@@ -61,7 +61,6 @@ export default async function ListAllDevices({
             limit={limitParse}
             devices={devices.data}
             search={search}
-            type={type}
             status={status}
             idEmployee={idEmployee}
             idDepartment={idDepartment}

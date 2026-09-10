@@ -442,9 +442,16 @@ function CreateVacationComponent({
     getPeriods();
   }, [getPeriods]);
 
+
+
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     if (!data.signature || data.signature && data.signature === "") {
       modalError("La firma es obligatoria");
+      return;
+    }
+
+    if (selectedPeriod?.availableDays === 0) {
+      modalError("Este empleado no cuenta con días disponibles")
       return;
     }
 
@@ -528,7 +535,7 @@ function CreateVacationComponent({
                     <Button
                       className="bg-success border-success"
                       type="submit"
-                      disabled={isSubmitting || selectedPeriod?.availableDays === 0}
+                      disabled={isSubmitting}
                     >
                       {isSubmitting ? "Guardando..." : "Guardar"}
                     </Button>

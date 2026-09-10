@@ -107,7 +107,7 @@ export default function ShowInfoVacation({
     Array.isArray(vacation?.signatures) ? vacation.signatures : [],
     [vacation?.signatures]
   );
-
+  
   // ID del empleado con sesión activa
   const idEmployee = Number(session?.uid?.idEmployee);
 
