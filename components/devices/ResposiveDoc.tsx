@@ -139,6 +139,8 @@ export default function ResposiveDoc({
     const almacenamiento = device.specs && device.specs.storage && device.specs.storage.trim() !== '' && device.specs.storage.trim() !== 'x' ? device.specs.storage.trim() : '';
     const sistema_operativo = device.specs && device.specs.os && String(device.specs.os).trim() !== '' && String(device.specs.os).trim() !== 'x' ? String(device.specs.os).trim() : '';
     const sistema_operativo_version = device.specs && device.specs.osVersion && String(device.specs.osVersion).trim() !== '' && String(device.specs.osVersion).trim() !== 'x' ? String(device.specs.osVersion).trim() : '';
+    const hasNotes = device.notes && device.notes && device.notes !== '' && device.notes.trim() !== 'x' ? device.notes.trim() : '';
+
 
     const isVLAN1 = device.networkInfo.filter((v => v.vlan === "1"))
     const isVLAN20 = device.networkInfo.filter((v => v.vlan === "20"))
@@ -146,7 +148,7 @@ export default function ResposiveDoc({
     const macVlan20 = device.networkInfo.filter((m) => m.vlan === "20").map((m) => m.mac).join(", ");
     const number = device.currentAssignment?.phoneNumber?.nationalNumber
     const isPhone = device.type === "telefono_ip" || device.type === "celular";
-    const hasNotes = device.specs?.currentStatus ?? "";
+    const currentStatus = device.specs?.currentStatus ?? "";
 
     const isSignatureComplete = (label: string) => {
         const matches = device.currentAssignment?.signatures?.filter((l) => l.label === label) ?? [];
@@ -324,7 +326,14 @@ export default function ResposiveDoc({
 
                                 <p className="mb-0">
                                     Por medio de la presente que suscribe declara recibir como herramienta de trabajo{" "}
-                                    <strong>{typeDevice(type)}</strong>, mismo que cuenta con las siguientes características:{" "}
+                                    <strong>{typeDevice(type)}</strong>                                    
+                                    <ConditionalRender cond={currentStatus !== ""}>
+                                        <><strong>{currentStatus}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={hasNotes !== ""}>
+                                        <><strong>, {hasNotes}. </strong></>
+                                    </ConditionalRender>  
+                                    Mismo que cuenta con las siguientes características:{" "}
                                     <ConditionalRender cond={marca !== ""}>
                                         <>marca <strong>{marca}</strong></>
                                     </ConditionalRender>
@@ -358,9 +367,6 @@ export default function ResposiveDoc({
                                     </ConditionalRender>
                                     <ConditionalRender cond={isPhone !== false}>
                                         <>, y número Telcel: <strong>{number}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={hasNotes !== ""}>
-                                        <>, <strong>{hasNotes}.</strong></>
                                     </ConditionalRender>
                                 </p>
 
