@@ -43,6 +43,50 @@ function typeDevice(type: DeviceType | null) {
             return (
                 <span>un celular </span>
             )
+        case "tablet":
+            return (
+                <span>una tablet </span>
+            )
+        case "impresora":
+            return (
+                <span>una impresora </span>
+            )
+        case "servidor":
+            return (
+                <span>un servidor </span>
+            )
+        case "switch":
+            return (
+                <span>un switch </span>
+            )
+        case "router":
+            return (
+                <span>un router </span>
+            )
+        case "telefono_ip":
+            return (
+                <span>un teléfono IP </span>
+            )
+        case "camara":
+            return (
+                <span>una cámara </span>
+            )
+        case "access_point":
+            return (
+                <span>un access point </span>
+            )
+        case "television":
+            return (
+                <span>una televisión </span>
+            )
+        case "otro":
+            return (
+                <span>un dispositivo </span>
+            )
+        default:
+            return (
+                <span></span>
+            )
     }
 }
 
@@ -86,14 +130,15 @@ export default function ResposiveDoc({
     const [showSecondSignatures, setShowSecondSignatures] = useState(false);
 
     //INFO NECESARIA
-    const marca = device.specs?.brand;
+    const marca = device.specs && device.specs.brand && device.specs.brand.trim() !== '' && device.specs.brand.trim() !== 'x' ? device.specs.brand.trim() : '';
     const type = device?.type;
-    const modelo = device.specs?.model;
-    const numero_serie = device.specs?.serialNumber;
-    const procesador = device.specs?.processor;
-    const ram = device.specs?.ram;
-    const almacenamiento = device.specs?.storage;
-    const sistema_operativo = String(device.specs?.os);
+    const modelo = device.specs && device.specs.model && device.specs.model.trim() !== '' && device.specs.model.trim() !== 'x' ? device.specs.model.trim() : '';
+    const numero_serie = device.specs && device.specs.serialNumber && device.specs.serialNumber.trim() !== '' && device.specs.serialNumber.trim() !== 'x' ? device.specs.serialNumber.trim() : '';
+    const procesador = device.specs && device.specs.processor && device.specs.processor.trim() !== '' && device.specs.processor.trim() !== 'x' ? device.specs.processor.trim() : '';
+    const ram = device.specs && device.specs.ram && device.specs.ram.trim() !== '' && device.specs.ram.trim() !== 'x' ? device.specs.ram.trim() : '';
+    const almacenamiento = device.specs && device.specs.storage && device.specs.storage.trim() !== '' && device.specs.storage.trim() !== 'x' ? device.specs.storage.trim() : '';
+    const sistema_operativo = device.specs && device.specs.os && String(device.specs.os).trim() !== '' && String(device.specs.os).trim() !== 'x' ? String(device.specs.os).trim() : '';
+    const sistema_operativo_version = device.specs && device.specs.osVersion && String(device.specs.osVersion).trim() !== '' && String(device.specs.osVersion).trim() !== 'x' ? String(device.specs.osVersion).trim() : '';
 
     const isVLAN1 = device.networkInfo.filter((v => v.vlan === "1"))
     const isVLAN20 = device.networkInfo.filter((v => v.vlan === "20"))
@@ -277,27 +322,47 @@ export default function ResposiveDoc({
                             <Card.Body>
                                 <div className="d-flex flex-column gap-4 text-justify" style={{ lineHeight: 1.7, textAlign: "justify" }}>
 
-                                    <p className="mb-0">
-                                        Por medio de la presente que suscribe declara recibir como herramienta de trabajo{" "}
-                                        <strong>{typeDevice(type)}</strong>, mismo que cuenta con las siguientes características:
-                                        marca <strong>{marca}</strong>, modelo <strong>{modelo}</strong>, número de serie{" "}
-                                        <strong>{numero_serie}</strong>, procesador <strong>{procesador}</strong>,{" "}
-                                        <strong>{ram}</strong> de RAM, <strong>{almacenamiento}</strong> de almacenamiento,
-                                        sistema operativo <strong>{formatLabel(sistema_operativo)}</strong>
-                                        <ConditionalRender cond={isVLAN1.length > 0}>
-                                            <>, con VLAN 1 de MAC <strong>{macVlan1}</strong></>
-                                        </ConditionalRender>
-                                        <ConditionalRender cond={isVLAN20.length > 0}>
-                                            <>, con VLAN 20 de MAC <strong>{macVlan20}</strong></>
-                                        </ConditionalRender>
-                                        <ConditionalRender cond={isPhone !== false}>
-                                            <>, y número Telcel: <strong>{number}</strong></>
-                                        </ConditionalRender>
-
-                                        <ConditionalRender cond={hasNotes !== ""}>
-                                            <>, <strong>{hasNotes}.</strong></>
-                                        </ConditionalRender>
-                                    </p>
+                                <p className="mb-0">
+                                    Por medio de la presente que suscribe declara recibir como herramienta de trabajo{" "}
+                                    <strong>{typeDevice(type)}</strong>, mismo que cuenta con las siguientes características:{" "}
+                                    <ConditionalRender cond={marca !== ""}>
+                                        <>marca <strong>{marca}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={modelo !== ""}>
+                                        <>, modelo <strong>{modelo}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={numero_serie !== ""}>
+                                        <>, número de serie <strong>{numero_serie}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={procesador !== ""}>
+                                        <>, procesador <strong>{procesador}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={ram !== ""}>
+                                        <>, <strong>{ram}</strong> de RAM</>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={almacenamiento !== ""}>
+                                        <>, <strong>{almacenamiento}</strong> de almacenamiento</>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={sistema_operativo !== ""}>
+                                        <>, sistema operativo <strong>{formatLabel(sistema_operativo)}</strong>
+                                            <ConditionalRender cond={sistema_operativo_version !== ""}>
+                                                <> con versión <strong>{sistema_operativo_version}</strong></>
+                                            </ConditionalRender>
+                                        </>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={isVLAN1.length > 0}>
+                                        <>, con VLAN 1 de MAC <strong>{macVlan1}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={isVLAN20.length > 0}>
+                                        <>, con VLAN 20 de MAC <strong>{macVlan20}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={isPhone !== false}>
+                                        <>, y número Telcel: <strong>{number}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={hasNotes !== ""}>
+                                        <>, <strong>{hasNotes}.</strong></>
+                                    </ConditionalRender>
+                                </p>
 
                                     <p className="mb-0">
                                         Comprometiéndose a mantenerlo en el estado en el que lo recibe, cuidando dicho material como si el mismo fuera
