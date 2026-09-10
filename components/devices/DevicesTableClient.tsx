@@ -2,12 +2,13 @@
 
 import { IDevices } from "@/lib/devices/interface";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Dropdown, InputGroup, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
+import GenericSearchInput from "../employee/GenericSearchInput";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -41,10 +42,10 @@ function statusVariant(status: string) {
 }
 
 export function formatLabel(value: string) {
-  return value
-    .replace(/_/g, " ")
-    .replace(/-/g, " ") 
-    .trim();
+    return value
+        .replace(/_/g, " ")
+        .replace(/-/g, " ")
+        .trim();
 }
 
 export default function DevicesTableClient({
@@ -59,7 +60,6 @@ export default function DevicesTableClient({
     limit: number;
     devices: IDevices[];
     search?: string;
-    type?: string;
     status?: string;
     idEmployee?: string;
     idDepartment?: string;
@@ -69,11 +69,29 @@ export default function DevicesTableClient({
     const router = useRouter();
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
+    const currentSearch = sp.get("search") ?? "";
+    const currentType = sp.get("type") ?? "";
 
 
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [loading] = useState(false);
+
+    const deviceTypeOptions = [
+        { value: "computadora", label: "COMPUTADORA" },
+        { value: "laptop", label: "LAPTOP" },
+        { value: "impresora", label: "IMPRESORA" },
+        { value: "servidor", label: "SERVIDOR" },
+        { value: "switch", label: "SWITCH" },
+        { value: "router", label: "ROUTER" },
+        { value: "telefono_ip", label: "TELEFONO IP" },
+        { value: "camara", label: "CAMARA" },
+        { value: "access_point", label: "ACCESS POINT" },
+        { value: "celular", label: "CELULAR" },
+        { value: "television", label: "TELEVISIÓN" },
+        { value: "tablet", label: "TABLET" },
+        { value: "otro", label: "OTRO" },
+    ];
 
     useEffect(() => {
         setFeedback(null);
@@ -115,7 +133,59 @@ export default function DevicesTableClient({
         setFeedbackMsg("Cargando...");
         router.push("/app/devices/create");
     };
-    
+
+    const handleSearch = useCallback((value: string) => {
+
+        if (value === currentSearch) return;
+
+        setFeedback("loading");
+        setFeedbackMsg("Buscando...");
+
+        const params = new URLSearchParams(searchParamsString);
+        params.set("id", "null");
+        params.set("view_type", "list");
+        params.set("page", "1");
+        params.set("limit", String(limit));
+
+        if (value) {
+            params.set("search", value);
+        } else {
+            params.delete("search");
+        }
+        router.push(`/app/devices?${params.toString()}`);
+    },
+        [currentSearch, searchParamsString, limit, router]
+    );
+
+    const handleTypeFilter = useCallback((value: string) => {
+        const trimedSuc = value.trim();
+        const normalizedCurrent = currentType ? String(currentType) : "";
+
+        if (trimedSuc === normalizedCurrent) return;
+
+
+        setFeedback("loading");
+        setFeedbackMsg("Buscando...");
+
+        const params = new URLSearchParams(searchParamsString);
+        params.set("id", "null");
+        params.set("view_type", "list");
+        params.set("page", "1");
+        params.set("limit", String(limit));
+
+        if (value) {
+            params.set("type", value);
+        } else {
+            params.delete("type");
+        }
+        router.push(`/app/devices?${params.toString()}`);
+    },
+        [currentType, searchParamsString, limit, router]
+    );
+
+    const selectedType = currentType
+        ? deviceTypeOptions.find((opt) => opt.value === currentType)?.label ?? currentType
+        : "TODOS";
 
     //TABLA
     const columns: TableTemplateColumn<IDevices>[] = [
@@ -241,6 +311,86 @@ export default function DevicesTableClient({
                         <Card className="rounded-4 shadow-sm border">
                             <Card.Body className="p-4 p-md-5">
 
+                                <div className="mb-4">
+                                    <Row className="mb-4 g-3 align-items-between">
+
+                                        {/* FILTRO DE EMPLEADOS */}
+                                        <Col xs={12} sm={6} md={6} lg={6} xl={6} style={{ minWidth: 0 }}>
+                                            <Card className="border rounded-4 h-100">
+                                                <Card.Body className="p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <i className="bi bi-laptop text-primary" />
+                                                        <span className="fw-semibold small">Filtrar dispositivos</span>
+                                                    </div>
+
+                                                    <InputGroup>
+                                                        <InputGroup.Text
+                                                            className="bg-gray"
+                                                            style={{ color: "#6c757d" }}
+                                                        >
+                                                            <i className="bi bi-search" />
+                                                        </InputGroup.Text>
+                                                        <GenericSearchInput
+                                                            initialValue={search}
+                                                            onSearch={handleSearch}
+                                                            placeholder="Buscar por nombre o empleado..."
+                                                        />
+                                                    </InputGroup>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+
+                                        <Col xs={12} sm={6} md={6} lg={6} style={{ minWidth: 0 }}>
+                                            <Card className="rounded-4 border h-100">
+                                                <Card.Body className="p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <i className="bi bi-tags-fill text-primary" />
+                                                        <span className="fw-semibold small">Filtrar por tipo</span>
+                                                    </div>
+
+                                                    <Dropdown className="w-100">
+                                                        <Dropdown.Toggle
+                                                            as={Button}
+                                                            variant="outline-secondary"
+                                                            className="w-100 d-flex align-items-center justify-content-between text-uppercase"
+                                                            style={{ minWidth: 0 }}
+                                                        >
+                                                            <span
+                                                                style={{
+                                                                    whiteSpace: "normal",
+                                                                    overflowWrap: "break-word",
+                                                                    wordBreak: "break-word",
+                                                                    textAlign: "left",
+                                                                }}
+                                                            >
+                                                                {selectedType}
+                                                            </span>
+                                                        </Dropdown.Toggle>
+
+                                                        <Dropdown.Menu>
+                                                            <Dropdown.Item
+                                                                active={!currentType}
+                                                                onClick={() => handleTypeFilter("")}
+                                                            >
+                                                                <span className="text-uppercase text-muted">TODOS</span>
+                                                            </Dropdown.Item>
+
+                                                            {deviceTypeOptions.map((opt) => (
+                                                                <Dropdown.Item
+                                                                    key={opt.value}
+                                                                    active={opt.value === currentType}
+                                                                    onClick={() => handleTypeFilter(opt.value)}
+                                                                >
+                                                                    <span className="text-uppercase">{opt.label}</span>
+                                                                </Dropdown.Item>
+                                                            ))}
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+                                    </Row>
+                                </div>
                                 <ListView>
                                     <ListView.Body>
                                         <div className="table-responsive rounded-3 border overflow-auto">

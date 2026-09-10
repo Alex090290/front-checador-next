@@ -742,6 +742,18 @@ export function DeviceOne({
                                                         </span>
                                                     </div>
                                                 </ConditionalRender>
+                                                
+                                                <ConditionalRender cond={device.type === "telefono_ip"}>
+                                                    <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                        <span className="text-muted small">
+                                                            <i className="bi bi-telephone me-2 text-info" />
+                                                            Número de extensión
+                                                        </span>
+                                                        <span className="fw-semibold small text-end text-uppercase">
+                                                            {device?.currentAssignment?.extentionNumber ? device?.currentAssignment?.extentionNumber : "NO SE REGISTRO UN NÚMERO"}
+                                                        </span>
+                                                    </div>
+                                                </ConditionalRender>
 
                                                 <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
                                                     <span className="text-muted small">
