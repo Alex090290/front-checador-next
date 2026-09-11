@@ -288,7 +288,7 @@ export default function ShowInfoVacation({
             </ConditionalRender>
 
             <ConditionalRender cond={showLeaderApprove}>
-              <OverLay string="Aprobar">
+              <OverLay string="Aprobar / Rechazar">
                 <Button
                   className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                   variant="success"

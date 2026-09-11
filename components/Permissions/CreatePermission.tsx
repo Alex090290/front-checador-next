@@ -539,7 +539,7 @@ export default function CreatePermissionComponent({
                                 })}
                                 options={filteredEmployees.map((e) => ({
                                   id: Number(e.id!),
-                                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "",
+                                  displayName: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}` || "", //[${e.idCheck}] display para buscar por id de check de empleado
                                   name: `${e.lastName?.toUpperCase()} ${e.name?.toUpperCase()}`,
                                 }))}
                                 label="Empleado:"

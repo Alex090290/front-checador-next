@@ -10,6 +10,7 @@ type SearchParams = {
   search?: string;
   idPeriod?: string;
   year?: string;
+  type?: string;
 };
 
 async function PagePrePayRoll({
@@ -25,6 +26,7 @@ async function PagePrePayRoll({
     const search = params?.search ?? "";
     const idPeriod = params?.idPeriod ?? ""
     const year = params?.year ?? ""
+    const type = params?.type ?? ""
     
 
     return (
@@ -36,6 +38,7 @@ async function PagePrePayRoll({
             search={search}
             idPeriod={idPeriod}
             year={year}
+            type={type}
             />
         </Suspense>
     )

@@ -7,7 +7,8 @@ export default async function ListPrePayroll({
     limit = "20",
     search = "",
     idPeriod = "",
-    year
+    year,
+    type
 }: {
     id: string;
     page?: string;
@@ -15,6 +16,7 @@ export default async function ListPrePayroll({
     search?: string;
     idPeriod?: string;
     year?: string;
+    type?: string;
 }) {
 
     const nowYear = String(new Date().getFullYear());
@@ -31,13 +33,14 @@ export default async function ListPrePayroll({
             limit: limitParse,
             search,
             idPeriod,
-            year
+            year,
+            type
         })
     ]);
 
     const sortedPeriods = [...(periodsList ?? [])].sort(
-    (a, b) => Number(a.numberPeriod) - Number(b.numberPeriod)
-);
+        (a, b) => Number(a.numberPeriod) - Number(b.numberPeriod)
+    );
 
     return (
         <PrePayrollTableClient

@@ -19,6 +19,7 @@ import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { es } from "date-fns/locale";
 import { registerLocale } from "react-datepicker";
+import { formatLabel } from "../devices/DevicesTableClient";
 
 registerLocale("es", es);
 
@@ -40,20 +41,19 @@ interface IDataExtra {
 function statusVariant(incidenceRef?: string | null, category?: string | null) {
     switch ((incidenceRef ?? "")) {
         case "falta":
-            if(category && category === "justificada"){
+            if (category && category === "justificada") {
                 return (
                     <span className="badge rounded-pill px-2 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
                         FALTA JUSTIFICADA
                     </span>
                 )
-            }else if(category && category === "injustificada"){
+            } else if (category && category === "injustificada") {
                 return (
                     <span className="badge rounded-pill px-2 py-2 fw-semibold bg-purple-subtle text-purple-emphasis border border-purple-subtle">
                         FALTA INJUSTIFICADA
                     </span>
                 )
             }
-
         case "retardo":
             return (
                 <span className="badge rounded-pill px-2 py-2 fw-semibold bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
@@ -112,11 +112,11 @@ export default function PrePayrollTableClient({
     periodoActual: IPeriod | null;
     prepayrollextra: IDataExtra;
 }) {
-
     //CONST
     const router = useRouter();
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
+
 
     const isClearingSelectionRef = useRef(false);
     const [, setTableResetKey] = useState(0);
@@ -128,6 +128,7 @@ export default function PrePayrollTableClient({
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const currentSearch = sp.get("search") ?? "";
     const currentPeriod = sp.get("idPeriod") ?? "";
+    const currentType = sp.get("type") ?? "";
     const currentYear = sp.get("year") ?? "";
     const [showModalUpdate, setShowModalUpdate] = useState(false);
     const hasAppliedDefaultFilters = useRef(false);
@@ -136,6 +137,18 @@ export default function PrePayrollTableClient({
     const datesComplete = dates.every((n) => n !== null);
     const [docBase64Url, setDocBase64Url] = useState<string | null>(null);
     const documentAlreadyGenerated = !!prepayrollextra?.document?.urlDocument;
+
+    const typeOptions = [
+        { label: "Todos", value: "todos" },
+        { label: "Horas extras", value: "horas_extras" },
+        { label: "Permisos", value: "permisos" },
+        { label: "Retardos", value: "retardos" },
+        { label: "Vacaciones", value: "vacaciones" },
+        { label: "Incapacidades", value: "incapacidades" },
+        { label: "Faltas por penalización", value: "faltas_por_penalizacion" },
+        { label: "Faltas injustificadas", value: "faltas_injustificadas" },
+        { label: "Faltas justificadas", value: "faltas_justificadas" },
+    ];
 
     const selectedPeriod = useMemo(
         () => periods.find((p) => String(p.id) === currentPeriod),
@@ -240,7 +253,7 @@ export default function PrePayrollTableClient({
     //Buscar por periodo
     const handleSearchPeriod = useCallback(
         (value: string) => {
-            if (value === currentSearch) return;
+            if (value === currentPeriod) return;
 
             setFeedback("loading");
             setFeedbackMsg("Buscando...");
@@ -253,18 +266,22 @@ export default function PrePayrollTableClient({
 
             if (value) {
                 params.set("idPeriod", value);
+                params.delete("type");
             } else {
                 params.delete("idPeriod");
             }
             clearSelectedIds();
             router.push(`/app/prePayroll?${params.toString()}`);
         },
-        [currentSearch, searchParamsString, limit, router, clearSelectedIds]
+        [currentPeriod, searchParamsString, limit, router, clearSelectedIds]
     );
 
     //Buscar por año
     const handleSearchYear = useCallback(
         (value: string) => {
+
+            if (value === currentYear) return;
+
             setFeedback("loading");
             setFeedbackMsg("Buscando...");
 
@@ -283,7 +300,32 @@ export default function PrePayrollTableClient({
             clearSelectedIds();
             router.push(`/app/prePayroll?${params.toString()}`);
         },
-        [searchParamsString, limit, router, clearSelectedIds]
+        [currentYear, searchParamsString, limit, router, clearSelectedIds]
+    );
+
+    //Filtrar por tipo
+    const filterType = useCallback(
+        (value: string) => {
+            if (value === currentType) return;
+
+            setFeedback("loading");
+            setFeedbackMsg("Buscando...");
+
+            const params = new URLSearchParams(searchParamsString);
+            params.set("id", "null");
+            params.set("view_type", "list");
+            params.set("page", "1");
+            params.set("limit", String(limit));
+
+            if (value) {
+                params.set("type", value);
+            } else {
+                params.delete("type");
+            }
+            clearSelectedIds();
+            router.push(`/app/prePayroll?${params.toString()}`);
+        },
+        [currentType, searchParamsString, limit, router, clearSelectedIds]
     );
 
     const handleClear = useCallback(() => {
@@ -412,7 +454,6 @@ export default function PrePayrollTableClient({
     }, []);
 
 
-
     //Tabla
     const columns: TableTemplateColumn<IPrePayroll>[] = useMemo(
         () => [
@@ -468,7 +509,7 @@ export default function PrePayrollTableClient({
                 filterable: true,
                 type: "string",
                 render: (row) => (
-                    <div className="text-left text-uppercase text-wrap" style={{maxWidth: "200px"}}>
+                    <div className="text-left text-uppercase text-wrap" style={{ maxWidth: "200px" }}>
                         {row.data.notes}
                     </div>
                 ),
@@ -614,7 +655,7 @@ export default function PrePayrollTableClient({
                                 <div className="mb-4">
                                     <Row className="mb-4 g-3 align-items-between">
                                         {/* Filtrar por empleado */}
-                                        <Col xs={12} md={4} lg={4}>
+                                        <Col xs={12} md={3} lg={3}>
                                             <Card className="border rounded-4 h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -640,7 +681,7 @@ export default function PrePayrollTableClient({
                                         </Col>
 
                                         {/* Filtrar por año */}
-                                        <Col xs={12} md={4} lg={4}>
+                                        <Col xs={12} md={3} lg={3}>
                                             <Card className="rounded-4 border h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -680,7 +721,7 @@ export default function PrePayrollTableClient({
                                         </Col>
 
                                         {/* Filtrar por periodo */}
-                                        <Col xs={12} md={4} lg={4}>
+                                        <Col xs={12} md={3} lg={3}>
                                             <Card className="rounded-4 border h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -715,6 +756,43 @@ export default function PrePayrollTableClient({
                                                         </Dropdown.Menu>
                                                     </Dropdown>
 
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+
+                                        {/* Filtrar por tipo de incidencia */}
+                                        <Col xs={12} md={3} lg={3} style={{ minWidth: 0 }}>
+                                            <Card className="rounded-4 border h-100">
+                                                <Card.Body className="p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <i className="bi bi-tags-fill text-primary" />
+                                                        <span className="fw-semibold small">Filtrar incidencia</span>
+                                                    </div>
+
+                                                    <Dropdown className="w-100">
+                                                        <Dropdown.Toggle
+                                                            as={Button}
+                                                            variant="outline-secondary"
+                                                            className="w-100 d-flex align-items-center justify-content-between text-uppercase"
+                                                            style={{ minWidth: 0 }}
+                                                        >
+                                                            <span style={{ whiteSpace: "normal", overflowWrap: "break-word", wordBreak: "break-word", textAlign: "left" }}>
+                                                                {typeOptions.find((o) => o.value === currentType)?.label ?? "Todos"}
+                                                            </span>
+                                                        </Dropdown.Toggle>
+
+                                                        <Dropdown.Menu>
+                                                            {typeOptions.map((o) => (
+                                                                <Dropdown.Item
+                                                                    key={o.value || "todos"}
+                                                                    active={o.value === currentType}
+                                                                    onClick={() => filterType(o.value)}
+                                                                >
+                                                                    <span className="text-uppercase">{formatLabel(o.value)}</span>
+                                                                </Dropdown.Item>
+                                                            ))}
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
                                                 </Card.Body>
                                             </Card>
                                         </Col>

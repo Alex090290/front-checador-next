@@ -578,6 +578,11 @@ function CreateVacationComponent({
                           <ConditionalRender cond={idEmployeeSelected !== null}>
                             <Row>
                               <Col md={4}>
+                                <ConditionalRender cond={isLoadingPeriods}>
+                                  <TestAnimationComponent />
+                                </ConditionalRender>
+
+                                <ConditionalRender cond={!isLoadingPeriods && leaderOptions.length > 0}>
                                 <RelationField
                                   readonly={readInput}
                                   register={register("idLeader", { required: true })}
@@ -587,7 +592,10 @@ function CreateVacationComponent({
                                   control={control}
                                   callBackMode="id"
                                 />
+                                </ConditionalRender>
+
                               </Col>
+
 
                               <Col md={4}>
                                 <FieldSelect
@@ -785,8 +793,17 @@ function CreateVacationComponent({
                             </div>
 
                             <Row className="g-3">
-                              <Col md={6}>
+                              <Col md={4}>
+                                <div className="border rounded-3 p-3 text-center h-100">
+                                  <i className="bi bi-calendar2-date text-danger fs-5 mb-2 d-block" />
+                                  <div className="text-muted small">Días programados por GAMA</div>
+                                  <div className="fw-bold fs-5">
+                                    {selectedPeriod.daysGeneratedBySystem ?? 0}
+                                  </div>
+                                </div>
+                              </Col>
 
+                              <Col md={4}>
                                 <Link
                                   href={`/app/employee?view_type=form&id=${idEmployeeSelected}&tab=vacations`}
                                   className="text-decoration-none text-reset"
@@ -804,14 +821,14 @@ function CreateVacationComponent({
                                     <i className="bi bi-check2-circle text-success fs-5 mb-2 d-block" />
                                     <div className="text-muted small">Días aprobados usados</div>
                                     <div className="fw-bold fs-5">
-                                      {selectedPeriod.usedDaysApproved ?? 0}
+                                      {selectedPeriod.daysRequestedByEmployee ?? 0}
                                     </div>
                                   </div>
                                 </Link>
 
                               </Col>
 
-                              <Col md={6}>
+                              <Col md={4}>
                                 <div className="border rounded-3 p-3 text-center h-100">
                                   <i className="bi bi-calendar2-check text-info fs-5 mb-2 d-block" />
                                   <div className="text-muted small">Días disponibles</div>

@@ -618,6 +618,22 @@ export default function CreateDeviceComponent({
                                                         </Col>
                                                     </ConditionalRender>
 
+                                                    <Col md={6}>
+                                                        <FieldSelect
+                                                            register={register("specs.currentStatus", {
+                                                                required: "Este campo es requerido",
+                                                            })}
+                                                            options={[
+                                                                { value: "nuevo", label: "NUEVO" },
+                                                                { value: "seminuevo", label: "SEMINUEVO" },
+                                                            ]}
+                                                            label="Estatus actual:"
+                                                            invalid={!!errors.specs?.currentStatus}
+                                                            feedBack={errors.specs?.currentStatus?.message}
+                                                            className="text-uppercase border"
+                                                        />
+                                                    </Col>
+
                                                     <Row className="g-3">
                                                         <Col md={6}>
                                                             <Form.Group>
@@ -711,18 +727,6 @@ export default function CreateDeviceComponent({
                                                                     </div>
                                                                 )}
                                                             </Overlay>
-                                                        </Col>
-
-                                                        <Col md={12}>
-                                                            <Entry
-                                                                label="Estatus actual:"
-                                                                register={register("specs.currentStatus", { required: true })}
-                                                                invalid={!!errors.type}
-                                                                feedBack={errors.type?.message}
-                                                                className="border text-uppercase"
-                                                                as={"textarea"}
-                                                                rows={3}
-                                                            />
                                                         </Col>
                                                     </Row>
                                                 </Row>

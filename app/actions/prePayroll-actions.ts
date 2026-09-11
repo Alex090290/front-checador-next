@@ -14,6 +14,7 @@ export async function listPrePayroll(args: FetchUsersArgs & {
     idEmployee?: number;
     idPeriod?: string;
     year?: string;
+    type?: string;
 } = {}): Promise<{
     data: IPrePayroll[];
     total: number;
@@ -54,6 +55,9 @@ export async function listPrePayroll(args: FetchUsersArgs & {
         }
         if (args.year?.trim()) {
             params.set("year", args.year.trim());
+        }
+        if (args.type?.trim()) {
+            params.set("type", args.type.trim());
         }
 
         const response = await axios
