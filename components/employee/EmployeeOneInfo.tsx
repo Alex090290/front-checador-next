@@ -105,6 +105,24 @@ function statusVariant(type: number | null) {
   }
 }
 
+function getApprovalBadge(status: string) {
+  const normalized = status?.toUpperCase();
+
+  const map: Record<string, { text: string; className: string }> = {
+    APPROVED: { text: "Aprobado", className: "bg-success-subtle text-success-emphasis border-success-subtle" },
+    REFUSED: { text: "Rechazado", className: "bg-danger-subtle text-danger-emphasis border-danger-subtle" },
+    PENDING: { text: "Pendiente", className: "bg-warning-subtle text-warning-emphasis border-warning-subtle" },
+  };
+
+  const badge = map[normalized] ?? { text: status, className: "bg-secondary-subtle text-secondary-emphasis border-secondary-subtle" };
+
+  return (
+    <span className={`badge rounded-pill px-2 py-1 fw-semibold border ${badge.className}`}>
+      {badge.text}
+    </span>
+  );
+}
+
 type Props = {
   employee: Employee;
   id: string;
@@ -187,6 +205,9 @@ export default function EmployeeDetailsView({
       <EmployeeOneError />
     );
   }
+
+  console.log("vacations:", vacations[0].vacationsRequestsData);
+
 
 
   return (
@@ -1498,73 +1519,45 @@ export default function EmployeeDetailsView({
                                           </Accordion.Header>
 
                                           <Accordion.Body>
-                                            <div className="row g-3">
-                                              <div className="col-md-6">
-                                                <div className="border rounded-3 p-3">
-                                                  <div className="text-muted small">
-                                                    Fecha inicio
-                                                  </div>
-
-                                                  <div className="fw-semibold">
+                                            <Card className="border rounded-3 overflow-hidden">
+                                              <Card.Body className="p-4">
+                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                  <span className="text-muted small">
+                                                    <i className="bi bi-calendar-event me-2 text-warning" />
+                                                    Fecha Inicio
+                                                  </span>
+                                                  <span className="fw-semibold text-uppercase small text-end">
                                                     {formatCreatedAt(vr.dateInit)}
-                                                  </div>
+                                                  </span>
                                                 </div>
-                                              </div>
 
-                                              <div className="col-md-6">
-                                                <div className="border rounded-3 p-3">
-                                                  <div className="text-muted small">
-                                                    Fecha final
-                                                  </div>
-
-                                                  <div className="fw-semibold">
+                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                  <span className="text-muted small">
+                                                    <i className="bi bi-calendar-check me-2 text-danger" />
+                                                    Fecha Fin
+                                                  </span>
+                                                  <span className="fw-semibold text-uppercase small text-end">
                                                     {formatCreatedAt(vr.dateEnd)}
-                                                  </div>
-                                                </div>
-                                              </div>
-
-                                              <div className="col-md-6">
-                                                <div className="border rounded-3 p-3">
-                                                  <div className="text-muted small mb-1">
-                                                    Status líder
-                                                  </div>
-
-                                                  <span
-                                                    className={`badge ${vr.leaderApproval === "APPROVED"
-                                                      ? "bg-success"
-                                                      : vr.leaderApproval === "REJECTED"
-                                                        ? "bg-danger"
-                                                        : "bg-warning text-dark"
-                                                      }`}
-                                                  >
-                                                    {vr.leaderApproval === "APPROVED"
-                                                      ? "APROBADO"
-                                                      : vr.leaderApproval === "REJECTED"
-                                                        ? "RECHAZADO"
-                                                        : "PENDIENTE"}
                                                   </span>
                                                 </div>
-                                              </div>
 
-                                              <div className="col-md-6">
-                                                <div className="border rounded-3 p-3">
-                                                  <div className="text-muted small mb-1">
-                                                    Status D.O.H.
-                                                  </div>
-
-                                                  <span
-                                                    className={`badge ${vr.dohApproval === "APPROVED"
-                                                      ? "bg-success"
-                                                      : "bg-secondary"
-                                                      }`}
-                                                  >
-                                                    {vr.dohApproval === "APPROVED"
-                                                      ? "ENTERADO"
-                                                      : "NO ENTERADO"}
+                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                  <span className="text-muted small">
+                                                    <i className="bi bi-person-check me-2 text-primary" />
+                                                    Estatus Líder
                                                   </span>
+                                                  {getApprovalBadge(vr.leaderApproval)}
                                                 </div>
-                                              </div>
-                                            </div>
+
+                                                <div className="d-flex align-items-center justify-content-between py-2">
+                                                  <span className="text-muted small">
+                                                    <i className="bi bi-shield-check me-2 text-info" />
+                                                    Estatus DOH
+                                                  </span>
+                                                  {getApprovalBadge(vr.dohApproval)}
+                                                </div>
+                                              </Card.Body>
+                                            </Card>
                                           </Accordion.Body>
                                         </Accordion.Item>
                                       ))}

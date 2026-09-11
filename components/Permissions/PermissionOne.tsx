@@ -208,20 +208,20 @@ export default function ShowInfoPermissionRequest({
             </ConditionalRender>
 
             <ConditionalRender cond={showLeaderApprove}>
-              <OverLay string="Aprobar">
+              <OverLay string="Aprobar / Rechazar">
                 <Button
                   className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                   variant="success"
                   onClick={handleApprove}
                 >
                   <i className="bi bi-check-circle" />
-                  <span className="d-none d-md-inline ms-2">Aprobar</span>
+                  <span className="d-none d-md-inline ms-2">Aprobar / Rechazar</span>
                 </Button>
               </OverLay>
             </ConditionalRender>
 
             <ConditionalRender cond={showDohApprove}>
-              <OverLay string="Aprobar">
+              <OverLay string="Firmar">
                 <Button
                   className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
                   variant="secondary"

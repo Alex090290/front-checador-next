@@ -398,8 +398,8 @@ export default function OverTimeTableClient({
                                                                 {column.label}
                                                             </th>
                                                         ))}
-                                                        <th className=" fw-bold">
-                                                            Detalles
+                                                        <th className=" fw-bold text-center">
+                                                            Acciones
                                                         </th>
                                                     </tr>
                                                 </thead>
@@ -427,7 +427,7 @@ export default function OverTimeTableClient({
                                                                     </a>
 
                                                                     <a
-                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        className={row.delete?.delete === true? "btn btn-sm btn-outline-danger" : "btn btn-sm btn-danger"}
                                                                         onClick={() => handleDelete(row.id, row.delete?.reaseonDelete ?? "", row.delete?.delete ?? false)}
                                                                     >
                                                                         {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}

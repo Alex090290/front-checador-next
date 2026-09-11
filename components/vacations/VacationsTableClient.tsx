@@ -297,7 +297,7 @@ export default function VacationsTableClient({
                               </th>
                             ))}
 
-                            <th className="fw-bold">Detalles</th>
+                            <th className="fw-bold text-center">Acciones</th>
                           </tr>
                         </thead>
 
@@ -326,7 +326,7 @@ export default function VacationsTableClient({
                                   </a>
 
                                   <a
-                                    className="btn btn-sm btn-outline-danger"
+                                    className={row.delete?.delete === true? "btn btn-sm btn-outline-danger" : "btn btn-sm btn-danger"}
                                     onClick={() => handleDelete(row.id, Number(row.idPeriod), row.delete?.reaseonDelete ?? "", row.delete?.delete ?? false)}
                                   >
                                     {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}

@@ -56,3 +56,4 @@ export interface IGenerateDoc {
 export interface IComplete {
     complete?: boolean;
 }
+

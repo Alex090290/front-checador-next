@@ -230,7 +230,7 @@ export function OvertimeOne({
                             </ConditionalRender>
                         </OverLay>
 
-                        <OverLay string="Aprobar">
+                        <OverLay string="Aprobar / Rechazar">
                             <ConditionalRender cond={showCurrentLeader}>
                                 <Button
                                     className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 btn-needs-signature"
@@ -241,7 +241,7 @@ export function OvertimeOne({
                                     <i className="bi bi-check-circle" />
 
                                     <span className="d-none d-md-inline ms-2">
-                                        Aprobar
+                                        Aprobar / Rechazar
                                     </span>
                                 </Button>
                             </ConditionalRender>

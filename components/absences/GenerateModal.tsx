@@ -172,7 +172,7 @@ export default function GenerateModal({
                                             locale="es"
                                         />
                                         <Row className="g-2 m-2">
-                                            <Col xs={12} md={6} lg={6}>
+                                            <Col xs={12} md={12} lg={12}>
                                                 <Button
                                                     variant="secondary"
                                                     className="w-100"

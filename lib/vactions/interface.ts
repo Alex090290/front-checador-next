@@ -22,6 +22,7 @@ export interface Vacations {
     holidayName: string;
     notes: string;
 
+
     createForPerson: {
         _id: string;
         id: number;
@@ -98,6 +99,8 @@ export interface PeriodVacation {
     dateInitPeriod: string;
     dateEndPeriod: string;
     idsVacationsRequest: number[];
+    daysRequestedByEmployee: number;
+    daysGeneratedBySystem: number;
 }
 
 export type VacationRequestStatus =
