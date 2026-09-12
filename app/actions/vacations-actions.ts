@@ -6,7 +6,7 @@ import { storeAction } from "./storeActions";
 import { storeToken } from "@/lib/useToken";
 import { revalidatePath } from "next/cache";
 import { base64ToBlob } from "@/lib/helpers";
-import { PeriodVacation, Vacations } from "@/lib/vactions/interface";
+import { IUpdateVacation, PeriodVacation, Vacations } from "@/lib/vactions/interface";
 
 // export async function fetchVacations(): Promise<Vacations[]> {
 //   try {
@@ -174,7 +174,7 @@ export async function fetchPeriods({
 }): Promise<PeriodVacation[]> {
   try {
     const { apiToken, apiUrl } = await storeToken();
- 
+
     const response = await axios
       .get(`${apiUrl}/vacations/listPeriods/${idEmployee}`, {
         headers: {
@@ -412,7 +412,7 @@ export async function fetchVacationSignature({
         console.log(err);
         return null; // null en vez de '' para distinguir claramente "no hay imagen"
       });
-      
+
     if (!resImg) {
       return {
         success: false,
@@ -544,7 +544,7 @@ export async function approvedVacation({
 //       })
 //       .catch((err) => {
 //         console.log("Error en axios delete vacations: ", err);
-        
+
 //         throw new Error(
 //           err.response.data.message
 //             ? err.response.data.message
@@ -748,3 +748,46 @@ export async function deleteVacations({
     };
   }
 }
+
+export async function updateVacationRequest({
+  idRequest,
+  idPeriod,
+  data
+}: {
+  idRequest: string;
+  idPeriod: string;
+  data: IUpdateVacation;
+}): Promise<ActionResponse<string>> {
+  try {
+    const { apiToken, API_URL } = await storeAction();
+    const url = `${API_URL}/vacations/${idRequest}/${idPeriod}`
+
+    const response = await axios.put(url, {
+
+      dateInit: data.dateInit,
+      dateEnd: data.dateEnd
+    }, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    revalidatePath("/app/employee");
+
+    return {
+      success: true,
+      message: response.data?.message ?? "Actualizado correctamente",
+      data: response.data,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || error.message || "Error en la respuesta",
+      data: "",
+    };
+  }
+}
+

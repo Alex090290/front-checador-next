@@ -11,8 +11,8 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import OverLay from "../templates/OverLay";
 import UserOneError from "./usersMessageError";
-import moment from "moment-timezone";
-import { formatParse } from "@/lib/helpers";
+import { formatParse, formatParseHours } from "@/lib/helpers";
+import { formatLabel } from "../devices/DevicesTableClient";
 
 function formatPermission(text?: string | null) {
   if (!text) return "—";
@@ -50,7 +50,6 @@ export default function ShowInfoOneUser({
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
-  const CreatedHour = moment.utc(user?.createdAt).format("HH:mm A");
   const router = useRouter();
 
   if (!user) {
@@ -265,7 +264,7 @@ export default function ShowInfoOneUser({
                           <span className="text-muted">Correo</span>
                         </div>
 
-                        <span className="fw-semibold text-md-end text-break text-uppercase">
+                        <span className="fw-semibold text-md-end text-break">
                           {user.email ?? "—"}
                         </span>
                       </div>
@@ -288,7 +287,7 @@ export default function ShowInfoOneUser({
                         </div>
 
                         <span className="fw-semibold text-end text-uppercase">
-                          {user.role ?? "—"}
+                          {formatLabel(user.role) ?? "—"}
                         </span>
                       </div>
 
@@ -310,7 +309,7 @@ export default function ShowInfoOneUser({
                         </div>
 
                         <span className="fw-semibold text-end">
-                          {(CreatedHour) ?? "—"}
+                          {formatParseHours(user.createdAt) ?? "—"}
                         </span>
                       </div>
                     </div>

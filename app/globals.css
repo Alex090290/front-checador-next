@@ -332,3 +332,7 @@
   background-image: none !important;
   padding-right: 2.25rem !important;
 }
+
+.error-modal-backdrop {
+  z-index: 3080 !important;
+}

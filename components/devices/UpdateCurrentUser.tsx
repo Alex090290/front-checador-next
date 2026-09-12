@@ -189,7 +189,7 @@ export default function UpdateCurrentUser({
                                         register={register("emailCompany")}
                                         label=""
                                         type="string"
-                                        className="border text-uppercase"
+                                        className="border"
                                     />
                                 </Card.Body>
                             </Card>
@@ -206,7 +206,7 @@ export default function UpdateCurrentUser({
                                         register={register("emailGmail")}
                                         label=""
                                         type="string"
-                                        className="border text-uppercase"
+                                        className="border"
                                     />
                                 </Card.Body>
                             </Card>
@@ -252,7 +252,7 @@ export default function UpdateCurrentUser({
                                         register={register("pinPhone")}
                                         label=""
                                         type={showPin ? "text" : "password"}
-                                        className="border text-uppercase"
+                                        className="border"
                                         suffix={
                                             <button
                                                 type="button"

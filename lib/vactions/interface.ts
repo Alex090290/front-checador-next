@@ -49,6 +49,7 @@ export interface Vacations {
         idEmployee: number;
         idLeader: number | null;
         idPersonDoh: number | null;
+        idPeriod: number | null;
         createFor: number;
         leaderApproval: string;
         dohApproval: string;
@@ -108,3 +109,8 @@ export type VacationRequestStatus =
     | "REFUSED"
     | "PENDING"
 // | "EMPLOYEE";
+
+export interface IUpdateVacation {
+    dateInit: string;
+    dateEnd: string;
+}

@@ -46,7 +46,7 @@ export default async function ListAllEmployees({
       findEmployeeById({ id: Number(id) }),
       fetchDocumentTypes({ id: Number(id) }),
       fetchVacationByEmployee({ idEmployee: Number(id) }),
-    ]);
+    ]);    
 
     return (
       <EmployeeDetailsView
@@ -68,7 +68,7 @@ export default async function ListAllEmployees({
       limit={limitParse}
       employees={employees.data ?? []}
       search={search}
-       departments={departments}
+      departments={departments}
       branches={branches}
       idDepartment={idDepartment}
       idPosition={idPosition}

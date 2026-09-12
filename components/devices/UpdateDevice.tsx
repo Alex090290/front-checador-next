@@ -419,7 +419,7 @@ export default function FormUpdateDevice({
                                     <Entry
                                         register={register("specs.userAdmin")}
                                         label="Usuario administrador:"
-                                        className="text-uppercase border"
+                                        className="border"
                                     />
                                 </Col>
 
@@ -450,7 +450,7 @@ export default function FormUpdateDevice({
                                     <Entry
                                         register={register("specs.user")}
                                         label="Nombre de usuario"
-                                        className="text-uppercase border"
+                                        className="border"
                                     />
                                 </Col>
                             </ConditionalRender>
@@ -671,7 +671,7 @@ export default function FormUpdateDevice({
                                             invalid={!!errors.type}
                                             feedBack={errors.type?.message}
                                             label="Nombre de usuario (hostname):"
-                                            className="text-uppercase border"
+                                            className="border"
                                         />
                                     </Col>
 

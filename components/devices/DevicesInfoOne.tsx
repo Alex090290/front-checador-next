@@ -65,7 +65,7 @@ function SpecRow({ icon, label, value }: { icon: string; label: string; value?: 
             <div>
                 <div className="small fw-bold">
                     {label}:
-                    <span className="fw-semibold text-capitalize text-muted ms-1">
+                    <span className="fw-semibold text-muted ms-1">
                         {value || "Sin registro"}
                     </span>
                 </div>
@@ -760,7 +760,7 @@ export function DeviceOne({
                                                         <i className="bi bi-envelope-check me-2 text-primary" />
                                                         Correo laboral
                                                     </span>
-                                                    <span className="fw-semibold small text-end text-uppercase">
+                                                    <span className="fw-semibold small text-end">
                                                         {device?.currentAssignment?.emailCompany ? device?.currentAssignment?.emailCompany : "NO HAY CORREO REGISTRADO"}
                                                     </span>
                                                 </div>
@@ -770,7 +770,7 @@ export function DeviceOne({
                                                         <i className="bi bi-envelope-at me-2 text-warning" />
                                                         Correo Gmail
                                                     </span>
-                                                    <span className="fw-semibold small text-end text-uppercase">
+                                                    <span className="fw-semibold small text-end">
                                                         {device?.currentAssignment?.emailGmail ? device?.currentAssignment?.emailGmail : "NO HAY CORREO REGISTRADO"}
                                                     </span>
                                                 </div>
@@ -792,7 +792,7 @@ export function DeviceOne({
                                         <Button
                                             variant="warning"
                                             onClick={handleGenerateDoc}>
-                                            Generar responsiva
+                                            Ver responsiva
                                         </Button>
                                     </div>
 
