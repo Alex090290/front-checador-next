@@ -283,7 +283,7 @@ export default function CreateUserComponent({
                               invalid={!!errors.email}
                               feedBack={errors.email?.message}
                               type="email"
-                              className="text-uppercase border"
+                              className="border"
                             />
                           </Col>
 

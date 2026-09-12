@@ -560,7 +560,7 @@ export default function CreateDeviceComponent({
                                                             <Entry
                                                                 register={register("specs.userAdmin")}
                                                                 label="Usuario administrador:"
-                                                                className="text-uppercase border"
+                                                                className="border"
                                                             />
                                                         </Col>
 
@@ -591,7 +591,7 @@ export default function CreateDeviceComponent({
                                                             <Entry
                                                                 register={register("specs.user")}
                                                                 label="Nombre de usuario"
-                                                                className="text-uppercase border"
+                                                                className="border"
                                                             />
                                                         </Col>
                                                     </ConditionalRender>
@@ -828,7 +828,7 @@ export default function CreateDeviceComponent({
                                                                     invalid={!!errors.type}
                                                                     feedBack={errors.type?.message}
                                                                     label="Nombre de usuario (hostname):"
-                                                                    className="text-uppercase border"
+                                                                    className="border"
                                                                 />
                                                             </Col>
 
@@ -1033,7 +1033,7 @@ export default function CreateDeviceComponent({
                                                                     label="Pin:"
                                                                     type={showPin ? "text" : "password"}
                                                                     invalid={!!errors.currentAssignment?.pinPhone}
-                                                                    className="border text-uppercase"
+                                                                    className="border"
                                                                     suffix={
                                                                         <button
                                                                             type="button"
@@ -1065,7 +1065,7 @@ export default function CreateDeviceComponent({
                                                                     register={register("currentAssignment.emailCompany", { required: false })}
                                                                     label="Correo Corporativo:"
                                                                     invalid={!!errors.currentAssignment?.emailCompany}
-                                                                    className="border text-uppercase"
+                                                                    className="border"
                                                                 />
                                                             </Col>
                                                         </ConditionalRender>
@@ -1077,7 +1077,7 @@ export default function CreateDeviceComponent({
                                                                     register={register("currentAssignment.emailGmail", { required: false })}
                                                                     label="Correo Gmail:"
                                                                     invalid={!!errors.currentAssignment?.emailGmail}
-                                                                    className="border text-uppercase"
+                                                                    className="border"
                                                                 />
                                                             </Col>
 

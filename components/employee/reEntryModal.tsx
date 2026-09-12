@@ -14,6 +14,7 @@ import Loading from "../LoadingSpinner";
 import { useForm } from "react-hook-form";
 import { useModals } from "@/context/ModalContext";
 import { reEntry } from "@/app/actions/employee-actions";
+import { formatCreatedAt } from "@/lib/helpers";
 
 registerLocale("es", es);
 
@@ -144,7 +145,7 @@ export default function ReEntryModal({
                                 onClick={() => setShowCalendar((s) => !s)}
                                 type="button"
                             >
-                                <span className="text-truncate">{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                <span className="text-truncate">{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3 flex-shrink-0" />
                             </Button>
 

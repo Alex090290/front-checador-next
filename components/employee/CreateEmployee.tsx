@@ -331,7 +331,7 @@ export default function CreateEmployeeComponent({
                                 <Entry
                                   register={register("emailPersonal")}
                                   label="Correo personal:"
-                                  className="border text-uppercase"
+                                  className="border"
                                 />
                               </Col>
 
@@ -671,7 +671,7 @@ export default function CreateEmployeeComponent({
                                 <Entry
                                   register={register("emailCompany")}
                                   label="Correo:"
-                                  className="border text-uppercase"
+                                  className="border"
                                 />
                               </Col>
 

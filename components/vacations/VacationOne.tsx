@@ -100,11 +100,11 @@ export default function ShowInfoVacation({
   const [, setPeriods] = useState<PeriodVacation[]>([]);
   const [feedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
-  const showPDF = vacation?.signatures.every((f) => f.url !== "");
+  const showPDF = vacation?.signatures?.every((f) => f.url !== "");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const signatures = useMemo(() =>
-    Array.isArray(vacation?.signatures) ? vacation.signatures : [],
+    Array.isArray(vacation?.signatures) ? vacation?.signatures : [],
     [vacation?.signatures]
   );
   
@@ -207,12 +207,12 @@ export default function ShowInfoVacation({
 
 
 
-  if (!vacation || !vacation.id || !vacation.period) {
+  if (!vacation || !vacation?.id || !vacation?.period) {
     return (
       <VacationsOneError />
     );
   }
-  const overallStatus = vacation.status ?? "PENDING";
+  const overallStatus = vacation?.status ?? "PENDING";
 
   return (
     <>

@@ -238,7 +238,7 @@ export default function FormUpdateUser({
                       invalid={!!errors.email}
                       feedBack={errors.email?.message}
                       type="email"
-                      className="border text-uppercase"
+                      className="border"
                     />
                   </Col>
 

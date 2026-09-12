@@ -11,6 +11,8 @@ function ErrorModal({ show, onHide, string }: ModalBasicProps) {
       keyboard={false}
       backdrop="static"
       centered
+      style={{ zIndex: 3090 }}
+      backdropClassName="error-modal-backdrop"
     >
       <Modal.Body>
         <Modal.Title>

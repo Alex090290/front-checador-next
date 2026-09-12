@@ -38,7 +38,8 @@ import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import EmployeeOneError from "./EmployeeMessageError";
 import ReEntryModal from "./reEntryModal";
-import { Vacations } from "@/lib/vactions/interface";
+import { IUpdateVacation, Vacations } from "@/lib/vactions/interface";
+import UpdateHolidayModal from "./UpdateHolidayModal";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -163,6 +164,11 @@ export default function EmployeeDetailsView({
   const [showReEntryModal, setShowReEntryModal] = useState(false);
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
+  const [showUpdateHoliday, setShowUpdateHoliday] = useState(false);
+  const [sendIdRequest, setSendIdRequest] = useState<number | null>(null);
+  const [sendIdPeriod, setSendIdPeriod] = useState<number | null>(null);
+  const [sendHolidayName, setSendHolidayName] = useState<string | null>(null);
+
 
   const department =
     departments.find((d) => d.id === employee?.department?.id) ||
@@ -200,15 +206,20 @@ export default function EmployeeDetailsView({
     router.push("/app/employee/create");
   };
 
+  const handleHoliday = (idRequest: number, idPeriod: number, data: IUpdateVacation, holidayName: string) => {
+    
+    setSendIdRequest(idRequest);
+    setSendIdPeriod(idPeriod);
+    setSendHolidayName(holidayName);
+    setShowUpdateHoliday(true);
+  }
+
+
   if (!employee) {
     return (
       <EmployeeOneError />
     );
   }
-
-  console.log("vacations:", vacations[0].vacationsRequestsData);
-
-
 
   return (
     <>
@@ -1463,22 +1474,22 @@ export default function EmployeeDetailsView({
                                   </div>
                                 </Accordion.Header>
 
-                                <Accordion.Body>
+                                <Accordion.Body className="collapse-detail-enter">
                                   <div className="row g-3 mb-4">
                                     <div className="col-md-4">
-                                      <div className="border rounded-3 p-3 text-center">
+                                      <div className="border rounded-4 p-3 text-center">
                                         <div className="text-muted small">
                                           Días totales
                                         </div>
 
-                                        <div className="fw-bold fs-5">
+                                        <div className="fw-bold">
                                           {v.totalDaysPeriod}
                                         </div>
                                       </div>
                                     </div>
 
                                     <div className="col-md-4">
-                                      <div className="border rounded-3 p-3 text-center">
+                                      <div className="border rounded-4 p-3 text-center">
                                         <div className="text-muted small">
                                           Fecha inicio
                                         </div>
@@ -1490,7 +1501,7 @@ export default function EmployeeDetailsView({
                                     </div>
 
                                     <div className="col-md-4">
-                                      <div className="border rounded-3 p-3 text-center">
+                                      <div className="border rounded-4 p-3 text-center">
                                         <div className="text-muted small">
                                           Fecha final
                                         </div>
@@ -1519,42 +1530,60 @@ export default function EmployeeDetailsView({
                                           </Accordion.Header>
 
                                           <Accordion.Body>
-                                            <Card className="border rounded-3 overflow-hidden">
-                                              <Card.Body className="p-4">
-                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
-                                                  <span className="text-muted small">
-                                                    <i className="bi bi-calendar-event me-2 text-warning" />
-                                                    Fecha Inicio
-                                                  </span>
-                                                  <span className="fw-semibold text-uppercase small text-end">
-                                                    {formatCreatedAt(vr.dateInit)}
-                                                  </span>
-                                                </div>
+                                            <Card className="border rounded-4 overflow-hidden collapse-detail-enter">
+                                              <Card.Body>
 
-                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
-                                                  <span className="text-muted small">
-                                                    <i className="bi bi-calendar-check me-2 text-danger" />
-                                                    Fecha Fin
-                                                  </span>
-                                                  <span className="fw-semibold text-uppercase small text-end">
-                                                    {formatCreatedAt(vr.dateEnd)}
-                                                  </span>
-                                                </div>
+                                                <div className="h-100 d-flex flex-column justify-content-center p-2">
 
-                                                <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
-                                                  <span className="text-muted small">
-                                                    <i className="bi bi-person-check me-2 text-primary" />
-                                                    Estatus Líder
-                                                  </span>
-                                                  {getApprovalBadge(vr.leaderApproval)}
-                                                </div>
+                                                  <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                    <span className="text-muted small">
+                                                      <i className="bi bi-calendar-event me-2 text-warning" />
+                                                      Fecha Inicio
+                                                    </span>
+                                                    <span className="fw-semibold text-uppercase small text-end">
+                                                      {formatCreatedAt(vr.dateInit)}
+                                                    </span>
+                                                  </div>
 
-                                                <div className="d-flex align-items-center justify-content-between py-2">
-                                                  <span className="text-muted small">
-                                                    <i className="bi bi-shield-check me-2 text-info" />
-                                                    Estatus DOH
-                                                  </span>
-                                                  {getApprovalBadge(vr.dohApproval)}
+                                                  <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                    <span className="text-muted small">
+                                                      <i className="bi bi-calendar-check me-2 text-danger" />
+                                                      Fecha Fin
+                                                    </span>
+                                                    <span className="fw-semibold text-uppercase small text-end">
+                                                      {formatCreatedAt(vr.dateEnd)}
+                                                    </span>
+                                                  </div>
+
+                                                  <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                    <span className="text-muted small">
+                                                      <i className="bi bi-person-check me-2 text-primary" />
+                                                      Estatus Líder
+                                                    </span>
+                                                    {getApprovalBadge(vr.leaderApproval)}
+                                                  </div>
+
+                                                  <div className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                                    <span className="text-muted small">
+                                                      <i className="bi bi-shield-check me-2 text-info" />
+                                                      Estatus DOH
+                                                    </span>
+                                                    {getApprovalBadge(vr.dohApproval)}
+                                                  </div>
+
+                                                  <ConditionalRender cond={vr.holidayName !== "Solicitada por el empleado"}>
+                                                    <div className="d-flex justify-content-end mt-3">
+                                                      <Button
+                                                        size="sm"
+                                                        variant="info"
+                                                        onClick={() => handleHoliday(vr.id, Number(vr.idPeriod), vr, vr.holidayName)}
+                                                      >
+                                                        <i className="bi bi-pencil me-2" />
+                                                        Actualizar Fecha
+                                                      </Button>
+                                                    </div>
+                                                  </ConditionalRender>
+
                                                 </div>
                                               </Card.Body>
                                             </Card>
@@ -1655,6 +1684,18 @@ export default function EmployeeDetailsView({
                   onHide={() => { setShowReEntryModal(false); }}
                   employee={{ ...employee, dischargeDate: employee.dischargeDate ?? undefined }}
                   id={Number(employee.id)}
+                />
+              </ModalBlur>
+            </ConditionalRender>
+
+            <ConditionalRender cond={showUpdateHoliday}>
+              <ModalBlur onClose={() => setShowUpdateHoliday(false)}>
+                <UpdateHolidayModal
+                  show={showUpdateHoliday}
+                  onHide={() => { setShowUpdateHoliday(false); }}
+                  idRequest={sendIdRequest ? Number(sendIdRequest) : null}
+                  idPeriod={sendIdPeriod ? Number(sendIdPeriod) : null}
+                  holidayName={sendHolidayName? sendHolidayName : null}
                 />
               </ModalBlur>
             </ConditionalRender>
