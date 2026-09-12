@@ -140,7 +140,8 @@ export default function ResposiveDoc({
     const sistema_operativo = device.specs && device.specs.os && String(device.specs.os).trim() !== '' && String(device.specs.os).trim() !== 'x' ? String(device.specs.os).trim() : '';
     const sistema_operativo_version = device.specs && device.specs.osVersion && String(device.specs.osVersion).trim() !== '' && String(device.specs.osVersion).trim() !== 'x' ? String(device.specs.osVersion).trim() : '';
     const hasNotes = device.notes && device.notes && device.notes !== '' && device.notes.trim() !== 'x' ? device.notes.trim() : '';
-
+    const idDevice = device.specs && device.specs.idDevice && device.specs.idDevice.trim() !== '' && device.specs.idDevice.trim() !== 'x' ? device.specs.idDevice : '';
+    const idProduct = device.specs && device.specs.idProduct && device.specs.idProduct.trim() !== '' && device.specs.idProduct.trim() !== 'x' ? device.specs.idProduct : '';
 
     const isVLAN1 = device.networkInfo.filter((v => v.vlan === "1"))
     const isVLAN20 = device.networkInfo.filter((v => v.vlan === "20"))
@@ -358,6 +359,12 @@ export default function ResposiveDoc({
                                                 <> con versión <strong>{sistema_operativo_version}</strong></>
                                             </ConditionalRender>
                                         </>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={idDevice !== ""}>
+                                        <>, id del dispositivo: <strong>{idDevice}</strong></>
+                                    </ConditionalRender>
+                                    <ConditionalRender cond={idProduct !== ""}>
+                                        <>, id del producto: <strong>{idProduct}</strong></>
                                     </ConditionalRender>
                                     <ConditionalRender cond={isVLAN1.length > 0}>
                                         <>, con VLAN 1 de MAC <strong>{macVlan1}</strong></>
