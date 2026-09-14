@@ -190,12 +190,13 @@ export default function PenaltiesTableClient({
         },
         {
             key: "createdAt",
-            label: "Fecha de creación",
+            label: "Fecha de penalización",
+            align: "center",
             accessor: (e) => e.dateOfAbsence,
             filterable: true,
             type: "string",
             render: (e) => (
-                <div className="text-uppercase">
+                <div className="text-uppercase text-center">
                     {formatCreatedAt(e.createdAt)}
                 </div>
             )

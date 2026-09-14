@@ -335,7 +335,7 @@ export function ImageField({
             }}
             className="btn btn-danger rounded-circle position-absolute"
             style={{
-              top: "0px",
+              top: "-6px",
               right: "-8px",
               width: "25px",
               height: "25px",

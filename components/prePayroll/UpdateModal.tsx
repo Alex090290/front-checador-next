@@ -140,8 +140,8 @@ export default function UpdateModal({
                 />
             </ConditionalRender>
 
-            <div className="p-2">
-                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div className="p-2 mt-4">
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 mt-2">
                     <h4 className="mb-0 fw-bold">Actualizar Fecha Nomina</h4>
 
                     <Badge

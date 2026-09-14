@@ -38,6 +38,15 @@ interface IDataExtra {
     }
 }
 
+function viewType(refUrl?: string) {
+    switch (refUrl) {
+        case "falta_por_penalizacion":
+            return "penalties";
+        case "retardo":
+            return ""
+    }
+}
+
 function statusVariant(incidenceRef?: string | null, category?: string | null) {
     switch ((incidenceRef ?? "")) {
         case "falta":
@@ -580,6 +589,8 @@ export default function PrePayrollTableClient({
         []
     );
 
+    console.log("llega:", prepayroll);
+
     return (
         <>
             <ConditionalRender cond={feedback === "loading" || isPending}>
@@ -815,9 +826,7 @@ export default function PrePayrollTableClient({
                                                             </th>
                                                         ))}
 
-                                                        <ConditionalRender cond={prepayrollextra?.complete === false}>
-                                                            <th className="fw-bold">Detalles</th>
-                                                        </ConditionalRender>
+                                                            <th className="fw-bold text-center">Acciones</th>
                                                     </tr>
                                                 </thead>
 
@@ -832,9 +841,19 @@ export default function PrePayrollTableClient({
                                                                 </td>
                                                             ))}
 
-                                                            <ConditionalRender cond={prepayrollextra?.complete === false}>
-                                                                <td className="align-middle">
-                                                                    <div className="d-flex justify-content-center align-items-center gap-2">
+
+                                                            <td className="align-middle">
+                                                                <div className="d-flex justify-content-center align-items-center gap-2">
+
+                                                                    <a href={`/app/${viewType(row.incidenceRef)}?view_type=form&id=${row.idIncidence}`}
+                                                                        className="btn btn-sm btn-outline-info"
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                    >
+                                                                        Ver
+                                                                    </a>
+
+                                                                    <ConditionalRender cond={prepayrollextra?.complete === false}>
                                                                         <Button
                                                                             variant="outline-info"
                                                                             className="btn-sm"
@@ -842,9 +861,10 @@ export default function PrePayrollTableClient({
                                                                         >
                                                                             Actualizar
                                                                         </Button>
-                                                                    </div>
-                                                                </td>
-                                                            </ConditionalRender>
+                                                                    </ConditionalRender>
+
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
