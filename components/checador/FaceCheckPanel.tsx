@@ -38,7 +38,7 @@ export default function FaceCheckPanel({
   const displayState = feedback ?? (processing || startingCamera ? "loading" : null);
 
 
-  useEffect(() => {
+  useEffect(() => { 
     if (!feedback) return;
 
     const timer = setTimeout(() => {
@@ -58,39 +58,43 @@ export default function FaceCheckPanel({
     setCameraOpen(false);
   }, []);
 
-  const handleOpenCamera = useCallback(async () => {
-    try {
-      setStartingCamera(true);
-      setMessage("Abriendo cámara...");
-
-      if (!streamRef.current) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" },
-          audio: false,
-        });
-
-        streamRef.current = stream;
-      }
-
-      setCameraOpen(true);
-
-      setTimeout(() => {
-        if (videoRef.current && streamRef.current) {
-          videoRef.current.srcObject = streamRef.current;
-          videoRef.current.play().catch(() => { });
-        }
-      }, 50);
-
-      setMessage("Colócate frente a la cámara");
-    } catch (error) {
-      console.error(error);
-      setMessage("No se pudo acceder a la cámara");
-      setFeedback("error");
-      setFeedbackMsg("No se pudo acceder a la cámara");
-    } finally {
-      setStartingCamera(false);
+  const setVideoRef = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && streamRef.current) {
+      node.srcObject = streamRef.current;
+      node.play().catch(() => { });
     }
   }, []);
+
+const handleOpenCamera = useCallback(async () => {
+  try {
+    setStartingCamera(true);
+    setMessage("Abriendo cámara...");
+
+    if (!streamRef.current) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+    }
+
+    setCameraOpen(true);
+    setMessage("Colócate frente a la cámara");
+  } catch (error) {
+    console.error(error);
+    setMessage("No se pudo acceder a la cámara");
+    setFeedback("error");
+    setFeedbackMsg("No se pudo acceder a la cámara");
+  } finally {
+    setStartingCamera(false);
+  }
+}, []);
 
   useEffect(() => {
     handleOpenCamera();
@@ -124,7 +128,7 @@ export default function FaceCheckPanel({
     ctx.drawImage(video, 0, 0, width, height);
 
     const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.95)
+      canvas.toBlob(resolve, "image/jpeg", 0.8)
     );
 
     if (!blob) return null;
@@ -182,11 +186,12 @@ export default function FaceCheckPanel({
       onFaceSuccess(successMessage);
 
       resetForNextEmployee();
-    // } catch (error) {
-    //   setMessage("Error al validar por rostro");
-    //   // setFeedback("error");
-    //   setFeedbackMsg("Error al validar por rostro");
-    } finally {
+      } catch (error) {
+        console.error(error);
+        setMessage("Error al validar por rostro");
+        setFeedback("error");
+        setFeedbackMsg("Error al validar por rostro");
+      }  finally {
       setProcessing(false);
     }
   };
@@ -239,14 +244,14 @@ export default function FaceCheckPanel({
         <Col md="6">
           <ConditionalRender cond={cameraOpen}>
             <div className="text-center">
-              <video
-                ref={videoRef}
-                className="w-100 rounded"
-                style={{ maxHeight: 310, objectFit: "contain" }}
-                autoPlay
-                playsInline
-                muted
-              />
+            <video
+              ref={setVideoRef}
+              className="w-100 rounded"
+              style={{ maxHeight: 310, objectFit: "contain" }}
+              autoPlay
+              playsInline
+              muted
+            />
 
               <div className="d-flex justify-content-center gap-2 mb-1">
                 <Button

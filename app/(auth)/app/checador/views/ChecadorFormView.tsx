@@ -29,9 +29,7 @@ export default function ChecadorFormView({
   const { data: checkData, mutate } = useSWR(`/api/checador?limit=${limit}`, fetcher);
 
 
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
-    null
-  );
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [feedbackDisplay, setFeedbackDisplay] = useState<ICheckInFeedback[]>([]);
   const [message, setMessage] = useState<string>("");
 
@@ -140,8 +138,8 @@ export default function ChecadorFormView({
   };
 
   const handleFaceSuccess = async (faceMessage: string) => {
-    setManualEnabled(false);
     mutate()
+    setManualEnabled(false);
     setMessage(faceMessage);
     // await handleFetchFeedback();
   };
