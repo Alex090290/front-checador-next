@@ -168,6 +168,7 @@
   justify-content: center;
   margin-bottom: 0.5rem;
 }
+
 /* Quitar o comentar esto */
 /* .react-datepicker__day--today {
   background-color: #0d6efd !important;
@@ -197,6 +198,7 @@
 .collapse-detail-enter {
   animation: collapseFadeIn 0.25s ease-out, flashHighlight 0.5s ease-out;
 }
+
 
 .confirm-modal-backdrop {
   backdrop-filter: blur(12px) !important;
@@ -335,4 +337,45 @@
 
 .error-modal-backdrop {
   z-index: 3080 !important;
+}
+
+/* Para dashboard empleados */
+.stats-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  /* mobile: 2 columnas */
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(12, 1fr);
+    /* md+: tu sistema de 12 */
+  }
+}
+
+/*Para carrusel empleado*/
+/* globals.css */
+.no-scrollbar {
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Edge */
+}
+
+/* Mientras se espera: loop, sin duración fija, se apaga cuando isPending se quita */
+.stat-card-loading {
+    animation: pulseLoading 1.1s ease-in-out infinite;
+}
+@keyframes pulseLoading {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
+/* Al llegar: un solo disparo, exactamente cuando el número ya cambió */
+.collapse-card {
+    animation: collapseFadeIn 0.6s ease-out, flashHighlight 0.9s ease-out;
 }

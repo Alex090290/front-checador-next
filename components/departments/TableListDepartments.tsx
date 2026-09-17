@@ -4,7 +4,7 @@ import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { Department } from "@/lib/definitions";
 import { useState } from "react";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,7 +24,7 @@ export default function DepartmentsTableList({
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
-  
+
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
 
@@ -70,21 +70,23 @@ export default function DepartmentsTableList({
     {
       key: "positions",
       label: "Puestos",
+      align: "right",
       accessor: (u) => u.positions.length,
       filterable: false,
       type: "number",
       render: (u) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Form.Select
-            size="sm"
-            className="text-uppercase shadow-none border-0"
-          >
-            <option>{u.positions.length}</option>
-            {u.positions.map((p) => (
-              <option key={`${p.id}-${p.namePosition}`}>{p.namePosition}</option>
-            ))}
-          </Form.Select>
-        </div>
+        <div className="ms-3">{u.positions.length}</div>
+        // <div onClick={(e) => e.stopPropagation()}>
+        //   <Form.Select
+        //     size="sm"
+        //     className="text-uppercase shadow-none border-0"
+        //   >
+        //     <option>{u.positions.length}</option>
+        //     {u.positions.map((p) => (
+        //       <option key={`${p.id}-${p.namePosition}`}>{p.namePosition}</option>
+        //     ))}
+        //   </Form.Select>
+        // </div>
       ),
     },
   ];

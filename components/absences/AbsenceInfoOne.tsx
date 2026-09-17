@@ -540,8 +540,7 @@ export function AbsenceOne({
                                                     <div
                                                         role="button"
                                                         onClick={() => setActiveCheckId(isActive ? null : key)}
-                                                        className={`border rounded-3 p-3 h-100 ms-2 ${isActive ? "border-primary" : ""
-                                                            }`}
+                                                        className={`border rounded-3 p-3 h-100 ms-2 ${isActive ? "border-primary" : ""}`}
                                                     >
                                                         <div className="d-flex gap-2">
                                                             {checksVariant(c.type)}
@@ -560,11 +559,14 @@ export function AbsenceOne({
                                         <div>
                                             {activeCheck && (
 
-                                                <div className="border rounded-3 p-3 mt-3 me-2 ms-1">
+                                                <div
+                                                    key={activeCheckId}
+                                                    className="border rounded-3 p-3 mt-3 me-2 ms-1 collapse-detail-enter"
+                                                    >
                                                     <Row className="g-3">
                                                         {/* Columna de estadísticas */}
                                                         <Col xs={12} lg={4}>
-                                                            <div className="d-flex flex-column gap-2 h-100">
+                                                            <div className="d-flex flex-column gap-2">
                                                                 <div className="border rounded-3 p-3 d-flex align-items-center gap-3">
                                                                     <i className="bi bi-geo-alt text-primary fs-5" />
                                                                     <div>

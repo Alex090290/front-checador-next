@@ -43,9 +43,20 @@ function viewType(refUrl?: string) {
         case "falta_por_penalizacion":
             return "penalties";
         case "retardo":
-            return ""
+            return "absences";
+        case "falta":
+            return "absences";
+        case "VACACIONES":
+            return "vacationList"
+        case "PERMISOS":
+            return "permissions";
+        case "HORAS_EXTRAS":
+            return "overtime";
+        case "INCAPACIDAD":
+            return "inability";
     }
 }
+
 
 function statusVariant(incidenceRef?: string | null, category?: string | null) {
     switch ((incidenceRef ?? "")) {
@@ -589,8 +600,6 @@ export default function PrePayrollTableClient({
         []
     );
 
-    console.log("llega:", prepayroll);
-
     return (
         <>
             <ConditionalRender cond={feedback === "loading" || isPending}>
@@ -826,7 +835,7 @@ export default function PrePayrollTableClient({
                                                             </th>
                                                         ))}
 
-                                                            <th className="fw-bold text-center">Acciones</th>
+                                                        <th className="fw-bold text-center">Acciones</th>
                                                     </tr>
                                                 </thead>
 
@@ -845,14 +854,6 @@ export default function PrePayrollTableClient({
                                                             <td className="align-middle">
                                                                 <div className="d-flex justify-content-center align-items-center gap-2">
 
-                                                                    <a href={`/app/${viewType(row.incidenceRef)}?view_type=form&id=${row.idIncidence}`}
-                                                                        className="btn btn-sm btn-outline-info"
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                    >
-                                                                        Ver
-                                                                    </a>
-
                                                                     <ConditionalRender cond={prepayrollextra?.complete === false}>
                                                                         <Button
                                                                             variant="outline-info"
@@ -863,6 +864,14 @@ export default function PrePayrollTableClient({
                                                                         </Button>
                                                                     </ConditionalRender>
 
+                                                                    <a
+                                                                        href={`/app/${viewType(row.incidenceRef)}?view_type=form&id=${row.data.idRaiz}`}
+                                                                        className="btn btn-sm btn-outline-info"
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                    >
+                                                                        Ver
+                                                                    </a>
                                                                 </div>
                                                             </td>
                                                         </tr>

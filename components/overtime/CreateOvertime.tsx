@@ -20,6 +20,7 @@ import { EmployeeRef, IConfigSystem } from "@/app/actions/configSystem-actions";
 import { findEmployeeById } from "@/app/actions/employee-actions";
 import DatePicker from "react-datepicker";
 import moment from "moment";
+import { formatCreatedAt } from "@/lib/helpers";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -565,7 +566,7 @@ export default function CreateOvertimeComponent({
                                                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                                                 onClick={() => setShowCalendar((s) => !s)}
                                                             >
-                                                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                                                <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                                                 <i className="bi bi-calendar3" />
                                                             </Button>
 
