@@ -379,7 +379,7 @@ export default function AbsencesTableClient({
             }
         });
     };
-    
+
 
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IAbsence>[] = [
@@ -725,7 +725,11 @@ export default function AbsencesTableClient({
                                                                             </button>
                                                                         </ConditionalRender>
 
-                                                                        <a href={`/app/absences?view_type=form&id=${row.id}`} className="btn btn-sm btn-outline-info">
+                                                                        <a
+                                                                            href={`/app/absences?view_type=form&id=${row.id}`} className="btn btn-sm btn-outline-info"
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                        >
                                                                             Ver
                                                                         </a>
                                                                     </div>

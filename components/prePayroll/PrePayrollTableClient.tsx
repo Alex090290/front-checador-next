@@ -38,6 +38,26 @@ interface IDataExtra {
     }
 }
 
+function viewType(refUrl?: string) {
+    switch (refUrl) {
+        case "falta_por_penalizacion":
+            return "penalties";
+        case "retardo":
+            return "absences";
+        case "falta":
+            return "absences";
+        case "VACACIONES":
+            return "vacationList"
+        case "PERMISOS":
+            return "permissions";
+        case "HORAS_EXTRAS":
+            return "overtime";
+        case "INCAPACIDAD":
+            return "inability";
+    }
+}
+
+
 function statusVariant(incidenceRef?: string | null, category?: string | null) {
     switch ((incidenceRef ?? "")) {
         case "falta":
@@ -815,9 +835,7 @@ export default function PrePayrollTableClient({
                                                             </th>
                                                         ))}
 
-                                                        <ConditionalRender cond={prepayrollextra?.complete === false}>
-                                                            <th className="fw-bold">Detalles</th>
-                                                        </ConditionalRender>
+                                                        <th className="fw-bold text-center">Acciones</th>
                                                     </tr>
                                                 </thead>
 
@@ -832,9 +850,11 @@ export default function PrePayrollTableClient({
                                                                 </td>
                                                             ))}
 
-                                                            <ConditionalRender cond={prepayrollextra?.complete === false}>
-                                                                <td className="align-middle">
-                                                                    <div className="d-flex justify-content-center align-items-center gap-2">
+
+                                                            <td className="align-middle">
+                                                                <div className="d-flex justify-content-center align-items-center gap-2">
+
+                                                                    <ConditionalRender cond={prepayrollextra?.complete === false}>
                                                                         <Button
                                                                             variant="outline-info"
                                                                             className="btn-sm"
@@ -842,9 +862,18 @@ export default function PrePayrollTableClient({
                                                                         >
                                                                             Actualizar
                                                                         </Button>
-                                                                    </div>
-                                                                </td>
-                                                            </ConditionalRender>
+                                                                    </ConditionalRender>
+
+                                                                    <a
+                                                                        href={`/app/${viewType(row.incidenceRef)}?view_type=form&id=${row.data.idRaiz}`}
+                                                                        className="btn btn-sm btn-outline-info"
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                    >
+                                                                        Ver
+                                                                    </a>
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>

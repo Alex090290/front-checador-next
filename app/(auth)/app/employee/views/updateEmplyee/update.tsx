@@ -723,7 +723,7 @@ export default function FormUpdateEmployee({
                         <Entry register={register("phoneExtCompany")} label="Extensión:" className="border" />
                       </Col>
                       <Col md={4}>
-                        <Entry register={register("emailCompany")} label="Correo:" className="border" />
+                        <Entry register={register("emailCompany")} label="Correo empresarial:" className="border" />
                       </Col>
                     </Row>
                   </Card.Body>

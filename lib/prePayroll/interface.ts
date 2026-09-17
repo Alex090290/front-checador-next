@@ -19,6 +19,7 @@ export interface IPrePayroll {
 interface Idata {
     _id?: string;
     id: number;
+    idRaiz: number;
     idEmployee: number;
     category: string | null;
     type: string;

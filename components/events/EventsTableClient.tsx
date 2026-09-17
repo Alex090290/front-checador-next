@@ -793,7 +793,11 @@ export default function EvenstsTableClient({
                                                                             {isSelected ? "Seleccionado" : "Seleccionar"}
                                                                         </button>
 
-                                                                        <a href={`/app/employee?view_type=form&id=${row.employee.id}`} className="btn btn-sm btn-outline-info">
+                                                                        <a
+                                                                            href={`/app/employee?view_type=form&id=${row.employee.id}`} className="btn btn-sm btn-outline-info"
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                        >
                                                                             Ver
                                                                         </a>
                                                                     </div>

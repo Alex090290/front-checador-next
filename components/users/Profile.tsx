@@ -171,7 +171,7 @@ export default function UserProfileView({
                           <span>Correo</span>
                         </div>
 
-                        <span className="fw-semibold text-end text-break text-uppercase">
+                        <span className="fw-semibold text-end text-break">
                           {formatText(user.email)}
                         </span>
                       </div>

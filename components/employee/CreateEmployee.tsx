@@ -670,7 +670,7 @@ export default function CreateEmployeeComponent({
                               <Col md={6}>
                                 <Entry
                                   register={register("emailCompany")}
-                                  label="Correo:"
+                                  label="Correo empresarial:"
                                   className="border"
                                 />
                               </Col>
