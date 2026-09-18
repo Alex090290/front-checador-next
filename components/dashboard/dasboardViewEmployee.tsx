@@ -6,8 +6,8 @@ import { Card, Container, Dropdown, Row } from "react-bootstrap";
 import { Employee, ICurrentPeriod } from "@/lib/definitions";
 import { IStatistics } from "@/lib/statistics/interface";
 import { useRouter, useSearchParams } from "next/navigation";
-import BasicCarousel from "./Carousel";
 import { formatCreatedAt } from "@/lib/helpers";
+import StatCardCarousel from "./Carousel";
 
 
 function StatCard({
@@ -117,14 +117,15 @@ export default function DashboardViewEmployee({
     );
        
     const baseItems = [
-        { label: "Permisos solicitados", icon: "file-earmark-ruled", value: dataPeriod.permissions, view: "permissions" },
-        { label: "Vacaciones solicitadas", icon: "calendar4-week", value: dataPeriod.vacations, accent: "pink" },
-        { label: "Incapacidades", icon: "clipboard2-pulse", value: dataPeriod.disabilities, accent: "orange" },
-        { label: "Horas extra", icon: "clock-history", value: dataPeriod.overtimes, accent: "info" },
-        { label: "Penalizaciones", icon: "exclamation-octagon", value: dataPeriod.penalties, accent: "danger" },
-        { label: "Faltas justificadas", icon: "calendar-check", value: dataPeriod.excusedAbsences, accent: "success" },
-        { label: "Faltas injustificadas", icon: "calendar-x", value: dataPeriod.unexcusedAbsences, accent: "purple" },
+        { label: "Permisos solicitados", icon: "file-earmark-ruled", value: dataPeriod.permissions, view: "permissions"},
+        { label: "Vacaciones solicitadas", icon: "calendar4-week", value: dataPeriod.vacations, accent: "pink", view: "vacationList"},
+        { label: "Incapacidades", icon: "clipboard2-pulse", value: dataPeriod.disabilities, accent: "orange", view: "inability"},
+        { label: "Horas extra", icon: "clock-history", value: dataPeriod.overtimes, accent: "info", view: "overtime"},
+        { label: "Penalizaciones", icon: "exclamation-octagon", value: dataPeriod.penalties, accent: "danger", view: "penalties"},
+        { label: "Faltas justificadas", icon: "calendar-check", value: dataPeriod.excusedAbsences, accent: "success", view: "absences"},
+        { label: "Faltas injustificadas", icon: "calendar-x", value: dataPeriod.unexcusedAbsences, accent: "purple", view: "absences"},
     ];
+    
 
     return (
         <>
@@ -196,10 +197,9 @@ export default function DashboardViewEmployee({
                             </div>
 
 
-                            <BasicCarousel
+                            <StatCardCarousel
                                 items={baseItems}
                                 isPending={isPending}
-                                view={String(baseItems.map((d) => d.view))}
                             />
                         </Row>
 

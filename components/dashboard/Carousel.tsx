@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Carousel } from "react-bootstrap";
+import ConditionalRender from "../ConditionalRender";
 
 interface StatCardData {
     id?: string;
@@ -14,6 +14,21 @@ interface StatCardData {
     view?: string;
 }
 
+function viewType(view: string | null) {
+    switch ((view ?? 0)) {
+        case "permissions":
+            return "permissions";
+        case "vacationList":
+            return "vacationList";
+        case "penalties":
+            return "penalties";
+        case "inability":
+            return "inability";
+        case "overtime":
+            return "overtime";
+    }
+}
+
 function chunk<T>(arr: T[], size: number): T[][] {
     const result: T[][] = [];
     for (let i = 0; i < arr.length; i += size) {
@@ -22,9 +37,8 @@ function chunk<T>(arr: T[], size: number): T[][] {
     return result;
 }
 
-function StatCard({ label, icon, value, accent = "primary", isPending }: StatCardData & { isPending?: boolean }) {
+function StatCard({ label, icon, value, accent = "primary", isPending, onClick }: StatCardData & { isPending?: boolean; onClick?: () => void }) {
     const [justArrived, setJustArrived] = useState(false);
-    console.log("value:", value);
 
 
     useEffect(() => {
@@ -36,6 +50,15 @@ function StatCard({ label, icon, value, accent = "primary", isPending }: StatCar
 
     return (
         <div
+            role={onClick ? "button" : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            onClick={onClick}
+            onKeyDown={(e) => {
+                if (onClick && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    onClick();
+                }
+            }}
             className={["hover-clickable border rounded-4 p-3 h-100 d-flex flex-column mt-1", isPending && "stat-card-loading", justArrived && "collapse-card"].filter(Boolean).join(" ")}
             onAnimationEnd={() => justArrived && setJustArrived(false)}
         >
@@ -58,17 +81,13 @@ function StatCard({ label, icon, value, accent = "primary", isPending }: StatCar
 export default function StatCardCarousel({
     items,
     chunkSize = 4,
-    isPending,
-    view
-}: {
+    isPending}: {
     items: StatCardData[];
     chunkSize?: number;
     isPending?: boolean;
-    view: string;
 }) {
     const groups = chunk(items, chunkSize);
     const [index, setIndex] = useState(0);
-    const router = useRouter();
 
     const isFirst = index === 0;
     const isLast = index === groups.length - 1;
@@ -81,13 +100,14 @@ export default function StatCardCarousel({
         });
     };
 
-    const handleView = () => {
-        router.push(`/app/${view}?view_type=form&id=null`);
-    }
+    const handleView = (view: string | undefined) => {
+        const url = `/app/${viewType(String(view))}?view_type=form&id=null`;
+        window.open(url, "_blank", "noopener,noreferrer");
+    };
 
     return (
         <div>
-            {groups.length > 1 && (
+            <ConditionalRender cond={groups.length > 1}>
                 <div className="d-flex justify-content-end gap-2 mb-2">
                     <button
                         type="button"
@@ -110,7 +130,7 @@ export default function StatCardCarousel({
                         <i className="bi bi-chevron-right" />
                     </button>
                 </div>
-            )}
+            </ConditionalRender>
 
             <Carousel
                 activeIndex={index}
@@ -121,18 +141,28 @@ export default function StatCardCarousel({
                 touch
             >
                 {groups.map((group, i) => (
-                    <Carousel.Item key={i}>
-                        <div
-                            className="d-grid gap-3 px-1 mb-2"
-                            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}
-                            onClick={handleView}
-                        >
-                            {group.map((item) => (
-                                <StatCard key={item.label} {...item} isPending={isPending} />
-                            ))}
-                        </div>
-                    </Carousel.Item>
-                ))}
+                        <Carousel.Item key={i}>
+                            <div
+                                className="d-grid gap-3 px-1 mb-2"
+                                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}
+                            >
+                                {group.map((item) => (
+                                    <StatCard
+                                        key={item.label} {...item}
+                                        isPending={isPending}
+                                        onClick={() => {
+                                            if(item.view === "absences"){
+                                                return null
+                                            } else{
+                                                return handleView(String(item.view))
+                                            }
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </Carousel.Item>
+                    )
+                )}
             </Carousel>
         </div>
     );
