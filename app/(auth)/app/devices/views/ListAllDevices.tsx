@@ -3,6 +3,8 @@ import DevicesTableClient from "@/components/devices/DevicesTableClient";
 import DevicesInfoOne from "./DevicesInfoOne";
 import ResponsivePage from "./ResponsivePage";
 import HistorialPage from "./HistorialPage";
+import { fetchDepartments } from "@/app/actions/departments-actions";
+import { fetchBranches } from "@/app/actions/branches-actionst";
 
 export default async function ListAllDevices({
     id,
@@ -28,20 +30,20 @@ export default async function ListAllDevices({
     idBranch?: string;
 }) {
     if (id && id !== "null") {
-        if(view_type === "responsiva"){
+        if (view_type === "responsiva") {
             return <ResponsivePage id={id} />
-        }else if(view_type === "historial"){
-            return <HistorialPage id={id}/>
+        } else if (view_type === "historial") {
+            return <HistorialPage id={id} />
         }
         return (
             <DevicesInfoOne id={id} />
         );
     }
-    
+
     const pageParse = Math.max(Number(page || "1") || 1, 1);
     const limitParse = Math.min(Math.max(Number(limit || "20") || 2, 1), 100);
 
-    const [devices] = await Promise.all([
+    const [devices, departments, branches] = await Promise.all([
         ListDevices({
             page: pageParse,
             limit: limitParse,
@@ -52,6 +54,8 @@ export default async function ListAllDevices({
             idDepartment,
             idBranch,
         }),
+        fetchDepartments(),
+        fetchBranches(),
     ]);
 
     return (
@@ -63,8 +67,8 @@ export default async function ListAllDevices({
             search={search}
             status={status}
             idEmployee={idEmployee}
-            idDepartment={idDepartment}
-            idBranch={idBranch}
+            departments={departments}
+            branches={branches}
         />
     );
 }

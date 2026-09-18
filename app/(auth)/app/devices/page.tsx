@@ -11,7 +11,7 @@ type SearchParams = {
   type?: string;
   status?: string;
   idEmployee?: string;
-  idDepartmnet?:string;
+  idDepartment?:string;
   idBranch?: string;
 };
 
@@ -25,6 +25,8 @@ async function PagePenalties({
     const id = params?.id ?? "null";
     const page = params?.page ?? "1";
     const limit = params?.limit ?? "20";
+    const idDepartment = params?.idDepartment ?? ""
+    const idBranch = params?.idBranch ?? ""
     const search = params?.search ?? "";
     const view_type = params?.view_type ?? "";
     const type = params?.type ?? "";
@@ -40,6 +42,8 @@ async function PagePenalties({
             search={search}
             type={type}
             view_type={view_type}
+            idDepartment={idDepartment}
+            idBranch={idBranch}
             />
         </Suspense>
     )
