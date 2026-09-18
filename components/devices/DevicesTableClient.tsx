@@ -10,6 +10,7 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import { Branch, Department } from "@/lib/definitions";
+import { getDirectory } from "@/app/actions/devices-actions";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -40,6 +41,34 @@ function statusVariant(status: string) {
                 </span>
             )
     }
+}
+
+const TYPE_CONFIG: Record<string, { label: string; accent: string }> = {
+    computadora: { label: "Computadora", accent: "primary" },
+    laptop: { label: "Laptop", accent: "indigo" },
+    impresora: { label: "Impresora", accent: "orange" },
+    servidor: { label: "Servidor", accent: "purple" },
+    switch: { label: "Switch", accent: "teal" },
+    router: { label: "Router", accent: "dark" },
+    telefono_ip: { label: "Teléfono IP", accent: "lime" },
+    camara: { label: "Cámara", accent: "pink" },
+    access_point: { label: "Access Point", accent: "light" },
+    celular: { label: "Celular", accent: "brown" },
+    television: { label: "Televisión", accent: "warning" },
+    tablet: { label: "Tablet", accent: "tinto" },
+    otro: { label: "Otro", accent: "secondary" },
+};
+
+function typeVariant(type: string) {
+    const config = TYPE_CONFIG[type] ?? TYPE_CONFIG.otro;
+
+    return (
+        <span
+            className={`badge rounded-pill px-2 py-2 fw-semibold bg-${config.accent}-subtle text-${config.accent}-emphasis border border-${config.accent}-subtle`}
+        >
+            {config.label}
+        </span>
+    );
 }
 
 export function formatLabel(value: string) {
@@ -266,6 +295,34 @@ export default function DevicesTableClient({
         return found ? found.nameDepartment : "Departamentos";
     }, [currentIdDepartment, departments]);
 
+    //GENERAR DIRECTORIO
+    const handleGenerate = async () => {
+        try {
+            const res = await getDirectory();
+
+            if (!res.success || !res.data) {
+                setFeedbackMsg(res.message || "No se pudo generar el directorio");
+                setFeedback("error");
+                return;
+            }
+
+            const { base64Url, fileName } = res.data;
+
+            const link = document.createElement("a");
+            link.href = base64Url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setFeedbackMsg("Directorio generado correctamente");
+            setFeedback("success");
+        } catch {
+            setFeedbackMsg("Error inesperado al generar el directorio");
+            setFeedback("error");
+        }
+    };
+
     //TABLA
     const columns: TableTemplateColumn<IDevices>[] = [
         {
@@ -340,7 +397,7 @@ export default function DevicesTableClient({
             filterable: false,
             type: "string",
             render: (u) => (
-                <div className="text-uppercase text-center">{formatLabel(u.type!)}</div>
+                <div className="text-uppercase text-center">{typeVariant(u.type!)}</div>
             ),
         },
         {
@@ -373,6 +430,15 @@ export default function DevicesTableClient({
                 >
                     <i className="bi bi-plus-lg" />
                     Crear dispositivo
+                </Button>
+
+                <Button
+                    variant="dark"
+                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
+                    onClick={handleGenerate}
+                >
+                    <i className="bi bi-file-earmark-pdf" />
+                    Generar Directorio
                 </Button>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">

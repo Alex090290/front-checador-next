@@ -295,6 +295,70 @@
   border-color: var(--bs-orange-border-subtle) !important;
 }
 
+:root {
+  --bs-teal-subtle: #54c4a2;
+  --bs-teal-emphasis: #0f5c46;
+  --bs-teal-border-subtle: #1e3f35;
+
+  --bs-indigo-subtle: #bd78c4;
+  --bs-indigo-emphasis: #5e0a85;
+  --bs-indigo-border-subtle: #ee8bdd;
+
+  --bs-brown-subtle: #53423d;
+  --bs-brown-emphasis: #f3ddcf;
+  --bs-brown-border-subtle: #661804;
+
+  --bs-lime-subtle: #eaf6cf;
+  --bs-lime-emphasis: #4d6b0a;
+  --bs-lime-border-subtle: #cfe89a;
+  
+  --bs-tinto-subtle: #7c2020;
+  --bs-tinto-emphasis: #f3ebed;
+  --bs-tinto-border-subtle: #f13030;
+}
+
+[data-bs-theme="dark"] {
+  --bs-teal-subtle: #01eea7;
+  --bs-teal-emphasis: #358671;
+  --bs-teal-border-subtle: #99b4ac;
+
+  --bs-indigo-subtle: #5e0a85;
+  --bs-indigo-emphasis: #b7acf7;
+  --bs-indigo-border-subtle: #4c3fa0;
+
+  --bs-brown-subtle: #744f32;
+  --bs-brown-emphasis: #e9cca4;
+  --bs-brown-border-subtle: #6b4a2c;
+
+  --bs-lime-subtle: #22280d;
+  --bs-lime-emphasis: #c8e878;
+  --bs-lime-border-subtle: #59700f;
+
+   --bs-tinto-subtle: #a53232;
+  --bs-tinto-emphasis: #3a0505;
+  --bs-tinto-border-subtle: #421616;
+}
+
+.bg-teal-subtle { background-color: var(--bs-teal-subtle) !important; }
+.text-teal-emphasis { color: var(--bs-teal-emphasis) !important; }
+.border-teal-subtle { border-color: var(--bs-teal-border-subtle) !important; }
+
+.bg-indigo-subtle { background-color: var(--bs-indigo-subtle) !important; }
+.text-indigo-emphasis { color: var(--bs-indigo-emphasis) !important; }
+.border-indigo-subtle { border-color: var(--bs-indigo-border-subtle) !important; }
+
+.bg-brown-subtle { background-color: var(--bs-brown-subtle) !important; }
+.text-brown-emphasis { color: var(--bs-brown-emphasis) !important; }
+.border-brown-subtle { border-color: var(--bs-brown-border-subtle) !important; }
+
+.bg-lime-subtle { background-color: var(--bs-lime-subtle) !important; }
+.text-lime-emphasis { color: var(--bs-lime-emphasis) !important; }
+.border-lime-subtle { border-color: var(--bs-lime-border-subtle) !important; }
+
+.bg-tinto-subtle { background-color: var(--bs-tinto-subtle) !important; }
+.text-tinto-emphasis { color: var(--bs-tinto-emphasis) !important; }
+.border-tinto-subtle { border-color: var(--bs-tinto-border-subtle) !important; }
+
 .date-multi-popover {
   z-index: 3080;
   position: relative;
