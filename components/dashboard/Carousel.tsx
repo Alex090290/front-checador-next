@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Carousel } from "react-bootstrap";
 
@@ -10,6 +11,7 @@ interface StatCardData {
     value?: number;
     accent?: string;
     changed?: boolean;
+    view?: string;
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -22,6 +24,8 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 function StatCard({ label, icon, value, accent = "primary", isPending }: StatCardData & { isPending?: boolean }) {
     const [justArrived, setJustArrived] = useState(false);
+    console.log("value:", value);
+
 
     useEffect(() => {
         // Solo dispara el flash cuando la data terminó de llegar (isPending pasó a false)
@@ -32,7 +36,7 @@ function StatCard({ label, icon, value, accent = "primary", isPending }: StatCar
 
     return (
         <div
-            className={[ "border rounded-4 p-3 h-100 d-flex flex-column mt-1", isPending && "stat-card-loading", justArrived && "collapse-card"].filter(Boolean).join(" ")}
+            className={["hover-clickable border rounded-4 p-3 h-100 d-flex flex-column mt-1", isPending && "stat-card-loading", justArrived && "collapse-card"].filter(Boolean).join(" ")}
             onAnimationEnd={() => justArrived && setJustArrived(false)}
         >
             <div
@@ -49,17 +53,22 @@ function StatCard({ label, icon, value, accent = "primary", isPending }: StatCar
     );
 }
 
+
+
 export default function StatCardCarousel({
     items,
     chunkSize = 4,
-    isPending
+    isPending,
+    view
 }: {
     items: StatCardData[];
     chunkSize?: number;
     isPending?: boolean;
+    view: string;
 }) {
     const groups = chunk(items, chunkSize);
     const [index, setIndex] = useState(0);
+    const router = useRouter();
 
     const isFirst = index === 0;
     const isLast = index === groups.length - 1;
@@ -71,6 +80,10 @@ export default function StatCardCarousel({
             return next;
         });
     };
+
+    const handleView = () => {
+        router.push(`/app/${view}?view_type=form&id=null`);
+    }
 
     return (
         <div>
@@ -112,9 +125,10 @@ export default function StatCardCarousel({
                         <div
                             className="d-grid gap-3 px-1 mb-2"
                             style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}
+                            onClick={handleView}
                         >
                             {group.map((item) => (
-                                <StatCard key={item.label} {...item} isPending={isPending}/>
+                                <StatCard key={item.label} {...item} isPending={isPending} />
                             ))}
                         </div>
                     </Carousel.Item>

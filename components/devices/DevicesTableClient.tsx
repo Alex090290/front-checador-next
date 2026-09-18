@@ -5,10 +5,11 @@ import { TableTemplateColumn } from "../templates/TableTemplate";
 import { Button, Card, Col, Container, Dropdown, InputGroup, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "../employee/GenericSearchInput";
+import { Branch, Department } from "@/lib/definitions";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -53,12 +54,16 @@ export default function DevicesTableClient({
     page,
     limit,
     devices,
+    branches,
+    departments,
     search = "",
 }: {
     total: number;
     page: number;
     limit: number;
     devices: IDevices[];
+    branches: Branch[];
+    departments: Department[];
     search?: string;
     status?: string;
     idEmployee?: string;
@@ -71,7 +76,8 @@ export default function DevicesTableClient({
     const searchParamsString = sp.toString();
     const currentSearch = sp.get("search") ?? "";
     const currentType = sp.get("type") ?? "";
-
+    const currentBranch = sp.get("idBranch") ?? "";
+    const currentIdDepartment = sp.get("idDepartment") ?? "";
 
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
@@ -186,6 +192,79 @@ export default function DevicesTableClient({
     const selectedType = currentType
         ? deviceTypeOptions.find((opt) => opt.value === currentType)?.label ?? currentType
         : "TODOS";
+
+    const selectedBranchName = useMemo(() => {
+        if (!currentBranch) return "Sucursales";
+        const found = branches.find(
+            (br) => String(br.id) === currentBranch
+        );
+        return found ? found.name : "Sucursales";
+    }, [currentBranch, branches]);
+
+    const handleBranchFilter = useCallback((value: string) => {
+        const trimedSuc = value.trim();
+        const normalizedCurrent = currentBranch ? String(currentBranch) : "";
+
+        if (trimedSuc === normalizedCurrent) return;
+
+        setFeedback("loading");
+        setFeedbackMsg("Filtrando...");
+
+        const params = new URLSearchParams(searchParamsString);
+        params.delete("id");
+        params.set("view_type", "list");
+        params.set("page", "1");
+        params.set("limit", String(limit));
+
+        if (trimedSuc !== "") {
+            params.set("idBranch", value.trim());
+            params.delete("idDepartment")
+            params.delete("idPosition")
+        } else {
+            params.delete("idBranch");
+            params.delete("idDepartment")
+            params.delete("idPosition")
+
+        }
+        router.push(`/app/devices?${params.toString()}`);
+    }, [searchParamsString, limit, router, currentBranch]);
+
+    const handleDepartmentFilter = useCallback((value: string) => {
+        const trimmedValue = value.trim();
+        const normalizedCurrent = currentIdDepartment ? String(currentIdDepartment) : "";
+
+        if (trimmedValue === normalizedCurrent) return;
+
+        setFeedback('loading');
+        setFeedbackMsg("Filtrando...");
+
+        const params = new URLSearchParams(searchParamsString);
+        params.delete("id");
+        params.delete("idBranch");
+        params.set("view_type", "list");
+        params.set("page", "1");
+        params.set("limit", String(limit));
+
+        if (trimmedValue !== "") {
+            params.set("idDepartment", trimmedValue);
+            params.delete("idPosition");
+            params.delete("idBranch");
+        } else {
+            params.delete("idBranch");
+            params.delete("idDepartment");
+            params.delete("idPosition");
+        }
+
+        router.push(`/app/devices?${params.toString()}`);
+    }, [searchParamsString, limit, router, currentIdDepartment]);
+
+    const selectedDepartmentName = useMemo(() => {
+        if (!currentIdDepartment) return "Departamentos";
+        const found = departments.find(
+            (dep) => String(dep.id) === currentIdDepartment
+        );
+        return found ? found.nameDepartment : "Departamentos";
+    }, [currentIdDepartment, departments]);
 
     //TABLA
     const columns: TableTemplateColumn<IDevices>[] = [
@@ -315,7 +394,7 @@ export default function DevicesTableClient({
                                     <Row className="mb-4 g-3 align-items-between">
 
                                         {/* FILTRO DE EMPLEADOS */}
-                                        <Col xs={12} sm={6} md={6} lg={6} xl={6} style={{ minWidth: 0 }}>
+                                        <Col xs={12} sm={6} md={6} lg={6} xl={3} style={{ minWidth: 0 }}>
                                             <Card className="border rounded-4 h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -340,7 +419,7 @@ export default function DevicesTableClient({
                                             </Card>
                                         </Col>
 
-                                        <Col xs={12} sm={6} md={6} lg={6} style={{ minWidth: 0 }}>
+                                        <Col xs={12} sm={6} md={6} lg={6} xl={3} style={{ minWidth: 0 }}>
                                             <Card className="rounded-4 border h-100">
                                                 <Card.Body className="p-3">
                                                     <div className="d-flex align-items-center gap-2 mb-3">
@@ -367,7 +446,7 @@ export default function DevicesTableClient({
                                                             </span>
                                                         </Dropdown.Toggle>
 
-                                                        <Dropdown.Menu>
+                                                        <Dropdown.Menu className="w-100" style={{ maxHeight: "300px", overflowY: "auto" }}>
                                                             <Dropdown.Item
                                                                 active={!currentType}
                                                                 onClick={() => handleTypeFilter("")}
@@ -382,6 +461,110 @@ export default function DevicesTableClient({
                                                                     onClick={() => handleTypeFilter(opt.value)}
                                                                 >
                                                                     <span className="text-uppercase">{opt.label}</span>
+                                                                </Dropdown.Item>
+                                                            ))}
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+
+                                        {/* FILTRO DE SUCURSALES */}
+                                        <Col xs={12} sm={6} md={6} lg={3} xl={3} style={{ minWidth: 0 }}>
+                                            <Card className="rounded-4 border h-100">
+                                                <Card.Body className="p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <i className="bi bi-building text-primary" />
+                                                        <span className="fw-semibold small">Filtrar por sucursal</span>
+                                                    </div>
+
+                                                    <Dropdown className="w-100">
+                                                        <Dropdown.Toggle
+                                                            as={Button}
+                                                            variant="outline-secondary"
+                                                            className="w-100 d-flex align-items-center justify-content-between text-uppercase"
+                                                            style={{ minWidth: 0 }}
+                                                        >
+                                                            <span
+                                                                style={{
+                                                                    whiteSpace: "normal",
+                                                                    overflowWrap: "break-word",
+                                                                    wordBreak: "break-word",
+                                                                    textAlign: "left",
+                                                                }}
+                                                            >
+                                                                {selectedBranchName}
+                                                            </span>
+                                                        </Dropdown.Toggle>
+
+                                                        <Dropdown.Menu>
+                                                            <Dropdown.Item
+                                                                active={!currentBranch}
+                                                                onClick={() => handleBranchFilter("")}
+                                                            >
+                                                                <span className="text-uppercase text-muted">TODOS</span>
+                                                            </Dropdown.Item>
+
+                                                            {branches.map((br) => (
+                                                                <Dropdown.Item
+                                                                    key={br.id}
+                                                                    active={String(br.id) === currentBranch}
+                                                                    onClick={() => handleBranchFilter(String(br.id))}>
+                                                                    <span className="text-uppercase">
+                                                                        {br.name}
+                                                                    </span>
+                                                                </Dropdown.Item>
+                                                            ))}
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+
+                                        {/* FILTRO DE DEPARTAMENTOS */}
+                                        <Col xs={12} sm={6} md={6} lg={6} xl={3} style={{ minWidth: 0 }}>
+                                            <Card className="rounded-4 border h-100">
+                                                <Card.Body className="p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <i className="bi bi-columns-gap text-primary" />
+                                                        <span className="fw-semibold small">Filtrar por departamento</span>
+                                                    </div>
+
+                                                    <Dropdown className="w-100">
+                                                        <Dropdown.Toggle
+                                                            as={Button}
+                                                            variant="outline-secondary"
+                                                            className="w-100 d-flex align-items-center justify-content-between text-uppercase"
+                                                            style={{ minWidth: 0 }}
+                                                        >
+                                                            <span
+                                                                style={{
+                                                                    whiteSpace: "normal",
+                                                                    overflowWrap: "break-word",
+                                                                    wordBreak: "break-word",
+                                                                    textAlign: "left",
+                                                                }}
+                                                            >
+                                                                {selectedDepartmentName}
+                                                            </span>
+                                                        </Dropdown.Toggle>
+
+                                                        <Dropdown.Menu className="w-100" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                                                            <Dropdown.Item
+                                                                active={!currentIdDepartment}
+                                                                onClick={() => handleDepartmentFilter("")}
+                                                            >
+                                                                <span className="text-uppercase text-muted">TODOS</span>
+                                                            </Dropdown.Item>
+
+                                                            {departments.map((dep) => (
+                                                                <Dropdown.Item
+                                                                    key={dep.id}
+                                                                    active={String(dep.id) === currentIdDepartment}
+                                                                    onClick={() => handleDepartmentFilter(String(dep.id))}>
+                                                                    <span className="text-uppercase">
+                                                                        {dep.nameDepartment}
+                                                                    </span>
                                                                 </Dropdown.Item>
                                                             ))}
                                                         </Dropdown.Menu>

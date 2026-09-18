@@ -117,7 +117,7 @@ export default function DashboardViewEmployee({
     );
        
     const baseItems = [
-        { label: "Permisos solicitados", icon: "file-earmark-ruled", value: dataPeriod.permissions },
+        { label: "Permisos solicitados", icon: "file-earmark-ruled", value: dataPeriod.permissions, view: "permissions" },
         { label: "Vacaciones solicitadas", icon: "calendar4-week", value: dataPeriod.vacations, accent: "pink" },
         { label: "Incapacidades", icon: "clipboard2-pulse", value: dataPeriod.disabilities, accent: "orange" },
         { label: "Horas extra", icon: "clock-history", value: dataPeriod.overtimes, accent: "info" },
@@ -199,6 +199,7 @@ export default function DashboardViewEmployee({
                             <BasicCarousel
                                 items={baseItems}
                                 isPending={isPending}
+                                view={String(baseItems.map((d) => d.view))}
                             />
                         </Row>
 
