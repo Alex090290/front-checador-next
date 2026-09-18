@@ -11,6 +11,7 @@ import Loading from "../LoadingSpinner";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import { Branch, Department } from "@/lib/definitions";
 import { getDirectory } from "@/app/actions/devices-actions";
+import { useModals } from "@/context/ModalContext";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -107,6 +108,7 @@ export default function DevicesTableClient({
     const currentType = sp.get("type") ?? "";
     const currentBranch = sp.get("idBranch") ?? "";
     const currentIdDepartment = sp.get("idDepartment") ?? "";
+    const { modalConfirm } = useModals();
 
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
@@ -297,30 +299,34 @@ export default function DevicesTableClient({
 
     //GENERAR DIRECTORIO
     const handleGenerate = async () => {
-        try {
-            const res = await getDirectory();
+        modalConfirm("¿Seguro que quieres descargar el directorio?", async () => {
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Cargando...");
+                const res = await getDirectory();
 
-            if (!res.success || !res.data) {
-                setFeedbackMsg(res.message || "No se pudo generar el directorio");
+                if (!res.success || !res.data) {
+                    setFeedbackMsg(res.message || "No se pudo generar el directorio");
+                    setFeedback("error");
+                    return;
+                }
+
+                const { base64Url, fileName } = res.data;
+
+                const link = document.createElement("a");
+                link.href = base64Url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                setFeedbackMsg("Directorio generado correctamente");
+                setFeedback("success");
+            } catch {
+                setFeedbackMsg("Error inesperado al generar el directorio");
                 setFeedback("error");
-                return;
             }
-
-            const { base64Url, fileName } = res.data;
-
-            const link = document.createElement("a");
-            link.href = base64Url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-
-            setFeedbackMsg("Directorio generado correctamente");
-            setFeedback("success");
-        } catch {
-            setFeedbackMsg("Error inesperado al generar el directorio");
-            setFeedback("error");
-        }
+        })
     };
 
     //TABLA
