@@ -151,6 +151,7 @@ function NavUserInfo() {
           className="border-0 flex-shrink-0"
           variant={darkMode ? "dark" : "light"}
           onClick={toggleDarkMode}
+          aria-label="Modo claro/oscuro"
         >
           {darkMode ? (
             <i className="bi bi-sun-fill"></i>
@@ -164,6 +165,7 @@ function NavUserInfo() {
           className="d-none d-md-flex align-items-center gap-2 ms-1 overflow-hidden"
           style={{ minWidth: 0 }}
           title={periodText}
+          aria-label="Visualizar periodo"
         >
           <span className="text-muted small text-uppercase flex-shrink-0">
             Periodo:
@@ -203,6 +205,7 @@ function NavUserInfo() {
           <span
             role="button"
             className="badge bg-secondary text-uppercase text-truncate"
+            aria-label="Visualizar periodo"
             style={{
               maxWidth: "80px",
               cursor: "pointer",

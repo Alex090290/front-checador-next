@@ -187,13 +187,6 @@
   /* por encima de .modal (1055) y .modal-backdrop (1050) */
 }
 
-.confirm-modal-backdrop {
-  z-index: 2100 !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  background: rgba(5, 0, 0, 0.25) !important;
-  /* opcional: mismo tono que ModalBlur en vez del gris más oscuro de Bootstrap */
-}
 
 .collapse-detail-enter {
   animation: collapseFadeIn 0.25s ease-out, flashHighlight 0.5s ease-out;
@@ -359,11 +352,6 @@
 .text-tinto-emphasis { color: var(--bs-tinto-emphasis) !important; }
 .border-tinto-subtle { border-color: var(--bs-tinto-border-subtle) !important; }
 
-.date-multi-popover {
-  z-index: 3080;
-  position: relative;
-  /* o absolute, según cómo Popper lo esté posicionando */
-}
 
 .icon-hourglass-animated {
   display: inline-block;

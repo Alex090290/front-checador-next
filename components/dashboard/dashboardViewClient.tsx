@@ -8,21 +8,22 @@ import GraphicFour from "../graphics/graphic_4"
 import ConditionalRender from "../ConditionalRender"
 import Loading from "../LoadingSpinner"
 import { useState } from "react"
+import StatCardCarousel from "./Carousel"
 
 export default function DashboardViewClient() {
 
     const [loading] = useState(false);
     const [messageLoading] = useState('Cargando datos...');
 
-    // const baseItems = [
-    //     { label: "Permisos solicitados", icon: "file-earmark-ruled", value: 10, view: "permissions" },
-    //     { label: "Vacaciones solicitadas", icon: "calendar4-week", value: 12, accent: "pink" },
-    //     { label: "Incapacidades", icon: "clipboard2-pulse", value: 4, accent: "orange" },
-    //     { label: "Horas extra", icon: "clock-history", value: 2, accent: "info" },
-    //     { label: "Penalizaciones", icon: "exclamation-octagon", value: 2, accent: "danger" },
-    //     { label: "Faltas justificadas", icon: "calendar-check", value: 2, accent: "success" },
-    //     { label: "Faltas injustificadas", icon: "calendar-x", value: 2, accent: "purple" },
-    // ];
+    const baseItems = [
+        { label: "Permisos solicitados", icon: "file-earmark-ruled", value: 10, view: "permissions" },
+        { label: "Vacaciones solicitadas", icon: "calendar4-week", value: 12, accent: "pink" },
+        { label: "Incapacidades", icon: "clipboard2-pulse", value: 4, accent: "orange" },
+        { label: "Horas extra", icon: "clock-history", value: 2, accent: "info" },
+        { label: "Penalizaciones", icon: "exclamation-octagon", value: 2, accent: "danger" },
+        { label: "Faltas justificadas", icon: "calendar-check", value: 2, accent: "success" },
+        { label: "Faltas injustificadas", icon: "calendar-x", value: 2, accent: "purple" },
+    ];
 
     return (
         <>
@@ -45,18 +46,18 @@ export default function DashboardViewClient() {
                 >
                     <Card.Body className="p-3">
                         <Row className="g-2">
-                            <Col xs={12} md={6} className="h-50">
+                            <Col xs={12} md={12} className="h-50">
                                 <div className="border rounded-3" style={{ height: "350px" }}>
-                                    <GraphicOne />
-                                    {/* <StatCardCarousel items={baseItems} /> */}
+                                    {/* <GraphicOne /> */}
+                                    <StatCardCarousel items={baseItems} />
                                 </div>
                             </Col>
 
-                            <Col xs={12} md={6} className="h-50">
+                            {/* <Col xs={12} md={6} className="h-50">
                                 <div className="border rounded-3" style={{ height: "350px" }}>
                                     <GraphicTwo />
                                 </div>
-                            </Col>
+                            </Col> */}
 
                             <Col xs={12} md={6} className="h-50">
                                 <div className="border rounded-3" style={{ height: "350px" }}>

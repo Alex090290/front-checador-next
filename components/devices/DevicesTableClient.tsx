@@ -444,7 +444,7 @@ export default function DevicesTableClient({
                     onClick={handleGenerate}
                 >
                     <i className="bi bi-file-earmark-pdf" />
-                    Generar Directorio
+                    Descargar Directorio
                 </Button>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
