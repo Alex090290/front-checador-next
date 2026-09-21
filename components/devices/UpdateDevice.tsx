@@ -232,12 +232,15 @@ export default function FormUpdateDevice({
                                         { value: "access_point", label: "ACCESS POINT" },
                                         { value: "celular", label: "CELULAR" },
                                         { value: "television", label: "TELEVISIÓN" },
+                                        { value: "tablet", label: "TABLET" },
+                                        { value: "monitor", label: "MONITOR" },
+                                        { value: "no-break", label: "NO-BREAK" },
                                         { value: "otro", label: "OTRO" },
                                     ]}
                                     label="Tipo:"
                                     invalid={!!errors.type}
                                     feedBack={errors.type?.message}
-                                    className="text-uppercase border"
+                                    className="text-uppercase border overflow-auto"
                                 />
                             </Col>
 

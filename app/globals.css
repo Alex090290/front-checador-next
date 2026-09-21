@@ -431,3 +431,22 @@
 .collapse-card {
     animation: collapseFadeIn 0.6s ease-out, flashHighlight 0.9s ease-out;
 }
+
+.btn-info {
+  --bs-btn-bg: #087990 !important;      /* cyan más oscuro */
+  --bs-btn-border-color: #087990 !important;
+  --bs-btn-color: #fff !important;      /* ahora sí cumple 4.5:1 con blanco */
+  --bs-btn-hover-bg: #06616f !important;
+}
+
+/* Cambiar el redondeado de todos los botones de la paginación */
+.pagination .page-item .page-link {
+  border-radius: 8px !important; /* El valor que tú quieras */
+  margin: 0 2px; /* Agrega una pequeña separación entre botones */
+}
+
+/* Cambiar el color cuando está activo (opcional) */
+.pagination .page-item.active .page-link {
+  background-color: #6c757d; /* Cambia el azul por un gris u otro color */
+  border-color: #6c757d;
+}

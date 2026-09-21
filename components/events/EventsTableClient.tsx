@@ -4,7 +4,7 @@ import { ActionResponse, Employee, ICheckInFeedback } from "@/lib/definitions";
 import { User } from "@/lib/definitions";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 import { format } from "date-fns";
-import { Button, Card, Col, Container, Dropdown, InputGroup, Overlay, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Dropdown, InputGroup, Overlay, Pagination, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import ConditionalRender from "../ConditionalRender";
@@ -123,8 +123,6 @@ export default function EvenstsTableClient({
 
     //CONST 
     const router = useRouter();
-    const [, setLoading] = useState(false);
-    const [, setMessageLoading] = useState("");
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
     const currentSearch = sp.get("search") ?? "";
@@ -146,6 +144,9 @@ export default function EvenstsTableClient({
     const [typeUpdate, setTypeUpdate] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
+    const totalPages = Math.ceil(total / limit);
+
+    const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
     //HELPERS
 
@@ -163,15 +164,15 @@ export default function EvenstsTableClient({
     };
 
     const handleClear = useCallback(() => {
-        setLoading(true);
-        setMessageLoading("Cargando...")
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...");
         setDateError("")
         router.push("/app/eventos");
     }, [router]);
 
     const goToPage = (nextPage: number) => {
-        setLoading(true);
-        setMessageLoading("Cargando...");
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...");
         const params = new URLSearchParams(searchParamsString);
         params.set("id", "null");
         params.set("view_type", "list");
@@ -811,28 +812,39 @@ export default function EvenstsTableClient({
 
                                         <div className="d-flex justify-content-between align-items-center mt-4">
                                             <small className="text-muted">
-                                                Página {page} de {Math.ceil(total / limit)}
+                                                Página {page} de {totalPages}
                                             </small>
 
-                                            <div className="d-flex gap-2">
-                                                <Button
-                                                    variant="outline-secondary"
-                                                    size="sm"
-                                                    disabled={page <= 1}
-                                                    onClick={() => goToPage(page - 1)}
-                                                >
-                                                    Anterior
-                                                </Button>
+                                            <ConditionalRender cond={pageNumbers.length > 1}>
+                                                <Pagination size="sm" className="m-0">
+                                                    {/* Botón Anterior */}
+                                                    <Pagination.Prev
+                                                        disabled={page <= 1}
+                                                        onClick={() => goToPage(page - 1)}
+                                                    >
+                                                        Anterior
+                                                    </Pagination.Prev>
 
-                                                <Button
-                                                    variant="outline-secondary"
-                                                    size="sm"
-                                                    disabled={page >= Math.ceil(total / limit)}
-                                                    onClick={() => goToPage(page + 1)}
-                                                >
-                                                    Siguiente
-                                                </Button>
-                                            </div>
+                                                    {/* Números de Página Dinámicos */}
+                                                    {pageNumbers.map((num) => (
+                                                        <Pagination.Item
+                                                            key={num}
+                                                            active={num === page}
+                                                            onClick={() => goToPage(num)}
+                                                        >
+                                                            {num}
+                                                        </Pagination.Item>
+                                                    ))}
+
+                                                    {/* Botón Siguiente */}
+                                                    <Pagination.Next
+                                                        disabled={page >= totalPages}
+                                                        onClick={() => goToPage(page + 1)}
+                                                    >
+                                                        Siguiente
+                                                    </Pagination.Next>
+                                                </Pagination>
+                                            </ConditionalRender>
                                         </div>
                                     </ListView.Body>
                                 </ListView>

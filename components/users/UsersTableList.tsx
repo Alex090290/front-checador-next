@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { Button, Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, InputGroup, Pagination, Row } from "react-bootstrap";
 
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
@@ -16,6 +16,8 @@ import {
 } from "@/lib/definitions";
 import { PhoneNumberFormat } from "@/lib/sinitizePhone";
 import GenericSearchInput from "../employee/GenericSearchInput";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 const userStatus = {
   1: "activo",
@@ -58,22 +60,24 @@ export default function UserTableClient({
   const searchParamsString = sp.toString();
   const currentSearch = sp.get("search") ?? "";
 
-
-  const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const isClearingSelectionRef = useRef(false);
   const [, setTableResetKey] = useState(0);
+  const totalPages = Math.ceil(total / limit);
+
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   useEffect(() => {
-    setLoading(false);
-    setMessageLoading("");
+    setFeedback(null);
+    setFeedbackMsg("");
   }, [searchParamsString]);
 
 
   const goToPage = (nextPage: number) => {
-    setLoading(true);
-    setMessageLoading("Cargando...");
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
     params.set("view_type", "list");
@@ -102,8 +106,8 @@ export default function UserTableClient({
 
 
   const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading('Cargando...');
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     router.push("/app/users/create");
   };
 
@@ -113,8 +117,8 @@ export default function UserTableClient({
 
       if (cleanValue === currentSearch.trim()) return;
 
-      setLoading(true);
-      setMessageLoading("Buscando...");
+      setFeedback("loading");
+      setFeedbackMsg("Buscando...");
 
       const params = new URLSearchParams(searchParamsString);
       params.set("id", "null");
@@ -227,8 +231,8 @@ export default function UserTableClient({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
       </ConditionalRender>
 
       <Container className="py-3" style={{ maxWidth: "1600px" }}>
@@ -236,7 +240,6 @@ export default function UserTableClient({
           variant="primary"
           className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
-          disabled={loading}
         >
           <i className="bi bi-plus-lg" />
           Crear usuario
@@ -320,28 +323,39 @@ export default function UserTableClient({
 
                     <div className="d-flex justify-content-between align-items-center mt-4">
                       <small className="text-muted">
-                        Página {page} de {Math.ceil(total / limit)}
+                        Página {page} de {totalPages}
                       </small>
 
-                      <div className="d-flex gap-2">
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page <= 1}
-                          onClick={() => goToPage(page - 1)}
-                        >
-                          Anterior
-                        </Button>
+                      <ConditionalRender cond={pageNumbers.length > 1}>
+                        <Pagination size="sm" className="m-0">
+                          {/* Botón Anterior */}
+                          <Pagination.Prev
+                            disabled={page <= 1}
+                            onClick={() => goToPage(page - 1)}
+                          >
+                            Anterior
+                          </Pagination.Prev>
 
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page >= Math.ceil(total / limit)}
-                          onClick={() => goToPage(page + 1)}
-                        >
-                          Siguiente
-                        </Button>
-                      </div>
+                          {/* Números de Página Dinámicos */}
+                          {pageNumbers.map((num) => (
+                            <Pagination.Item
+                              key={num}
+                              active={num === page}
+                              onClick={() => goToPage(num)}
+                            >
+                              {num}
+                            </Pagination.Item>
+                          ))}
+
+                          {/* Botón Siguiente */}
+                          <Pagination.Next
+                            disabled={page >= totalPages}
+                            onClick={() => goToPage(page + 1)}
+                          >
+                            Siguiente
+                          </Pagination.Next>
+                        </Pagination>
+                      </ConditionalRender>
                     </div>
                   </ListView.Body>
                 </ListView>

@@ -2,7 +2,7 @@
 
 import { IDevices } from "@/lib/devices/interface";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { Button, Card, Col, Container, Dropdown, InputGroup, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Dropdown, InputGroup, Pagination, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -112,7 +112,9 @@ export default function DevicesTableClient({
 
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
-    const [loading] = useState(false);
+    const totalPages = Math.ceil(total / limit);
+
+    const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
     const deviceTypeOptions = [
         { value: "computadora", label: "COMPUTADORA" },
@@ -127,6 +129,8 @@ export default function DevicesTableClient({
         { value: "celular", label: "CELULAR" },
         { value: "television", label: "TELEVISIÓN" },
         { value: "tablet", label: "TABLET" },
+        { value: "monitor", label: "MONITOR" },
+        { value: "no-break", label: "NO-BREAK" },
         { value: "otro", label: "OTRO" },
     ];
 
@@ -432,7 +436,6 @@ export default function DevicesTableClient({
                     variant="primary"
                     className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
                     onClick={handleCreate}
-                    disabled={loading}
                 >
                     <i className="bi bi-plus-lg" />
                     Crear dispositivo
@@ -690,28 +693,39 @@ export default function DevicesTableClient({
 
                                         <div className="d-flex justify-content-between align-items-center mt-4">
                                             <small className="text-muted">
-                                                Página {page} de {Math.ceil(total / limit)}
+                                                Página {page} de {totalPages}
                                             </small>
 
-                                            <div className="d-flex gap-2">
-                                                <Button
-                                                    variant="outline-secondary"
-                                                    size="sm"
-                                                    disabled={page <= 1}
-                                                    onClick={() => goToPage(page - 1)}
-                                                >
-                                                    Anterior
-                                                </Button>
+                                            <ConditionalRender cond={pageNumbers.length > 1}>
+                                                <Pagination size="sm" className="m-0">
+                                                    {/* Botón Anterior */}
+                                                    <Pagination.Prev
+                                                        disabled={page <= 1}
+                                                        onClick={() => goToPage(page - 1)}
+                                                    >
+                                                        Anterior
+                                                    </Pagination.Prev>
 
-                                                <Button
-                                                    variant="outline-secondary"
-                                                    size="sm"
-                                                    disabled={page >= Math.ceil(total / limit)}
-                                                    onClick={() => goToPage(page + 1)}
-                                                >
-                                                    Siguiente
-                                                </Button>
-                                            </div>
+                                                    {/* Números de Página Dinámicos */}
+                                                    {pageNumbers.map((num) => (
+                                                        <Pagination.Item
+                                                            key={num}
+                                                            active={num === page}
+                                                            onClick={() => goToPage(num)}
+                                                        >
+                                                            {num}
+                                                        </Pagination.Item>
+                                                    ))}
+
+                                                    {/* Botón Siguiente */}
+                                                    <Pagination.Next
+                                                        disabled={page >= totalPages}
+                                                        onClick={() => goToPage(page + 1)}
+                                                    >
+                                                        Siguiente
+                                                    </Pagination.Next>
+                                                </Pagination>
+                                            </ConditionalRender>
                                         </div>
                                     </ListView.Body>
                                 </ListView>

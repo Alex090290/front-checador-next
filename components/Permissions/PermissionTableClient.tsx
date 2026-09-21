@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Pagination, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 
@@ -15,6 +15,8 @@ import { formatCreatedAt } from "@/lib/helpers";
 import { IPermissionRequest } from "@/lib/permissions/interface";
 import ModalBlur from "../ModalBlur";
 import DeletePermissionModal from "./DeleteModal";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 export const leaderApproval = {
   APPROVED: "APROBADO",
@@ -39,14 +41,17 @@ export default function PermissionsTableClient({
   const router = useRouter();
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
-  const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState('');
+
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [hideSignatures, setHideSignatures] = useState(false);
   const idEmployee = Number(session?.uid?.idEmployee);
   const [showdeletePermissionModal, setShowDeletePermissionModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number | null>(null);
   const [motive, setMotive] = useState<string | null>(null);
   const [status, setStatus] = useState<boolean | null>(null);
+  const totalPages = Math.ceil(total / limit);
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
 
   const pendingPermissions = useMemo(() => {
@@ -65,16 +70,14 @@ export default function PermissionsTableClient({
   }, [hasPendingSignature]);
 
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      setMessageLoading("");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setFeedback(null);
+    setFeedbackMsg('');
+
   }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
-    setLoading(true);
-    setMessageLoading('Cargando');
+    setFeedback("loading");
+    setFeedbackMsg('Cargando...');
     const params = new URLSearchParams(searchParamsString);
     params.set("view_type", "list");
     params.set("id", "null");
@@ -224,8 +227,8 @@ export default function PermissionsTableClient({
   ];
 
   const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading('Cargando...');
+    setFeedback("loading");
+    setFeedbackMsg('Cargando...');
     router.push("/app/permissions/create");
   };
 
@@ -238,16 +241,16 @@ export default function PermissionsTableClient({
         />
       </ConditionalRender>
 
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg || "Guardando..."} />
       </ConditionalRender>
+
 
       <Container className="py-3" style={{ maxWidth: "1600px" }}>
         <Button
           variant="primary"
           className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
-          disabled={loading}
         >
           <i className="bi bi-plus-lg" />
           Crear permiso
@@ -313,8 +316,8 @@ export default function PermissionsTableClient({
                                   </a>
 
                                   <a
-                                    className={row.delete?.delete === true? "btn btn-sm btn-outline-danger" : "btn btn-sm btn-danger"}
-                                    onClick={() => handleDelete(row.id, row.delete?.reaseonDelete?? "", row.delete?.delete?? false)}
+                                    className={row.delete?.delete === true ? "btn btn-sm btn-outline-danger" : "btn btn-sm btn-danger"}
+                                    onClick={() => handleDelete(row.id, row.delete?.reaseonDelete ?? "", row.delete?.delete ?? false)}
                                   >
                                     {row.delete?.delete === true ? "Ver motivo" : "Eliminar"}
                                   </a>
@@ -328,28 +331,39 @@ export default function PermissionsTableClient({
 
                     <div className="d-flex justify-content-between align-items-center mt-4">
                       <small className="text-muted">
-                        Página {page} de {Math.ceil(total / limit)}
+                        Página {page} de {totalPages}
                       </small>
 
-                      <div className="d-flex gap-2">
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page <= 1}
-                          onClick={() => goToPage(page - 1)}
-                        >
-                          Anterior
-                        </Button>
+                      <ConditionalRender cond={pageNumbers.length > 1}>
+                        <Pagination size="sm" className="m-0">
+                          {/* Botón Anterior */}
+                          <Pagination.Prev
+                            disabled={page <= 1}
+                            onClick={() => goToPage(page - 1)}
+                          >
+                            Anterior
+                          </Pagination.Prev>
 
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page >= Math.ceil(total / limit)}
-                          onClick={() => goToPage(page + 1)}
-                        >
-                          Siguiente
-                        </Button>
-                      </div>
+                          {/* Números de Página Dinámicos */}
+                          {pageNumbers.map((num) => (
+                            <Pagination.Item
+                              key={num}
+                              active={num === page}
+                              onClick={() => goToPage(num)}
+                            >
+                              {num}
+                            </Pagination.Item>
+                          ))}
+
+                          {/* Botón Siguiente */}
+                          <Pagination.Next
+                            disabled={page >= totalPages}
+                            onClick={() => goToPage(page + 1)}
+                          >
+                            Siguiente
+                          </Pagination.Next>
+                        </Pagination>
+                      </ConditionalRender>
                     </div>
                   </ListView.Body>
                 </ListView>

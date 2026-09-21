@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Branch, Department, Employee, Position } from "@/lib/definitions";
 import ListView from "../templates/ListView";
 import { TableTemplateColumn } from "../templates/TablePage";
-import { Button, Card, Col, Container, Dropdown, InputGroup, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import { Button, Card, Col, Container, Dropdown, InputGroup, OverlayTrigger, Pagination, Row, Tooltip } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "./GenericSearchInput";
@@ -44,8 +44,6 @@ export default function EmployeeTableClient({
   const searchParamsString = sp.toString();
   const currentSearch = sp.get("search") ?? "";
 
-  const [loading, setLoading] = useState(false);
-  const [, setMessageLoading] = useState("");
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [, setTableResetKey] = useState(0);
   const isClearingSelectionRef = useRef(false);
@@ -56,6 +54,12 @@ export default function EmployeeTableClient({
   const [positions, setPositions] = useState<Array<Position>>([]);
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
+
+  const totalPages = Math.ceil(total / limit);
+
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  
+
 
   useEffect(() => {
     setFeedback(null);
@@ -81,8 +85,8 @@ export default function EmployeeTableClient({
   }, []);
 
   const goToPage = (nextPage: number) => {
-    setLoading(true);
-    setMessageLoading("Cargando...");
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
     params.set("view_type", "list");
@@ -354,7 +358,6 @@ export default function EmployeeTableClient({
           variant="primary"
           className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
           onClick={handleCreate}
-          disabled={loading}
         >
           <i className="bi bi-plus-lg" />
           Crear empleado
@@ -625,28 +628,39 @@ export default function EmployeeTableClient({
 
                     <div className="d-flex justify-content-between align-items-center mt-4">
                       <small className="text-muted">
-                        Página {page} de {Math.ceil(total / limit)}
+                        Página {page} de {totalPages}
                       </small>
 
-                      <div className="d-flex gap-2">
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page <= 1}
-                          onClick={() => goToPage(page - 1)}
-                        >
-                          Anterior
-                        </Button>
+                      <ConditionalRender cond={pageNumbers.length > 1}>
+                        <Pagination size="sm" className="m-0">
+                          {/* Botón Anterior */}
+                          <Pagination.Prev
+                            disabled={page <= 1}
+                            onClick={() => goToPage(page - 1)}
+                          >
+                            Anterior
+                          </Pagination.Prev>
 
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page >= Math.ceil(total / limit)}
-                          onClick={() => goToPage(page + 1)}
-                        >
-                          Siguiente
-                        </Button>
-                      </div>
+                          {/* Números de Página Dinámicos */}
+                          {pageNumbers.map((num) => (
+                            <Pagination.Item
+                              key={num}
+                              active={num === page}
+                              onClick={() => goToPage(num)}
+                            >
+                              {num}
+                            </Pagination.Item>
+                          ))}
+
+                          {/* Botón Siguiente */}
+                          <Pagination.Next
+                            disabled={page >= totalPages}
+                            onClick={() => goToPage(page + 1)}
+                          >
+                            Siguiente
+                          </Pagination.Next>
+                        </Pagination>
+                      </ConditionalRender>
                     </div>
                   </ListView.Body>
                 </ListView>

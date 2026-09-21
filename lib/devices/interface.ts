@@ -2,7 +2,7 @@ import { ISignatures } from "../overTime/interface";
 
 export type DeviceType = "computadora" | "laptop" | "impresora" | "servidor" |
     "switch" | "router" | "telefono_ip" | "camara" |
-    "access_point" | "celular" | "television" | "tablet" | "otro" | "";
+    "access_point" | "celular" | "television" | "tablet" | "monitor" | "no-break" | "otro" | "";
 
 // type DeviceStatus = "activo" | "inactivo" | "en_reparacion" | "baja";
 
