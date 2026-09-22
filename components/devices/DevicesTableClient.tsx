@@ -442,8 +442,8 @@ export default function DevicesTableClient({
                 </Button>
 
                 <Button
-                    variant="dark"
-                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
+                    variant="black"
+                    className="text-light bg-black border-light d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
                     onClick={handleGenerate}
                 >
                     <i className="bi bi-file-earmark-pdf" />

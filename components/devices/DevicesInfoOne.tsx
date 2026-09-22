@@ -551,6 +551,7 @@ export function DeviceOne({
                                                                     <SpecRow icon="bi-calendar-x" label="Vencimiento de garantía" value={formatCreatedAt(device.specs?.warrantyExpiration)} />
                                                                     <SpecRow icon="bi-hash" label="ID de dispositivo" value={device.specs?.idDevice} />
                                                                     <SpecRow icon="bi-box-seam" label="ID de producto" value={device.specs?.idProduct} />
+                                                                    <SpecRow icon="bi-flag-fill" label="Estatus actual" value={device.specs?.currentStatus} />
                                                                 </div>
                                                             </Col>
                                                         </Row>

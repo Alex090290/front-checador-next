@@ -480,6 +480,22 @@ export default function FormUpdateDevice({
                                 </Col>
                             </ConditionalRender>
 
+                            <Col md={6}>
+                                <FieldSelect
+                                    register={register("specs.currentStatus", {
+                                        required: "Este campo es requerido",
+                                    })}
+                                    options={[
+                                        { value: "nuevo", label: "NUEVO" },
+                                        { value: "seminuevo", label: "SEMINUEVO" },
+                                    ]}
+                                    label="Estatus actual:"
+                                    invalid={!!errors.specs?.currentStatus}
+                                    feedBack={errors.specs?.currentStatus?.message}
+                                    className="text-uppercase border"
+                                />
+                            </Col>
+
                             <Row>
                                 <Col md={6}>
                                     <Form.Group>

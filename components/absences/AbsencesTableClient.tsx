@@ -496,8 +496,8 @@ export default function AbsencesTableClient({
                     </Button>
 
                     <Button
-                        variant="dark"
-                        className="d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
+                        variant="black"
+                        className="border-light text-light bg-black d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
                         onClick={() => setShowGenerateModal(true)}
                     >
                         <i className="bi bi-file-earmark-excel" />

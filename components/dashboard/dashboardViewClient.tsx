@@ -20,7 +20,6 @@ export default function DashboardViewClient() {
         { value: "Prima anual", icon: "award", accent: "pink" },
         { value: "Ingresos y salidas", icon: "arrow-left-right", accent: "orange" },
         { value: "Vales", icon: "ticket-perforated", accent: "info" },
-        { value: "Incapacidades", icon: "clipboard2-pulse", accent: "danger" },
     ];
 
     return (

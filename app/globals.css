@@ -439,6 +439,13 @@
   --bs-btn-hover-bg: #06616f !important;
 }
 
+/* .btn-primary {
+  --bs-btn-bg: #2a5391 !important;     
+  --bs-btn-border-color: #2a5391 !important;
+  --bs-btn-color: #fff !important;     
+  --bs-btn-hover-bg: #2a5391 !important;
+} */
+
 /* Cambiar el redondeado de todos los botones de la paginación */
 .pagination .page-item .page-link {
   border-radius: 8px !important; /* El valor que tú quieras */
