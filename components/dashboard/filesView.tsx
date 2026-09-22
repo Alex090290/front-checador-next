@@ -7,6 +7,10 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import { useRouter, useSearchParams } from "next/navigation";
 import { es } from "date-fns/locale";
 import moment from "moment";
+import { getReportInflowsAndOutflows } from "@/app/actions/incidences-actions";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+import Loading from "../LoadingSpinner";
 
 moment.locale("es");
 registerLocale("es", es);
@@ -14,8 +18,9 @@ registerLocale("es", es);
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
-interface StatCardData {
+export interface StatCardData {
     id?: string;
+    idCard?: number;
     label?: string;
     icon?: string;
     value?: string;
@@ -35,10 +40,10 @@ function chunk<T>(arr: T[], size: number): T[][] {
     return result;
 }
 
-function StatCard({ label, icon, value, accent = "primary", isPending, dateInit, dateEnd }: StatCardData & { isPending?: boolean; onClick?: () => void }) {
+function StatCard({ idCard,label, icon, value, accent = "primary", isPending, dateInit, dateEnd }: StatCardData & { isPending?: boolean; onClick?: () => void }) {
     const router = useRouter();
-    const [, setFeedbackMsg] = useState("");
-    const [, setFeedback] = useState<FeedbackState>(null);
+    const [feedback, setFeedback] = useState<FeedbackState>(null);
+    const [feedbackMsg, setFeedbackMsg] = useState("");
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
 
@@ -52,6 +57,8 @@ function StatCard({ label, icon, value, accent = "primary", isPending, dateInit,
     const parsedStart = dateInitValue ? moment(dateInitValue, "YYYY-MM-DD").toDate() : null;
     const parsedEnd = dateEndValue ? moment(dateEndValue, "YYYY-MM-DD").toDate() : null;
 
+
+
     const rangeLabel =
         parsedStart && parsedEnd
             ? `${moment(parsedStart).format("D MMM")} - ${moment(parsedEnd).format("D MMM")}`
@@ -64,7 +71,7 @@ function StatCard({ label, icon, value, accent = "primary", isPending, dateInit,
         if (start && end) setShowCalendar(true);
     };
 
-    const handleClear = () => {
+    const handleClearDates = () => {
         setDateInitValue("");
         setDateEndValue("");
     };
@@ -96,6 +103,68 @@ function StatCard({ label, icon, value, accent = "primary", isPending, dateInit,
         router.push(`/app?${params.toString()}`);
     }, [dateInitValue, dateEndValue, dateInit, dateEnd, searchParamsString, router]);
 
+    const handleDownload = async(idCard:number | null) =>{
+
+        console.log("dateInit: ",dateInitValue);
+        console.log("dateEnd: ",dateEndValue);
+        
+        if (!dateInitValue || !dateEndValue) {
+            setDateError("Ambas fechas son requeridas");
+            return;
+        }
+        if (dateEndValue < dateInitValue) {
+            setDateError("'Hasta' debe ser posterior a 'Desde'");
+            return;
+        }
+        setDateError("");
+        setFeedback("loading");
+        setFeedbackMsg("Generando reporte...");
+        
+        switch (idCard) {
+            case 3: // Ingresos y salidas
+                try {
+
+                    const res = await getReportInflowsAndOutflows({ dateInit: dateInitValue, dateEnd: dateEndValue });
+                    console.log("Res: ",res);
+                    
+                    if (!res.success || !res.data) {
+                        setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                        setFeedback("error");
+                        return;
+                    }
+        
+                    const { base64Url, fileName } = res.data;
+        
+                    const link = document.createElement("a");
+                    link.href = base64Url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    handleClearDates();
+                    setFeedbackMsg("Reporte generado correctamente");
+                    setFeedback("success");
+                } catch(err) {
+                    console.log(err);
+                    
+                    setFeedbackMsg("Error inesperado al generar el reporte");
+                    setFeedback("error");
+                }
+                break;
+            case 4: // Vales
+            
+                break; // Prima anual
+            
+                break;
+            case 1: // Asistencia Y Puntualidad Perfecta
+            
+                break;
+        
+            default:
+                break;
+        }   
+        
+    }
 
 
     useEffect(() => {
@@ -105,8 +174,29 @@ function StatCard({ label, icon, value, accent = "primary", isPending, dateInit,
         }
     }, [value, isPending]);
 
-    return (
-        <div
+    return (<>
+                <ConditionalRender cond={feedback === "loading"}>
+                <Loading message={feedbackMsg || "Cargando..."} />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "success"}>
+                <SuccessOverlay
+                    message={feedbackMsg}
+                    onDone={() => {
+                        setFeedback(null);
+                        // onHide();
+                    }}
+                />
+            </ConditionalRender>
+
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
+            </ConditionalRender>
+    
+            <div
             className={["border rounded-4 p-3 h-100 d-flex flex-column mt-1", isPending && "stat-card-loading", justArrived && "collapse-card"].filter(Boolean).join(" ")}
             onAnimationEnd={() => justArrived && setJustArrived(false)}
         >
@@ -155,10 +245,11 @@ function StatCard({ label, icon, value, accent = "primary", isPending, dateInit,
                                         <Button
                                             variant="primary"
                                             className="w-100"
-                                            onClick={() => {
-                                                handleDateFilter();
-                                                setShowCalendar(false);
-                                            }}
+                                            onClick={() => { return setShowCalendar(false)}}
+                                            // onClick={() => {
+                                            //     // handleDateFilter();
+                                            //     setShowCalendar(false);
+                                            // }}
                                         >
                                             Filtrar fechas
                                         </Button>
@@ -169,7 +260,7 @@ function StatCard({ label, icon, value, accent = "primary", isPending, dateInit,
                                             variant="secondary"
                                             className="w-100"
                                             onClick={() => {
-                                                handleClear();
+                                                handleClearDates();
                                                 setShowCalendar(false);
                                             }}
                                         >
@@ -199,11 +290,13 @@ function StatCard({ label, icon, value, accent = "primary", isPending, dateInit,
             <Button
                 className="hover-clickable mt-2"
                 variant="info"
+                onClick={()=>{ return handleDownload(idCard ? idCard : null)}}
             >
                 <i className="bi bi-download me-2" />
                 Descargar
             </Button>
         </div>
+    </>
     );
 }
 

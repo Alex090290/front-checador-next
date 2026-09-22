@@ -1,0 +1,73 @@
+"use server"
+
+import { IAbsence } from "@/lib/absences/interface";
+import { FetchUsersArgs } from "@/lib/constancy/interface";
+import { storeAction } from "./storeActions";
+import axios from "axios";
+import { ActionResponse } from "@/lib/definitions";
+import { revalidatePath } from "next/cache";
+
+//Funcion para generar excel
+export async function getReportInflowsAndOutflows({
+    dateInit,
+    dateEnd,
+}: {
+    dateInit: string;
+    dateEnd: string;
+}): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        if (!dateInit || !dateEnd) {
+            throw new Error("Ambas fechas son requeridas");
+        }
+        console.log(dateInit,dateEnd);
+        
+
+        let base64Url = "";
+
+        const url = `${API_URL}/incidences/inflowsAndOutflows/${dateInit}/${dateEnd}`;
+
+        await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                },
+                responseType: "arraybuffer",
+            })
+            .then((res) => {
+                const base64 = Buffer.from(res.data).toString("base64");
+                base64Url = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
+            })
+            .catch((err) => {
+                throw new Error(
+                    err.response?.data?.message
+                        ? err.response.data.message
+                        : "Error al generar el reporte"
+                );
+            });
+
+        return {
+            success: true,
+            message: "Reporte generado",
+            data: {
+                base64Url,
+                fileName: `reporte_asistencias_${dateInit}_a_${dateEnd}.xlsx`,
+            },
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+        };
+    }
+}

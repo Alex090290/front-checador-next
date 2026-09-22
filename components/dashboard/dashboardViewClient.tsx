@@ -8,18 +8,19 @@ import GraphicFour from "../graphics/graphic_4"
 import ConditionalRender from "../ConditionalRender"
 import Loading from "../LoadingSpinner"
 import { useState } from "react"
-import CardsFiles from "./filesView"
+import CardsFiles, { StatCardData } from "./filesView"
+
 
 export default function DashboardViewClient() {
 
     const [loading] = useState(false);
     const [messageLoading] = useState('Cargando datos...');
 
-    const baseItems = [
-        { value: "Abono mensual", icon: "cash-coin", view: "permissions" },
-        { value: "Prima anual", icon: "award", accent: "pink" },
-        { value: "Ingresos y salidas", icon: "arrow-left-right", accent: "orange" },
-        { value: "Vales", icon: "ticket-perforated", accent: "info" },
+    const baseItems: StatCardData[] = [
+        { idCard: 1, value: "Asistencia Y Puntualidad Perfecta", icon: "cash-coin", view: "permissions" },
+        { idCard: 2, value: "Prima anual", icon: "award", accent: "pink" },
+        { idCard: 3, value: "Ingresos y salidas", icon: "arrow-left-right", accent: "orange" },
+        { idCard: 4, value: "Vales", icon: "ticket-perforated", accent: "info" },
     ];
 
     return (
