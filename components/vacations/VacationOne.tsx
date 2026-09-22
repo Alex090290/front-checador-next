@@ -316,8 +316,8 @@ export default function ShowInfoVacation({
             <ConditionalRender cond={showPDF === true}>
               <OverLay string="Descargar PDF">
                 <Button
-                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
-                  variant="dark"
+                  className="border-light bg-black text-light d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 border"
+                  variant="black"
                   onClick={handleDownloadPDF}
                 >
                   <i className="bi bi-filetype-pdf" />

@@ -374,6 +374,8 @@ export default function CreateDeviceComponent({
                                                                 { value: "celular", label: "CELULAR" },
                                                                 { value: "television", label: "TELEVISIÓN" },
                                                                 { value: "tablet", label: "TABLET" },
+                                                                { value: "monitor", label: "MONITOR" },
+                                                                { value: "no-break", label: "NO-BREAK" },
                                                                 { value: "otro", label: "OTRO" },
                                                             ]}
                                                             label="Tipo:"

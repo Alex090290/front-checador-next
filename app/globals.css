@@ -187,13 +187,6 @@
   /* por encima de .modal (1055) y .modal-backdrop (1050) */
 }
 
-.confirm-modal-backdrop {
-  z-index: 2100 !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  background: rgba(5, 0, 0, 0.25) !important;
-  /* opcional: mismo tono que ModalBlur en vez del gris más oscuro de Bootstrap */
-}
 
 .collapse-detail-enter {
   animation: collapseFadeIn 0.25s ease-out, flashHighlight 0.5s ease-out;
@@ -359,11 +352,6 @@
 .text-tinto-emphasis { color: var(--bs-tinto-emphasis) !important; }
 .border-tinto-subtle { border-color: var(--bs-tinto-border-subtle) !important; }
 
-.date-multi-popover {
-  z-index: 3080;
-  position: relative;
-  /* o absolute, según cómo Popper lo esté posicionando */
-}
 
 .icon-hourglass-animated {
   display: inline-block;
@@ -442,4 +430,30 @@
 /* Al llegar: un solo disparo, exactamente cuando el número ya cambió */
 .collapse-card {
     animation: collapseFadeIn 0.6s ease-out, flashHighlight 0.9s ease-out;
+}
+
+.btn-info {
+  --bs-btn-bg: #087990 !important;      /* cyan más oscuro */
+  --bs-btn-border-color: #087990 !important;
+  --bs-btn-color: #fff !important;      /* ahora sí cumple 4.5:1 con blanco */
+  --bs-btn-hover-bg: #06616f !important;
+}
+
+/* .btn-primary {
+  --bs-btn-bg: #2a5391 !important;     
+  --bs-btn-border-color: #2a5391 !important;
+  --bs-btn-color: #fff !important;     
+  --bs-btn-hover-bg: #2a5391 !important;
+} */
+
+/* Cambiar el redondeado de todos los botones de la paginación */
+.pagination .page-item .page-link {
+  border-radius: 8px !important; /* El valor que tú quieras */
+  margin: 0 2px; /* Agrega una pequeña separación entre botones */
+}
+
+/* Cambiar el color cuando está activo (opcional) */
+.pagination .page-item.active .page-link {
+  background-color: #6c757d; /* Cambia el azul por un gris u otro color */
+  border-color: #6c757d;
 }

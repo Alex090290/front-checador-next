@@ -3,11 +3,13 @@
 import ListView from "@/components/templates/ListView";
 import { TableTemplateColumn } from "@/components/templates/TableTemplate";
 import { Department } from "@/lib/definitions";
-import { useState } from "react";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Button, Card, Col, Container, Pagination, Row } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useRouter, useSearchParams } from "next/navigation";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 export default function DepartmentsTableList({
   departments,
@@ -25,20 +27,21 @@ export default function DepartmentsTableList({
   const sp = useSearchParams();
   const searchParamsString = sp.toString();
 
-  const [loading, setLoading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const totalPages = Math.ceil(total / limit);
+
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
 
-  // useEffect(() => {
-  //   if (loading) {
-  //     setLoading(false);
-  //     setMessageLoading("");
-  //   }
-  // }, [searchParamsString]);
+  useEffect(() => {
+    setFeedback(null);
+    setFeedbackMsg("");
+  }, [searchParamsString]);
 
   const goToPage = (nextPage: number) => {
-    setLoading(true);
-    setMessageLoading("Cargando");
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
     params.set("page", String(nextPage));
@@ -92,8 +95,8 @@ export default function DepartmentsTableList({
   ];
 
   const handleCreate = () => {
-    setLoading(true);
-    setMessageLoading("Cargando...");
+    setFeedback("loading");
+    setFeedbackMsg("Cargando...");
     router.push("/app/departments/create");
   };
 
@@ -104,8 +107,8 @@ export default function DepartmentsTableList({
 
   return (
     <>
-      <ConditionalRender cond={loading}>
-        <Loading message={messageLoading} />
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg} />
       </ConditionalRender>
 
       <Container className="py-3" style={{ maxWidth: "1600px" }}>
@@ -114,7 +117,6 @@ export default function DepartmentsTableList({
             variant="primary"
             className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
             onClick={handleCreate}
-            disabled={loading}
           >
             <i className="bi bi-plus-lg" />
             Crear departamento
@@ -210,28 +212,39 @@ export default function DepartmentsTableList({
 
                     <div className="d-flex justify-content-between align-items-center mt-4">
                       <small className="text-muted">
-                        Página {page} de {Math.ceil(total / limit)}
+                        Página {page} de {totalPages}
                       </small>
 
-                      <div className="d-flex gap-2">
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page <= 1}
-                          onClick={() => goToPage(page - 1)}
-                        >
-                          Anterior
-                        </Button>
+                      <ConditionalRender cond={pageNumbers.length > 1}>
+                        <Pagination size="sm" className="m-0">
+                          {/* Botón Anterior */}
+                          <Pagination.Prev
+                            disabled={page <= 1}
+                            onClick={() => goToPage(page - 1)}
+                          >
+                            Anterior
+                          </Pagination.Prev>
 
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          disabled={page >= Math.ceil(total / limit)}
-                          onClick={() => goToPage(page + 1)}
-                        >
-                          Siguiente
-                        </Button>
-                      </div>
+                          {/* Números de Página Dinámicos */}
+                          {pageNumbers.map((num) => (
+                            <Pagination.Item
+                              key={num}
+                              active={num === page}
+                              onClick={() => goToPage(num)}
+                            >
+                              {num}
+                            </Pagination.Item>
+                          ))}
+
+                          {/* Botón Siguiente */}
+                          <Pagination.Next
+                            disabled={page >= totalPages}
+                            onClick={() => goToPage(page + 1)}
+                          >
+                            Siguiente
+                          </Pagination.Next>
+                        </Pagination>
+                      </ConditionalRender>
                     </div>
                   </ListView.Body>
                 </ListView>

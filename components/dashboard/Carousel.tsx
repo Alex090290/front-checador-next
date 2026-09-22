@@ -106,7 +106,7 @@ export default function StatCardCarousel({
     };
 
     return (
-        <div>
+        <div className="h-100 p-3">
             <ConditionalRender cond={groups.length > 1}>
                 <div className="d-flex justify-content-end gap-2 mb-2">
                     <button
@@ -143,8 +143,8 @@ export default function StatCardCarousel({
                 {groups.map((group, i) => (
                         <Carousel.Item key={i}>
                             <div
-                                className="d-grid gap-3 px-1 mb-2"
-                                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}
+                                className="d-grid gap-3 px-1 mb-5"
+                                style={{gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))"}}
                             >
                                 {group.map((item) => (
                                     <StatCard

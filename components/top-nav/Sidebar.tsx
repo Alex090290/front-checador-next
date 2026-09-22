@@ -30,6 +30,7 @@ export default function Sidebar() {
           variant="outline-primary"
           onClick={toggleShow}
           className="position-fixed top-0 start-0 m-2 d-inline-flex align-items-center justify-content-center"
+          aria-label="Menu"
           style={{
             zIndex: 1050,
             width: "38px",
