@@ -200,7 +200,7 @@ export default function FormUpdateDepartment({
               </Button>
 
               <Button type="submit" variant="success" disabled={loading || isSubmitting}>
-                {isSubmitting ? "Guardando..." : "Guardar"}
+                {isSubmitting ? "Actualizando..." : "Actualizar"}
               </Button>
             </div>
 

@@ -599,7 +599,7 @@ export default function EmployeeSalariesTableClient({
                                                             </th>
                                                         ))}
 
-                                                        <th className="fw-bold">Detalles</th>
+                                                        <th className="fw-bold">Acciones</th>
                                                     </tr>
                                                 </thead>
 

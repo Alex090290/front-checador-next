@@ -1,18 +1,19 @@
 "use server"
 
-import { IBonusKeys, IUpdateBonusKeys } from "@/lib/Bonus/interface";
+import { IBonusHomeOffice, IUpdateBonusHO } from "@/lib/Bonus/interface";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 
-//Listar bonos de llaves 
-export async function listAllBonusKeys(): Promise<IBonusKeys[]> {
+//Listar bonos de HO
+export async function listAllBonusHO(): Promise<IBonusHomeOffice[]> {
 
     try {
+
         const { apiToken, API_URL } = await storeAction();
 
-        const { data } = await axios.get(`${API_URL}/bonuskeys/getAll`, {
+        const { data } = await axios.get(`${API_URL}/bonushomeoffice/getAll`, {
             headers: {
                 Authorization: `Bearer ${apiToken}`,
             },
@@ -29,21 +30,21 @@ export async function listAllBonusKeys(): Promise<IBonusKeys[]> {
     }
 }
 
-//Crear bono
-export async function createBonusKeys({
+//Crear bono de HomeOffice
+export async function createBonusHomeOffice({
     data
 }: {
-    data: IBonusKeys;
-}): Promise<ActionResponse<IBonusKeys | null>> {
+    data: IBonusHomeOffice;
+}): Promise<ActionResponse<IBonusHomeOffice | null>> {
+
     try {
 
         const { apiToken, API_URL } = await storeAction();
         await axios
             .post(
-                `${API_URL}/bonuskeys`,
+                `${API_URL}/bonushomeoffice`,
                 {
                     idEmployee: data.idEmployee,
-                    location: data.location,
                     amount: Number(data.amount)
                 },
                 {
@@ -53,7 +54,7 @@ export async function createBonusKeys({
                 }
             );
 
-        revalidatePath("/app/bonuskeys");
+        revalidatePath("/app/bonushomeoffice");
 
         return {
             success: true,
@@ -67,48 +68,23 @@ export async function createBonusKeys({
             message: error.message,
         };
     }
+
 }
 
-//Buscar un solo registro
-export async function getOneBonusKeys({
-    idBonusKeys
-}: {
-    idBonusKeys: string;
-}): Promise<IBonusKeys | null> {
-
-    try {
-        const { apiToken, API_URL } = await storeAction();
-
-        const response = await axios
-            .get(`${API_URL}/bonuskeys/findOne/${idBonusKeys}`, {
-                headers: {
-                    Authorization: `Bearer ${apiToken}`,
-                },
-            });
-
-        return response.data?.data ?? response.data ?? null;
-
-    } catch (error) {
-
-        console.log(error);
-        return null;
-    }
-}
-
-export async function updateBonusKeys({
-    idBonusKeys,
+//Actualizar bono home office 
+export async function updateBonusHO({
+    idBonus,
     data
 }: {
-    idBonusKeys: string;
-    data: IUpdateBonusKeys;
-}): Promise<ActionResponse<IUpdateBonusKeys | null>> {
+    idBonus: string;
+    data: IUpdateBonusHO;
+}): Promise<ActionResponse<IUpdateBonusHO | null>> {
 
     try {
         const { apiToken, API_URL } = await storeAction();
 
-        await axios.put(`${API_URL}/bonuskeys/${idBonusKeys}`,
+        await axios.put(`${API_URL}/bonushomeoffice/${idBonus}`,
             {
-                location: data.location,
                 amount: Number(data.amount)
             },
             {
@@ -117,7 +93,7 @@ export async function updateBonusKeys({
                 },
             });
 
-        revalidatePath("/app/bonuskeys");
+        revalidatePath("/app/bonushomeoffice");
 
         return {
             success: true,
@@ -133,23 +109,23 @@ export async function updateBonusKeys({
     }
 }
 
-export async function deleteBonusKeys({
-    idBonusKeys,
+export async function deleteBonusHO({
+    idBonus,
 }: {
-    idBonusKeys: string;
+    idBonus: string;
 }): Promise<ActionResponse<Boolean>> {
 
     try {
         const { apiToken, API_URL } = await storeAction();
 
-        await axios.delete(`${API_URL}/bonuskeys/${idBonusKeys}`,
+        await axios.delete(`${API_URL}/bonushomeoffice/${idBonus}`,
             {
                 headers: {
                     Authorization: `Bearer ${apiToken}`,
                 },
             });
 
-        revalidatePath("/app/bonuskeys");
+        revalidatePath("/app/bonushomeoffice");
 
         return {
             success: true,

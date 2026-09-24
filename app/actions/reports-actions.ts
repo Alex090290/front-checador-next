@@ -131,7 +131,7 @@ export async function getPrimaAnual({
 }
 
 //REPORTE EXCEL PARA INGRESOS Y SALIDAS
-export async function getIngresosYSalidas({
+export async function getReportInflowsAndOutflows({
     dateInit,
     dateEnd,
 }: {
@@ -141,20 +141,22 @@ export async function getIngresosYSalidas({
     try {
         const { apiToken, API_URL } = await storeAction();
 
+        if (!dateInit || !dateEnd) {
+            throw new Error("Ambas fechas son requeridas");
+        }
+        console.log(dateInit, dateEnd);
 
-        const params = new URLSearchParams();
-        params.set("dateInit", dateInit);
-        params.set("dateEnd", dateEnd);
 
         let base64Url = "";
 
-        await axios
-            .get(`${API_URL}/absencesAndAttendances-report-document?${params.toString()}`, {
-                headers: {
-                    Authorization: `Bearer ${apiToken}`,
-                },
-                responseType: "arraybuffer",
-            })
+        const url = `${API_URL}/incidences/inflowsAndOutflows/${dateInit}/${dateEnd}`;
+
+        await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+            responseType: "arraybuffer",
+        })
             .then((res) => {
                 const base64 = Buffer.from(res.data).toString("base64");
                 base64Url = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
@@ -172,7 +174,7 @@ export async function getIngresosYSalidas({
             message: "Reporte generado",
             data: {
                 base64Url,
-                fileName: `reporte_${dateInit}_a_${dateEnd}.xlsx`,
+                fileName: `reporte_asistencias_${dateInit}_a_${dateEnd}.xlsx`,
             },
         };
     } catch (error: unknown) {

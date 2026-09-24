@@ -7,14 +7,23 @@ import GraphicThree from "../graphics/graphic_3"
 import GraphicFour from "../graphics/graphic_4"
 import ConditionalRender from "../ConditionalRender"
 import Loading from "../LoadingSpinner"
-import { useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
 import CardsFiles, { StatCardData } from "./filesView"
+import { ICurrentPeriod } from "@/lib/definitions"
+import { useRouter, useSearchParams } from "next/navigation"
 
 
-export default function DashboardViewClient() {
+export default function DashboardViewClient({
+    periods,
+    periodoActual,
+}: {
+    periods: ICurrentPeriod[];
+    periodoActual: ICurrentPeriod | null;
+}) {
 
     const [loading] = useState(false);
     const [messageLoading] = useState('Cargando datos...');
+
 
     const baseItems: StatCardData[] = [
         { idCard: 1, value: "Asistencia Y Puntualidad Perfecta", icon: "cash-coin", view: "permissions" },
@@ -47,7 +56,11 @@ export default function DashboardViewClient() {
                             <Col xs={12} md={12} className="h-50">
                                 <div className="border rounded-3" style={{ height: "auto" }}>
                                     {/* <GraphicOne /> */}
-                                    <CardsFiles items={baseItems} />
+                                    <CardsFiles
+                                        items={baseItems}
+                                        periods={periods}
+                                        periodoActual={periodoActual}
+                                    />
                                 </div>
                             </Col>
 

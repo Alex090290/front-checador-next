@@ -11,10 +11,13 @@ import { IPermissionRequest } from "@/lib/permissions/interface";
 type FetchVacationsArgs = {
   page?: number;
   limit?: number;
+  search?: string;
   status?: string;
   leader?: number;
   personDoh?: number;
   employee?: number;
+  dateInit?: string;
+  dateEnd?: string;
 };
 
 export async function fetchPermissionsByEmployee(
@@ -41,6 +44,9 @@ export async function fetchPermissionsByEmployee(
     if (args.leader) params.set("leader", String(args.leader));
     if (args.personDoh) params.set("personDoh", String(args.personDoh));
     if (args.status) params.set("status", args.status);
+    if (args.search) params.set("search", args.search);
+    if (args.dateInit) params.set("dateInit", args.dateInit);
+    if (args.dateEnd) params.set("dateEnd", args.dateEnd);
 
     // Reglas por rol (mismo estilo que vacations)
     if (session?.role === "EMPLOYEE" && session.isDoh === false) {

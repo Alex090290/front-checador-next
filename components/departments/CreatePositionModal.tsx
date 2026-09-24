@@ -111,7 +111,7 @@ function CreatePositionModal({
                 />
             </ConditionalRender>
 
-            <div className="p-2">
+            <div className="p-2 mt-4">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                     <div>
                         <h4 className="mb-1 fw-bold">Puesto</h4>

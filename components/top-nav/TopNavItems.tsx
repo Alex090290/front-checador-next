@@ -88,12 +88,12 @@ export default function TopNavItems({ onNavigate }: TopNavItemsProps) {
   return (
     <Nav className="flex-column" variant="pills" activeKey={activeKey}>
       <Accordion alwaysOpen className="w-100 nav-accordion">
-        {items.map((item) => {
+        {items.map((item, index) => {
           const key = stableKey(item);
 
           if (!item.children?.length) {
             return (
-              <Nav.Item key={key}>
+              <Nav.Item key={index}>
                 <Nav.Link
                   as={NextLinkRef}
                   href={item.href!}
