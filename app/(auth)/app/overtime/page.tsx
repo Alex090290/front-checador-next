@@ -9,6 +9,8 @@ type SearchParams = {
   page?: string;
   limit?: string;
   search?: string;
+  dateInit?: string;
+  dateEnd?: string;
 };
 
 
@@ -23,10 +25,12 @@ async function PageOverTime({
   const page = params?.page ?? "1";
   const limit = params?.limit ?? "20";
   const search = params?.search ?? "";
+  const dateInit = params?.dateInit ?? "";
+  const dateEnd = params?.dateEnd ?? "";
      
   return (
     <Suspense fallback={<Loading message="Cargando datos..." />}>
-      <ListAllOverTime id={id} limit={limit} page={page} search={search}/>
+      <ListAllOverTime id={id} limit={limit} page={page} search={search} dateInit={dateInit} dateEnd={dateEnd}/>
     </Suspense>
   );
 }

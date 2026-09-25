@@ -6,10 +6,16 @@ export default async function ListVacationsAll({
   id,
   page = "1",
   limit = "20",
+  search,
+  dateInit,
+  dateEnd
 }: {
   id: string;
   page?: string;
   limit?: string;
+  search?: string;
+  dateInit?: string;
+  dateEnd?: string;
 }) {
 
   if (id && id !== "null")
@@ -18,7 +24,13 @@ export default async function ListVacationsAll({
   const pageParse = Math.max(Number(page || "1") || 1, 1);
   const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 100);
 
-  const vacationsPaged = await fetchVacations({ page: pageParse, limit: limitParse });
+  const vacationsPaged = await fetchVacations({ 
+    page: pageParse, 
+    limit: limitParse,
+    search,
+    dateInit,
+    dateEnd
+   });
 
   return (
     <VacationsTableClient
@@ -27,6 +39,9 @@ export default async function ListVacationsAll({
       total={vacationsPaged.total}
       page={pageParse}
       limit={limitParse}
+      search={search}
+      dateInit={dateInit}
+      dateEnd={dateEnd}
     />
   );
 }

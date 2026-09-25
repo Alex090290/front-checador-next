@@ -33,6 +33,9 @@ export async function fetchOverTimeQueries(args: FetchUsersArgs & { search?: str
     if (args.search?.trim()) {
       params.set("search", args.search.trim());
     }
+    if (args.dateInit) params.set("dateInit", String(args.dateInit));
+    if (args.dateEnd) params.set("dateEnd", String(args.dateEnd));
+    
     const response = await axios
       .get(`${API_URL}/overtime?${params.toString()}`, {
         headers: {

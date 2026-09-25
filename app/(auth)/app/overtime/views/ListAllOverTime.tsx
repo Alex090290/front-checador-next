@@ -6,18 +6,22 @@ export default async function ListAllOverTime({
     id,
     page = "1",
     limit = "20",
-    search = "", 
+    search = "",
+    dateInit,
+    dateEnd
 }: {
-        id: string;
-        page?: string;
-        limit?: string;
-        search?: string;
-    }) {
+    id: string;
+    page?: string;
+    limit?: string;
+    search?: string;
+    dateInit?: string;
+    dateEnd?: string;
+}) {
     if (id && id !== "null") {
-    return (
-        <OverTimeInfoOne id={id} />
-    );
-}
+        return (
+            <OverTimeInfoOne id={id} />
+        );
+    }
 
     const pageParse = Math.max(Number(page || "1") || 1, 1);
     const limitParse = Math.min(Math.max(Number(limit || "20") || 2, 1), 100)
@@ -26,7 +30,9 @@ export default async function ListAllOverTime({
         fetchOverTimeQueries({
             page: pageParse,
             limit: limitParse,
-            search
+            search,
+            dateInit,
+            dateEnd
         }),
     ]);
 
@@ -35,6 +41,10 @@ export default async function ListAllOverTime({
             total={overTime.total}
             page={pageParse}
             limit={limitParse}
-            overtime={overTime.data} />
+            overtime={overTime.data} 
+            search={search}
+            dateInit={dateInit}
+            dateEnd={dateEnd}
+            />
     )
 }

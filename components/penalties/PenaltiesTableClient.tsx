@@ -7,13 +7,15 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Card, Col, Container, InputGroup, Pagination, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, InputGroup, Overlay, Pagination, Row } from "react-bootstrap";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import ListView from "../templates/ListView";
 import AlertSignaturesPenalty from "./AlertSignatures";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import ModalBlur from "../ModalBlur";
 import DeletePenaltyModal from "./DeletePenaltyModal";
+import DatePicker from "react-datepicker";
+import moment from "moment";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -23,13 +25,17 @@ export default function PenaltiesTableClient({
     page,
     limit,
     search = "",
-    penalty
+    penalty,
+    dateInit,
+    dateEnd
 }: {
     total: number;
     page: number;
     limit: number;
     search?: string;
     penalty: IPenaltyForOffeses[];
+    dateInit?: string;
+    dateEnd?: string;
 }) {
     //Aqui los const
     const session = useSessionSnapshot();
@@ -52,15 +58,35 @@ export default function PenaltiesTableClient({
     const [feedback, setFeedback] = useState<FeedbackState>(null);
 
     const totalPages = Math.ceil(total / limit);
-
     const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
 
+    //Calendario
+    const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
+    const [dateEndValue, setDateEndValue] = useState(dateEnd ?? "");
+    const [dateError, setDateError] = useState("");
+    const [showCalendar, setShowCalendar] = useState(false);
+    const dateButtonRef = useRef(null);
+    const parsedStart = dateInitValue ? moment(dateInitValue, "YYYY-MM-DD").toDate() : null;
+    const parsedEnd = dateEndValue ? moment(dateEndValue, "YYYY-MM-DD").toDate() : null;
 
     useEffect(() => {
         setFeedback(null);
         setFeedbackMsg("");
     }, [searchParamsString]);
+
+    const rangeLabel =
+        parsedStart && parsedEnd
+            ? `${moment(parsedStart).format("DD/MM/YYYY")} - ${moment(parsedEnd).format("DD/MM/YYYY")}`
+            : "Selecciona un rango de fechas";
+
+    const handleRangeChange = (dates: [Date | null, Date | null]) => {
+        const [start, end] = dates;
+        setDateInitValue(start ? moment(start).format("YYYY-MM-DD") : "");
+        setDateEndValue(end ? moment(end).format("YYYY-MM-DD") : "");
+        if (start && end) setShowCalendar(true);
+    };
+
 
     const pendingOvertimes = useMemo(() => {
         return (penalty ?? []).filter((o: IPenaltyForOffeses) => {
@@ -169,6 +195,57 @@ export default function PenaltiesTableClient({
         setStatus(status)
         setShowDeletePenaltyModal(true);
     };
+
+    const handleDateFilter = useCallback(() => {
+        if (!dateInitValue || !dateEndValue) {
+            setDateError("Ambas fechas son requeridas");
+            return;
+        }
+        if (dateEndValue < dateInitValue) {
+            setDateError("'Hasta' debe ser posterior a 'Desde'");
+            return;
+        }
+        setDateError("");
+
+        if (dateInitValue === (dateInit ?? "") && dateEndValue === (dateEnd ?? "")) return;
+
+        setFeedback("loading");
+        setFeedbackMsg("Filtrando...");
+
+
+        const params = new URLSearchParams(searchParamsString);
+        params.set("id", "null");
+        params.set("view_type", "list");
+        params.set("page", "1");
+        params.set("limit", String(limit));
+        params.set("dateInit", dateInitValue);
+        params.set("dateEnd", dateEndValue);
+
+        clearSelectedIds();
+        router.push(`/app/penalties?${params.toString()}`);
+    }, [dateInitValue, dateEndValue, dateInit, dateEnd, searchParamsString, limit, router, clearSelectedIds]);
+
+    const handleClear = useCallback(() => {
+        setDateInitValue("");
+        setDateEndValue("");
+        setDateError("");
+        clearSelectedIds();
+
+        if (!dateInit && !dateEnd) return;
+
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...");
+
+        const params = new URLSearchParams(searchParamsString);
+        params.set("id", "null");
+        params.set("view_type", "list");
+        params.set("page", "1");
+        params.set("limit", String(limit));
+        params.delete("dateInit");
+        params.delete("dateEnd");
+
+        router.push(`/app/penalties?${params.toString()}`);
+    }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds]);
 
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IPenaltyForOffeses>[] = [
@@ -315,21 +392,107 @@ export default function PenaltiesTableClient({
                         <Card className="rounded-4 shadow-sm">
                             <Card.Body className="p-4 p-md-5">
                                 <div className="mb-4">
-                                    <Row className="mb-4 g-5 align-items-between">
-                                        <Col xs={12} md={6} lg={4}>
-                                            <InputGroup>
-                                                <InputGroup.Text
-                                                    className="bg-gray"
-                                                    style={{ color: "#6c757d" }}
-                                                >
-                                                    <i className="bi bi-search" />
-                                                </InputGroup.Text>
-                                                <GenericSearchInput
-                                                    initialValue={search}
-                                                    onSearch={handleSearch}
-                                                    placeholder="Buscar por nombre o apellido..."
-                                                />
-                                            </InputGroup>
+                                    <Row className="justify-content-center mb-3 g-3">
+                                        {/* FILTRO POR EMPLEADO */}
+                                        <Col xs={12} md={6} lg={6}>
+                                            <Card className="border rounded-4 h-100">
+                                                <Card.Body className="p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <i className="bi bi-person text-primary" />
+                                                        <span className="fw-semibold small">Filtrar por empleado</span>
+                                                    </div>
+
+                                                    <InputGroup>
+                                                        <InputGroup.Text
+                                                            className="bg-gray"
+                                                            style={{ color: "#6c757d" }}
+                                                        >
+                                                            <i className="bi bi-search" />
+                                                        </InputGroup.Text>
+                                                        <GenericSearchInput
+                                                            initialValue={search}
+                                                            onSearch={handleSearch}
+                                                            placeholder="Buscar por nombre o apellido..."
+                                                        />
+                                                    </InputGroup>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+
+                                        {/* FILTRO POR FECHA */}
+                                        <Col xs={12} md={6} lg={6}>
+                                            <Card className="rounded-4 border h-100">
+                                                <Card.Body className="p-3">
+                                                    <div className="d-flex align-items-center gap-2 mb-3">
+                                                        <i className="bi bi-calendar-range text-primary" />
+                                                        <span className="fw-semibold small">Filtrar por fechas</span>
+                                                    </div>
+
+                                                    <Button
+                                                        ref={dateButtonRef}
+                                                        variant="outline-secondary"
+                                                        className={`w-100 d-flex align-items-center justify-content-between ${dateError ? "border-danger text-danger" : ""}`}
+                                                        onClick={() => setShowCalendar((s) => !s)}
+                                                    >
+                                                        <span>{rangeLabel}</span>
+                                                        <i className="bi bi-calendar3" />
+                                                    </Button>
+
+                                                    {dateError && (
+                                                        <small className="text-danger d-block mt-1">{dateError}</small>
+                                                    )}
+
+                                                    <Overlay
+                                                        target={dateButtonRef.current}
+                                                        show={showCalendar}
+                                                        placement="bottom-start"
+                                                        rootClose
+                                                        onHide={() => setShowCalendar(false)}
+                                                    >
+                                                        {({ ref, style }) => (
+                                                            <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize">
+                                                                <DatePicker
+                                                                    selectsRange
+                                                                    inline
+                                                                    startDate={parsedStart}
+                                                                    endDate={parsedEnd}
+                                                                    onChange={handleRangeChange}
+                                                                    monthsShown={1}
+                                                                    locale="es"
+                                                                />
+                                                                <Row className="g-2 m-2">
+
+                                                                    <Col xs={12} md={6} lg={6}>
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            className="w-100"
+                                                                            onClick={() => {
+                                                                                handleDateFilter();
+                                                                                setShowCalendar(false);
+                                                                            }}
+                                                                        >
+                                                                            Filtrar fechas
+                                                                        </Button>
+                                                                    </Col>
+
+                                                                    <Col xs={12} md={6} lg={6}>
+                                                                        <Button
+                                                                            variant="secondary"
+                                                                            className="w-100"
+                                                                            onClick={() => {
+                                                                                handleClear();
+                                                                                setShowCalendar(false);
+                                                                            }}
+                                                                        >
+                                                                            <i className="bi bi-arrow-counterclockwise" />
+                                                                        </Button>
+                                                                    </Col>
+                                                                </Row>
+                                                            </div>
+                                                        )}
+                                                    </Overlay>
+                                                </Card.Body>
+                                            </Card>
                                         </Col>
                                     </Row>
                                 </div>
@@ -355,6 +518,22 @@ export default function PenaltiesTableClient({
                                                 </thead>
 
                                                 <tbody>
+                                                    <ConditionalRender cond={penalty?.length === 0}>
+                                                        <tr>
+                                                            <td colSpan={columns.length + 1} className="text-center py-5 text-muted">
+                                                                <i
+                                                                    className={`bi ${search || dateInit ? "bi-clipboard-x" : "bi-inbox"} d-block mb-2`}
+                                                                    style={{ fontSize: "2.5rem" }}
+                                                                />
+                                                                <span className="fw-semibold">
+                                                                    {search || dateInit
+                                                                        ? "No se encontraron penalizaciones con los filtros aplicados"
+                                                                        : "No hay penalizaciones registradas"}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </ConditionalRender>
+
                                                     {(penalty ?? []).map((row) => (
                                                         <tr key={row.id}>
                                                             {columns.map((column) => (

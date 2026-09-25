@@ -97,6 +97,12 @@ export async function fetchPenaltiesQueries(args: FetchUsersArgs & {
 
         if (args.search?.trim()) {
             params.set("search", args.search.trim());
+        } 
+        if (args.dateInit?.trim()) {
+            params.set("dateInit", args.dateInit.trim());
+        } 
+        if (args.dateEnd?.trim()) {
+            params.set("dateEnd", args.dateEnd.trim());
         }
 
         const response = await axios

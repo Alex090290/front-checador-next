@@ -9,6 +9,9 @@ export type FetchUsersArgs = {
     page?: number;
     limit?: number;
     total?: number;
+    search?: string;
+    dateInit?: string;
+    dateEnd?: string;
     //   status?: string;
 };
 

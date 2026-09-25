@@ -199,8 +199,15 @@ export default function PermissionsTableClient({
   }, [dateInitValue, dateEndValue, dateInit, dateEnd, searchParamsString, limit, router, clearSelectedIds]);
 
   const handleClear = useCallback(() => {
+    setDateInitValue("");
+    setDateEndValue("");
+    setDateError("");
+    clearSelectedIds();
+
+    if (!dateInit && !dateEnd) return;
+
     setFeedback("loading");
-    setFeedbackMsg("Cargando...")
+    setFeedbackMsg("Cargando...");
 
     const params = new URLSearchParams(searchParamsString);
     params.set("id", "null");
@@ -209,7 +216,9 @@ export default function PermissionsTableClient({
     params.set("limit", String(limit));
     params.delete("dateInit");
     params.delete("dateEnd");
-  }, [router, searchParamsString]);
+
+    router.push(`/app/permissions?${params.toString()}`);
+  }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds]);
 
   const columns: TableTemplateColumn<IPermissionRequest>[] = [
     {
@@ -513,6 +522,23 @@ export default function PermissionsTableClient({
                         </thead>
 
                         <tbody>
+
+                          <ConditionalRender cond={permissions.length === 0}>
+                            <tr>
+                              <td colSpan={columns.length + 1} className="text-center py-5 text-muted">
+                                <i
+                                  className={`bi ${search || dateInit ? "bi-clipboard-x" : "bi-inbox"} d-block mb-2`}
+                                  style={{ fontSize: "2.5rem" }}
+                                />
+                                <span className="fw-semibold">
+                                  {search || dateInit
+                                    ? "No se encontraron permisos con los filtros aplicados"
+                                    : "No hay permisos registradas"}
+                                </span>
+                              </td>
+                            </tr>
+                          </ConditionalRender>
+
                           {(permissions ?? []).map((row) => (
                             <tr key={row.id}>
                               {columns.map((column) => (

@@ -30,6 +30,9 @@ export type InabilityDocPayload = {
 type FetchArgs = {
   page?: number;
   limit?: number;
+  search?: string;
+  dateInit?: string;
+  dateEnd?: string;
 };
 
 export type InabilityPayloadBase = {
@@ -74,6 +77,10 @@ export async function getAllInability(args: FetchArgs = {}): Promise<{
     const params = new URLSearchParams();
     params.set("page", String(pageNum));
     params.set("limit", String(limitNum));
+
+    if (args.search) params.set("search", String(args.search));
+    if (args.dateInit) params.set("dateInit", String(args.dateInit));
+    if (args.dateEnd) params.set("dateEnd", String(args.dateEnd));
 
 
     const response = await axios.get(`${API_URL}/inability/all?${params.toString()}`, {

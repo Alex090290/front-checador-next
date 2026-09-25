@@ -7,11 +7,15 @@ export default async function ListAllPenalties({
     page = "1",
     limit = "20",
     search = "",
+    dateInit,
+    dateEnd
 }: {
     id: string;
     page?: string;
     limit?: string;
     search?: string;
+    dateInit?: string;
+    dateEnd?: string;
 }) {
     if (id && id !== "null") {
         return (
@@ -27,7 +31,9 @@ export default async function ListAllPenalties({
         fetchPenaltiesQueries({
             page: pageParse,
             limit: limitParse,
-            search: search,
+            search,
+            dateInit,
+            dateEnd
         }),
     ]);
 
@@ -38,6 +44,8 @@ export default async function ListAllPenalties({
             limit={limitParse}
             search={search}
             penalty={penalty.data ?? []}
+            dateInit={dateInit}
+            dateEnd={dateEnd}
         />
     );
 }

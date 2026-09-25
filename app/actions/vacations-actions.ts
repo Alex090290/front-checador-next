@@ -68,6 +68,9 @@ type FetchVacationsArgs = {
   leader?: number;
   personDoh?: number;
   employee?: number;
+  search?: string;
+  dateInit?: string;
+  dateEnd?: string;
 };
 
 export async function fetchVacations(args: FetchVacationsArgs = {}): Promise<{
@@ -92,6 +95,9 @@ export async function fetchVacations(args: FetchVacationsArgs = {}): Promise<{
     if (args.leader) params.set("leader", String(args.leader));
     if (args.personDoh) params.set("personDoh", String(args.personDoh));
     if (args.employee) params.set("employee", String(args.employee));
+    if (args.search) params.set("search", String(args.search));
+    if (args.dateInit) params.set("dateInit", String(args.dateInit));
+    if (args.dateEnd) params.set("dateEnd", String(args.dateEnd));
 
 
     if (session?.role === "EMPLOYEE" && session.isDoh === false) {

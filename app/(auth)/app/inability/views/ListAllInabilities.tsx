@@ -6,11 +6,17 @@ import InfoOneInability from "@/components/inability/inabilityInfoOne";
 export default async function ListAllInability({
   id,
   page = "1",
-  limit = "20"
+  limit = "20",
+  search,
+  dateInit,
+  dateEnd
 }: {
   id: string;
   page?: string;
   limit?: string;
+  search?: string;
+  dateInit?: string;
+  dateEnd?: string;
 }) {
   const pageParse = Math.max(Number(page || "1") || 1, 1);
   const limitParse = Math.min(Math.max(Number(limit || "20") || 20, 1), 500);
@@ -23,12 +29,22 @@ export default async function ListAllInability({
     return <InfoOneInability inhability={inhability} employees={employees.data} id={id} />;
   }
 
-  const inhabilities = await getAllInability({ page: pageParse, limit: limitParse });
+  const inhabilities = await getAllInability({ 
+    page: pageParse, 
+    limit: limitParse,
+    search,
+    dateInit,
+    dateEnd 
+  });
+
 
   return <TableInabilityComponent 
             inhabilities={inhabilities.data}
             total={inhabilities.total}
             page={pageParse}
             limit={limitParse}
+            search={search}
+            dateInit={dateInit}
+            dateEnd={dateEnd}
         />
 }
