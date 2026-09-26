@@ -34,7 +34,7 @@ export default function TableBonusHO({
 }) {
 
     console.log("total:", total);
-    
+
     //CONST
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
@@ -89,7 +89,7 @@ export default function TableBonusHO({
 
             } catch (error) {
                 console.log(error);
-            
+
                 setFeedbackMsg("Error inesperado, intenta de nuevo");
                 setFeedback("error");
             }
@@ -279,6 +279,23 @@ export default function TableBonusHO({
                                                 </thead>
 
                                                 <tbody>
+
+                                                    <ConditionalRender cond={BonusHomeOffice?.length === 0}>
+                                                        <tr>
+                                                            <td colSpan={columns.length + 1} className="text-center py-5 text-muted">
+                                                                <i
+                                                                    className={`bi ${search ? "bi-clipboard-x" : "bi-inbox"} d-block mb-2`}
+                                                                    style={{ fontSize: "2.5rem" }}
+                                                                />
+                                                                <span className="fw-semibold">
+                                                                    {search
+                                                                        ? "No se encontro ningun bono con los filtros aplicados"
+                                                                        : "No hay bonos registradas"}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </ConditionalRender>
+
                                                     {(BonusHomeOffice ?? []).map((row) => (
                                                         <tr key={row.id}>
                                                             {columns.map((column) => (
