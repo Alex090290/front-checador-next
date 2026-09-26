@@ -4,7 +4,6 @@ import {
 } from "@/app/actions/permissions-actions";
 import PermissionsTableClient from "@/components/Permissions/PermissionTableClient";
 import PermissionInfoOne from "./infoOnePermission";
-import moment from "moment";
 
 async function PermissionsMainView({
   id,
@@ -27,13 +26,9 @@ async function PermissionsMainView({
     return <PermissionInfoOne id={id} />;
   }
 
-  const currentDate = moment.tz().format("YYYY-MM-DD");
 
   const pageParse = Math.max(Number(page || "1") || 1, 1);
   const limitParse = Math.min(Math.max(Number(limit || "20") || 2, 1), 100);
-
-  const finalDateInit = dateInit || currentDate;
-  const finalDateEnd = dateEnd || currentDate;
 
   const permissionPaged = await fetchPermissionsByEmployee({
     page: pageParse,

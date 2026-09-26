@@ -2,11 +2,22 @@ import Loading from "@/components/LoadingSpinner";
 import { Suspense } from "react";
 import ListAllBonuskeys from "./views/ListAllBonus";
 
-async function PageBonuskeys() {
+type SearchParams = {
+    search?: string;
+}
+
+
+async function PageBonuskeys({
+    searchParams
+}: {
+    searchParams?: SearchParams;
+}) {
+
+    const search = searchParams?.search ?? "";
 
     return <>
         <Suspense fallback={<Loading message="Cargando datos..." />}>
-            <ListAllBonuskeys />
+            <ListAllBonuskeys search={search}/>
         </Suspense>
     </>
 }

@@ -245,7 +245,7 @@ export default function PenaltiesTableClient({
         params.delete("dateEnd");
 
         router.push(`/app/penalties?${params.toString()}`);
-    }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds]);
+    }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds, limit]);
 
     //Desgloce de la tabla
     const columns: TableTemplateColumn<IPenaltyForOffeses>[] = [

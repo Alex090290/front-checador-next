@@ -114,32 +114,32 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
     }, [value, isPending]);
 
     //Filtrar fechas
-    const handleDateFilter = useCallback(() => {
-        if (!dateInitValue || !dateEndValue) {
-            setDateError("Ambas fechas son requeridas");
-            return;
-        }
-        if (dateEndValue < dateInitValue) {
-            setDateError("'Hasta' debe ser posterior a 'Desde'");
-            return;
-        }
-        setDateError("");
+    // const handleDateFilter = useCallback(() => {
+    //     if (!dateInitValue || !dateEndValue) {
+    //         setDateError("Ambas fechas son requeridas");
+    //         return;
+    //     }
+    //     if (dateEndValue < dateInitValue) {
+    //         setDateError("'Hasta' debe ser posterior a 'Desde'");
+    //         return;
+    //     }
+    //     setDateError("");
 
-        if (dateInitValue === (dateInit ?? "") && dateEndValue === (dateEnd ?? "")) return;
+    //     if (dateInitValue === (dateInit ?? "") && dateEndValue === (dateEnd ?? "")) return;
 
-        setFeedback("loading");
-        setFeedbackMsg("Filtrando...");
+    //     setFeedback("loading");
+    //     setFeedbackMsg("Filtrando...");
 
 
-        const params = new URLSearchParams(searchParamsString);
-        params.set("id", "null");
-        params.set("view_type", "list");
-        params.set("page", "1");
-        params.set("dateInit", dateInitValue);
-        params.set("dateEnd", dateEndValue);
+    //     const params = new URLSearchParams(searchParamsString);
+    //     params.set("id", "null");
+    //     params.set("view_type", "list");
+    //     params.set("page", "1");
+    //     params.set("dateInit", dateInitValue);
+    //     params.set("dateEnd", dateEndValue);
 
-        router.push(`/app?${params.toString()}`);
-    }, [dateInitValue, dateEndValue, dateInit, dateEnd, searchParamsString, router]);
+    //     router.push(`/app?${params.toString()}`);
+    // }, [dateInitValue, dateEndValue, dateInit, dateEnd, searchParamsString, router]);
 
     //Boton de descargar
     const handleDownload = async (idCard: number | null) => {
@@ -180,6 +180,8 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                     setFeedbackMsg("Reporte generado correctamente");
                     setFeedback("success");
                 } catch (err) {
+                    console.log(err);
+                    
                     setFeedbackMsg("Error inesperado al generar el reporte");
                     setFeedback("error");
                 }

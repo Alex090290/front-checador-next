@@ -7,10 +7,9 @@ import GraphicThree from "../graphics/graphic_3"
 import GraphicFour from "../graphics/graphic_4"
 import ConditionalRender from "../ConditionalRender"
 import Loading from "../LoadingSpinner"
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
+import { useState } from "react"
 import CardsFiles, { StatCardData } from "./filesView"
 import { ICurrentPeriod } from "@/lib/definitions"
-import { useRouter, useSearchParams } from "next/navigation"
 
 
 export default function DashboardViewClient({

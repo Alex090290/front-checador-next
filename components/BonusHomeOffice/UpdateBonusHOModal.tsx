@@ -9,9 +9,7 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { IBonusHomeOffice, IUpdateBonusHO } from "@/lib/Bonus/interface";
 import { Button, Card, Col, Form } from "react-bootstrap";
-import { Entry } from "../fields";
 import { EntryNumber } from "../fields/EntryFieldNumber";
-import { updateBonusKeys } from "@/app/actions/bonusKeys-actions";
 import { useModals } from "@/context/ModalContext";
 import { updateBonusHO } from "@/app/actions/bonusHO-actions";
 
@@ -36,7 +34,6 @@ export default function UpdateBonusKeys({
     const {
         register,
         handleSubmit,
-        control,
         formState: { errors, isSubmitting },
     } = useForm<IUpdateBonusHO>({
         defaultValues: getDefaultValues(Register)

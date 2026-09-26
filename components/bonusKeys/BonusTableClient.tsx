@@ -4,8 +4,8 @@ import { IBonusKeys, IUpdateBonusKeys } from "@/lib/Bonus/interface";
 import { TableTemplateColumn } from "../templates/TableTemplate";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { useState } from "react";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Card, Col, Container, InputGroup, Row } from "react-bootstrap";
 import ListView from "../templates/ListView";
 import ModalBlur from "../ModalBlur";
 import CreateBonuskeysModal from "./CreateBonuskeysModal";
@@ -15,15 +15,21 @@ import { useModals } from "@/context/ModalContext";
 import { deleteBonusKeys } from "@/app/actions/bonusKeys-actions";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
+import GenericSearchInput from "../employee/GenericSearchInput";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
 export default function TableBonusKeys({
     bonuskeys,
-    employees
+    employees,
+    search,
+    total
 }: {
-    bonuskeys: IBonusKeys[];
+    bonuskeys: IBonusKeys[] | undefined;
     employees: Employee[];
+    search?: string;
+    total?: number;
 }) {
 
     //CONST
@@ -32,12 +38,27 @@ export default function TableBonusKeys({
     const { modalConfirm } = useModals();
 
 
+    const sp = useSearchParams();
+    const searchParamsString = sp.toString();
+    const currentSearch = sp.get("search") ?? "";
+    const isClearingSelectionRef = useRef(false);
+    const [, setSelectedIds] = useState<Array<string | number>>([]);
+    const tableRef = useRef<{ clearSelection: () => void } | null>(null);
+    const [, setTableResetKey] = useState(0);
+    const router = useRouter();
+
+
     const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalUpdate, setShowModalUpdate] = useState(false);
     const [idRegister, setIdRegister] = useState<number | null>(null);
     const [employeeName, setEmployeeName] = useState<string | null>(null);
     const [employeeLastName, setEmployeeLastName] = useState<string | null>(null);
     const [selectedBonus, setSelectedBonus] = useState<IUpdateBonusKeys | null>(null);
+
+    useEffect(() => {
+        setFeedback(null);
+        setFeedbackMsg("");
+    }, [searchParamsString]);
 
     const handleUpdate = (idRegister: number, employeeName: string, employeeLastName: string, row: IUpdateBonusKeys) => {
         setSelectedBonus(row);
@@ -67,12 +88,47 @@ export default function TableBonusKeys({
                 setFeedback("success");
 
             } catch (error) {
+                console.log(error);
+                
                 setFeedbackMsg("Error inesperado, intenta de nuevo");
                 setFeedback("error");
             }
         });
     }
 
+    const clearSelectedIds = useCallback(() => {
+        isClearingSelectionRef.current = true;
+
+        tableRef.current?.clearSelection();
+        setSelectedIds([]);
+        setTableResetKey((k) => k + 1);
+
+        setTimeout(() => {
+            isClearingSelectionRef.current = false;
+        }, 0);
+    }, []);
+
+    const handleSearch = useCallback(
+        (value: string) => {
+            if (value === currentSearch) return;
+
+            setFeedback("loading");
+            setFeedbackMsg("Buscando...");
+
+            const params = new URLSearchParams(searchParamsString);
+            params.set("id", "null");
+            params.set("view_type", "list");
+
+            if (value) {
+                params.set("search", value);
+            } else {
+                params.delete("search");
+            }
+            clearSelectedIds();
+            router.push(`/app/bonuskeys?${params.toString()}`);
+        },
+        [currentSearch, searchParamsString, router, clearSelectedIds]
+    );
 
     const columns: TableTemplateColumn<IBonusKeys>[] = [
         {
@@ -175,9 +231,9 @@ export default function TableBonusKeys({
                     <div>
                         <h1 className="mb-0">Bonos de llaves</h1>
 
-                        {/* <span className="text-muted">
+                        <span className="text-muted">
                             {total} sucursal{total !== 1 ? "es" : ""}
-                        </span> */}
+                        </span>
                     </div>
                 </div>
 
@@ -186,6 +242,34 @@ export default function TableBonusKeys({
                         <Card className="rounded-4 shadow-sm border">
                             <Card.Body className="p-4 p-md-5">
 
+                                <Row className="justify-content-left mb-3 g-3">
+                                    {/* FILTRO POR EMPLEADO */}
+                                    <Col xs={12} md={6} lg={6}>
+                                        <Card className="border rounded-4 h-100">
+                                            <Card.Body className="p-3">
+                                                <div className="d-flex align-items-center gap-2 mb-3">
+                                                    <i className="bi bi-person text-primary" />
+                                                    <span className="fw-semibold small">Filtrar por empleado</span>
+                                                </div>
+
+                                                <InputGroup>
+                                                    <InputGroup.Text
+                                                        className="bg-gray"
+                                                        style={{ color: "#6c757d" }}
+                                                    >
+                                                        <i className="bi bi-search" />
+                                                    </InputGroup.Text>
+                                                    <GenericSearchInput
+                                                        initialValue={search}
+                                                        onSearch={handleSearch}
+                                                        placeholder="Buscar por nombre o apellido..."
+                                                    />
+                                                </InputGroup>
+                                            </Card.Body>
+                                        </Card>
+                                    </Col>
+
+                                </Row>
 
                                 <ListView>
                                     <ListView.Body>
@@ -207,6 +291,23 @@ export default function TableBonusKeys({
                                                 </thead>
 
                                                 <tbody>
+
+                                                    <ConditionalRender cond={bonuskeys?.length === 0}>
+                                                        <tr>
+                                                            <td colSpan={columns.length + 1} className="text-center py-5 text-muted">
+                                                                <i
+                                                                    className={`bi ${search ? "bi-clipboard-x" : "bi-inbox"} d-block mb-2`}
+                                                                    style={{ fontSize: "2.5rem" }}
+                                                                />
+                                                                <span className="fw-semibold">
+                                                                    {search
+                                                                        ? "No se encontro ningun bono con los filtros aplicados"
+                                                                        : "No hay bonos registradas"}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </ConditionalRender>
+
                                                     {(bonuskeys ?? []).map((row) => (
                                                         <tr key={row.id}>
                                                             {columns.map((column) => (

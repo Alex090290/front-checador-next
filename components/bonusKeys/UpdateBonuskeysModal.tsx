@@ -40,7 +40,6 @@ export default function UpdateBonusKeys({
     const {
         register,
         handleSubmit,
-        control,
         formState: { errors, isSubmitting },
     } = useForm<IUpdateBonusKeys>({
         defaultValues: getDefaultValues(Register)

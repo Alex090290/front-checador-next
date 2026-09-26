@@ -54,7 +54,7 @@ export default function PermissionsTableClient({
   const isClearingSelectionRef = useRef(false);
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [, setTableResetKey] = useState(0);
-  const [selectedIdsSearch, setSelectedIdsSearch] = useState<Array<string | number>>([]);
+  const [, setSelectedIdsSearch] = useState<Array<string | number>>([]);
 
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
@@ -218,7 +218,7 @@ export default function PermissionsTableClient({
     params.delete("dateEnd");
 
     router.push(`/app/permissions?${params.toString()}`);
-  }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds]);
+  }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds, limit]);
 
   const columns: TableTemplateColumn<IPermissionRequest>[] = [
     {

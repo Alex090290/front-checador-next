@@ -59,7 +59,7 @@ export default function VacationsTableClient({
   const isClearingSelectionRef = useRef(false);
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
   const [, setTableResetKey] = useState(0);
-  const [selectedIdsSearch, setSelectedIdsSearch] = useState<Array<string | number>>([]);
+  const [, setSelectedIdsSearch] = useState<Array<string | number>>([]);
 
   //Calendario
   const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
@@ -208,7 +208,7 @@ export default function VacationsTableClient({
     params.delete("dateEnd");
 
     router.push(`/app/vacationList?${params.toString()}`);
-  }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds]);
+  }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds, limit]);
 
 
   const columns: TableTemplateColumn<Vacations>[] = useMemo(() => [

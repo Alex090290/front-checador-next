@@ -2,7 +2,6 @@ import { getCurrentPeriod, listPeriodsForYear } from "@/app/actions/periods-acti
 import DashboardViewClient from "@/components/dashboard/dashboardViewClient";
 
 async function DashboardView({
-    idPeriod = "",
     year = "",
 }: {
     idPeriod?: string;
@@ -13,7 +12,6 @@ async function DashboardView({
     const yearSelected = year || nowYear;
 
     const periodoActual = await getCurrentPeriod();
-    const idPeriodSelected = idPeriod || String(periodoActual?.id ?? "");
 
     const periodsList = await listPeriodsForYear({ year: yearSelected });
 

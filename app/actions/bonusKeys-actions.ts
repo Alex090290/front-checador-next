@@ -6,26 +6,46 @@ import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 
+type FetchVacationsArgs = {
+    search?: string;
+}
+
+
 //Listar bonos de llaves 
-export async function listAllBonusKeys(): Promise<IBonusKeys[]> {
+export async function listAllBonusKeys(
+    args: FetchVacationsArgs = {}
+): Promise<{
+    data: IBonusKeys[];
+    total: number;
+}> {
 
     try {
+
         const { apiToken, API_URL } = await storeAction();
 
-        const { data } = await axios.get(`${API_URL}/bonuskeys/getAll`, {
+        const params = new URLSearchParams();
+        if (args.search) params.set("search", args.search);
+
+        const response = await axios.get(`${API_URL}/bonuskeys/getAll?${params.toString()}`, {
             headers: {
                 Authorization: `Bearer ${apiToken}`,
             },
-        });
+        }).then((res) => res.data);
 
-        return data.data ?? [];
+        const total = Number(response.data.total ?? 0);
+
+        return {
+            data: response.data ?? [],
+            total,
+        }
 
     } catch (error) {
         const message = axios.isAxiosError(error)
             ? error.response?.data?.message ?? "Error en la respuesta"
             : "Error inesperado";
         console.log(message, error);
-        return [];
+
+        return { data: [], total: 0};
     }
 }
 
@@ -137,7 +157,7 @@ export async function deleteBonusKeys({
     idBonusKeys,
 }: {
     idBonusKeys: string;
-}): Promise<ActionResponse<Boolean>> {
+}): Promise<ActionResponse<boolean>> {
 
     try {
         const { apiToken, API_URL } = await storeAction();

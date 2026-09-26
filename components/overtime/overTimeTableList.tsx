@@ -256,7 +256,7 @@ export default function OverTimeTableClient({
         params.delete("dateEnd");
 
         router.push(`/app/overtime?${params.toString()}`);
-    }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds]);
+    }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds, limit]);
 
 
     const columns: TableTemplateColumn<OverTime>[] = [

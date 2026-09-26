@@ -228,7 +228,7 @@ export default function TableInabilityComponent({
 
     router.push(`/app/inability?${params.toString()}`);
 
-  }, [router, searchParamsString, dateInit, dateEnd, dateInitValue, dateEndValue, clearSelectedIds]);
+  }, [router, searchParamsString, dateInit, dateEnd, clearSelectedIds, limit]);
 
 
   const columns: TableTemplateColumn<IInability>[] = [
