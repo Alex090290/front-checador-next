@@ -3,7 +3,7 @@ import { fetchEmployees } from "@/app/actions/employee-actions";
 import TableBonusHO from "@/components/BonusHomeOffice/BonusHOTableClient";
 
 export default async function ListAllBonusHomeOffice({
-    search
+    search,
 }: {
     search?: string;
 }) {

@@ -232,7 +232,7 @@ export default function TableBonusKeys({
                         <h1 className="mb-0">Bonos de llaves</h1>
 
                         <span className="text-muted">
-                            {total} sucursal{total !== 1 ? "es" : ""}
+                            {total} bono{total !== 1 ? "s" : ""}
                         </span>
                     </div>
                 </div>

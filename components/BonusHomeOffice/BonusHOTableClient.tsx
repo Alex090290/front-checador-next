@@ -33,6 +33,8 @@ export default function TableBonusHO({
     search?: string;
 }) {
 
+    console.log("total:", total);
+    
     //CONST
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const [feedback, setFeedback] = useState<FeedbackState>(null);
@@ -218,7 +220,7 @@ export default function TableBonusHO({
                         <h1 className="mb-0">Bonos de home office</h1>
 
                         <span className="text-muted">
-                            {total} sucursal{total !== 1 ? "es" : ""}
+                            {total} bono{total !== 1 ? "s" : ""}
                         </span>
                     </div>
                 </div>

@@ -32,7 +32,7 @@ export async function listAllBonusKeys(
             },
         }).then((res) => res.data);
 
-        const total = Number(response.data.total ?? 0);
+        const total = Number(response.total ?? 0);
 
         return {
             data: response.data ?? [],
