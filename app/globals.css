@@ -312,7 +312,7 @@
 
 [data-bs-theme="dark"] {
   --bs-teal-subtle: #01eea7;
-  --bs-teal-emphasis: #358671;
+  --bs-teal-emphasis: #707472;
   --bs-teal-border-subtle: #99b4ac;
 
   --bs-indigo-subtle: #5e0a85;
@@ -328,7 +328,7 @@
   --bs-lime-border-subtle: #59700f;
 
    --bs-tinto-subtle: #a53232;
-  --bs-tinto-emphasis: #3a0505;
+  --bs-tinto-emphasis: #cab2b2;
   --bs-tinto-border-subtle: #421616;
 }
 

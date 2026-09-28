@@ -304,19 +304,20 @@ export default function ResposiveDoc({
                 <Card className="border shadow-sm rounded-4 mx-auto" style={{ maxWidth: "1200px" }}>
                     <Card.Body className="p-4">
 
-                        <div className="d-flex align-items-center justify-content-between mb-4">
-                            <div className="d-flex align-items-center gap-3">
+                        <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4 p-2">
+                            <div className="d-flex flex-wrap align-items-center gap-2 gap-md-3" style={{ minWidth: 0 }}>
                                 <Image
                                     src="/image/logo.png"
-                                    alt=""
+                                    alt="Gama Consumibles Especiales"
                                     width={150}
                                     height={68}
-                                    style={{ objectFit: "contain" }}
+                                    className="flex-shrink-0"
+                                    style={{ objectFit: "contain", width: "clamp(100px, 25vw, 150px)", height: "auto" }}
                                 />
                                 <h5 className="mb-0 fw-bold">Carta Responsiva</h5>
                             </div>
 
-                            <span className="badge rounded-pill px-3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                            <span className="badge rounded-pill px-3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle flex-shrink-0 ms-auto">
                                 Responsiva
                             </span>
                         </div>
@@ -325,57 +326,57 @@ export default function ResposiveDoc({
                             <Card.Body>
                                 <div className="d-flex flex-column gap-4 text-justify" style={{ lineHeight: 1.7, textAlign: "justify" }}>
 
-                                <p className="mb-0">
-                                    Por medio de la presente que suscribe declara recibir como herramienta de trabajo{" "}
-                                    <strong>{typeDevice(type)}</strong>                                    
-                                    <ConditionalRender cond={currentStatus !== ""}>
-                                        <><strong>{currentStatus}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={hasNotes !== ""}>
-                                        <><strong>, {hasNotes}. </strong></>
-                                    </ConditionalRender>  
-                                    Mismo que cuenta con las siguientes características:{" "}
-                                    <ConditionalRender cond={marca !== ""}>
-                                        <>marca <strong>{marca}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={modelo !== ""}>
-                                        <>, modelo <strong>{modelo}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={numero_serie !== ""}>
-                                        <>, número de serie <strong>{numero_serie}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={procesador !== ""}>
-                                        <>, procesador <strong>{procesador}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={ram !== ""}>
-                                        <>, <strong>{ram}</strong> de RAM</>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={almacenamiento !== ""}>
-                                        <>, <strong>{almacenamiento}</strong> de almacenamiento</>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={sistema_operativo !== ""}>
-                                        <>, sistema operativo <strong>{formatLabel(sistema_operativo)}</strong>
-                                            <ConditionalRender cond={sistema_operativo_version !== ""}>
-                                                <> con versión <strong>{sistema_operativo_version}</strong></>
-                                            </ConditionalRender>
-                                        </>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={idDevice !== ""}>
-                                        <>, id del dispositivo: <strong>{idDevice}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={idProduct !== ""}>
-                                        <>, id del producto: <strong>{idProduct}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={isVLAN1.length > 0}>
-                                        <>, con VLAN 1 de MAC <strong>{macVlan1}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={isVLAN20.length > 0}>
-                                        <>, con VLAN 20 de MAC <strong>{macVlan20}</strong></>
-                                    </ConditionalRender>
-                                    <ConditionalRender cond={isPhone !== false}>
-                                        <>, y número Telcel: <strong>{number}</strong></>
-                                    </ConditionalRender>
-                                </p>
+                                    <p className="mb-0">
+                                        Por medio de la presente que suscribe declara recibir como herramienta de trabajo{" "}
+                                        <strong>{typeDevice(type)}</strong>
+                                        <ConditionalRender cond={currentStatus !== ""}>
+                                            <><strong>{currentStatus}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={hasNotes !== ""}>
+                                            <><strong>, {hasNotes}. </strong></>
+                                        </ConditionalRender>
+                                        Mismo que cuenta con las siguientes características:{" "}
+                                        <ConditionalRender cond={marca !== ""}>
+                                            <>marca <strong>{marca}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={modelo !== ""}>
+                                            <>, modelo <strong>{modelo}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={numero_serie !== ""}>
+                                            <>, número de serie <strong>{numero_serie}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={procesador !== ""}>
+                                            <>, procesador <strong>{procesador}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={ram !== ""}>
+                                            <>, <strong>{ram}</strong> de RAM</>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={almacenamiento !== ""}>
+                                            <>, <strong>{almacenamiento}</strong> de almacenamiento</>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={sistema_operativo !== ""}>
+                                            <>, sistema operativo <strong>{formatLabel(sistema_operativo)}</strong>
+                                                <ConditionalRender cond={sistema_operativo_version !== ""}>
+                                                    <> con versión <strong>{sistema_operativo_version}</strong></>
+                                                </ConditionalRender>
+                                            </>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={idDevice !== ""}>
+                                            <>, id del dispositivo: <strong>{idDevice}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={idProduct !== ""}>
+                                            <>, id del producto: <strong>{idProduct}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={isVLAN1.length > 0}>
+                                            <>, con VLAN 1 de MAC <strong>{macVlan1}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={isVLAN20.length > 0}>
+                                            <>, con VLAN 20 de MAC <strong>{macVlan20}</strong></>
+                                        </ConditionalRender>
+                                        <ConditionalRender cond={isPhone !== false}>
+                                            <>, y número Telcel: <strong>{number}</strong></>
+                                        </ConditionalRender>
+                                    </p>
 
                                     <p className="mb-0">
                                         Comprometiéndose a mantenerlo en el estado en el que lo recibe, cuidando dicho material como si el mismo fuera

@@ -210,7 +210,7 @@ export default function DashboardViewEmployee({
                             </div>
                             <div
                                 className="d-grid gap-3 mt-2"
-                                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}
+                                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
                             >
                                 <StatCard label="Permisos solicitados" icon="file-earmark-ruled" value={dataYear.permissions} />
                                 <StatCard label="Vacaciones solicitadas" icon="calendar4-week" value={dataYear.vacations} accent="pink" />

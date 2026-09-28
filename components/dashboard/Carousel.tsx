@@ -144,7 +144,7 @@ export default function StatCardCarousel({
                         <Carousel.Item key={i}>
                             <div
                                 className="d-grid gap-3 px-1 mb-5"
-                                style={{gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))"}}
+                                style={{gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))"}}
                             >
                                 {group.map((item) => (
                                     <StatCard

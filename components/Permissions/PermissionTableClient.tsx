@@ -533,7 +533,7 @@ export default function PermissionsTableClient({
                                 <span className="fw-semibold">
                                   {search || dateInit
                                     ? "No se encontraron permisos con los filtros aplicados"
-                                    : "No hay permisos registradas"}
+                                    : "No hay permisos registrados"}
                                 </span>
                               </td>
                             </tr>

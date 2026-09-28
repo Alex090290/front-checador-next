@@ -5,6 +5,16 @@ import { Card, Col } from "react-bootstrap";
 import Image from "next/image";
 import { fetchSignatureOverTime } from "@/app/actions/overtime-actions";
 
+const BADGE_BASE = "badge rounded-pill px-3 py-2 fw-semibold border";
+
+const BADGE_VARIANTS = {
+  success: `${BADGE_BASE} bg-success-subtle text-success-emphasis border-success-subtle`,
+  warning: `${BADGE_BASE} bg-warning-subtle text-warning-emphasis border-warning-subtle`,
+  danger: `${BADGE_BASE} bg-danger-subtle text-danger-emphasis border-danger-subtle`,
+  info: `${BADGE_BASE} bg-info-subtle text-info-emphasis border-info-subtle`,
+  secondary: `${BADGE_BASE} bg-secondary-subtle text-secondary-emphasis border-secondary-subtle`,
+};
+
 
 function SignaturesViewOvertime({
   id,
@@ -23,10 +33,10 @@ function SignaturesViewOvertime({
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [loadingSignature, setLoadingSignature] = useState(true);
 
-  
+
   useEffect(() => {
     const handleFetchSignature = async () => {
-      
+
       if (!id || !idEmployee) {
         setLoadingSignature(false);
         return;
@@ -52,106 +62,89 @@ function SignaturesViewOvertime({
 
   const hasSigned = Boolean(imgUrl);
 
-  const getBadge = () => {
+  const getBadge = (): { text: string; className: string } => {
     const normalizedLabel = label
       ?.normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
-
-    const normalizedStatus = status?.toUpperCase();   
-    
-
+    const normalizedStatus = status?.toUpperCase();
 
     if (normalizedLabel === "empleado") {
       return hasSigned
-        ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
-        : { text: "Pendiente de firma", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
+        ? { text: "Firmado", className: BADGE_VARIANTS.success }
+        : { text: "Pendiente de firma", className: BADGE_VARIANTS.warning };
     }
 
     if (normalizedLabel === "lider" || normalizedLabel === "direccion") {
-      if (normalizedStatus === "APPROVED") {
-        return { text: "Aprobado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" };
-      }
+      if (normalizedStatus === "APPROVED") return { text: "Aprobado", className: BADGE_VARIANTS.success };
+      if (normalizedStatus === "REFUSED") return { text: "Rechazado", className: BADGE_VARIANTS.danger };
+      return { text: "Pendiente de aprobar", className: BADGE_VARIANTS.warning };
+    }
 
-      if (normalizedStatus === "REFUSED") {
-        return { text: "Rechazado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-danger-subtle text-danger-emphasis border border-danger-subtle" };
-      }
-      if (normalizedStatus === "PENDING") {
-        return { text: "Pendiente de aprobar", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
-      }
-  }
-  
-  if (normalizedLabel === "doh") {
+    if (normalizedLabel === "doh") {
+      return hasSigned
+        ? { text: "Enterado", className: BADGE_VARIANTS.info }
+        : { text: "Pendiente", className: BADGE_VARIANTS.warning };
+    }
+
     return hasSigned
-      ? { text: "Enterado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle" }
-      : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
-  }
-
-  return hasSigned
-    ? { text: "Firmado", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-success-subtle text-success-emphasis border border-success-subtle" }
-    : { text: "Pendiente", bg: "bandge rounded-pill px3 py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle" };
-};
-
-const badge = getBadge();
+      ? { text: "Firmado", className: BADGE_VARIANTS.success }
+      : { text: "Pendiente", className: BADGE_VARIANTS.warning };
+  };
 
 
-return (
-  <Col md={4}>
-    <Card className="mt-2">
-      <Card.Header className="position-relative bg-dark text-white pt-4">
-        <span
-          className={`badge ${loadingSignature ? "bg-secondary" : badge.bg} position-absolute top-0 end-0 m-2`}
-          style={{ minWidth: "120px" }}
-        >
+  const badge = getBadge();
+
+
+  return (
+    <Col md={4}>
+      <Card className="mt-2 w-100 shadow-sm rounded-4 overflow-hidden">
+        {/* Header: label y badge en flujo normal, se acomodan solos */}
+        <Card.Header className="bg-dark text-white d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
+          <span className="fw-bold text-uppercase text-truncate">{label}</span>
+
+          <span className={loadingSignature ? BADGE_VARIANTS.secondary : badge.className} style={{ fontSize: "0.7rem" }}>
+            {loadingSignature ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" />
+                Cargando...
+              </>
+            ) : (
+              badge.text
+            )}
+          </span>
+        </Card.Header>
+
+        {/* Body: la firma se adapta al ancho disponible */}
+        <Card.Body className="p-2 d-flex justify-content-center align-items-center bg-white" style={{ minHeight: "150px" }}>
           {loadingSignature ? (
-            <>
-              <span
-                className="spinner-border spinner-border-sm me-2"
-                role="status"
-                aria-hidden="true"
-              />
-              Cargando...
-            </>
-          ) : (
-            badge.text
-          )}
-        </span>
-
-        <div className="fw-bold text-center text-uppercase">
-          {label}
-        </div>
-      </Card.Header>
-
-      <Card.Body className="p-1 text-center">
-        {loadingSignature ? (
-          <div
-            className="d-flex justify-content-center align-items-center"
-            style={{ height: "150px" }}
-          >
-            <div
-              className="spinner-border text-primary"
-              role="status"
-            >
+            <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Cargando...</span>
             </div>
-          </div>
-        ) : (
-          <Image
-            unoptimized
-            src={imgUrl ?? "/image/avatar_default.svg"}
-            alt="signature"
-            width={300}
-            height={150}
-          />
-        )}
-      </Card.Body>
+          ) : (
+            <Image
+              unoptimized
+              src={imgUrl ?? "/image/avatar_default.svg"}
+              alt={`Firma de ${name}`}
+              width={300}
+              height={150}
+              style={{
+                width: "100%",
+                maxWidth: "300px",
+                height: "auto",
+                maxHeight: "150px",
+                objectFit: "contain",
+              }}
+            />
+          )}
+        </Card.Body>
 
-      <Card.Footer className="text-center text-capitalize fw-semibold">
-        <div className="text-uppercase">{name}</div>
-      </Card.Footer>
-    </Card>
-  </Col >
-);
+        <Card.Footer className="text-center fw-semibold text-uppercase small text-break">
+          {name}
+        </Card.Footer>
+      </Card>
+    </Col >
+  );
 }
 
 export default SignaturesViewOvertime;

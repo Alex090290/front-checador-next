@@ -357,31 +357,37 @@ export default function InfoOneInability({
             </Row>
 
             {/* FORMATOS */}
+            {/* FORMATOS CITT */}
             <ConditionalRender cond={id !== "null"}>
               <Card className="border rounded-4 mb-4">
-                <Card.Body>
-                  <div className="d-flex align-items-center justify-content-between mb-4">
-                    <h6 className="mb-0 fw-bold">Formatos</h6>
-                    <span className="badge rounded-pill px3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
+                <Card.Body className="p-3 p-md-4">
+                  <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+                    <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
+                      <div>
+                        <h6 className="mb-0 fw-bold">Formatos</h6>
+                      </div>
+                    </div>
+
+                    <span className="badge rounded-pill px-3 py-2 fw-semibold bg-info-subtle text-info-emphasis border border-info-subtle">
                       CITT
                     </span>
                   </div>
 
-                  <Row className="g-3 justify-content-center">
+                  <Row className="g-3">
                     <ST7V1Card
-                      key={inhability?.sT7FillingDocumentv1.expirationDateDocument}
+                      key={`st7v1-${inhability?.sT7FillingDocumentv1?.expirationDateDocument}`}
                       st2v1Doc={inhability?.sT7FillingDocumentv1}
                       idDoc={id}
                       getData={refreshData}
                     />
                     <ST7V2Card
-                      key={inhability.sT7FillingDocumentv2.expirationDateDocument}
+                      key={`st7v2-${inhability?.sT7FillingDocumentv2?.expirationDateDocument}`}
                       st2v2Doc={inhability?.sT7FillingDocumentv2}
                       idDoc={id}
                       getData={refreshData}
                     />
                     <ST2Card
-                      key={inhability.sT2DischargeDocument.expirationDateDocument}
+                      key={`st2-${inhability?.sT2DischargeDocument?.expirationDateDocument}`}
                       st2Doc={inhability?.sT2DischargeDocument}
                       idDoc={id}
                       getData={refreshData}
@@ -392,42 +398,59 @@ export default function InfoOneInability({
             </ConditionalRender>
 
             {/* DOCUMENTOS CITT */}
-            <ConditionalRender cond={id !== "null" && inhability?.documentsInability?.length > 0}>
+            <ConditionalRender cond={id !== "null"}>
               <Card className="border rounded-4">
-                <Card.Body>
-                  <div className="d-flex align-items-center justify-content-between mb-4">
-                    <h6 className="mb-0 fw-bold">Documentos CITT</h6>
+                <Card.Body className="p-3 p-md-4">
+                  <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+                    <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
+                      <div>
+                        <h6 className="mb-0 fw-bold d-flex align-items-center gap-2">
+                          Documentos CITT
+                          <span className="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                            {inhability?.documentsInability?.length ?? 0}
+                          </span>
+                        </h6>
+                        <small className="text-muted">Certificados de incapacidad emitidos</small>
+                      </div>
+                    </div>
 
                     <OverLay string="Agregar documento">
                       <Button
-                        onClick={() => setModalUploadDoc(!modalUploadDoc)}
-                        className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
-                        variant="success"
+                        onClick={() => setModalUploadDoc(true)}
+                        className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3 flex-shrink-0"
+                        variant="primary"
                       >
                         <i className="bi bi-plus-lg" />
-                        <span className="d-none d-md-inline ms-2">
-                          Nuevo documento CITT
-                        </span>
+                        <span className="d-none d-md-inline ms-2">Nuevo documento</span>
                       </Button>
                     </OverLay>
                   </div>
 
-                  <Row className="g-2">
-                    {inhability?.documentsInability?.map((doc) => (
+                  <ConditionalRender cond={(inhability?.documentsInability?.length ?? 0) > 0}>
+                    <Row className="g-3">
+                      {inhability?.documentsInability?.map((doc) => (
+                        <InhabilityDocCard
+                          key={doc.id}
+                          doc={doc}
+                          selfId={String(doc.id)}
+                          idDoc={id}
+                          urlDocument={doc.urlDocument}
+                          dateInit={doc.dateInit}
+                          dateEnd={doc.dateEnd}
+                          folio={doc.folio}
+                          getData={refreshData}
+                        />
+                      ))}
+                    </Row>
+                  </ConditionalRender>
 
-                      <InhabilityDocCard
-                        doc={doc}
-                        key={doc.id}
-                        selfId={String(doc.id)}
-                        idDoc={id}
-                        urlDocument={doc.urlDocument}
-                        dateInit={doc.dateInit}
-                        dateEnd={doc.dateEnd}
-                        folio={doc.folio}
-                        getData={refreshData}
-                      />
-                    ))}
-                  </Row>
+                  <ConditionalRender cond={(inhability?.documentsInability?.length ?? 0) === 0}>
+                    <div className="text-center text-muted py-4 border border-dashed rounded-3">
+                      <i className="bi bi-folder-x d-block mb-2" style={{ fontSize: "2rem" }} />
+                      <span className="fw-semibold">Aún no hay documentos CITT</span>
+                      <small className="d-block">Agrega el primero con el botón "Nuevo documento"</small>
+                    </div>
+                  </ConditionalRender>
                 </Card.Body>
               </Card>
             </ConditionalRender>
@@ -463,8 +486,8 @@ export default function InfoOneInability({
             show={showDeleteModal}
             onHide={() => { setShowDeleteModal(false); }}
             idInhability={inhability.id}
-            motive={inhability.delete?.reaseonDelete?? ""}
-            status={inhability.delete?.delete?? false}
+            motive={inhability.delete?.reaseonDelete ?? ""}
+            status={inhability.delete?.delete ?? false}
           />
         </ModalBlur>
       </ConditionalRender>

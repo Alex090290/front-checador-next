@@ -259,24 +259,34 @@ export default function UserTableClient({
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Card className="rounded-4 shadow-sm border">
               <Card.Body className="p-4 p-md-5">
-                <div className="mb-4">
-                  <Col xs={12} sm={12} md={6} lg={6} >
-                    <InputGroup>
-                      <InputGroup.Text
-                        className="bg-gray"
-                        style={{ color: "#6c757d" }}
-                      >
-                        <i className="bi bi-search" />
-                      </InputGroup.Text>
+                <Row className="justify-content-left mb-3 g-3">
+                  {/* FILTRO POR EMPLEADO */}
+                  <Col xs={12} md={6} lg={6}>
+                    <Card className="border rounded-4 h-100">
+                      <Card.Body className="p-3">
+                        <div className="d-flex align-items-center gap-2 mb-3">
+                          <i className="bi bi-person text-primary" />
+                          <span className="fw-semibold small">Filtrar por empleado</span>
+                        </div>
 
-                      <GenericSearchInput
-                        initialValue={search}
-                        onSearch={handleSearch}
-                        placeholder="Buscar por nombre o apellido"
-                      />
-                    </InputGroup>
+                        <InputGroup>
+                          <InputGroup.Text
+                            className="bg-gray"
+                            style={{ color: "#6c757d" }}
+                          >
+                            <i className="bi bi-search" />
+                          </InputGroup.Text>
+                          <GenericSearchInput
+                            initialValue={search}
+                            onSearch={handleSearch}
+                            placeholder="Buscar por nombre o apellido..."
+                          />
+                        </InputGroup>
+                      </Card.Body>
+                    </Card>
                   </Col>
-                </div>
+
+                </Row>
 
                 <ListView>
                   <ListView.Body>
