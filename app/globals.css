@@ -457,3 +457,12 @@
   background-color: #6c757d; /* Cambia el azul por un gris u otro color */
   border-color: #6c757d;
 }
+
+.badge-grow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.badge-grow:hover {
+    transform: scale(1.2);
+}

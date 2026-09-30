@@ -4,6 +4,9 @@ import ListAllGroceryVouchers from "./views/ListAllGroceryVouchers";
 
 type SearchParams = {
     search?: string;
+    page?: string;
+    limit?: string;
+    idPeriod?: string;
 }
 
 async function PageGroceryVouchers({
@@ -11,14 +14,22 @@ async function PageGroceryVouchers({
 }: {
     searchParams?: SearchParams;
 
-    
-}){
-     const search = searchParams?.search ?? "";
-    
-        return <>
-            <Suspense fallback={<Loading message="Cargando datos..." />}>
-                <ListAllGroceryVouchers/>
-            </Suspense>
-        </>
+
+}) {
+    const search = searchParams?.search ?? "";
+    const page = searchParams?.page ?? "1";
+    const limit = searchParams?.limit ?? "20";
+    const idPeriod = searchParams?.idPeriod ?? "";
+
+    return <>
+        <Suspense fallback={<Loading message="Cargando datos..." />}>
+            <ListAllGroceryVouchers
+                search={search}
+                page={page}
+                limit={limit}
+                idPeriod={idPeriod}
+            />
+        </Suspense>
+    </>
 }
 export default PageGroceryVouchers;

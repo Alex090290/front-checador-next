@@ -10,7 +10,7 @@ import moment from "moment";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import Loading from "../LoadingSpinner";
-import { getReportInflowsAndOutflows } from "@/app/actions/reports-actions";
+import { getReportInflowsAndOutflows, getReportVales } from "@/app/actions/reports-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import { createPortal } from "react-dom";
 
@@ -46,14 +46,10 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 function StatCard({ idCard, label, icon, value, accent = "primary", isPending, dateInit, dateEnd, periods, periodoActual }: StatCardData & { isPending?: boolean; onClick?: () => void }) {
-    const router = useRouter();
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
-    const hasAppliedDefaultFilters = useRef(false);
-    const currentPeriod = sp.get("idPeriod") ?? "";
-    const currentYear = sp.get("year") ?? "";
 
     const [justArrived, setJustArrived] = useState(false);
     const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
@@ -64,9 +60,16 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
     const dateButtonRef = useRef(null);
     const parsedStart = dateInitValue ? moment(dateInitValue, "YYYY-MM-DD").toDate() : null;
     const parsedEnd = dateEndValue ? moment(dateEndValue, "YYYY-MM-DD").toDate() : null;
-    // dentro de StatCard:
     const [mounted, setMounted] = useState(false);
 
+    const [selectedPeriodId, setSelectedPeriodId] = useState<string>(
+        periodoActual ? String(periodoActual.id) : ""
+    );
+
+    useEffect(() => {
+        setFeedback(null);
+        setFeedbackMsg("");
+    }, [searchParamsString]);
 
     const rangeLabel =
         parsedStart && parsedEnd
@@ -87,23 +90,11 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
 
     useEffect(() => setMounted(true), []);
 
-    //Al montar: si no hay filtros en la URL, usar periodo actual y año en curso
     useEffect(() => {
-        if (hasAppliedDefaultFilters.current) return;
-        hasAppliedDefaultFilters.current = true;
-
-        if (currentPeriod || currentYear) return;
-        if (!periodoActual) return;
-
-        const params = new URLSearchParams(searchParamsString);
-        params.set("idPeriod", String(periodoActual.id));
-        params.set("year", String(new Date().getFullYear()));
-
-        startTransition(() => {
-            router.replace(`/app?${params.toString()}`);
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        if (!selectedPeriodId && periodoActual) {
+            setSelectedPeriodId(String(periodoActual.id));
+        }
+    }, [periodoActual, selectedPeriodId]);
 
     useEffect(() => {
         // Solo dispara el flash cuando la data terminó de llegar (isPending pasó a false)
@@ -112,45 +103,10 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
         }
     }, [value, isPending]);
 
-    //Filtrar fechas
-    // const handleDateFilter = useCallback(() => {
-    //     if (!dateInitValue || !dateEndValue) {
-    //         setDateError("Ambas fechas son requeridas");
-    //         return;
-    //     }
-    //     if (dateEndValue < dateInitValue) {
-    //         setDateError("'Hasta' debe ser posterior a 'Desde'");
-    //         return;
-    //     }
-    //     setDateError("");
-
-    //     if (dateInitValue === (dateInit ?? "") && dateEndValue === (dateEnd ?? "")) return;
-
-    //     setFeedback("loading");
-    //     setFeedbackMsg("Filtrando...");
-
-
-    //     const params = new URLSearchParams(searchParamsString);
-    //     params.set("id", "null");
-    //     params.set("view_type", "list");
-    //     params.set("page", "1");
-    //     params.set("dateInit", dateInitValue);
-    //     params.set("dateEnd", dateEndValue);
-
-    //     router.push(`/app?${params.toString()}`);
-    // }, [dateInitValue, dateEndValue, dateInit, dateEnd, searchParamsString, router]);
-
     //Boton de descargar
     const handleDownload = async (idCard: number | null) => {
 
-        if (!dateInitValue || !dateEndValue) {
-            setDateError("Ambas fechas son requeridas");
-            return;
-        }
-        if (dateEndValue < dateInitValue) {
-            setDateError("'Hasta' debe ser posterior a 'Desde'");
-            return;
-        }
+
         setDateError("");
         setFeedback("loading");
         setFeedbackMsg("Generando reporte...");
@@ -158,8 +114,7 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
         switch (idCard) {
             case 3: // Ingresos y salidas
                 try {
-
-                    const res = await getReportInflowsAndOutflows({ dateInit: dateInitValue, dateEnd: dateEndValue });
+                    const res = await getReportInflowsAndOutflows(Number(selectedPeriodId));
 
                     if (!res.success || !res.data) {
                         setFeedbackMsg(res.message || "No se pudo generar el reporte");
@@ -180,57 +135,59 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                     setFeedback("success");
                 } catch (err) {
                     console.log(err);
-
                     setFeedbackMsg("Error inesperado al generar el reporte");
                     setFeedback("error");
                 }
                 break;
-            case 4: // Vales
 
-                break; // Prima anual
+            case 4: // Vales
+                try {
+                    const res = await getReportVales(Number(selectedPeriodId));
+
+                    if (!res.success || !res.data) {
+                        setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                        setFeedback("error");
+                        return;
+                    }
+
+                    const { base64Url, fileName } = res.data;
+
+                    const link = document.createElement("a");
+                    link.href = base64Url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    handleClearDates();
+                    setFeedbackMsg("Reporte generado correctamente");
+                    setFeedback("success");
+                } catch (err) {
+                    console.log(err);
+                    setFeedbackMsg("Error inesperado al generar el reporte");
+                    setFeedback("error");
+                }
+                break;
 
             case 1: // Asistencia Y Puntualidad Perfecta
-
                 break;
 
             default:
                 break;
         }
-    }
+    };
 
+    const handleSearchPeriod = useCallback((value: string) => {
+        setSelectedPeriodId(value);
+    }, []);
 
-    // const handleSearchPeriod = useCallback(
-    //     (value: string) => {
-    //         if (value === currentPeriod) return;
-
-    //         const params = new URLSearchParams(searchParamsString);
-    //         if (value) {
-    //             params.set("idPeriod", value);
-    //         } else {
-    //             params.delete("idPeriod");
-    //         }
-
-    //         startTransition(() => {
-    //             router.push(`/app?${params.toString()}`);
-    //         });
-    //     },
-    //     [currentPeriod, searchParamsString, router]
-    // );
-
-    // const handleClear = useCallback(() => {
-    //     const params = new URLSearchParams(searchParamsString);
-    //     params.set("idPeriod", String(periodoActual?.id));
-    //     startTransition(() => {
-    //         router.push(`/app?${params.toString()}`);
-    //     });
-    // }, [searchParamsString, router, periodoActual]);
+    const handleClear = useCallback(() => {
+        setSelectedPeriodId(periodoActual ? String(periodoActual.id) : "");
+    }, [periodoActual]);
 
     const selectedPeriod = useMemo(
-        () => periods?.find((p) => String(p.id) === currentPeriod),
-        [periods, currentPeriod]
+        () => periods?.find((p) => String(p.id) === selectedPeriodId),
+        [periods, selectedPeriodId]
     );
-
-
 
     return (
         <>
@@ -241,10 +198,7 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
             <ConditionalRender cond={feedback === "success"}>
                 <SuccessOverlay
                     message={feedbackMsg}
-                    onDone={() => {
-                        setFeedback(null);
-                        // onHide();
-                    }}
+                    onDone={() => setFeedback(null)}
                 />
             </ConditionalRender>
 
@@ -278,7 +232,6 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                     aria-label={rangeLabel}
                                 >
                                     <i className="bi bi-calendar3" />
-                                    {/* Texto solo en md+ */}
                                     <span className="d-none d-md-inline text-truncate" style={{ maxWidth: 120 }}>
                                         {parsedStart && parsedEnd ? rangeLabel : "Rango de fechas"}
                                     </span>
@@ -304,7 +257,6 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                         style={{ ...style, zIndex: 1080, maxWidth: "calc(100vw - 16px)" }}
                                         className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
                                     >
-                                        {/* En móvil, el rango seleccionado se ve aquí */}
                                         <div className="px-3 pt-2 small fw-semibold text-muted">{rangeLabel}</div>
 
                                         <DatePicker
@@ -349,7 +301,6 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                     aria-label={selectedPeriod ? `Periodo ${selectedPeriod.numberPeriod}` : "Seleccionar periodo"}
                                 >
                                     <i className="bi bi-calendar-week" />
-                                    {/* Texto solo en md+ */}
                                     <span className="d-none d-md-inline text-truncate" style={{ maxWidth: 100 }}>
                                         {selectedPeriod ? selectedPeriod.numberPeriod : "Periodo"}
                                     </span>
@@ -362,11 +313,24 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                             style={{ minWidth: 260, maxWidth: "calc(100vw - 16px)", maxHeight: 320, overflowY: "auto" }}
                                         >
                                             <Dropdown.Header className="text-uppercase small fw-bold">
-                                                {/* En móvil, el periodo seleccionado se ve aquí */}
                                                 {selectedPeriod ? `Periodo actual: ${selectedPeriod.numberPeriod}` : "Periodos"}
                                             </Dropdown.Header>
 
-                                            {/* ...tus Dropdown.Item de periodos y "Periodo actual" sin cambios */}
+                                            {periods?.map((p) => (
+                                                <Dropdown.Item
+                                                    key={p.id}
+                                                    active={String(p.id) === selectedPeriodId}
+                                                    onClick={() => handleSearchPeriod(String(p.id))}
+                                                >
+                                                    Periodo {p.numberPeriod}
+                                                </Dropdown.Item>
+                                            ))}
+
+                                            <Dropdown.Divider />
+                                            <Dropdown.Item onClick={handleClear} disabled={!periodoActual}>
+                                                <i className="bi bi-arrow-counterclockwise me-2" />
+                                                Periodo actual
+                                            </Dropdown.Item>
                                         </Dropdown.Menu>,
                                         document.body
                                     )}
@@ -386,12 +350,19 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                 <div className="fw-bold lh-1 mb-1 text-muted" style={{ fontSize: "clamp(1.20rem, 3vw, 2rem)" }}>
                     {value ?? "—"}
                 </div>
+
                 <div className="text-muted small mt-auto text-end">{label}</div>
+
+                <ConditionalRender cond={value !== "Asistencia Y Puntualidad Perfecta"}>
+                    {selectedPeriod && (
+                        <div className="text-muted">Periodo: {selectedPeriod.numberPeriod}</div>
+                    )}
+                </ConditionalRender>
 
                 <Button
                     className="hover-clickable mt-2"
                     variant="info"
-                    onClick={() => { return handleDownload(idCard ? idCard : null) }}
+                    onClick={() => handleDownload(idCard ?? null)}
                 >
                     <i className="bi bi-download me-2" />
                     Descargar
@@ -470,7 +441,8 @@ export default function CardsFiles({
                         >
                             {group.map((item) => (
                                 <StatCard
-                                    key={item.value} {...item}
+                                    key={item.idCard ?? item.id ?? item.label}
+                                    {...item}
                                     periods={periods}
                                     periodoActual={periodoActual}
                                 />

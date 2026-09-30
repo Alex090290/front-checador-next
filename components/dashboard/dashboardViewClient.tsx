@@ -28,7 +28,7 @@ export default function DashboardViewClient({
         { idCard: 1, value: "Asistencia Y Puntualidad Perfecta", icon: "cash-coin", view: "permissions" },
         { idCard: 2, value: "Prima anual", icon: "award", accent: "pink" },
         { idCard: 3, value: "Ingresos y salidas", icon: "arrow-left-right", accent: "orange" },
-        { idCard: 4, value: "Vales", icon: "ticket-perforated", accent: "info" },
+        { idCard: 4, value: "Vales", icon: "ticket-perforated", accent: "purple" },
     ];
 
     return (

@@ -131,25 +131,13 @@ export async function getPrimaAnual({
 }
 
 //REPORTE EXCEL PARA INGRESOS Y SALIDAS
-export async function getReportInflowsAndOutflows({
-    dateInit,
-    dateEnd,
-}: {
-    dateInit: string;
-    dateEnd: string;
-}): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+export async function getReportInflowsAndOutflows(idPeriod: number): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
     try {
         const { apiToken, API_URL } = await storeAction();
 
-        if (!dateInit || !dateEnd) {
-            throw new Error("Ambas fechas son requeridas");
-        }
-        console.log(dateInit, dateEnd);
-
-
         let base64Url = "";
 
-        const url = `${API_URL}/incidences/inflowsAndOutflows/${dateInit}/${dateEnd}`;
+        const url = `${API_URL}/incidences/inflowsAndOutflows/${idPeriod}`;
 
         await axios.get(url, {
             headers: {
@@ -174,7 +162,7 @@ export async function getReportInflowsAndOutflows({
             message: "Reporte generado",
             data: {
                 base64Url,
-                fileName: `reporte_asistencias_${dateInit}_a_${dateEnd}.xlsx`,
+                fileName: `reporte_ingresosEgresos_period_${idPeriod}.xlsx`,
             },
         };
     } catch (error: unknown) {
@@ -196,25 +184,15 @@ export async function getReportInflowsAndOutflows({
 }
 
 //REPORTE EXCEL PARA VALES
-export async function getVales({
-    dateInit,
-    dateEnd,
-}: {
-    dateInit: string;
-    dateEnd: string;
-}): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+export async function getReportVales(idPeriod: number): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
     try {
         const { apiToken, API_URL } = await storeAction();
 
-
-        const params = new URLSearchParams();
-        params.set("dateInit", dateInit);
-        params.set("dateEnd", dateEnd);
-
         let base64Url = "";
+        const url = `${API_URL}/incidences/vales/${idPeriod}`;
 
         await axios
-            .get(`${API_URL}/absencesAndAttendances-report-document?${params.toString()}`, {
+            .get(url, {
                 headers: {
                     Authorization: `Bearer ${apiToken}`,
                 },
@@ -237,7 +215,7 @@ export async function getVales({
             message: "Reporte generado",
             data: {
                 base64Url,
-                fileName: `reporte_${dateInit}_a_${dateEnd}.xlsx`,
+                fileName: `reporte_Vales_${idPeriod}.xlsx`,
             },
         };
     } catch (error: unknown) {

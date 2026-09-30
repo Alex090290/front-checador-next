@@ -47,7 +47,7 @@ export async function userLogin({
   password: string;
 }): Promise<ActionResponse<boolean>> {
   try {
-    await signIn("credentials", {
+    await signIn("credentials", { 
       email,
       password,
       redirect: false,
