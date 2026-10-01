@@ -12,7 +12,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ListView from "../templates/ListView";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import { useRouter, useSearchParams } from "next/navigation";
-import ShowinfoItem from "./ShowinfoItem";
 import ShowinfoItemGroceryVouchers from "./ShowinfoItem";
 import { formatCreatedAt } from "@/lib/helpers";
 
@@ -59,6 +58,7 @@ export default function GroceryVouchersTableClient({
     const totalPages = Math.ceil(total / limit);
     const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+
     useEffect(() => {
         setFeedback(null);
         setFeedbackMsg("");
@@ -99,8 +99,10 @@ export default function GroceryVouchersTableClient({
     );
 
     const goToPage = (nextPage: number) => {
+        if (nextPage === page || nextPage < 1 || nextPage > totalPages) return;
+
         setFeedback("loading");
-        setFeedbackMsg('Cargando...');
+        setFeedbackMsg("Cargando...")
         const params = new URLSearchParams(searchParamsString);
         params.set("view_type", "list");
         params.set("id", "null");
@@ -208,13 +210,21 @@ export default function GroceryVouchersTableClient({
     ];
 
     const handlerGetItem = (item: IGroceryVouchers) => {
-        setShowInfoOne(true);
-        setItemSelect(item);
-    }
+        setFeedback("loading");
+        setFeedbackMsg("Cargando...");
+
+        setTimeout(() => {
+            setItemSelect(item);
+            setShowInfoOne(true);
+            setFeedback(null);
+            setFeedbackMsg("");
+        }, 400);
+    };
+
 
     return (
         <>
-            <ConditionalRender cond={feedback === "loading"}>
+            <ConditionalRender cond={feedback === 'loading'}>
                 <Loading message={feedbackMsg} />
             </ConditionalRender>
 
@@ -448,10 +458,18 @@ export default function GroceryVouchersTableClient({
                 <ShowinfoItemGroceryVouchers
                     data={itemSelect ? itemSelect : null}
                     period={selectedPeriod}
-                    onBack={() => {
-                        setShowInfoOne(false);
-                        setItemSelect(null);
-                    }}
+                    onBack = {() => {
+                            setFeedback("loading");
+                            setFeedbackMsg("Regresando...");
+                    
+                            setTimeout(() => {
+                                setShowInfoOne(false);
+                                setItemSelect(null);
+                                setFeedback(null);
+                                setFeedbackMsg("");
+                            }, 400);
+                        }
+                    }
                 />
             </ConditionalRender>
         </>

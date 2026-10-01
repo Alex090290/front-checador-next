@@ -115,16 +115,6 @@ export async function findDepartmentById({
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
-    })
-    .then((res) => {
-      return res.data;
-    })
-    .catch((err) => {
-      throw new Error(
-        err.response.data.message
-          ? err.response.data.message
-          : "Error en la respuesta"
-      );
     });
 
   return response.data || null;

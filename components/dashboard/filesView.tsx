@@ -1,18 +1,19 @@
 "use client"
 
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Carousel, Col, Dropdown, Overlay, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import ConditionalRender from "../ConditionalRender";
 import DatePicker, { registerLocale } from "react-datepicker";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { es } from "date-fns/locale";
 import moment from "moment";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import Loading from "../LoadingSpinner";
-import { getReportInflowsAndOutflows, getReportVales } from "@/app/actions/reports-actions";
+import { getPrimaAnual, getReportInflowsAndOutflows, getReportVales } from "@/app/actions/reports-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import { createPortal } from "react-dom";
+import { formatCreatedAt } from "@/lib/helpers";
 
 
 moment.locale("es");
@@ -168,7 +169,32 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                 }
                 break;
 
-            case 1: // Asistencia Y Puntualidad Perfecta
+            case 2: // Prima Anual
+             try {
+                    const res = await getPrimaAnual(String(selectedPeriodId));
+
+                    if (!res.success || !res.data) {
+                        setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                        setFeedback("error");
+                        return;
+                    }
+
+                    const { base64Url, fileName } = res.data;
+
+                    const link = document.createElement("a");
+                    link.href = base64Url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    handleClearDates();
+                    setFeedbackMsg("Reporte generado correctamente");
+                    setFeedback("success");
+                } catch (err) {
+                    console.log(err);
+                    setFeedbackMsg("Error inesperado al generar el reporte");
+                    setFeedback("error");
+                }
                 break;
 
             default:
@@ -323,6 +349,9 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                                     onClick={() => handleSearchPeriod(String(p.id))}
                                                 >
                                                     Periodo {p.numberPeriod}
+                                                    <span className={`small ms-2 ${String(p.id) ===  selectedPeriodId? "text-white-50" : "text-muted"}`}>
+                                                        {formatCreatedAt(p.dateInit)} - {formatCreatedAt(p.dateEnd)}
+                                                    </span>
                                                 </Dropdown.Item>
                                             ))}
 

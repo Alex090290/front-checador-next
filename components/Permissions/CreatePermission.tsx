@@ -610,7 +610,7 @@ export default function CreatePermissionComponent({
                                   },
                                   {
                                     label: "ASUNTOS ESCOLARES",
-                                    value: "PERMISO POR ASUSNTOS ESCOLARES",
+                                    value: "PERMISO POR ASUNTOS ESCOLARES",
                                   },
                                   {
                                     label: "PERMISO POR PATERNIDAD",

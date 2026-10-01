@@ -53,8 +53,8 @@ export async function fetchGroceryVouchers(
             limit: limitNum,
             pages,
         };
-    } catch (err: any) {
-        console.log(err?.response?.data?.message ?? err?.message ?? err);
+    } catch (err: unknown) {
+        console.log(err);
         return empty;
     }
 }

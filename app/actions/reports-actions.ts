@@ -68,25 +68,16 @@ export async function getAbonoMensual({
 }
 
 //REPORTE EXCEL PARA PRIMA ANUAL
-export async function getPrimaAnual({
-    dateInit,
-    dateEnd,
-}: {
-    dateInit: string;
-    dateEnd: string;
-}): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+export async function getPrimaAnual(idPeriod: string): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
     try {
         const { apiToken, API_URL } = await storeAction();
 
-
-        const params = new URLSearchParams();
-        params.set("dateInit", dateInit);
-        params.set("dateEnd", dateEnd);
-
         let base64Url = "";
 
-        await axios
-            .get(`${API_URL}/absencesAndAttendances-report-document?${params.toString()}`, {
+        const url = `${API_URL}/incidences/annualPremium/${idPeriod}`;
+
+
+        await axios.get(url, {
                 headers: {
                     Authorization: `Bearer ${apiToken}`,
                 },
@@ -106,10 +97,10 @@ export async function getPrimaAnual({
 
         return {
             success: true,
-            message: "Reporte generado",
+            message: "Reporte generado correctamente",
             data: {
                 base64Url,
-                fileName: `reporte_${dateInit}_a_${dateEnd}.xlsx`,
+                fileName: `reporte_PrimaAnual${idPeriod}.xlsx`,
             },
         };
     } catch (error: unknown) {
@@ -159,7 +150,7 @@ export async function getReportInflowsAndOutflows(idPeriod: number): Promise<Act
 
         return {
             success: true,
-            message: "Reporte generado",
+            message: "Reporte generado correctamente",
             data: {
                 base64Url,
                 fileName: `reporte_ingresosEgresos_period_${idPeriod}.xlsx`,
@@ -189,7 +180,7 @@ export async function getReportVales(idPeriod: number): Promise<ActionResponse<{
         const { apiToken, API_URL } = await storeAction();
 
         let base64Url = "";
-        const url = `${API_URL}/incidences/vales/${idPeriod}`;
+        const url = `${API_URL}/incidences/vales-report/${idPeriod}`;
 
         await axios
             .get(url, {
@@ -212,7 +203,7 @@ export async function getReportVales(idPeriod: number): Promise<ActionResponse<{
 
         return {
             success: true,
-            message: "Reporte generado",
+            message: "Reporte generado correctamente",
             data: {
                 base64Url,
                 fileName: `reporte_Vales_${idPeriod}.xlsx`,

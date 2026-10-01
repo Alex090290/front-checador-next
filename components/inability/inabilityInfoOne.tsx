@@ -448,7 +448,7 @@ export default function InfoOneInability({
                     <div className="text-center text-muted py-4 border border-dashed rounded-3">
                       <i className="bi bi-folder-x d-block mb-2" style={{ fontSize: "2rem" }} />
                       <span className="fw-semibold">Aún no hay documentos CITT</span>
-                      <small className="d-block">Agrega el primero con el botón "Nuevo documento"</small>
+                      <small className="d-block">Agrega el primero con el botón Nuevo documento</small>
                     </div>
                   </ConditionalRender>
                 </Card.Body>
