@@ -159,12 +159,7 @@ export async function createInability(
         return res.data;
       })
       .catch((err) => {
-        console.log(err.response);
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error al descargar el PDF"
-        );
+        throw new Error(err.response?.data?.message ?? err.message ?? "Error al crear la incapacidad");
       });
 
     revalidatePath("/app/inability");

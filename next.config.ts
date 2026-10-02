@@ -1,16 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  productionBrowserSourceMaps: true,
   experimental: {
     serverActions: {
-      bodySizeLimit: '10mb',
+      bodySizeLimit: '100mb',
     },
   },
-};
-
-module.exports = {
-  productionBrowserSourceMaps: true,
 };
 
 export default nextConfig;
