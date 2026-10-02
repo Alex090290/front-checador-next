@@ -4,8 +4,8 @@ import { createNewDocument } from "@/app/actions/inability-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry } from "@/components/fields";
-import React, { useState } from "react";
-import { Button, Form, Row, Col, Card } from "react-bootstrap";
+import React, { useRef, useState } from "react";
+import { Button, Form, Row, Col, Card, InputGroup } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { es } from "date-fns/locale";
@@ -34,6 +34,8 @@ function ModalAddDocuments({ idDoc, onHide, getData }: Props) {
     register,
     reset,
     handleSubmit,
+    setValue,
+    watch,
     formState: { isSubmitting, errors },
   } = useForm<TInputs>({
     defaultValues: {
@@ -52,6 +54,17 @@ function ModalAddDocuments({ idDoc, onHide, getData }: Props) {
   const { modalConfirm } = useModals();
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [feedbackMsg, setFeedbackMsg] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { ref: firstDocRef, ...firstDocField } = register("document");
+
+  const firstDoc = watch("document");
+  const selectedFile = firstDoc?.[0];
+
+  const clearFirstDoc = () => {
+    if (fileInputRef.current) fileInputRef.current.value = "";   // limpia el input visualmente
+    setValue("document", null, { shouldValidate: true });        // limpia el valor en el form
+  };
 
   const handleClose = () => {
     reset({
@@ -253,19 +266,38 @@ function ModalAddDocuments({ idDoc, onHide, getData }: Props) {
               </div>
 
               <Row className="g-3">
-                <Col md={12}>
+                <Col md={6}>
                   <Form.Group>
-                    <Form.Label className="fw-semibold">
-                      Archivo
-                    </Form.Label>
-                    <Form.Control
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.pdf,.webp"
-                      className="border"
-                      {...register("document", { required: true })}
-                      isInvalid={!!errors.document}
-                    />
-                    <Form.Control.Feedback type="invalid">
+                    <Form.Label className="fw-semibold">CITT:</Form.Label>
+
+                    <InputGroup>
+                      <Form.Control
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,.webp"
+                        {...firstDocField}
+                        ref={(el: HTMLInputElement | null) => {
+                          firstDocRef(el);          // ref de RHF
+                          fileInputRef.current = el; // ref propio
+                        }}
+                        isInvalid={!!errors.document}
+                        className="border"
+                      />
+
+                      <ConditionalRender cond={!!selectedFile}>
+                        <Button variant="outline-danger" onClick={clearFirstDoc} title="Quitar archivo">
+                          <i className="bi bi-x-lg" />
+                        </Button>
+                      </ConditionalRender>
+                    </InputGroup>
+
+                    <ConditionalRender cond={!!selectedFile}>
+                      <small className="text-muted d-block mt-1">
+                        <i className="bi bi-paperclip me-1" />
+                        {selectedFile?.name} ({((selectedFile?.size ?? 0) / 1024).toFixed(0)} KB)
+                      </small>
+                    </ConditionalRender>
+
+                    <Form.Control.Feedback type="invalid" className={errors.document ? "d-block" : ""}>
                       Este campo es requerido
                     </Form.Control.Feedback>
                   </Form.Group>

@@ -13,7 +13,7 @@ function PDFViewerModal({ show, onHide, pdfBase64Url }: PdfViewerModalProps) {
     <Modal show={show} onHide={onHide} size="xl" centered>
       <Modal.Body style={{ padding: 0, height: "80vh" }}>
         <iframe
-          src={pdfBase64Url}
+          src={pdfBase64Url ||  undefined}
           width="100%"
           height="100%"
           style={{ border: "none" }}

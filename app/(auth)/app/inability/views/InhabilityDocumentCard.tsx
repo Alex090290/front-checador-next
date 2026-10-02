@@ -74,7 +74,7 @@ function InhabilityDocCard({
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
-  
+
 
   //SUBIR
   const handleUpload = async () => {
@@ -103,11 +103,12 @@ function InhabilityDocCard({
         setFeedbackMsg("Archivo cargado correctamente");
         setFeedback("success");
 
-        // Opcional: resetear el estado después de subir
         setSelectedFiles([]);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
+
+        await getData?.(); // ← refresca los datos del padre
       } catch {
         setFeedbackMsg("Error inesperado, intenta de nuevo");
         setFeedback("error");
@@ -121,9 +122,10 @@ function InhabilityDocCard({
 
     const res = await getInhabilityDocument({ idDoc, selfId });
 
-    if (!res.success) {
-      setFeedbackMsg(res.message || "No se pudo subir");
+    if (!res.success || !res.data) {
+      setFeedbackMsg("No se pudo cargar el documento");
       setFeedback("error");
+      return;
     }
 
     setPdfUrl(res.data || "");
@@ -225,7 +227,7 @@ function InhabilityDocCard({
                     <>
                       <div className="mb-3 text-center">
                         <p className="mb-1">
-                          <span className="fw-semibold">Folio: </span> 
+                          <span className="fw-semibold">Folio: </span>
                           {folio || "Sin folio"}
                         </p>
                         <p className="mb-0">
@@ -262,7 +264,7 @@ function InhabilityDocCard({
                       <Button
                         variant="outline-secondary"
                         size="sm"
-                        onClick={handleCancel}
+                        onClick={() => handleCancel()}
                       >
                         Cancelar
                       </Button>

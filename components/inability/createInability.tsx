@@ -8,7 +8,7 @@ import { useModals } from "@/context/ModalContext";
 import { Employee } from "@/lib/definitions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, Card, Col, Container, Form, Overlay, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, InputGroup, Overlay, Row } from "react-bootstrap";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import SuccessOverlay from "../SuccessOverlay";
@@ -78,6 +78,17 @@ export default function CreateInabilityComponent({
 
   const [loading, setLoading] = useState(false);
   const [, setMessageLoading] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { ref: firstDocRef, ...firstDocField } = register("firstDoc");
+
+  const firstDoc = watch("firstDoc");
+  const selectedFile = firstDoc?.[0];
+
+  const clearFirstDoc = () => {
+    if (fileInputRef.current) fileInputRef.current.value = "";   // limpia el input visualmente
+    setValue("firstDoc", null, { shouldValidate: true });        // limpia el valor en el form
+  };
 
   //Calendario inicio
   const [dateError] = useState("");
@@ -390,6 +401,11 @@ export default function CreateInabilityComponent({
                                       locale="es"
                                       readOnly={session?.uid?.role === "EMPLOYEE"}
                                     />
+                                    <Col xs={12}>
+                                      <Button variant="primary" className="w-100" onClick={() => setShowCalendar(false)}>
+                                        Aplicar
+                                      </Button>
+                                    </Col>
                                   </div>
                                 )}
                               </Overlay>
@@ -440,6 +456,11 @@ export default function CreateInabilityComponent({
                                       monthsShown={1}
                                       locale="es"
                                     />
+                                    <Col xs={12}>
+                                      <Button variant="primary" className="w-100" onClick={() => setShowCalendarEnd(false)}>
+                                        Aplicar
+                                      </Button>
+                                    </Col>
                                   </div>
                                 )}
                               </Overlay>
@@ -481,13 +502,34 @@ export default function CreateInabilityComponent({
                             <Col md={6}>
                               <Form.Group>
                                 <Form.Label className="fw-semibold">CITT:</Form.Label>
-                                <Form.Control
-                                  type="file"
-                                  accept=".jpg,.jpeg,.png,.pdf,.webp"
-                                  {...register("firstDoc")}
-                                  isInvalid={!!errors.firstDoc}
-                                  className="border"
-                                />
+
+                                <InputGroup>
+                                  <Form.Control
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.pdf,.webp"
+                                    {...firstDocField}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      firstDocRef(el);          // ref de RHF
+                                      fileInputRef.current = el; // ref propio
+                                    }}
+                                    isInvalid={!!errors.firstDoc}
+                                    className="border"
+                                  />
+
+                                  <ConditionalRender cond={!!selectedFile}>
+                                    <Button variant="outline-danger" onClick={clearFirstDoc} title="Quitar archivo">
+                                      <i className="bi bi-x-lg" />
+                                    </Button>
+                                  </ConditionalRender>
+                                </InputGroup>
+
+                                <ConditionalRender cond={!!selectedFile}>
+                                  <small className="text-muted d-block mt-1">
+                                    <i className="bi bi-paperclip me-1" />
+                                    {selectedFile?.name} ({((selectedFile?.size ?? 0) / 1024).toFixed(0)} KB)
+                                  </small>
+                                </ConditionalRender>
+
                                 <Form.Control.Feedback type="invalid" className={errors.firstDoc ? "d-block" : ""}>
                                   Este campo es requerido
                                 </Form.Control.Feedback>

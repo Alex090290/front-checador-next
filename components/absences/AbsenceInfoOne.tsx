@@ -120,6 +120,16 @@ function checksVariant(type: string | null) {
                     </span>
                 </div>
             )
+        default:
+            return (
+                <div>
+                    <i className="bi bi-question-circle text-info me-2" />
+                    <span>
+                        Desconcida
+                    </span>
+                </div>
+            )
+
     }
 }
 
@@ -562,7 +572,7 @@ export function AbsenceOne({
                                                 <div
                                                     key={activeCheckId}
                                                     className="border rounded-3 p-3 mt-3 me-2 ms-1 collapse-detail-enter"
-                                                    >
+                                                >
                                                     <Row className="g-3">
                                                         {/* Columna de estadísticas */}
                                                         <Col xs={12} lg={4}>

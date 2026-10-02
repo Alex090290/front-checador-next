@@ -9,6 +9,7 @@ import Loading from "@/components/LoadingSpinner";
 import SuccessOverlay from "@/components/SuccessOverlay";
 import { useModals } from "@/context/ModalContext";
 import { INewsletter } from "@/lib/definitions";
+import { formatCreatedAt } from "@/lib/helpers";
 import { formatDate } from "date-fns";
 import moment from "moment";
 import { useRouter } from "next/navigation";
@@ -282,7 +283,7 @@ function NewsletterFormView({
                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateError ? "border-danger text-danger" : ""}`}
                                 onClick={() => setShowCalendar((s) => !s)}
                               >
-                                <span>{selectedDate ? selectedDate : "Selecciona una fecha"}</span>
+                                <span>{selectedDate ? formatCreatedAt(selectedDate) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3" />
                               </Button>
 
@@ -314,6 +315,11 @@ function NewsletterFormView({
                                       locale="es"
                                       minDate={new Date()}
                                     />
+                                    <Col xs={12}>
+                                      <Button variant="primary" className="w-100" onClick={() => setShowCalendar(false)}>
+                                        Aplicar
+                                      </Button>
+                                    </Col>
                                   </div>
                                 )}
                               </Overlay>
@@ -331,7 +337,7 @@ function NewsletterFormView({
                                 className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEnd ? "border-danger text-danger" : ""}`}
                                 onClick={() => setShowCalendarEnd((s) => !s)}
                               >
-                                <span>{selectedDateEnd ? selectedDateEnd : "Selecciona una fecha"}</span>
+                                <span>{selectedDateEnd ? formatCreatedAt(selectedDateEnd) : "Selecciona una fecha"}</span>
                                 <i className="bi bi-calendar3" />
                               </Button>
 
@@ -364,6 +370,11 @@ function NewsletterFormView({
                                       monthsShown={1}
                                       locale="es"
                                     />
+                                    <Col xs={12}>
+                                      <Button variant="primary" className="w-100" onClick={() => setShowCalendarEnd(false)}>
+                                        Aplicar
+                                      </Button>
+                                    </Col>
                                   </div>
                                 )}
                               </Overlay>

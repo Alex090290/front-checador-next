@@ -254,6 +254,11 @@ export default function CreatePenaltyComponent({
                                                         monthsShown={1}
                                                         locale="es"
                                                     />
+                                                    <Col xs={12}>
+                                                        <Button variant="primary" className="w-100" onClick={() => setShowCalendar(false)}>
+                                                            Aplicar
+                                                        </Button>
+                                                    </Col>
                                                 </div>
                                             )}
                                         </Overlay>

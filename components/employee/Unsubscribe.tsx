@@ -183,57 +183,62 @@ export default function UnsubscribeEmployeeComponent({
                   </Col>
 
                   <Col md={6}>
-                        <Form.Group>
-                          <Form.Label className="fw-semibold">Fecha de baja:</Form.Label>
-                        </Form.Group>
+                    <Form.Group>
+                      <Form.Label className="fw-semibold">Fecha de baja:</Form.Label>
+                    </Form.Group>
 
-                        <Button
-                          ref={dateButtonRefEndRelation}
-                          style={{ height: "35px" }}
-                          variant="outline-secondary"
-                          className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEndRelation ? "border-danger text-danger" : ""}`}
-                          onClick={() => setShowCalendarEndRelation((s) => !s)}
+                    <Button
+                      ref={dateButtonRefEndRelation}
+                      style={{ height: "35px" }}
+                      variant="outline-secondary"
+                      className={`w-100 d-flex align-items-center justify-content-between text-uppercase ${dateErrorEndRelation ? "border-danger text-danger" : ""}`}
+                      onClick={() => setShowCalendarEndRelation((s) => !s)}
+                    >
+                      <span>{selectedDateEndRelation ? formatCreatedAt(selectedDateEndRelation) : "Selecciona una fecha"}</span>
+                      <i className="bi bi-calendar3" />
+                    </Button>
+
+                    <ConditionalRender cond={!dateErrorEndRelation}>
+                      <small className="text-danger d-block mt-1">{dateErrorEndRelation}</small>
+                    </ConditionalRender>
+
+                    <Overlay
+                      target={dateButtonRefEndRelation.current}
+                      show={showCalendarEndRelation}
+                      placement="bottom-start"
+                      rootClose
+                      container={() => document.body}
+                      onHide={() => setShowCalendarEndRelation(false)}
+                    >
+                      {({ ref, style }) => (
+                        <div
+                          ref={ref}
+                          style={style}
+                          className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
                         >
-                          <span>{selectedDateEndRelation ? formatCreatedAt(selectedDateEndRelation) : "Selecciona una fecha"}</span>
-                          <i className="bi bi-calendar3" />
-                        </Button>
-
-                        <ConditionalRender cond={!dateErrorEndRelation}>
-                          <small className="text-danger d-block mt-1">{dateErrorEndRelation}</small>
-                        </ConditionalRender>
-
-                        <Overlay
-                          target={dateButtonRefEndRelation.current}
-                          show={showCalendarEndRelation}
-                          placement="bottom-start"
-                          rootClose
-                          container={() => document.body}
-                          onHide={() => setShowCalendarEndRelation(false)}
-                        >
-                          {({ ref, style }) => (
-                            <div
-                              ref={ref}
-                              style={style}
-                              className="date-multi-popover shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
-                            >
-                              <DatePicker
-                                inline
-                                selected={parsedDateEndRelation}
-                                onChange={handleDateChangeEndRelation}
-                                shouldCloseOnSelect={false}
-                                disabledKeyboardNavigation
-                                monthsShown={1}
-                                locale="es"
-                                showMonthDropdown
-                                showYearDropdown
-                                dropdownMode="select"
-                                yearDropdownItemNumber={10}
-                                scrollableYearDropdown
-                              />
-                            </div>
-                          )}
-                        </Overlay>
-                      </Col>
+                          <DatePicker
+                            inline
+                            selected={parsedDateEndRelation}
+                            onChange={handleDateChangeEndRelation}
+                            shouldCloseOnSelect={false}
+                            disabledKeyboardNavigation
+                            monthsShown={1}
+                            locale="es"
+                            showMonthDropdown
+                            showYearDropdown
+                            dropdownMode="select"
+                            yearDropdownItemNumber={10}
+                            scrollableYearDropdown
+                          />
+                          <Col xs={12}>
+                            <Button variant="primary" className="w-100" onClick={() => setShowCalendarEndRelation(false)}>
+                              Aplicar
+                            </Button>
+                          </Col>
+                        </div>
+                      )}
+                    </Overlay>
+                  </Col>
 
                   <Col md={12}>
                     <Entry

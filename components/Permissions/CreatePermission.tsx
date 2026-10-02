@@ -713,6 +713,12 @@ export default function CreatePermissionComponent({
                                       monthsShown={1}
                                       locale="es"
                                     />
+
+                                    <Col xs={12}>
+                                      <Button variant="primary" className="w-100" onClick={() => setShowCalendar(false)}>
+                                        Aplicar
+                                      </Button>
+                                    </Col>
                                   </div>
                                 )}
                               </Overlay>
@@ -764,6 +770,11 @@ export default function CreatePermissionComponent({
                                         monthsShown={1}
                                         locale="es"
                                       />
+                                      <Col xs={12}>
+                                        <Button variant="primary" className="w-100" onClick={() => setShowCalendarEnd(false)}>
+                                          Aplicar
+                                        </Button>
+                                      </Col>
                                     </div>
                                   )}
                                 </Overlay>
@@ -843,7 +854,7 @@ export default function CreatePermissionComponent({
             </Form>
           </Col>
         </Row>
-      </Container>
+      </Container >
     </>
   );
 }

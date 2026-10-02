@@ -135,48 +135,55 @@ export async function getOneInability(id: number): Promise<IInability | null> {
 export async function createInability(
   data: InabilityPayload & { firstDoc: FileList | null }
 ): Promise<ActionResponse<string>> {
+  const { apiToken, API_URL } = await storeAction();
+  const headers = { Authorization: `Bearer ${apiToken}` };
+
+  let createdId: string | null = null;
+
   try {
-    const { apiToken, API_URL } = await storeAction();
+    // 1. Crear el registro
+    const { data: res } = await axios.post(`${API_URL}/inability`, data, { headers });
+    createdId = res.data.id;
 
-    const document = new FormData();
+    // 2. Subir el documento (si hay)
+    const file = data.firstDoc?.[0];
+    if (file) {
+      const document = new FormData();
+      document.append("document", file);
 
-    if (data.firstDoc) {
-      document.append("document", data.firstDoc?.[0]);
-    }
-
-    const response = await axios
-      .post(`${API_URL}/inability`, data, {
-        headers: { Authorization: `Bearer ${apiToken}` },
-      }).then(async (res) => {
-        if (data.firstDoc) {
-          await uploadFirstInhabilityDocument({
-            formData: document,
-            id: res.data.data.id,
-            idDoc: res.data.data.idDocument,
-            folio: data.folio,
-          });
-        }
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(err.response?.data?.message ?? err.message ?? "Error al crear la incapacidad");
+      const upload = await uploadFirstInhabilityDocument({
+        formData: document,
+        id: res.data.id,
+        idDoc: res.data.idDocument,
+        folio: data.folio,
       });
+
+      if (!upload?.success) {
+        throw new Error(upload?.message || "No se pudo subir el documento");
+      }
+    }
 
     revalidatePath("/app/inability");
 
     return {
       success: true,
       message: "Incapacidad creada",
-      data: response.data.id,
+      data: res.data.id,
     };
   } catch (error: unknown) {
-    const err = error as Error;
-    console.log(err);
+    // 3. Rollback: si el registro se creó pero algo después falló, se elimina
+    if (createdId) {
+      await axios
+        .delete(`${API_URL}/inability/${createdId}`, { headers })
+        .catch((e) => console.log("Rollback fallido:", e?.response?.data ?? e));
+    }
 
-    return {
-      success: false,
-      message: err.message,
-    };
+    const message = axios.isAxiosError(error)
+      ? error.response?.data?.message ?? "Error al crear la incapacidad"
+      : (error as Error).message;
+
+    console.log(error);
+    return { success: false, message };
   }
 }
 
@@ -218,6 +225,9 @@ export async function uploadFirstInhabilityDocument({
             : "Error en la respuesta"
         );
       });
+
+    revalidatePath("/app/inability");
+
 
     return {
       success: true,
@@ -449,6 +459,8 @@ export async function uploadDocuments({
         }
       );
     }
+    revalidatePath("/app/inability");
+
     return {
       success: true,
       message: "Docuemento cargado",
@@ -474,43 +486,45 @@ export async function getInhabilityDocument({
   try {
     const { apiToken, API_URL: apiUrl } = await storeAction();
 
-    if (!idDoc || !selfId) throw new Error("ID NOT DEFINED");
+    if (!idDoc || !selfId) throw new Error("No se encontró el documento");
 
-    // Obtener imagen en binario
-    const resImg = await axios
-      .get(`${apiUrl}/inability/documentsInability/${idDoc}/${selfId}`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
+    const res = await axios.get(
+      `${apiUrl}/inability/documentsInability/${idDoc}/${selfId}`,
+      {
+        headers: { Authorization: `Bearer ${apiToken}` },
         responseType: "arraybuffer",
-      })
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        throw new Error(
-          err.response.data.message
-            ? err.response.data.message
-            : "Error en la respuesta"
-        );
-      });
+      }
+    );
 
-    // Convertir a base64
-    const base64 = Buffer.from(resImg, "binary").toString("base64");
-    const pdfBase64Url = `data:application/pdf;base64,${base64}`;
+    const buffer = Buffer.from(res.data);
+
+    if (buffer.length === 0) {
+      throw new Error("El documento está vacío o no existe");
+    }
+
+    const contentType = res.headers["content-type"] || "application/pdf";
+    const url = `data:${contentType};base64,${buffer.toString("base64")}`;
 
     return {
       success: true,
-      message: "Imagen subida correctamente",
-      data: pdfBase64Url,
+      message: "Documento cargado",
+      data: url,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let message = (error as Error).message || "Error al obtener el documento";
+
+    // Con arraybuffer, el error del backend llega como bytes: hay que decodificarlo
+    if (axios.isAxiosError(error) && error.response?.data) {
+      try {
+        const text = Buffer.from(error.response.data).toString("utf-8");
+        message = JSON.parse(text).message || message;
+      } catch {
+        // no era JSON, se queda el mensaje genérico
+      }
+    }
+
     console.log(error);
-    return {
-      success: false,
-      message: error.message,
-    };
+    return { success: false, message };
   }
 }
 
@@ -594,6 +608,8 @@ export async function updateExpirationDateST7V1({
         );
       });
 
+    revalidatePath("/app/inability");
+
 
     return { success: true, message: "Fecha actualizada" };
   } catch (error: unknown) {
@@ -641,6 +657,7 @@ export async function updateExpirationDateST7V2({
         );
       });
 
+    revalidatePath("/app/inability");
 
     return { success: true, message: "Fecha actualizada" };
   } catch (error: unknown) {
@@ -687,6 +704,7 @@ export async function updateExpirationDateST2({
             : "Error al actualizar"
         );
       });
+    revalidatePath("/app/inability");
 
 
     return { success: true, message: "Fecha actualizada" };
@@ -729,6 +747,7 @@ export async function updateDocumentsInhability({
         },
       });
 
+    revalidatePath("/app/inability");
 
     return {
       success: true,

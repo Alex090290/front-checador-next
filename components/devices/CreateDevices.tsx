@@ -679,6 +679,11 @@ export default function CreateDeviceComponent({
                                                                             monthsShown={1}
                                                                             locale="es"
                                                                         />
+                                                                        <Col xs={12}>
+                                                                            <Button variant="primary" className="w-100" onClick={() => setShowCalendarPurchase(false)}>
+                                                                                Aplicar
+                                                                            </Button>
+                                                                        </Col>
                                                                     </div>
                                                                 )}
                                                             </Overlay>
@@ -726,6 +731,11 @@ export default function CreateDeviceComponent({
                                                                             monthsShown={1}
                                                                             locale="es"
                                                                         />
+                                                                        <Col xs={12}>
+                                                                            <Button variant="primary" className="w-100" onClick={() => setShowCalendarExpiration(false)}>
+                                                                                Aplicar
+                                                                            </Button>
+                                                                        </Col>
                                                                     </div>
                                                                 )}
                                                             </Overlay>
@@ -1011,6 +1021,11 @@ export default function CreateDeviceComponent({
                                                                             monthsShown={1}
                                                                             locale="es"
                                                                         />
+                                                                           <Col xs={12}>
+                                                                            <Button variant="primary" className="w-100" onClick={() => setShowCalendar(false)}>
+                                                                                Aplicar
+                                                                            </Button>
+                                                                        </Col>
                                                                     </div>
                                                                 )}
                                                             </Overlay>

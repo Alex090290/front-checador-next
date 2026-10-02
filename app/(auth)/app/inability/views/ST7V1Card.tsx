@@ -92,6 +92,8 @@ function ST7V1Card({
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
+
+        await getData?.(); // ← refresca los datos del padre
       } catch {
         setFeedbackMsg("Error inesperado, intenta de nuevo");
         setFeedback("error");
@@ -110,7 +112,7 @@ function ST7V1Card({
     });
 
     if (!res.success) {
-      setFeedbackMsg(res.message || "No se pudo subir");
+      setFeedbackMsg(res.message || "No se pudo cargar el documento");
       setFeedback("error");
     }
     setPdfUrl(res.data || "");
@@ -162,13 +164,9 @@ function ST7V1Card({
               variant="secondary"
               title={<i className="bi bi-gear-fill"></i>}
             >
-              <Dropdown.Item>
-                <Button
-                  type="button"
-                  onClick={() => setShowUpdateDateModal(true)}>
-                  <i className="bi bi-calendar-minus me-1" />
-                  Fecha de expiración
-                </Button>
+              <Dropdown.Item onClick={() => setShowUpdateDateModal(true)}>
+                <i className="bi bi-calendar-minus me-1" />
+                Fecha de expiración
               </Dropdown.Item>
             </DropdownButton>
           </Card.Header>
@@ -262,7 +260,10 @@ function ST7V1Card({
         </Card>
         <PDFViewerModal
           show={showPdfModal}
-          onHide={() => setShowPdfModal(false)}
+          onHide={() => {
+            setShowPdfModal(false);
+            setPdfUrl("");
+          }}
           pdfBase64Url={pdfUrl}
         />
       </Col>

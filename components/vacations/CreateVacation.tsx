@@ -583,15 +583,15 @@ function CreateVacationComponent({
                                 </ConditionalRender>
 
                                 <ConditionalRender cond={!isLoadingPeriods && leaderOptions.length > 0}>
-                                <RelationField
-                                  readonly={readInput}
-                                  register={register("idLeader", { required: true })}
-                                  options={leaderOptions}
-                                  label="Líder:"
-                                  className="text-uppercase border"
-                                  control={control}
-                                  callBackMode="id"
-                                />
+                                  <RelationField
+                                    readonly={readInput}
+                                    register={register("idLeader", { required: true })}
+                                    options={leaderOptions}
+                                    label="Líder:"
+                                    className="text-uppercase border"
+                                    control={control}
+                                    callBackMode="id"
+                                  />
                                 </ConditionalRender>
 
                               </Col>
@@ -705,6 +705,11 @@ function CreateVacationComponent({
                                       monthsShown={1}
                                       locale="es"
                                     />
+                                    <Col xs={12}>
+                                      <Button variant="primary" className="w-100" onClick={() => setShowCalendar(false)}>
+                                        Aplicar
+                                      </Button>
+                                    </Col>
                                   </div>
                                 )}
                               </Overlay>
@@ -755,6 +760,11 @@ function CreateVacationComponent({
                                       monthsShown={1}
                                       locale="es"
                                     />
+                                    <Col xs={12}>
+                                      <Button variant="primary" className="w-100" onClick={() => setShowCalendarEnd(false)}>
+                                        Aplicar
+                                      </Button>
+                                    </Col>
                                   </div>
                                 )}
                               </Overlay>
