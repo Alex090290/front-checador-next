@@ -54,7 +54,6 @@ export default function VacationsTableClient({
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const totalPages = Math.ceil(total / limit);
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   const currentSearch = sp.get("search") ?? "";
   const isClearingSelectionRef = useRef(false);
   const tableRef = useRef<{ clearSelection: () => void } | null>(null);
@@ -70,6 +69,23 @@ export default function VacationsTableClient({
   const parsedStart = dateInitValue ? moment(dateInitValue, "YYYY-MM-DD").toDate() : null;
   const parsedEnd = dateEndValue ? moment(dateEndValue, "YYYY-MM-DD").toDate() : null;
 
+  const MAX_VISIBLE = 5;
+
+  const visiblePages = useMemo(() => {
+    if (totalPages <= MAX_VISIBLE) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    let start = Math.max(1, page - Math.floor(MAX_VISIBLE / 2));
+    let end = start + MAX_VISIBLE - 1;
+
+    if (end > totalPages) {
+      end = totalPages;
+      start = end - MAX_VISIBLE + 1;
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }, [page, totalPages]);
 
   const rangeLabel =
     parsedStart && parsedEnd
@@ -591,9 +607,8 @@ export default function VacationsTableClient({
                         Página {page} de {totalPages}
                       </small>
 
-                      <ConditionalRender cond={pageNumbers.length > 1}>
+                      <ConditionalRender cond={totalPages > 1}>
                         <Pagination size="sm" className="m-0">
-                          {/* Botón Anterior */}
                           <Pagination.Prev
                             disabled={page <= 1}
                             onClick={() => goToPage(page - 1)}
@@ -601,8 +616,15 @@ export default function VacationsTableClient({
                             Anterior
                           </Pagination.Prev>
 
-                          {/* Números de Página Dinámicos */}
-                          {pageNumbers.map((num) => (
+                          {/* Primera página + … si la ventana no empieza en 1 */}
+                          <ConditionalRender cond={visiblePages[0] > 1}>
+                            <Pagination.Item onClick={() => goToPage(1)}>1</Pagination.Item>
+                            <ConditionalRender cond={visiblePages[0] > 2}>
+                              <Pagination.Ellipsis disabled />
+                            </ConditionalRender>
+                          </ConditionalRender>
+
+                          {visiblePages.map((num) => (
                             <Pagination.Item
                               key={num}
                               active={num === page}
@@ -612,7 +634,14 @@ export default function VacationsTableClient({
                             </Pagination.Item>
                           ))}
 
-                          {/* Botón Siguiente */}
+                          {/* … + última página si la ventana no termina en totalPages */}
+                          <ConditionalRender cond={visiblePages[visiblePages.length - 1] < totalPages}>
+                            <ConditionalRender cond={visiblePages[visiblePages.length - 1] < totalPages - 1}>
+                              <Pagination.Ellipsis disabled />
+                            </ConditionalRender>
+                            <Pagination.Item onClick={() => goToPage(totalPages)}>{totalPages}</Pagination.Item>
+                          </ConditionalRender>
+
                           <Pagination.Next
                             disabled={page >= totalPages}
                             onClick={() => goToPage(page + 1)}

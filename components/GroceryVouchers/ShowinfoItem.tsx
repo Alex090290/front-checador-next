@@ -32,7 +32,7 @@ function StatBox({ icon, label, value, accent }: { icon: string; label: string; 
                 </div>
                 <span className="text-muted small fw-semibold text-uppercase">{label}</span>
             </div>
-            <div className={`fw-bold lh-1 text-${accent}-emphasis`} style={{ fontSize: "clamp(1.2rem, 3vw, 1.8rem)" }}>
+            <div className={`fw-bold lh-1 text-${accent}-emphasis`} style={{ fontSize: "clamp(1.1rem, 3vw, 1.6rem)" }}>
                 {value}
             </div>
         </div>
@@ -188,13 +188,13 @@ return (
                             <div className="border rounded-4 p-3 h-100">
                                 <SectionHeader icon="receipt-cutoff" title="Detalle de descuentos" count={discounts.length} />
 
-                                <div className="table-responsive rounded-3 border">
+                                 <div className="table-responsive rounded-3 border" style={{ maxHeight: 420, overflowY: "auto" }}>
                                     <table className="table table-hover align-middle mb-0 small">
                                         <thead className="table-dark">
                                             <tr>
                                                 <th>Fecha</th>
-                                                <th>Categoría</th>
-                                                <th>Motivo</th>
+                                                <th className="text-center">Categoría</th>
+                                                <th className="text-center">Motivo</th>
                                                 <th className="text-end">Descuento</th>
                                             </tr>
                                         </thead>
@@ -206,14 +206,14 @@ return (
                                             {discounts.map((d) => (
                                                 <tr key={d._id ?? d.id}>
                                                     <td className="text-capitalize text-nowrap">{d.dateOfAbsence ? fmtDate(d.dateOfAbsence) : fmtDate(d.createdAt)}</td>
-                                                    <td>
+                                                    <td className="text-center">
                                                         <div className="fw-semibold text-uppercase">{d.category}</div>
                                                         <div className="text-muted">{d.subCategory}</div>
                                                         <span className="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle mt-1 text-capitalize">
                                                             {formatLabel(d.type)}
                                                         </span>
                                                     </td>
-                                                    <td className="text-muted" style={{ maxWidth: 240 }}>
+                                                    <td className="text-muted text-center" style={{ maxWidth: 240 }}>
                                                         {d.motiveJustify || "—"}
                                                     </td>
                                                     <td className="text-end fw-semibold text-danger text-nowrap">
@@ -244,9 +244,9 @@ return (
                                         <thead className="table-dark" style={{ position: "sticky", top: 0, zIndex: 1 }}>
                                             <tr>
                                                 <th>Fecha</th>
-                                                <th>Estado</th>
+                                                <th className="text-center">Estado</th>
                                                 <th className="text-end">Pago</th>
-                                                <th className="text-end">Desc.</th>
+                                                {/* <th className="text-end">Desc.</th> */}
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -257,7 +257,7 @@ return (
                                             {pendingDays.map((d) => (
                                                 <tr key={d.date}>
                                                     <td className="text-capitalize text-nowrap">{fmtDate(d.date, "ddd D MMM")}</td>
-                                                    <td>
+                                                    <td className="text-center">
                                                         <ConditionalRender cond={d.verified}>
                                                             <span className="badge rounded-pill px-2 py-1 bg-success-subtle text-success-emphasis border border-success-subtle">
                                                                 <i className="bi bi-check-circle me-1" />Verificado
@@ -271,9 +271,9 @@ return (
                                                         </ConditionalRender>
                                                     </td>
                                                     <td className="text-end text-nowrap">{money(d.amountPayment)}</td>
-                                                    <td className={`text-end text-nowrap ${d.discountAmount ? "text-danger fw-semibold" : "text-muted"}`}>
+                                                    {/* <td className={`text-end text-nowrap ${d.discountAmount ? "text-danger fw-semibold" : "text-muted"}`}>
                                                         {d.discountAmount ? `- ${money(d.discountAmount)}` : "—"}
-                                                    </td>
+                                                    </td> */}
                                                 </tr>
                                             ))}
                                         </tbody>

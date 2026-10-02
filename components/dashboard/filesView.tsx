@@ -14,6 +14,7 @@ import { getPrimaAnual, getReportInflowsAndOutflows, getReportVales } from "@/ap
 import { ICurrentPeriod } from "@/lib/definitions";
 import { createPortal } from "react-dom";
 import { formatCreatedAt } from "@/lib/helpers";
+import { useModals } from "@/context/ModalContext";
 
 
 moment.locale("es");
@@ -51,11 +52,12 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const sp = useSearchParams();
     const searchParamsString = sp.toString();
+    const { modalConfirm } = useModals();
 
     const [justArrived, setJustArrived] = useState(false);
     const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
     const [dateEndValue, setDateEndValue] = useState(dateEnd ?? "");
-    const [dateError, setDateError] = useState("");
+    const [dateError] = useState("");
 
     const [showCalendar, setShowCalendar] = useState(false);
     const dateButtonRef = useRef(null);
@@ -107,94 +109,104 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
     //Boton de descargar
     const handleDownload = async (idCard: number | null) => {
 
-
-        setDateError("");
-        setFeedback("loading");
-        setFeedbackMsg("Generando reporte...");
-
         switch (idCard) {
             case 3: // Ingresos y salidas
-                try {
-                    const res = await getReportInflowsAndOutflows(Number(selectedPeriodId));
+                modalConfirm("¿Seguro que quieres descargar este reporte?", async () => {
 
-                    if (!res.success || !res.data) {
-                        setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                    try {
+                        setFeedback("loading");
+                        setFeedbackMsg("Generando reporte...")
+                        const res = await getReportInflowsAndOutflows(Number(selectedPeriodId));
+
+                        if (!res.success || !res.data) {
+                            setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                            setFeedback("error");
+                            return;
+                        }
+
+                        const { base64Url, fileName } = res.data;
+
+                        const link = document.createElement("a");
+                        link.href = base64Url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        handleClearDates();
+                        setFeedbackMsg("Reporte generado correctamente");
+                        setFeedback("success");
+                    } catch (err) {
+                        console.log(err);
+                        setFeedbackMsg("Error inesperado al generar el reporte");
                         setFeedback("error");
-                        return;
                     }
-
-                    const { base64Url, fileName } = res.data;
-
-                    const link = document.createElement("a");
-                    link.href = base64Url;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    handleClearDates();
-                    setFeedbackMsg("Reporte generado correctamente");
-                    setFeedback("success");
-                } catch (err) {
-                    console.log(err);
-                    setFeedbackMsg("Error inesperado al generar el reporte");
-                    setFeedback("error");
-                }
+                })
                 break;
 
             case 4: // Vales
-                try {
-                    const res = await getReportVales(Number(selectedPeriodId));
+                modalConfirm("¿Seguro que quieres descargar este reporte?", async () => {
 
-                    if (!res.success || !res.data) {
-                        setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                    try {
+                        setFeedback("loading");
+                        setFeedbackMsg("Generando reporte...")
+                        const res = await getReportVales(Number(selectedPeriodId));
+
+                        if (!res.success || !res.data) {
+                            setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                            setFeedback("error");
+                            return;
+                        }
+
+                        const { base64Url, fileName } = res.data;
+
+                        const link = document.createElement("a");
+                        link.href = base64Url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        handleClearDates();
+                        setFeedbackMsg("Reporte generado correctamente");
+                        setFeedback("success");
+                    } catch (err) {
+                        console.log(err);
+                        setFeedbackMsg("Error inesperado al generar el reporte");
                         setFeedback("error");
-                        return;
                     }
+                })
 
-                    const { base64Url, fileName } = res.data;
-
-                    const link = document.createElement("a");
-                    link.href = base64Url;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    handleClearDates();
-                    setFeedbackMsg("Reporte generado correctamente");
-                    setFeedback("success");
-                } catch (err) {
-                    console.log(err);
-                    setFeedbackMsg("Error inesperado al generar el reporte");
-                    setFeedback("error");
-                }
                 break;
 
             case 2: // Prima Anual
-             try {
-                    const res = await getPrimaAnual(String(selectedPeriodId));
+                modalConfirm("¿Seguro que quieres descargar este reporte?", async () => {
+                    try {
+                        setFeedback("loading");
+                        setFeedbackMsg("Generando reporte...")
+                        const res = await getPrimaAnual(String(selectedPeriodId));
 
-                    if (!res.success || !res.data) {
-                        setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                        if (!res.success || !res.data) {
+                            setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                            setFeedback("error");
+                            return;
+                        }
+
+                        const { base64Url, fileName } = res.data;
+
+                        const link = document.createElement("a");
+                        link.href = base64Url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        handleClearDates();
+                        setFeedbackMsg("Reporte generado correctamente");
+                        setFeedback("success");
+                    } catch (err) {
+                        console.log(err);
+                        setFeedbackMsg("Error inesperado al generar el reporte");
                         setFeedback("error");
-                        return;
                     }
-
-                    const { base64Url, fileName } = res.data;
-
-                    const link = document.createElement("a");
-                    link.href = base64Url;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    handleClearDates();
-                    setFeedbackMsg("Reporte generado correctamente");
-                    setFeedback("success");
-                } catch (err) {
-                    console.log(err);
-                    setFeedbackMsg("Error inesperado al generar el reporte");
-                    setFeedback("error");
-                }
+                })
                 break;
 
             default:
@@ -349,7 +361,7 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                                     onClick={() => handleSearchPeriod(String(p.id))}
                                                 >
                                                     Periodo {p.numberPeriod}
-                                                    <span className={`small ms-2 ${String(p.id) ===  selectedPeriodId? "text-white-50" : "text-muted"}`}>
+                                                    <span className={`small ms-2 ${String(p.id) === selectedPeriodId ? "text-white-50" : "text-muted"}`}>
                                                         {formatCreatedAt(p.dateInit)} - {formatCreatedAt(p.dateEnd)}
                                                     </span>
                                                 </Dropdown.Item>
