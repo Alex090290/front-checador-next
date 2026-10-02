@@ -138,7 +138,7 @@ return (
                                 <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                                     <div className="d-flex align-items-center gap-2">
                                         <i className="bi bi-person-workspace text-success" />
-                                        <span className="text-muted"> Enpleado </span>
+                                        <span className="text-muted"> Empleado </span>
                                     </div>
 
                                     <span className="fw-semibold text-uppercase text-end">
