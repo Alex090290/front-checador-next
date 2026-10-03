@@ -170,13 +170,14 @@ export default function CreateInabilityComponent({
 
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
-
     modalConfirm("¿Seguro que quieres guardar esta incapacidad?", async () => {
       try {
         setFeedback("loading");
         setFeedbackMsg("Guardando incapacidad...");
 
-        const res = await createInability(data);
+        const file = data.firstDoc?.[0] ?? null;            // ← FileList → File
+
+        const res = await createInability({ ...data, firstDoc: file }); // ← ya no es (data)
 
         if (!res.success) {
           setFeedbackMsg(res.message || "No se pudo crear");
@@ -187,9 +188,12 @@ export default function CreateInabilityComponent({
         setFeedbackMsg(res.message || "Creada correctamente");
         setFeedback("success");
         router.push("/app/inability?view_type=list&id=null");
-      } finally {
-        setLoading(false);
-        setMessageLoading("");
+      } catch (err) {
+        console.error("createInability falló:", err);
+        setFeedbackMsg(
+          "No se pudo guardar. El archivo puede ser demasiado grande o hubo un problema de conexión."
+        );
+        setFeedback("error");                                 // ← esto quita el "Guardando..."
       }
     });
   };
