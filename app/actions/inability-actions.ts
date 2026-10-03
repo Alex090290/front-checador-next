@@ -214,6 +214,9 @@ export async function uploadFirstInhabilityDocument({
           Authorization: `Bearer ${apiToken}`,
           "Content-Type": "multipart/form-data",
         },
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        timeout: 120_000,
       })
       .then((res) => {
         return res.data;
