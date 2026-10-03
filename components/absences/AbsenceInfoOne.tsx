@@ -129,7 +129,6 @@ function checksVariant(type: string | null) {
                     </span>
                 </div>
             )
-
     }
 }
 
