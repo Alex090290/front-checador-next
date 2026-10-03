@@ -147,6 +147,8 @@ export async function createInability(
 
     // 2. Subir el documento (si hay)
     const file = data.firstDoc?.[0];
+    console.log("file: ",file);
+    
     if (file) {
       const document = new FormData();
       document.append("document", file);
