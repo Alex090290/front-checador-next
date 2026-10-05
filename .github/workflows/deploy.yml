@@ -13,4 +13,4 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Deploy
-        run: /home/servidor/Documents/scripts/githubActions/frontend.sh
+        run: /home/servidor/Documents/scripts/githubActions/frontEnd.sh
