@@ -1,3 +1,4 @@
+// middleware.ts
 import { auth } from "@/lib/auth";
 
 export default auth((req) => {
@@ -8,5 +9,10 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/app/:path*"],
+  matcher: [
+    {
+      source: "/app/:path*",
+      missing: [{ type: "header", key: "next-action" }],
+    },
+  ],
 };
