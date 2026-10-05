@@ -181,14 +181,16 @@ export default function CreateInabilityComponent({
   
         // 1. Registro sin archivo
         const res = await createInability({ ...data, firstDoc: null });
+        
         if (!res.success) {
           setFeedbackMsg(res.message || "No se pudo crear");
           setFeedback("error");
           return;
         }
         createdId = res.data?.id ?? null;
-  
+        
         // 2. Archivo, con tu action de siempre
+        
         if (file) {
           setFeedbackMsg("Subiendo documento...");
   
@@ -201,7 +203,7 @@ export default function CreateInabilityComponent({
             formData,
             folio: data.folio,
           });
-  
+          
           if (!upload.success) {
             throw new Error(upload.message || "No se pudo subir el documento");
           }

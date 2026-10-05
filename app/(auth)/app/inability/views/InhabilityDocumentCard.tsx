@@ -119,18 +119,24 @@ function InhabilityDocCard({
   const handleGetDocument = async () => {
     setFeedback("loading");
     setFeedbackMsg("Cargando...");
-
+  
     const res = await getInhabilityDocument({ idDoc, selfId });
-
+  
     if (!res.success || !res.data) {
       setFeedbackMsg("No se pudo cargar el documento");
       setFeedback("error");
       return;
     }
-
-    setPdfUrl(res.data || "");
+  
+    // data:application/pdf;base64,XXXX → Blob → blob:...
+    const base64 = res.data.split(",")[1];
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: "application/pdf" });
+  
+    if (pdfUrl.startsWith("blob:")) URL.revokeObjectURL(pdfUrl);
+    setPdfUrl(URL.createObjectURL(blob));
     setShowPdfModal(true);
-    setFeedback(null)
+    setFeedback(null);
   };
 
   const handleCancel = () => {
@@ -286,7 +292,11 @@ function InhabilityDocCard({
         </Card>
         <PDFViewerModal
           show={showPdfModal}
-          onHide={() => setShowPdfModal(false)}
+          onHide={() => {
+            setShowPdfModal(false);
+            if (pdfUrl.startsWith("blob:")) URL.revokeObjectURL(pdfUrl);
+            setPdfUrl("");
+          }}
           pdfBase64Url={pdfUrl}
         />
       </Col>
