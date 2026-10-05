@@ -1,0 +1,16 @@
+name: Deploy frontend
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy
+        run: /home/servidor/Documents/scripts/githubActions/frontend.sh
