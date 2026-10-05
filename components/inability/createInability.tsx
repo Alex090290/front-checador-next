@@ -17,6 +17,7 @@ import { es } from "date-fns/locale";
 import DatePicker, { registerLocale } from "react-datepicker";
 import moment from "moment";
 import { formatCreatedAt } from "@/lib/helpers";
+import { compressPdf } from "@/lib/compressPdf";
 
 registerLocale("es", es);
 
@@ -44,6 +45,7 @@ const DEFAULT_VALUES: TInputs = {
   notes: ""
 };
 
+const MAX_UPLOAD = 9 * 1024 * 1024; 
 
 export default function CreateInabilityComponent({
   employees = [],
@@ -177,20 +179,33 @@ export default function CreateInabilityComponent({
         setFeedback("loading");
         setFeedbackMsg("Guardando incapacidad...");
   
-        const file = data.firstDoc?.[0] ?? null;
+        let file = data.firstDoc?.[0] ?? null;
+  
+        // 0. Si el PDF pasa de 9 MB, se comprime ANTES de crear el registro
+        if (file && file.size > MAX_UPLOAD) {
+          setFeedbackMsg("Optimizando documento...");
+          file = await compressPdf(file);
+  
+          if (file.size > MAX_UPLOAD) {
+            setFeedbackMsg(
+              "El documento sigue siendo muy pesado. Escanéalo con menor resolución."
+            );
+            setFeedback("error");
+            return;
+          }
+        }
   
         // 1. Registro sin archivo
         const res = await createInability({ ...data, firstDoc: null });
-        
+  
         if (!res.success) {
           setFeedbackMsg(res.message || "No se pudo crear");
           setFeedback("error");
           return;
         }
         createdId = res.data?.id ?? null;
-        
-        // 2. Archivo, con tu action de siempre
-        
+  
+        // 2. Archivo (ya comprimido si hacía falta)
         if (file) {
           setFeedbackMsg("Subiendo documento...");
   
@@ -203,7 +218,7 @@ export default function CreateInabilityComponent({
             formData,
             folio: data.folio,
           });
-          
+  
           if (!upload.success) {
             throw new Error(upload.message || "No se pudo subir el documento");
           }
