@@ -133,7 +133,7 @@ export async function getOneInability(id: number): Promise<IInability | null> {
 
 // app/actions/inability-actions.ts
 export async function createInability(
-  data: InabilityPayload & { firstDoc: FileList | null }
+  data: InabilityPayload & { firstDoc: File | null }
 ): Promise<ActionResponse<string>> {
   const { apiToken, API_URL } = await storeAction();
   const headers = { Authorization: `Bearer ${apiToken}` };
@@ -141,17 +141,15 @@ export async function createInability(
   let createdId: string | null = null;
 
   try {
+    const { firstDoc, ...payload } = data;
+
     // 1. Crear el registro
-    const { data: res } = await axios.post(`${API_URL}/inability`, data, { headers });
+    const { data: res } = await axios.post(`${API_URL}/inability`, payload, { headers });
     createdId = res.data.id;
 
-    // 2. Subir el documento (si hay)
-    const file = data.firstDoc?.[0];
-    console.log("file: ",file);
-    
-    if (file) {
+    if (firstDoc) {
       const document = new FormData();
-      document.append("document", file);
+      document.append("document", firstDoc);
 
       const upload = await uploadFirstInhabilityDocument({
         formData: document,
