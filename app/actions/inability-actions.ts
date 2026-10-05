@@ -8,6 +8,17 @@ import { revalidatePath } from "next/cache";
 import { IDeleteInhability, IdocumentsInability, IInability, InabilityPayload, IsT2DischargeDocument, IsT7FillingDocumentv1, IsT7FillingDocumentv2 } from "@/lib/inhability/interface";
 
 
+export interface IInabilityFormData {
+  idEmployee: number;
+  disabilityCategory: string;
+  folio: string;
+  typeOfDisability: string;
+  dateInit: string;      // formato 'YYYY-MM-DD'
+  dateEnd: string;       // formato 'YYYY-MM-DD'
+  firstDoc: File | null;
+  notes: string;
+}
+
 export interface IResponseInabilityCreate {
   message: string;
   status: number;
@@ -132,52 +143,29 @@ export async function getOneInability(id: number): Promise<IInability | null> {
 }
 
 // app/actions/inability-actions.ts
+export interface ICreateInabilityResult {
+  id: string;
+  idDocument: string;
+}
+
 export async function createInability(
-  data: InabilityPayload & { firstDoc: File | null }
-): Promise<ActionResponse<string>> {
+  data: Omit<InabilityPayload, "firstDoc"> & { firstDoc?: null }
+): Promise<ActionResponse<ICreateInabilityResult>> {
   const { apiToken, API_URL } = await storeAction();
   const headers = { Authorization: `Bearer ${apiToken}` };
 
-  let createdId: string | null = null;
-
   try {
-    const { firstDoc, ...payload } = data;
-
-    // 1. Crear el registro
-    const { data: res } = await axios.post(`${API_URL}/inability`, payload, { headers });
-    createdId = res.data.id;
-
-    if (firstDoc) {
-      const document = new FormData();
-      document.append("document", firstDoc);
-
-      const upload = await uploadFirstInhabilityDocument({
-        formData: document,
-        id: res.data.id,
-        idDoc: res.data.idDocument,
-        folio: data.folio,
-      });
-
-      if (!upload?.success) {
-        throw new Error(upload?.message || "No se pudo subir el documento");
-      }
-    }
+    // 1. Crear el registro (el archivo se sube aparte, por el Route Handler)
+    const { data: res } = await axios.post(`${API_URL}/inability`, data, { headers });
 
     revalidatePath("/app/inability");
 
     return {
       success: true,
       message: "Incapacidad creada",
-      data: res.data.id,
+      data: { id: res.data.id, idDocument: res.data.idDocument },
     };
   } catch (error: unknown) {
-    // 3. Rollback: si el registro se creó pero algo después falló, se elimina
-    if (createdId) {
-      await axios
-        .delete(`${API_URL}/inability/${createdId}`, { headers })
-        .catch((e) => console.log("Rollback fallido:", e?.response?.data ?? e));
-    }
-
     const message = axios.isAxiosError(error)
       ? error.response?.data?.message ?? "Error al crear la incapacidad"
       : (error as Error).message;

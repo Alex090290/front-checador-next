@@ -1,6 +1,6 @@
 "use client";
 
-import { createInability } from "@/app/actions/inability-actions";
+import { createInability, IInabilityFormData, IResponseInabilityCreate, uploadFirstInhabilityDocument } from "@/app/actions/inability-actions";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
@@ -171,29 +171,50 @@ export default function CreateInabilityComponent({
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     modalConfirm("¿Seguro que quieres guardar esta incapacidad?", async () => {
+      let createdId: string | null = null;
+  
       try {
         setFeedback("loading");
         setFeedbackMsg("Guardando incapacidad...");
-
-        const file = data.firstDoc?.[0] ?? null;            // ← FileList → File
-
-        const res = await createInability({ ...data, firstDoc: file }); // ← ya no es (data)
-
+  
+        const file = data.firstDoc?.[0] ?? null;
+  
+        // 1. Registro sin archivo
+        const res = await createInability({ ...data, firstDoc: null });
         if (!res.success) {
           setFeedbackMsg(res.message || "No se pudo crear");
           setFeedback("error");
           return;
         }
-
+        createdId = res.data?.id ?? null;
+  
+        // 2. Archivo, con tu action de siempre
+        if (file) {
+          setFeedbackMsg("Subiendo documento...");
+  
+          const formData = new FormData();
+          formData.append("document", file);
+  
+          const upload = await uploadFirstInhabilityDocument({
+            id: String(res.data?.id),
+            idDoc: String(res.data?.idDocument),
+            formData,
+            folio: data.folio,
+          });
+  
+          if (!upload.success) {
+            throw new Error(upload.message || "No se pudo subir el documento");
+          }
+        }
+  
         setFeedbackMsg(res.message || "Creada correctamente");
         setFeedback("success");
         router.push("/app/inability?view_type=list&id=null");
       } catch (err) {
         console.error("createInability falló:", err);
-        setFeedbackMsg(
-          "No se pudo guardar. El archivo puede ser demasiado grande o hubo un problema de conexión."
-        );
-        setFeedback("error");                                 // ← esto quita el "Guardando..."
+        // if (createdId) await deleteInability(createdId).catch(() => {});
+        setFeedbackMsg((err as Error).message || "No se pudo guardar.");
+        setFeedback("error");
       }
     });
   };

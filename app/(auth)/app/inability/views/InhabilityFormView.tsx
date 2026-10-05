@@ -3,6 +3,7 @@
 import {
   createInability,
   updateInability,
+  uploadFirstInhabilityDocument,
 } from "@/app/actions/inability-actions";
 import { Entry, FieldSelect, RelationField } from "@/components/fields";
 import FormView, {
@@ -72,10 +73,40 @@ function InhabilityFormView({
 
   const onSubmit: SubmitHandler<TInputs> = async (data) => {
     if (id && id === "null") {
-      const res = await createInability(data);
-      if (!res.success) return modalError(res.message);
-      toast.success(res.message);
-      router.push("/app/inability?view_type=list&id=null");
+      let createdId: string | null = null;
+  
+      try {
+        const file = data.firstDoc?.[0] ?? null;
+  
+        // 1. Registro sin archivo
+        const res = await createInability({ ...data, firstDoc: null });
+        if (!res.success) return modalError(res.message);
+        createdId = res.data?.id ?? null;
+  
+        // 2. Archivo, con tu action de siempre
+        if (file) {
+          const formData = new FormData();
+          formData.append("document", file);
+  
+          const upload = await uploadFirstInhabilityDocument({
+            id: String(res.data?.id),
+            idDoc: String(res.data?.idDocument),
+            formData,
+            folio: data.folio,
+          });
+  
+          if (!upload.success) {
+            throw new Error(upload.message || "No se pudo subir el documento");
+          }
+        }
+  
+        toast.success(res.message);
+        router.push("/app/inability?view_type=list&id=null");
+      } catch (err) {
+        // Rollback: si el archivo falló, se borra el registro
+        // if (createdId) await deleteInability(createdId).catch(() => {});
+        modalError((err as Error).message || "No se pudo guardar.");
+      }
     } else {
       const res = await updateInability(Number(id), data);
       if (!res.success) return modalError(res.message);
