@@ -14,9 +14,10 @@ import { useModals } from "@/context/ModalContext";
 import CreateBonusHomeOfficeModal from "./CreateBonusHomeOfficeModal";
 import { Employee } from "@/lib/definitions";
 import UpdateBonusHOModal from "./UpdateBonusHOModal";
-import { deleteBonusHO } from "@/app/actions/bonusHO-actions";
+import { deleteBonusHO, downloadDocBonusHO } from "@/app/actions/bonusHO-actions";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import { useRouter, useSearchParams } from "next/navigation";
+import moment from "moment-timezone";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -53,6 +54,7 @@ export default function TableBonusHO({
     const [showModalUpdate, setShowModalUpdate] = useState(false);
     const [sendRow, setSendRow] = useState<IBonusHomeOffice | null>(null);
     const [idRegister, setIdRegister] = useState<number | null>(null);
+    const [docBase64Url, setDocBase64Url] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -182,6 +184,48 @@ export default function TableBonusHO({
         },
     ]
 
+    //Descargar DOCUMENTO
+    const handleDownloadDocument = () => {
+        modalConfirm("¿Seguro que quieres descargar el documento?", async () => {
+            if (docBase64Url) {
+                triggerDownload(docBase64Url);
+                return;
+            }
+
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Generando documento...");
+
+                const res = await downloadDocBonusHO();
+
+                if (!res.success || !res.data) {
+                    setFeedbackMsg(res.message || "Error al obtener el documento");
+                    setFeedback("error");
+                    return;
+                }
+
+                setDocBase64Url(res.data.base64Url);
+                setFeedback(null);
+                triggerDownload(res.data.base64Url);
+
+            } catch (error) {
+                console.log(error);
+
+                setFeedbackMsg("Error inesperado, intenta de nuevo");
+                setFeedback("error");
+            }
+        });
+    };
+
+    const triggerDownload = useCallback((base64Url: string) => {
+        const link = document.createElement("a");
+        link.href = base64Url;
+        link.download = `Bono-home-office-${moment.tz("America/Mexico_City").format("YYYY-MM-DD")}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }, []);
+
     return (
         <>
             <ConditionalRender cond={feedback === "loading"}>
@@ -206,18 +250,29 @@ export default function TableBonusHO({
 
             <Container className="py-3" style={{ maxWidth: "1600px" }}>
 
-                <Button
-                    variant="primary"
-                    className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
-                    onClick={() => setShowModalCreate(true)}
-                >
-                    <i className="bi bi-plus-lg" />
-                    Crear bono
-                </Button>
+                <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                    <Button
+                        variant="primary"
+                        className="d-inline-flex align-items-center justify-content-center gap-2 fw-semibold px-3"
+                        onClick={() => setShowModalCreate(true)}
+                    >
+                        <i className="bi bi-plus-lg" />
+                        Crear bono
+                    </Button>
+
+                    <Button
+                        variant="dark"
+                        className="d-inline-flex align-items-center justify-content-center gap-2 fw-semibold px-3"
+                        onClick={handleDownloadDocument}
+                    >
+                        <i className="bi bi-file-earmark-excel" />
+                        Descargar documento
+                    </Button>
+                </div>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
-                        <h1 className="mb-0">Bonos de home office</h1>
+                        <h1 className="mb-0">Bonos de home office</h1> 
 
                         <span className="text-muted">
                             {total} bono{total !== 1 ? "s" : ""}

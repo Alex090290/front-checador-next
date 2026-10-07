@@ -41,3 +41,7 @@ export interface IBonusHomeOffice {
 export interface IUpdateBonusHO{
     amount?: number | null;
 }
+
+export interface IGenerateDocBonusKey {
+    base64Url: string;
+}

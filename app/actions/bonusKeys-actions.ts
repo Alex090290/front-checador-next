@@ -1,10 +1,11 @@
 "use server"
 
-import { IBonusKeys, IUpdateBonusKeys } from "@/lib/Bonus/interface";
+import { IBonusKeys, IGenerateDocBonusKey, IUpdateBonusKeys } from "@/lib/Bonus/interface";
 import { storeAction } from "./storeActions";
 import axios from "axios";
 import { ActionResponse } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
+import { storeToken } from "@/lib/useToken";
 
 type FetchVacationsArgs = {
     search?: string;
@@ -175,6 +176,53 @@ export async function deleteBonusKeys({
             success: true,
             message: "Bono eliminado correctamente",
         };
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+        };
+    }
+}
+
+export async function downloadDocBonusKeys(): Promise<ActionResponse<IGenerateDocBonusKey>> {
+    try {
+        const { apiToken, apiUrl } = await storeToken();
+
+        let base64Url = '';
+
+            await axios.get(`${apiUrl}/bonuskeys/download/excel`, {
+                headers: { Authorization: `Bearer ${apiToken}` },
+                responseType: "arraybuffer",
+            }).then((res) => {
+                const base64 = Buffer.from(res.data).toString("base64");
+                base64Url = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
+            }).catch((err) => {
+                throw new Error(
+                    err.response?.data?.message
+                        ? err.response.data.message
+                        : "Error al obtener el documento"
+                );
+            });
+
+
+        revalidatePath("/app/bonuskeys");
+
+        return {
+            success: true,
+            message: "Documento generado",
+            data: { base64Url },
+        };
+
     } catch (error: unknown) {
         console.log(error);
 
