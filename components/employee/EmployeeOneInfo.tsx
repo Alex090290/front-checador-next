@@ -40,6 +40,8 @@ import EmployeeOneError from "./EmployeeMessageError";
 import ReEntryModal from "./reEntryModal";
 import { IUpdateVacation, Vacations } from "@/lib/vactions/interface";
 import UpdateHolidayModal from "./UpdateHolidayModal";
+import { useModals } from "@/context/ModalContext";
+import { resetEmployeeTwoFactor } from "@/app/actions/twoFactor-actions";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -168,6 +170,7 @@ export default function EmployeeDetailsView({
   const [sendIdRequest, setSendIdRequest] = useState<number | null>(null);
   const [sendIdPeriod, setSendIdPeriod] = useState<number | null>(null);
   const [sendHolidayName, setSendHolidayName] = useState<string | null>(null);
+  const { modalConfirm } = useModals();
 
 
   const department =
@@ -212,6 +215,31 @@ export default function EmployeeDetailsView({
     setSendIdPeriod(idPeriod);
     setSendHolidayName(holidayName);
     setShowUpdateHoliday(true);
+  }
+
+  const handleResetTwoFactor = () => {
+    modalConfirm("¿Seguro que quieres reiniciar la verificación en dos pasos del empleado?", async () => {
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Reiniciando verificación en dos pasos...");
+
+        const res = await resetEmployeeTwoFactor({ id: Number(id) });
+
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo reiniciar la verificación en dos pasos");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Verificación en dos pasos reiniciada");
+        setFeedback("success");
+      } catch (error) {
+        console.log(error);
+
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
+      }
+    });
   }
 
 
@@ -316,6 +344,20 @@ export default function EmployeeDetailsView({
 
                 <span className="d-none d-md-inline ms-2">
                   Registrar biométricos
+                </span>
+              </Button>
+            </OverLay>
+
+            <OverLay string="Reiniciar verificación en dos pasos">
+              <Button
+                className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                variant="outline-danger"
+                onClick={handleResetTwoFactor}
+              >
+                <i className="bi bi-shield-x" />
+
+                <span className="d-none d-md-inline ms-2">
+                  Reiniciar verificación
                 </span>
               </Button>
             </OverLay>

@@ -208,3 +208,36 @@ export async function resetTwoFactor({
         };
     }
 }
+
+//Reiniciar la verificación en dos pasos de un empleado (admin)
+export async function resetEmployeeTwoFactor({
+    id,
+}: {
+    id: number;
+}): Promise<ActionResponse<{ id: number; twoFactorEnabled: boolean }>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const res = await axios.put(`${API_URL}/employee/2fa/reset/${id}`, {},
+            {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                },
+            });
+
+        revalidatePath("/app/employee");
+
+        return {
+            success: true,
+            message: res.data?.message || "Verificación en dos pasos reiniciada",
+            data: res.data?.data,
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        return {
+            success: false,
+            message: getErrorMessage(error),
+        };
+    }
+}

@@ -44,6 +44,8 @@ export interface User {
   roles: IRolesMe;
   twoFactorEnabled?: boolean;
   twoFactorPending?: boolean;
+  sessionType?: 'user' | 'employee';
+  idCheck?: number | null;
 }
 
 export interface ITwoFactorSetup {

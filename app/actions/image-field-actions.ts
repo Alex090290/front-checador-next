@@ -54,3 +54,28 @@ export async function createUserImage({
     };
   }
 }
+
+export async function deleteUserImage(): Promise<ActionResponse<boolean>> {
+  try {
+    const { apiToken, apiUrl } = await storeToken();
+
+    const res = await axios.delete(`${apiUrl}/users/imgProfile`, {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    return {
+      success: true,
+      message: res.data?.message || "Imagen eliminada correctamente",
+      data: true,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+}
