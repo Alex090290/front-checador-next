@@ -13,6 +13,12 @@ import OverLay from "../templates/OverLay";
 import UserOneError from "./usersMessageError";
 import { formatParse, formatParseHours } from "@/lib/helpers";
 import { formatLabel } from "../devices/DevicesTableClient";
+import { useModals } from "@/context/ModalContext";
+import { resetTwoFactor } from "@/app/actions/twoFactor-actions";
+import SuccessOverlay from "../SuccessOverlay";
+import ErrorOverlay from "../ErrorOverlay";
+
+type FeedbackState = "loading" | "success" | "error" | null;
 
 function formatPermission(text?: string | null) {
   if (!text) return "—";
@@ -50,6 +56,9 @@ export default function ShowInfoOneUser({
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState("");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const { modalConfirm } = useModals();
   const router = useRouter();
 
   if (!user) {
@@ -82,11 +91,55 @@ export default function ShowInfoOneUser({
     setMessageLoading("Cargando datos...");
     router.push("/app/users");
   }
-  
+
+  const handleResetTwoFactor = () => {
+    modalConfirm("¿Seguro que quieres reiniciar la verificación en dos pasos de este usuario?", async () => {
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Reiniciando verificación en dos pasos...");
+
+        const res = await resetTwoFactor({ id: Number(user.id) });
+
+        if (!res.success) {
+          setFeedbackMsg(res.message || "No se pudo reiniciar la verificación en dos pasos");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Verificación en dos pasos reiniciada");
+        setFeedback("success");
+        router.refresh();
+      } catch (error) {
+        console.log(error);
+
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
+      }
+    });
+  }
+
   return (
     <>
       <ConditionalRender cond={loading}>
         <Loading message={messageLoading} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "loading"}>
+        <Loading message={feedbackMsg} />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "success"}>
+        <SuccessOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
+      </ConditionalRender>
+
+      <ConditionalRender cond={feedback === "error"}>
+        <ErrorOverlay
+          message={feedbackMsg}
+          onDone={() => setFeedback(null)}
+        />
       </ConditionalRender>
 
       <Container className="py-3 overflow-x-auto" style={{ maxWidth: "1600px" }}>
@@ -136,6 +189,23 @@ export default function ShowInfoOneUser({
                 </span>
               </Button>
             </OverLay>
+
+            <ConditionalRender cond={user.role !== "CHECADOR"}>
+              <OverLay string="Reiniciar verificación en dos pasos">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  variant="outline-danger"
+                  onClick={handleResetTwoFactor}
+                  disabled={loading}
+                >
+                  <i className="bi bi-shield-x" />
+
+                  <span className="d-none d-md-inline ms-2">
+                    Reiniciar verificación en dos pasos
+                  </span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
           </div>
 
           <Button

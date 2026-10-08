@@ -41,7 +41,9 @@ export const authOptions = {
           idEmployee: userData.idEmployee,
           isDoh: userData.isDoh,
           isLeader: userData.isLeader,
-          roles: userData.roles
+          roles: userData.roles,
+          twoFactorEnabled: userData.twoFactorEnabled === true,
+          twoFactorPending: userData.twoFactorPending === true,
         };
       },
     }),
@@ -57,7 +59,31 @@ export const authOptions = {
     signIn: "/auth",
   },
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user, trigger, session }) => {
+      // Tras verificar el código 2FA se reemplaza el token. Los datos se vuelven a leer
+      // de /me con el token nuevo, nunca se toman tal cual de lo que manda el cliente.
+      if (trigger === "update" && session?.user?.apiToken) {
+        const newToken = String(session.user.apiToken);
+        const meData = await getUserData({ apiToken: newToken });
+        const userData = meData.data as unknown as User;
+
+        if (meData.success && userData?.id) {
+          token.apiToken = newToken;
+          token.id = String(userData.id);
+          token.name = userData.name;
+          token.email = userData.email;
+          token.role = userData.role;
+          token.permissions = userData.permissions;
+          token.status = userData.status;
+          token.idEmployee = userData.idEmployee;
+          token.isDoh = userData.isDoh;
+          token.isLeader = userData.isLeader;
+          token.roles = userData.roles;
+          token.twoFactorEnabled = userData.twoFactorEnabled === true;
+          token.twoFactorPending = userData.twoFactorPending === true;
+        }
+      }
+
       if (user) {
         token.apiToken = user.apiToken;
         token.id = user.id;
@@ -70,6 +96,8 @@ export const authOptions = {
         token.isDoh = user.isDoh;
         token.isLeader = user.isLeader;
         token.roles = user.roles;
+        token.twoFactorEnabled = user.twoFactorEnabled;
+        token.twoFactorPending = user.twoFactorPending;
       }
       return token;
     },
@@ -86,10 +114,12 @@ export const authOptions = {
         session.user.isDoh = token.isDoh as boolean;
         session.user.isLeader = token.isLeader as boolean;
         session.user.roles = token.roles as IRolesMe;
+        session.user.twoFactorEnabled = token.twoFactorEnabled === true;
+        session.user.twoFactorPending = token.twoFactorPending === true;
       }
       return session;
     },
   },
 } satisfies NextAuthConfig;
 
-export const { handlers, signIn, signOut, auth } = NextAuth(authOptions);
+export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth(authOptions);

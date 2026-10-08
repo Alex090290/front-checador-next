@@ -42,6 +42,15 @@ export interface User {
   isDoh: boolean;
   isLeader?: boolean;
   roles: IRolesMe;
+  twoFactorEnabled?: boolean;
+  twoFactorPending?: boolean;
+}
+
+export interface ITwoFactorSetup {
+  otpauthUrl: string;
+  secret: string;
+  issuer: string;
+  accountName: string;
 }
 
 export type DisplayType = {

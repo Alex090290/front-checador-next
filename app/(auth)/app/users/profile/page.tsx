@@ -1,6 +1,8 @@
-import { findUserById } from "@/app/actions/user-actions";
+import { findUserById, getUserData } from "@/app/actions/user-actions";
+import { storeAction } from "@/app/actions/storeActions";
 import Loading from "@/components/LoadingSpinner";
 import UserProfileView from "@/components/users/Profile";
+import { User } from "@/lib/definitions";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +19,17 @@ export default async function UserProfilePage({
 }) {
   const id = searchParams?.id ?? "null";
 
-  const user = await findUserById({ id: Number(id) });
+  const { apiToken } = await storeAction();
+
+  const [user, me] = await Promise.all([
+    findUserById({ id: Number(id) }),
+    getUserData({ apiToken: apiToken ?? "" }),
+  ]);
 
   return (
     <>
       <Suspense fallback={<Loading message="Cargando datos..." />}>
-        <UserProfileView user={user} />;
+        <UserProfileView user={user} me={(me.data as unknown as User) ?? null} />;
       </Suspense>
     </>
   )

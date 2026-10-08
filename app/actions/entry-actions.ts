@@ -23,6 +23,14 @@ export async function getWelcome(): Promise<ActionResponse<AxiosResponse>> {
         return err?.response?.data;
       });
 
+    // Token pendiente de verificación en dos pasos: falta capturar el código, no es sesión vencida
+    if (response?.status === 401 && response?.data?.twoFactorPending === true) {
+      return {
+        success: false,
+        message: "twoFactorPending",
+      };
+    }
+
     if (
       response?.status === 401 ||
       (response?.status === 403 && response?.message === "jwt expired")

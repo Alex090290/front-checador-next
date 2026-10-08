@@ -11,5 +11,7 @@ declare module "next-auth" {
     isDoh: boolean;
     isLeader?: boolean;
     roles:IRolesMe
+    twoFactorEnabled?: boolean;
+    twoFactorPending?: boolean;
   }
 }

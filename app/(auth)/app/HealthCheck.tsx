@@ -2,11 +2,12 @@
 
 import { getWelcome } from "@/app/actions/entry-actions";
 import { signOut } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function HealthCheck() {
   const pathname = usePathname();
+  const router = useRouter();
   const [response, setResponse] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,6 +19,12 @@ function HealthCheck() {
         : await getWelcome();
 
       if (!res.success) {
+        // Falta capturar el código de verificación en dos pasos
+        if (res.message === "twoFactorPending") {
+          router.replace("/auth/verify");
+          return;
+        }
+
         if (res.message === "jwt") {
           setResponse("La sesión expiró");
 
@@ -31,7 +38,7 @@ function HealthCheck() {
     };
 
     fetchHealth();
-  }, [pathname]);
+  }, [pathname, router]);
 
    const singOutHanddle = ()=>{
     localStorage.removeItem("menu-data");
