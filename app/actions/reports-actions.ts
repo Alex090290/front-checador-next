@@ -121,6 +121,68 @@ export async function getPrimaAnual(idPeriod: string): Promise<ActionResponse<{ 
     }
 }
 
+//REPORTE EXCEL PARA BONO DE ASISTENCIA Y PUNTUALIDAD PERFECTA
+export async function getPerfectAttendanceBonus({
+    year,
+    month,
+}: {
+    year: string;
+    month: string;
+}): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        let base64Url = "";
+
+        const url = `${API_URL}/incidences/perfectAttendanceBonus/${year}/${month}`;
+
+        await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+            responseType: "arraybuffer",
+        })
+            .then((res) => {
+                const base64 = Buffer.from(res.data).toString("base64");
+                base64Url = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
+            })
+            .catch((err) => {
+                // Con responseType "arraybuffer" el error llega como binario; se decodifica para leer el message
+                let message = "Error al generar el reporte";
+                try {
+                    const raw = Buffer.from(err.response?.data ?? "").toString("utf8");
+                    message = JSON.parse(raw)?.message || message;
+                } catch { }
+
+                throw new Error(message);
+            });
+
+        return {
+            success: true,
+            message: "Reporte generado correctamente",
+            data: {
+                base64Url,
+                fileName: `reporte_AsistenciaPuntualidadPerfecta_${year}-${month}.xlsx`,
+            },
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+        };
+    }
+}
+
 //REPORTE EXCEL PARA INGRESOS Y SALIDAS
 export async function getReportInflowsAndOutflows(idPeriod: number): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
     try {

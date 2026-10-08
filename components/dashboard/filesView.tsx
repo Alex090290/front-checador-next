@@ -6,11 +6,12 @@ import ConditionalRender from "../ConditionalRender";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { useSearchParams } from "next/navigation";
 import { es } from "date-fns/locale";
+import { format } from "date-fns";
 import moment from "moment";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import Loading from "../LoadingSpinner";
-import { getPrimaAnual, getReportInflowsAndOutflows, getReportVales } from "@/app/actions/reports-actions";
+import { getPerfectAttendanceBonus, getPrimaAnual, getReportInflowsAndOutflows, getReportVales } from "@/app/actions/reports-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import { createPortal } from "react-dom";
 import { formatCreatedAt } from "@/lib/helpers";
@@ -47,7 +48,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
     return result;
 }
 
-function StatCard({ idCard, label, icon, value, accent = "primary", isPending, dateInit, dateEnd, periods, periodoActual }: StatCardData & { isPending?: boolean; onClick?: () => void }) {
+function StatCard({ idCard, label, icon, value, accent = "primary", isPending, periods, periodoActual }: StatCardData & { isPending?: boolean; onClick?: () => void }) {
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [feedbackMsg, setFeedbackMsg] = useState("");
     const sp = useSearchParams();
@@ -55,14 +56,12 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
     const { modalConfirm } = useModals();
 
     const [justArrived, setJustArrived] = useState(false);
-    const [dateInitValue, setDateInitValue] = useState(dateInit ?? "");
-    const [dateEndValue, setDateEndValue] = useState(dateEnd ?? "");
+    // Mes y año del bono de asistencia y puntualidad perfecta (por defecto el mes actual)
+    const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
     const [dateError] = useState("");
 
     const [showCalendar, setShowCalendar] = useState(false);
     const dateButtonRef = useRef(null);
-    const parsedStart = dateInitValue ? moment(dateInitValue, "YYYY-MM-DD").toDate() : null;
-    const parsedEnd = dateEndValue ? moment(dateEndValue, "YYYY-MM-DD").toDate() : null;
     const [mounted, setMounted] = useState(false);
 
     const [selectedPeriodId, setSelectedPeriodId] = useState<string>(
@@ -74,21 +73,14 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
         setFeedbackMsg("");
     }, [searchParamsString]);
 
-    const rangeLabel =
-        parsedStart && parsedEnd
-            ? `${moment(parsedStart).format("D MMM")} - ${moment(parsedEnd).format("D MMM")}`
-            : "Rango de fechas";
+    const monthLabel = format(selectedMonth, "MMMM yyyy", { locale: es });
 
-    const handleRangeChange = (dates: [Date | null, Date | null]) => {
-        const [start, end] = dates;
-        setDateInitValue(start ? moment(start).format("YYYY-MM-DD") : "");
-        setDateEndValue(end ? moment(end).format("YYYY-MM-DD") : "");
-        if (start && end) setShowCalendar(true);
+    const handleMonthChange = (date: Date | null) => {
+        if (date) setSelectedMonth(date);
     };
 
     const handleClearDates = () => {
-        setDateInitValue("");
-        setDateEndValue("");
+        setSelectedMonth(new Date());
     };
 
     useEffect(() => setMounted(true), []);
@@ -209,6 +201,41 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                 })
                 break;
 
+            case 1: // Asistencia y puntualidad perfecta
+                modalConfirm("¿Seguro que quieres descargar este reporte?", async () => {
+                    try {
+                        setFeedback("loading");
+                        setFeedbackMsg("Generando reporte...")
+                        const res = await getPerfectAttendanceBonus({
+                            year: moment(selectedMonth).format("YYYY"),
+                            month: moment(selectedMonth).format("MM"),
+                        });
+
+                        if (!res.success || !res.data) {
+                            setFeedbackMsg(res.message || "No se pudo generar el reporte");
+                            setFeedback("error");
+                            return;
+                        }
+
+                        const { base64Url, fileName } = res.data;
+
+                        const link = document.createElement("a");
+                        link.href = base64Url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        handleClearDates();
+                        setFeedbackMsg("Reporte generado correctamente");
+                        setFeedback("success");
+                    } catch (err) {
+                        console.log(err);
+                        setFeedbackMsg("Error inesperado al generar el reporte");
+                        setFeedback("error");
+                    }
+                })
+                break;
+
             default:
                 break;
         }
@@ -261,17 +288,17 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
 
                     <div className="position-relative flex-shrink-1" style={{ minWidth: 0 }}>
                         <ConditionalRender cond={value === "Asistencia Y Puntualidad Perfecta"}>
-                            <OverlayTrigger placement="top" overlay={<Tooltip>{rangeLabel}</Tooltip>}>
+                            <OverlayTrigger placement="top" overlay={<Tooltip className="text-capitalize">{monthLabel}</Tooltip>}>
                                 <Button
                                     ref={dateButtonRef}
                                     variant="outline-secondary"
                                     className={`rounded-pill d-inline-flex align-items-center gap-2 px-2 px-md-3 ${dateError ? "border-danger text-danger" : ""}`}
                                     onClick={() => setShowCalendar((s) => !s)}
-                                    aria-label={rangeLabel}
+                                    aria-label={monthLabel}
                                 >
                                     <i className="bi bi-calendar3" />
-                                    <span className="d-none d-md-inline text-truncate" style={{ maxWidth: 120 }}>
-                                        {parsedStart && parsedEnd ? rangeLabel : "Rango de fechas"}
+                                    <span className="d-none d-md-inline text-truncate text-capitalize" style={{ maxWidth: 140 }}>
+                                        {monthLabel}
                                     </span>
                                 </Button>
                             </OverlayTrigger>
@@ -295,15 +322,14 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                         style={{ ...style, zIndex: 1080, maxWidth: "calc(100vw - 16px)" }}
                                         className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize"
                                     >
-                                        <div className="px-3 pt-2 small fw-semibold text-muted">{rangeLabel}</div>
+                                        <div className="px-3 pt-2 small fw-semibold text-muted">{monthLabel}</div>
 
                                         <DatePicker
-                                            selectsRange
                                             inline
-                                            startDate={parsedStart}
-                                            endDate={parsedEnd}
-                                            onChange={handleRangeChange}
-                                            monthsShown={1}
+                                            showMonthYearPicker
+                                            selected={selectedMonth}
+                                            onChange={handleMonthChange}
+                                            maxDate={new Date()}
                                             locale="es"
                                         />
                                         <Row className="g-2 m-2">
@@ -316,7 +342,7 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                                                 <Button
                                                     variant="secondary"
                                                     className="w-100"
-                                                    aria-label="Limpiar fechas"
+                                                    aria-label="Mes actual"
                                                     onClick={() => {
                                                         handleClearDates();
                                                         setShowCalendar(false);
@@ -384,9 +410,9 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, d
                     <small className="text-danger d-block mb-2">{dateError}</small>
                 )}
 
-                {parsedStart && parsedEnd && (
-                    <div className="text-muted small mb-1">Seleccionado: {rangeLabel}</div>
-                )}
+                <ConditionalRender cond={value === "Asistencia Y Puntualidad Perfecta"}>
+                    <div className="text-muted small mb-1 text-capitalize">Mes: {monthLabel}</div>
+                </ConditionalRender>
 
                 <div className="fw-bold lh-1 mb-1 text-muted" style={{ fontSize: "clamp(1.20rem, 3vw, 2rem)" }}>
                     {value ?? "—"}
