@@ -1,0 +1,16 @@
+name: Deploy frontend staging
+
+on:
+  push:
+    branches: [staging]
+
+concurrency:
+  group: deploy-frontend-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy staging
+        run: /home/servidor/Documents/scripts/githubActions/frontEnd-staging.sh
