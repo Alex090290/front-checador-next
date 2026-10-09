@@ -10,8 +10,10 @@ import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import GenericSearchInput from "../employee/GenericSearchInput";
 import { Branch, Department } from "@/lib/definitions";
-import { getDirectory } from "@/app/actions/devices-actions";
+import { downloadDirectoryEmails, downloadDirectoryExtEmail, downloadDirectoryPhones, getDirectory } from "@/app/actions/devices-actions";
 import { useModals } from "@/context/ModalContext";
+import ErrorOverlay from "../ErrorOverlay";
+import { ActionResponse } from "@/lib/definitions";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -322,7 +324,7 @@ export default function DevicesTableClient({
         modalConfirm("¿Seguro que quieres descargar el directorio?", async () => {
             try {
                 setFeedback("loading");
-                setFeedbackMsg("Cargando...");
+                setFeedbackMsg("Descargando...");
                 const res = await getDirectory();
 
                 if (!res.success || !res.data) {
@@ -348,6 +350,45 @@ export default function DevicesTableClient({
             }
         })
     };
+
+    //GENERAR DIRECTORIOS EN PDF (ext. y correos, celulares, correos)
+    const handleDownloadDirectory = (
+        action: () => Promise<ActionResponse<{ base64Url: string; fileName: string } | null>>
+    ) => {
+        modalConfirm("¿Seguro que quieres descargar el directorio?", async () => {
+            try {
+                setFeedback("loading");
+                setFeedbackMsg("Descargando...");
+                const res = await action();
+
+                if (!res.success || !res.data) {
+                    setFeedbackMsg(res.message || "No se pudo generar el directorio");
+                    setFeedback("error");
+                    return;
+                }
+
+                const { base64Url, fileName } = res.data;
+
+                const link = document.createElement("a");
+                link.href = base64Url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                setFeedback(null);
+            } catch {
+                setFeedbackMsg("Error inesperado al generar el directorio");
+                setFeedback("error");
+            }
+        })
+    };
+
+    const directoryButtons: { key: string; label: string; action: () => Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> }[] = [
+        { key: "extEmail", label: "Directorio Ext. y Correos", action: downloadDirectoryExtEmail },
+        { key: "phones", label: "Directorio Celulares", action: downloadDirectoryPhones },
+        { key: "emails", label: "Directorio Correos", action: downloadDirectoryEmails },
+    ];
 
     //TABLA
     const columns: TableTemplateColumn<IDevices>[] = [
@@ -446,8 +487,16 @@ export default function DevicesTableClient({
                 <Loading message={feedbackMsg || "Guardando..."} />
             </ConditionalRender>
 
+            <ConditionalRender cond={feedback === "error"}>
+                <ErrorOverlay
+                    message={feedbackMsg}
+                    onDone={() => setFeedback(null)}
+                />
+            </ConditionalRender>
+
             <Container className="py-3" style={{ maxWidth: "1600px" }}>
 
+                <div className="d-flex flex-wrap gap-2">
                 <Button
                     variant="primary"
                     className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
@@ -459,12 +508,25 @@ export default function DevicesTableClient({
 
                 <Button
                     variant="black"
-                    className="text-light bg-black border-light d-inline-flex align-items-center gap-2 fw-semibold px-3 ms-2"
+                    className="text-light bg-black border-light d-inline-flex align-items-center gap-2 fw-semibold px-3"
                     onClick={handleGenerate}
                 >
                     <i className="bi bi-file-earmark-pdf" />
                     Descargar Directorio
                 </Button>
+
+                {directoryButtons.map(({ key, label, action }) => (
+                    <Button
+                        key={key}
+                        variant="black"
+                        className="text-light bg-black border-light d-inline-flex align-items-center gap-2 fw-semibold px-3"
+                        onClick={() => handleDownloadDirectory(action)}
+                    >
+                        <i className="bi bi-file-earmark-pdf" />
+                        {label}
+                    </Button>
+                ))}
+                </div>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
@@ -520,6 +582,7 @@ export default function DevicesTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="devices-filter-type"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"
@@ -571,6 +634,7 @@ export default function DevicesTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="devices-filter-branch"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"
@@ -623,6 +687,7 @@ export default function DevicesTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="devices-filter-department"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"

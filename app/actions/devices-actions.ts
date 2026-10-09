@@ -748,3 +748,74 @@ export async function getDirectory(): Promise<ActionResponse<{ base64Url: string
         };
     }
 }
+
+//GENERAR DIRECTORIOS EN PDF (ext. y correos, celulares, correos)
+async function downloadDevicesDirectoryPdf(
+    endpoint: string,
+    fileName: string
+): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+
+        let base64Url = "";
+
+        await axios
+            .get(`${API_URL}/${endpoint}`, {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                },
+                responseType: "arraybuffer",
+            })
+            .then((res) => {
+                const base64 = Buffer.from(res.data, "binary").toString("base64");
+                base64Url = `data:application/pdf;base64,${base64}`;
+            })
+            .catch((err) => {
+                // Con responseType "arraybuffer" el error llega como binario; se decodifica para leer el message
+                let message = "Error al generar el reporte";
+                try {
+                    const raw = Buffer.from(err.response?.data ?? "").toString("utf8");
+                    message = JSON.parse(raw)?.message || message;
+                } catch { }
+
+                throw new Error(message);
+            });
+
+        return {
+            success: true,
+            message: "Directorio generado",
+            data: {
+                base64Url,
+                fileName,
+            },
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        let message = "Error en la respuesta";
+
+        if (axios.isAxiosError(error)) {
+            message = error.response?.data?.message || error.message || message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+
+        return {
+            success: false,
+            message,
+        };
+    }
+}
+
+export async function downloadDirectoryExtEmail(): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+    return downloadDevicesDirectoryPdf("devices-directory-ext-email", "directorio-ext-correo.pdf");
+}
+
+export async function downloadDirectoryPhones(): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+    return downloadDevicesDirectoryPdf("devices-directory-phones", "directorio-celulares.pdf");
+}
+
+export async function downloadDirectoryEmails(): Promise<ActionResponse<{ base64Url: string; fileName: string } | null>> {
+    return downloadDevicesDirectoryPdf("devices-directory-emails", "directorio-correos.pdf");
+}
