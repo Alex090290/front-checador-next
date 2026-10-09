@@ -16,6 +16,7 @@ import {
 } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Image from "next/image";
+import Link from "next/link";
 
 
 type TInputs = {
@@ -176,6 +177,16 @@ function FormLogin() {
                 </Button>
               </fieldset>
             </Form>
+
+            {/* Documentos legales (páginas públicas) */}
+            <div className="d-flex flex-wrap justify-content-center column-gap-3 row-gap-1 mt-3 small">
+              <Link href="/legal/terminos" className="text-muted text-decoration-none text-nowrap">
+                Términos y condiciones
+              </Link>
+              <Link href="/legal/privacidad" className="text-muted text-decoration-none text-nowrap">
+                Aviso de privacidad
+              </Link>
+            </div>
           </Col>
         </Row>
       </Container>
