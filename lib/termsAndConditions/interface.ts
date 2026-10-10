@@ -43,3 +43,14 @@ export const LEGAL_DOCUMENT_LABELS: Record<TLegalDocumentType, string> = {
 };
 
 export const TERMS_CONTENT_MAX_LENGTH = 50000;
+
+export interface ILegalAcceptanceDocument {
+    active: { id: number; title: string; version: number; publishedAt: string } | null;
+    accepted: { idDocument: number; version: number; acceptedAt: string } | null;
+    mustAccept: boolean;
+}
+
+export interface ILegalAcceptanceStatus {
+    mustAccept: boolean;
+    documents: Record<TLegalDocumentType, ILegalAcceptanceDocument>;
+}

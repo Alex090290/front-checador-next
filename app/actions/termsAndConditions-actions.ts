@@ -2,6 +2,7 @@
 
 import { ActionResponse } from "@/lib/definitions";
 import {
+    ILegalAcceptanceStatus,
     ITermsAndConditions,
     ITermsAndConditionsForm,
     TLegalDocumentType,
@@ -224,6 +225,67 @@ export async function getPublicTerms(
         return {
             success: false,
             message: getErrorMessage(error),
+        };
+    }
+}
+
+//Estado de aceptación de los documentos legales del usuario en sesión
+export async function getLegalAcceptanceStatus(): Promise<ActionResponse<ILegalAcceptanceStatus>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const res = await axios.get(`${API_URL}/termsAndConditions-acceptance`, {
+            headers: {
+                Authorization: `Bearer ${apiToken}`,
+            },
+        });
+
+        return {
+            success: true,
+            message: res.data?.message || "OK",
+            data: res.data?.data,
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        return {
+            success: false,
+            message: getErrorMessage(error),
+        };
+    }
+}
+
+//Aceptar un documento legal (la versión exacta del documento vigente)
+export async function acceptLegalDocument(
+    type: TLegalDocumentType,
+    version: number
+): Promise<ActionResponse<{ conflict: boolean }>> {
+    try {
+        const { apiToken, API_URL } = await storeAction();
+
+        const res = await axios.put(`${API_URL}/termsAndConditions-acceptance`,
+            { type, version },
+            {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                },
+            });
+
+        return {
+            success: true,
+            message: res.data?.message || "Documento aceptado",
+            data: { conflict: false },
+        };
+    } catch (error: unknown) {
+        console.log(error);
+
+        // 409: se publicó una versión más reciente mientras lo leía
+        const conflict = axios.isAxiosError(error) && error.response?.status === 409;
+
+        return {
+            success: false,
+            message: getErrorMessage(error),
+            data: { conflict },
         };
     }
 }
