@@ -54,7 +54,7 @@ export function formatDateHours(value?: string) {
 };
 
 export function formatCreatedAt(value?: string) {
-  const m = moment.utc(value);
+  const m = moment.utc(value).tz("America/Mexico_City");
   return m.isValid() ? m.format("DD/MM/YYYY") : "—";
 }
 
