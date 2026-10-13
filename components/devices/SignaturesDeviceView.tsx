@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Card, Col } from "react-bootstrap";
 import { fetchSignatureDevice } from "@/app/actions/devices-actions";
-import { formatCreatedAt } from "@/lib/helpers";
+import { formatDateMx } from "@/lib/helpers";
 
 const BADGE_BASE = "badge rounded-pill px-3 py-2 fw-semibold border";
 
@@ -131,7 +131,7 @@ function SignatureDevicewOne({
                 
                 <Card.Footer>
                     <div className="text-center fw-semibold small text-break"> A fecha:</div>
-                    <div>{formatCreatedAt(dateSigner)}</div>
+                    <div>{formatDateMx(dateSigner)}</div>
                 </Card.Footer>
             </Card>
         </Col >

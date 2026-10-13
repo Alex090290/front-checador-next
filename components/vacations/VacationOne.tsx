@@ -26,7 +26,7 @@ import { useRouter } from "next/navigation";
 import { ISignatures } from "@/lib/overTime/interface";
 import SignatureEmployeeModal from "./SignatureVacationEmployeeModal";
 import VacationsOneError from "./vacationsMessageError";
-import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { formatCreatedAt, formatCreatedAtOnlyHours, formatDateMx } from "@/lib/helpers";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { PeriodVacation, Vacations } from "@/lib/vactions/interface";
@@ -385,7 +385,7 @@ export default function ShowInfoVacation({
                           <i className="bi bi-calendar-plus text-primary" />
                           <span className="text-muted">Creada</span>
                         </div>
-                        <span className="fw-semibold text-end">{formatCreatedAt(vacation.createdAt)}</span>
+                        <span className="fw-semibold text-end">{formatDateMx(vacation.createdAt)}</span>
                       </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">

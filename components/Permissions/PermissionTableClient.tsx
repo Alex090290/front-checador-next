@@ -11,7 +11,7 @@ import Loading from "@/components/LoadingSpinner";
 import AlertSignaturesP from "./AlertSignatures";
 import { ISignatures } from "@/lib/overTime/interface";
 import { useSessionSnapshot } from "@/hooks/useSessionStore";
-import { formatCreatedAt } from "@/lib/helpers";
+import { formatDateMx } from "@/lib/helpers";
 import { IPermissionRequest } from "@/lib/permissions/interface";
 import ModalBlur from "../ModalBlur";
 import DeletePermissionModal from "./DeleteModal";
@@ -281,7 +281,7 @@ export default function PermissionsTableClient({
       render: (row) => (
         <div className="text-start">
           {row.createdAt
-            ? formatCreatedAt(row.createdAt)
+            ? formatDateMx(row.createdAt)
             : "No Definido"}
         </div>
       ),

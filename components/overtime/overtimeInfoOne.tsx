@@ -16,7 +16,7 @@ import OvertimeSignatureModal from "./OvertimeSignatureModal"
 import SignatureLeaderModal from "./SignatureLeaderModal";
 import SignatureDohModal from "./SignatureDohModal";
 import OverLay from "../templates/OverLay";
-import { formatCreatedAt, formatParseHours } from "@/lib/helpers";
+import { formatCreatedAt, formatParseHours, formatDateMx } from "@/lib/helpers";
 import ModalBlur from "../ModalBlur";
 import DeleteOvertimeModal from "./DeleteOvertimeModal";
 
@@ -326,7 +326,7 @@ export function OvertimeOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {formatCreatedAt(overtime.createdAt)}
+                                                    {formatDateMx(overtime.createdAt)}
                                                 </span>
                                             </div>
 

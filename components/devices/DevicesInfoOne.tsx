@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
-import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { formatCreatedAt, formatCreatedAtOnlyHours, formatDateMx } from "@/lib/helpers";
 import ModalBlur from "../ModalBlur";
 import ModalAssignDevice from "./ModalAssignDevice";
 import { Branch, Department, Employee } from "@/lib/definitions";
@@ -271,7 +271,7 @@ export function DeviceOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {formatCreatedAt(device.createdAt)}
+                                                    {formatDateMx(device.createdAt)}
                                                 </span>
                                             </div>
 

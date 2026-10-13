@@ -20,7 +20,7 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { es } from "date-fns/locale";
-import { formatCreatedAt } from "@/lib/helpers";
+import { formatDateMx } from "@/lib/helpers";
 import GenerateModal from "./GenerateModal";
 
 registerLocale("es", es);
@@ -461,7 +461,7 @@ export default function AbsencesTableClient({
             type: "string",
             render: (e) => (
                 <div className="text-uppercase text-center">
-                    {formatCreatedAt(e.dateOfAbsence) || "-"}
+                    {formatDateMx(e.dateOfAbsence) || "-"}
                 </div>
             )
         }

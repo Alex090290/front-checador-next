@@ -20,7 +20,7 @@ import FormUpdateEvent from "./EventUpdate";
 import { deleteRegristrosChecador, updateRegristrosChecador } from "@/app/actions/eventos-actions";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
-import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { formatCreatedAtOnlyHours, formatDateMx } from "@/lib/helpers";
 import { es } from "date-fns/locale";
 
 registerLocale("es", es);
@@ -373,7 +373,7 @@ export default function EvenstsTableClient({
             filterable: false,
             render: (row) => (
                 <div className="text-uppercase text-left">
-                    {formatCreatedAt(row.checks.timestamp)}
+                    {formatDateMx(row.checks.timestamp)}
                 </div>
             ),
             type: "date",

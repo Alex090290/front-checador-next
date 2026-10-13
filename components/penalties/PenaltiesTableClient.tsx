@@ -2,7 +2,7 @@
 
 import { IPenaltyForOffeses, ISignaturesPenalties } from "@/lib/penalties/interface";
 import { TableTemplateColumn } from "../templates/TableTemplate";
-import { formatCreatedAt } from "@/lib/helpers";
+import { formatDateMx } from "@/lib/helpers";
 import ConditionalRender from "../ConditionalRender";
 import Loading from "../LoadingSpinner";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -297,7 +297,7 @@ export default function PenaltiesTableClient({
             type: "string",
             render: (e) => (
                 <div className="text-uppercase text-center">
-                    {formatCreatedAt(e.createdAt)}
+                    {formatDateMx(e.createdAt)}
                 </div>
             )
         },

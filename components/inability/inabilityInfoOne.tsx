@@ -18,7 +18,7 @@ import OverLay from "../templates/OverLay";
 import InabilityOneError from "./inabilityMessageError";
 import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
-import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { formatCreatedAtOnlyHours, formatDateMx } from "@/lib/helpers";
 import { IInability } from "@/lib/inhability/interface";
 import DeleteInhabilityModal from "./DeleteInhabilityModal";
 
@@ -261,7 +261,7 @@ export default function InfoOneInability({
                           <span className="text-muted">Creada</span>
                         </div>
                         <span className="fw-semibold text-end">
-                          {formatCreatedAt(inhability.createdAt)}
+                          {formatDateMx(inhability.createdAt)}
                         </span>
                       </div>
 

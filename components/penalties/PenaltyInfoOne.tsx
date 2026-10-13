@@ -8,7 +8,7 @@ import { useSessionSnapshot } from "@/hooks/useSessionStore"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import OverLay from "../templates/OverLay"
-import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers"
+import { formatCreatedAt, formatCreatedAtOnlyHours, formatDateMx } from "@/lib/helpers"
 import Link from "next/link"
 import SignaturesViewPenalty from "./signaturesPenalties"
 import PenaltySignatureModal from "./PenaltySignatureModal"
@@ -224,7 +224,7 @@ export function PenaltyOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {formatCreatedAt(penalty?.createdAt)}
+                                                    {formatDateMx(penalty?.createdAt)}
                                                 </span>
                                             </div>
 
@@ -314,7 +314,7 @@ export function PenaltyOne({
                                                                                 }`}
                                                                         >
                                                                             <div className="d-flex align-items-between gap-2 fw-bold">
-                                                                                {formatCreatedAt(c.dateOfAbsence)}
+                                                                                {formatDateMx(c.dateOfAbsence)}
                                                                                 <i
                                                                                     className={`bi ms-auto ${isActive ? " bi-chevron-up" : "bi-chevron-down"
                                                                                         }`}

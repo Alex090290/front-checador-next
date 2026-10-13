@@ -15,7 +15,7 @@ import Loading from "../LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { ISignatures } from "@/lib/overTime/interface";
 import PermissionsOneError from "./permissionsMessageError";
-import { formatCreatedAt, formatCreatedAtOnlyHours } from "@/lib/helpers";
+import { formatCreatedAt, formatCreatedAtOnlyHours, formatDateMx } from "@/lib/helpers";
 import { IPermissionRequest } from "@/lib/permissions/interface";
 import ModalBlur from "../ModalBlur";
 import DeletePermissionModal from "./DeleteModal";
@@ -303,7 +303,7 @@ export default function ShowInfoPermissionRequest({
                           <i className="bi bi-calendar-plus text-primary" />
                           <span className="text-muted">Creada</span>
                         </div>
-                        <span className="fw-semibold text-end">{formatCreatedAt(permission.createdAt)}</span>
+                        <span className="fw-semibold text-end">{formatDateMx(permission.createdAt)}</span>
                       </div>
 
                       <div className="d-flex align-items-center justify-content-between border-bottom pb-2">

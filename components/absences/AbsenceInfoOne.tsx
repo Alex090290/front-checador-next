@@ -11,7 +11,7 @@ import { deleteAbsence, deleteDocument, getAbsenceDocument, updateAbsence } from
 import { useRouter } from "next/navigation";
 import React from "react";
 import CheckLocationMap from "./AbsenceMap";
-import { formatCreatedAt, formatCreatedAtOnlyHours, formatScheduleTime } from "@/lib/helpers";
+import { formatCreatedAtOnlyHours, formatScheduleTime, formatDateMx } from "@/lib/helpers";
 import AbsenceOneError from "./absencesMessageError";
 import ModalBlur from "../ModalBlur";
 import FormUpdateAbsence from "./AbsenceUpdate";
@@ -441,7 +441,7 @@ export function AbsenceOne({
                                                 </div>
 
                                                 <span className="fw-semibold text-end">
-                                                    {formatCreatedAt(absence.dateOfAbsence)}
+                                                    {formatDateMx(absence.dateOfAbsence)}
                                                 </span>
                                             </div>
 

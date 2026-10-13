@@ -14,7 +14,7 @@ import DnsBadgeInput from "./DnsBadgeInput";
 import { useModals } from "@/context/ModalContext";
 import { updateDevice } from "@/app/actions/devices-actions";
 import { useRouter } from "next/navigation";
-import { formatCreatedAt } from "@/lib/helpers";
+import { formatCreatedAt, formatDateMx } from "@/lib/helpers";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -52,8 +52,8 @@ function getDefaultValues(device?: IDevices | null): IDevices {
             userPassword: device?.specs?.userPassword || null,
             currentStatus: device?.specs?.currentStatus || null,
         },
-        createdAt: formatCreatedAt(device?.createdAt) || "",
-        updatedAt: formatCreatedAt(device?.updatedAt) || "",
+        createdAt: formatDateMx(device?.createdAt) || "",
+        updatedAt: formatDateMx(device?.updatedAt) || "",
         employee: device?.employee,
         department: device?.department,
         branch: device?.branch,

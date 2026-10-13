@@ -53,7 +53,14 @@ export function formatDateHours(value?: string) {
   return m.isValid() ? m.format("DD-MM-YYYY hh:mm A") : "—";
 };
 
+// Días de calendario (inputs de fecha, periodos, vacaciones, vencimientos): se muestran tal cual, sin cambiar de zona
 export function formatCreatedAt(value?: string) {
+  const m = moment.utc(value);
+  return m.isValid() ? m.format("DD/MM/YYYY") : "—";
+}
+
+// Momentos reales guardados en UTC (registro de falta, createdAt, checadas, firmas): día en Ciudad de México
+export function formatDateMx(value?: string) {
   const m = moment.utc(value).tz("America/Mexico_City");
   return m.isValid() ? m.format("DD/MM/YYYY") : "—";
 }
