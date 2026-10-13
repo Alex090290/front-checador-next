@@ -15,7 +15,19 @@ import Image from "next/image";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+// Consulta con timeout (15 s): si falla o tarda, SWR marca error y la pantalla deja de esperar
+const fetcher = async (url: string) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) throw new Error(`Error ${res.status} al consultar ${url}`);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+};
 
 export type TCheckData = {
   idCheck: string;
@@ -25,8 +37,8 @@ export type TCheckData = {
 export default function ChecadorFormView({
   limit = "500"
 }) {
-  const { data: activeNotice } = useSWR("/api/notice", fetcher);
-  const { data: checkData, mutate } = useSWR(`/api/checador?limit=${limit}`, fetcher);
+  const { data: activeNotice, error: noticeError } = useSWR("/api/notice", fetcher);
+  const { data: checkData, error: checkError, mutate } = useSWR(`/api/checador?limit=${limit}`, fetcher);
 
 
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
@@ -54,7 +66,10 @@ export default function ChecadorFormView({
     createAt: "",
     updateAt: "",
   });
-  const pageLoading = !activeNotice || !checkData;
+  // Solo se espera mientras la consulta sigue en curso: con error (o aviso vacío) se muestra la pantalla
+  const pageLoading =
+    (activeNotice === undefined && !noticeError) ||
+    (checkData === undefined && !checkError);
 
   useEffect(() => {
 
@@ -71,7 +86,14 @@ export default function ChecadorFormView({
 
     const newObj = { ...data, lat: location?.lat || 0, lng: location?.lon || 0 };
 
-    const res = await checkIn(newObj);
+    let res: ActionResponse<string>;
+    try {
+      res = await checkIn(newObj);
+    } catch (error) {
+      // Falla de red con el servidor: se muestra el error y el formulario queda listo para reintentar
+      console.error(error);
+      return { success: false, message: "No se pudo registrar, revisa la conexión e intenta de nuevo" };
+    }
     mutate();
     // toast.dismiss(toastIdRef.current);
 
@@ -294,7 +316,7 @@ export default function ChecadorFormView({
                                   {formatDate(feed?.checks?.timestamp, "HH:mm")}
                                 </td>
                                 <td className="text-nowrap">
-                                  {feed?.checks?.type.replace(/_/g, " ").toUpperCase()}
+                                  {feed?.checks?.type?.replace(/_/g, " ").toUpperCase()}
                                 </td>
                                 <td className="text-nowrap">
                                   {feed?.departmentEmployee?.nameDepartment}

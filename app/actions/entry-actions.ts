@@ -84,12 +84,17 @@ export async function checkIn({
           headers: {
             Authorization: `Bearer ${apiToken}`,
           },
+          timeout: 15000,
         }
       )
       .then((res) => {
         return res.data;
       })
       .catch((err) => {
+        if (err?.code === "ECONNABORTED") {
+          throw new Error("El registro tardó demasiado, intenta de nuevo");
+        }
+
         if (
           err?.response?.status === 401 ||
           (err?.response?.status === 403 &&
@@ -140,6 +145,7 @@ export async function fetchCheckInFeedback(args: FetchUsersArgs): Promise<
         headers: {
           Authorization: `Bearer ${apiToken}`,
         },
+        timeout: 15000,
       })
       .then((res) => {
         return res.data;

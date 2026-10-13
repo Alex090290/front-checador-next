@@ -264,11 +264,16 @@ export async function identifyEmployeeByFace({
           Authorization: `Bearer ${apiToken}`,
           "Content-Type": "multipart/form-data",
         },
+        timeout: 30000,
       })
       .then((res) => {
         return res.data;
       })
       .catch((err) => {
+        if (err?.code === "ECONNABORTED") {
+          throw new Error("La validación tardó demasiado, intenta de nuevo");
+        }
+
         throw new Error(
           err?.response?.data?.message
             ? err.response.data.message

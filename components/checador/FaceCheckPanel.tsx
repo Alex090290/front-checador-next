@@ -10,6 +10,12 @@ import Loading from "../LoadingSpinner";
 import { formatLabel } from "../devices/DevicesTableClient";
 
 type FeedbackState = "loading" | "success" | "error" | null;
+
+// Lado máximo de la foto que se manda a identifyByFace y calidad del JPEG
+const MAX_PHOTO_SIDE = 1280;
+const PHOTO_QUALITY = 0.9;
+// Tiempo máximo para que el navegador entregue la cámara
+const CAMERA_TIMEOUT_MS = 15000;
 type Props = {
   lat?: number;
   lng?: number;
@@ -27,6 +33,8 @@ export default function FaceCheckPanel({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Evita mandar otra petición mientras una sigue en curso (doble toque); el backend responde 429
+  const inFlightRef = useRef(false);
 
   const [cameraOpen, setCameraOpen] = useState(false);
   const [startingCamera, setStartingCamera] = useState(false);
@@ -72,7 +80,8 @@ const handleOpenCamera = useCallback(async () => {
     setMessage("Abriendo cámara...");
 
     if (!streamRef.current) {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      let timedOut = false;
+      const streamPromise = navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "user",
           width: { ideal: 640 },
@@ -80,6 +89,22 @@ const handleOpenCamera = useCallback(async () => {
         },
         audio: false,
       });
+
+      // Si la cámara no responde (permiso sin contestar, cámara ocupada), no se queda cargando
+      const stream = await Promise.race([
+        streamPromise,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => {
+            timedOut = true;
+            reject(new Error("La cámara no respondió a tiempo"));
+          }, CAMERA_TIMEOUT_MS)
+        ),
+      ]);
+
+      // Si la cámara llega después del timeout, se libera para no dejarla encendida
+      streamPromise.then((late) => {
+        if (timedOut) late.getTracks().forEach((track) => track.stop());
+      }).catch(() => { });
 
       streamRef.current = stream;
     }
@@ -114,10 +139,15 @@ const handleOpenCamera = useCallback(async () => {
 
     if (!video || !canvas) return null;
 
-    const width = video.videoWidth;
-    const height = video.videoHeight;
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
 
-    if (!width || !height) return null;
+    if (!videoWidth || !videoHeight) return null;
+
+    // Reduce la foto a un máximo de MAX_PHOTO_SIDE por lado (sin agrandar las pequeñas)
+    const scale = Math.min(1, MAX_PHOTO_SIDE / Math.max(videoWidth, videoHeight));
+    const width = Math.round(videoWidth * scale);
+    const height = Math.round(videoHeight * scale);
 
     canvas.width = width;
     canvas.height = height;
@@ -128,7 +158,7 @@ const handleOpenCamera = useCallback(async () => {
     ctx.drawImage(video, 0, 0, width, height);
 
     const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.8)
+      canvas.toBlob(resolve, "image/jpeg", PHOTO_QUALITY)
     );
 
     if (!blob) return null;
@@ -149,6 +179,9 @@ const handleOpenCamera = useCallback(async () => {
   };
 
   const handleFaceCheck = async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
     try {
       setProcessing(true);
       setMessage("Capturando foto...");
@@ -192,6 +225,7 @@ const handleOpenCamera = useCallback(async () => {
         setFeedback("error");
         setFeedbackMsg("Error al validar por rostro");
       }  finally {
+      inFlightRef.current = false;
       setProcessing(false);
     }
   };

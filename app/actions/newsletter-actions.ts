@@ -118,6 +118,7 @@ export async function getActiveNotice(): Promise<INewsletter | null> {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
+      timeout: 15000,
     }).then(async (res) => {
       // Este then se resuelve cuendo el endpoint /notice/listActive devuelve respuesta correcta
 
@@ -126,6 +127,7 @@ export async function getActiveNotice(): Promise<INewsletter | null> {
             Authorization: `Bearer ${apiToken}`,
           },
           responseType: "arraybuffer",
+          timeout: 15000,
         }).then((resImg) => {
           // Este then se resuelve cuendo el endpoint notice/img/${id} devuelve respuesta correcta
           getImg = resImg.data;
