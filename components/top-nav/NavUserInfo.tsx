@@ -11,6 +11,7 @@ import { getCurrentPeriod } from "@/app/actions/periods-actions";
 import { ICurrentPeriod } from "@/lib/definitions";
 import moment from "moment-timezone";
 import NotificationsBell from "./NotificationsBell";
+import { clearMenuCache } from "@/lib/menuCache";
 
 function NavUserInfo() {
   const { data: session } = useSession();
@@ -64,7 +65,7 @@ function NavUserInfo() {
   }
 
   const singOutHanddle = () => {
-    localStorage.removeItem("menu-data");
+    clearMenuCache();
     signOut()
   }
   const [profileOpen, setProfileOpen] = useState(false);

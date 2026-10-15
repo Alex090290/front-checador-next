@@ -360,6 +360,7 @@ function StatCard({ idCard, label, icon, value, accent = "primary", isPending, p
                         <ConditionalRender cond={value !== "Asistencia Y Puntualidad Perfecta"}>
                             <Dropdown align="end">
                                 <Dropdown.Toggle
+                                    id={`files-period-${idCard ?? "card"}`}
                                     variant="outline-info"
                                     className="rounded-pill d-inline-flex align-items-center gap-2 px-2 px-md-3 fw-semibold text-uppercase bg-info-subtle text-info-emphasis border-info-subtle"
                                     aria-label={selectedPeriod ? `Periodo ${selectedPeriod.numberPeriod}` : "Seleccionar periodo"}

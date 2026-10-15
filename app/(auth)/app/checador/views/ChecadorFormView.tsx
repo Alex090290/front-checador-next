@@ -14,6 +14,7 @@ import useSWR from "swr";
 import Image from "next/image";
 import ConditionalRender from "@/components/ConditionalRender";
 import Loading from "@/components/LoadingSpinner";
+import { clearMenuCache } from "@/lib/menuCache";
 
 // Consulta con timeout (15 s): si falla o tarda, SWR marca error y la pantalla deja de esperar
 const fetcher = async (url: string) => {
@@ -252,7 +253,10 @@ export default function ChecadorFormView({
                 <Card.Header className="border-0 flex-shrink-0">
                   <div className="d-flex justify-content-between align-items-center fw-bolder flex-wrap gap-2">
                     <Button
-                      onClick={() => signOut()}
+                      onClick={() => {
+                        clearMenuCache();
+                        signOut();
+                      }}
                       variant="outline-info"
                       className="d-inline-flex align-items-center gap-2 fw-semibold px-3"
                     >

@@ -4,6 +4,7 @@ import { getWelcome } from "@/app/actions/entry-actions";
 import { signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { clearMenuCache } from "@/lib/menuCache";
 
 function HealthCheck() {
   const pathname = usePathname();
@@ -41,7 +42,7 @@ function HealthCheck() {
   }, [pathname, router]);
 
    const singOutHanddle = ()=>{
-    localStorage.removeItem("menu-data");
+    clearMenuCache();
     signOut()
   }
 

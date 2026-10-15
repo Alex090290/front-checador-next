@@ -329,6 +329,7 @@ export default function EmployeeDirectoryClient({
 
                         <Dropdown className="w-100">
                           <Dropdown.Toggle
+                              id="directory-filter-1"
                             as={Button}
                             variant="outline-secondary"
                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"
@@ -374,6 +375,7 @@ export default function EmployeeDirectoryClient({
 
                         <Dropdown className="w-100">
                           <Dropdown.Toggle
+                              id="directory-filter-2"
                             as={Button}
                             variant="outline-secondary"
                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"

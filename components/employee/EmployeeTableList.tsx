@@ -432,6 +432,7 @@ export default function EmployeeTableClient({
 
                           <Dropdown className="w-100">
                             <Dropdown.Toggle
+                                id="employee-filter-1"
                               as={Button}
                               variant="outline-secondary"
                               className="w-100 d-flex align-items-center justify-content-between text-uppercase"
@@ -484,6 +485,7 @@ export default function EmployeeTableClient({
 
                           <Dropdown className="w-100">
                             <Dropdown.Toggle
+                                id="employee-filter-2"
                               as={Button}
                               variant="outline-secondary"
                               className="w-100 d-flex align-items-center justify-content-between text-uppercase"
@@ -549,6 +551,7 @@ export default function EmployeeTableClient({
 
                           <Dropdown className="w-100">
                             <Dropdown.Toggle
+                                id="employee-filter-3"
                               as={Button}
                               variant="outline-secondary"
                               className="w-100 d-flex align-items-center justify-content-between text-uppercase"

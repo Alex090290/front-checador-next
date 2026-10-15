@@ -170,6 +170,7 @@ export default function DashboardViewEmployee({
                                 <h6 className="mb-0 fw-bold">Incidencias del periodo</h6>
                                 <Dropdown className="w-50" style={{maxWidth: "250px"}}>
                                     <Dropdown.Toggle
+                                        id="dashboard-employee-period-1"
                                         variant="outline-secondary"
                                         className="w-100 d-flex align-items-center justify-content-between text-uppercase badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle"
                                     >

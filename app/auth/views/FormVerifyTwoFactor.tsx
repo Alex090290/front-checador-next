@@ -17,7 +17,7 @@ import {
 } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Image from "next/image";
-
+import { clearMenuCache } from "@/lib/menuCache";
 
 type TInputs = {
   code: string;
@@ -41,7 +41,7 @@ function FormVerifyTwoFactor() {
   const [requireLogin, setRequireLogin] = useState(false);
 
   const singOutHanddle = () => {
-    localStorage.removeItem("menu-data");
+    clearMenuCache();
     signOut();
   };
 

@@ -649,6 +649,7 @@ export default function AbsencesTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="absences-filter-1"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"

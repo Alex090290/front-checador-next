@@ -10,6 +10,7 @@ import Loading from "../LoadingSpinner";
 import { useModals } from "@/context/ModalContext";
 import { acceptLegalDocument, getLegalAcceptanceStatus } from "@/app/actions/termsAndConditions-actions";
 import { ILegalAcceptanceStatus, TLegalDocumentType } from "@/lib/termsAndConditions/interface";
+import { clearMenuCache } from "@/lib/menuCache";
 
 type FeedbackState = "error" | null;
 
@@ -101,7 +102,7 @@ export default function LegalAcceptanceGate() {
 
   const handleReject = () => {
     modalConfirm("Si no aceptas, se cerrará tu sesión. ¿Deseas continuar?", () => {
-      localStorage.removeItem("menu-data");
+      clearMenuCache();
       signOut();
     });
   };

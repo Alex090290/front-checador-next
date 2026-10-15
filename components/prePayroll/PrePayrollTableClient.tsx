@@ -731,6 +731,7 @@ export default function PrePayrollTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="prepayroll-filter-1"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"
@@ -771,6 +772,7 @@ export default function PrePayrollTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="prepayroll-filter-2"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"
@@ -811,6 +813,7 @@ export default function PrePayrollTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="prepayroll-filter-3"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"

@@ -1,12 +1,12 @@
 "use client";
 
 import useSWR from "swr";
+import { useEffect } from "react";
 import { Accordion, Nav } from "react-bootstrap";
 import { usePathname } from "next/navigation";
 import NextLinkRef from "@/components/NextLinkRef";
 import NavGroup from "@/components/NavGroup";
-
-const MENU_STORAGE_KEY = "menu-data";
+import { MENU_STORAGE_KEY } from "@/lib/menuCache";
 
 type MenuItem = {
   className: string;
@@ -54,10 +54,23 @@ function cleanHref(href?: string) {
 export default function TopNavItems({ onNavigate }: TopNavItemsProps) {
   const pathname = usePathname();
 
-  const { data, error, isLoading } = useSWR("/api/menu", fetcher, {
+  const { data, error, isLoading, mutate } = useSWR("/api/menu", fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 60_000,
   });
+
+  // El caché solo sirve para pintar rápido: al cargar, siempre se trae el menú actual
+  // (permisos o menú cambiados) y se reemplaza lo guardado.
+  useEffect(() => {
+    fetch("/api/menu", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((fresh) => {
+        if (!fresh || !Array.isArray(fresh.data)) return;
+        try { localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(fresh)); } catch {}
+        mutate(fresh, { revalidate: false });
+      })
+      .catch(() => {});
+  }, [mutate]);
 
   
   const items: MenuItem[] = data?.data ?? [];

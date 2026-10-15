@@ -317,6 +317,7 @@ export default function GroceryVouchersTableClient({
 
                                                     <Dropdown className="w-100">
                                                         <Dropdown.Toggle
+                                                            id="grocery-period-1"
                                                             as={Button}
                                                             variant="outline-secondary"
                                                             className="w-100 d-flex align-items-center justify-content-between text-uppercase"
