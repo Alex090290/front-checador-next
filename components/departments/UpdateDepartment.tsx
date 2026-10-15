@@ -30,6 +30,7 @@ function getDefaultValues(department?: Department | null): Department {
     nameDepartment: department?.nameDepartment || "",
     description: department?.description || "",
     idLeader: department?.idLeader || null,
+    idSubManager: department?.idSubManager ?? null,
     positions: department?.positions || [],
   };
 }
@@ -45,12 +46,14 @@ export default function FormUpdateDepartment({
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Department>({
     defaultValues: getDefaultValues(department),
   });
 
   const router = useRouter();
+  const selectedLeader = watch("idLeader");
   const [loading, setLoading] = useState(false);
   const { modalError, modalConfirm } = useModals();
   const [, setMessageLoading] = useState("");
@@ -129,7 +132,7 @@ export default function FormUpdateDepartment({
           <div>
             <h4 className="mb-1 fw-bold">Departamento</h4>
             <p className="text-muted mb-0">
-              Actualiza el nombre, descripción y líder del departamento.
+              Actualiza el nombre, descripción, líder y subgerente del departamento.
             </p>
           </div>
 
@@ -182,6 +185,23 @@ export default function FormUpdateDepartment({
                         id: emp.id ?? 0,
                         displayName: `${emp.name} ${emp.lastName}`,
                         name: `${emp.name} ${emp.lastName}`,
+                      }))}
+                    />
+                  </Col>
+
+                  <Col md={12}>
+                    {/* Vacío = sin subgerente (se manda null). El líder no se puede elegir */}
+                    <RelationField
+                      register={register("idSubManager")}
+                      label="Subgerente:"
+                      control={control}
+                      callBackMode="id"
+                      className="text-uppercase border"
+                      options={employees.map((emp) => ({
+                        id: emp.id ?? 0,
+                        displayName: `${emp.name} ${emp.lastName}`,
+                        name: `${emp.name} ${emp.lastName}`,
+                        disabled: !!selectedLeader && emp.id === Number(selectedLeader),
                       }))}
                     />
                   </Col>

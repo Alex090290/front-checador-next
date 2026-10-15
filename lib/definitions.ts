@@ -79,6 +79,15 @@ export interface Department {
   description: string;
   idLeader: number | null;
   leader?: Employee | null;
+  idSubManager?: number | null;
+  subManager?: {
+    id: number;
+    idCheck: number;
+    name: string;
+    lastName: string;
+    picture?: string;
+    idPosition?: number;
+  } | null;
   positions: Position[];
   cretedAt?: string;
 }

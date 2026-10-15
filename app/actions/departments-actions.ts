@@ -117,7 +117,11 @@ export async function findDepartmentById({
       },
     });
 
-  return response.data || null;
+  // El backend puede regresar el departamento directo o envuelto en { status, message, data }
+  const body = response.data;
+  const department = body && !("nameDepartment" in body) && body.data ? body.data : body;
+
+  return department || null;
 }
 
 export async function createDepartment({
@@ -190,6 +194,8 @@ export async function updateDepartment({
           nameDepartment: data.nameDepartment,
           description: data.description,
           idLeader: data.idLeader,
+          // null quita al subgerente; si no viene en el formulario no se manda
+          ...(data.idSubManager !== undefined ? { idSubManager: data.idSubManager ?? null } : {}),
         },
         {
           headers: {

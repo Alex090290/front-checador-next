@@ -38,7 +38,7 @@ function DepartmentsListView({ deparments }: { deparments: Department[] }) {
     {
       key: "positions",
       label: "Puestos",
-      accessor: (u) => u.positions.length,
+      accessor: (u) => u.positions?.length ?? 0,
       filterable: false,
       type: "number",
       render: (u) => (
@@ -47,8 +47,8 @@ function DepartmentsListView({ deparments }: { deparments: Department[] }) {
             size="sm"
             className="text-uppercase shadow-none border-0"
           >
-            <option>{u.positions.length}</option>
-            {u.positions.map((p) => (
+            <option>{u.positions?.length ?? 0}</option>
+            {(u.positions ?? []).map((p) => (
               <option key={`${p.id}-${p.namePosition}`}>
                 {p.namePosition}
               </option>

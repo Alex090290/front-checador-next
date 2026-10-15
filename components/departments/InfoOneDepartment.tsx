@@ -50,6 +50,7 @@ export default function InfoOneDepartment({
 
   const leader =
     employees.find((emp) => emp.id === department.idLeader) || department.leader;
+  const subManager = department.subManager;
 
   const handleCreate = () => {
     setLoading(true);
@@ -273,6 +274,19 @@ export default function InfoOneDepartment({
                     </span>
                   </div>
 
+                  <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-person-badge text-warning" />
+                      <span className="text-muted">Subgerente</span>
+                    </div>
+
+                    <span className="fw-semibold text-uppercase text-end">
+                      {subManager
+                        ? `${subManager.lastName ?? ""} ${subManager.name ?? ""}`.trim()
+                        : "Sin subgerente"}
+                    </span>
+                  </div>
+
                   <div className="d-flex align-items-start justify-content-between">
                     <div className="d-flex align-items-center gap-2">
                       <i className="bi bi-card-text text-info" />
@@ -311,9 +325,9 @@ export default function InfoOneDepartment({
                   </Button>
                 </div>
 
-                <ConditionalRender cond={department.positions?.length > 0}>
+                <ConditionalRender cond={(department.positions?.length ?? 0) > 0}>
                   <Row className="g-3">
-                    {department.positions.map((puesto) => (
+                    {(department.positions ?? []).map((puesto) => (
                       <Col
                         xs={12}
                         md={6}
@@ -342,7 +356,7 @@ export default function InfoOneDepartment({
                   </Row>
                 </ConditionalRender>
 
-                <ConditionalRender cond={department.positions.length === 0}>
+                <ConditionalRender cond={(department.positions?.length ?? 0) === 0}>
                   <div className="text-center py-4 text-muted">
                     <i className="bi bi-briefcase fs-3 d-block mb-2" />
                     Sin puestos registrados

@@ -171,6 +171,9 @@ export function Many2one<T extends Many2OneOption>({
    */
 
   const handleSelect = (option: T) => {
+    // Opción deshabilitada (p. ej. el líder en el selector de subgerente): no se puede elegir
+    if (option.disabled) return;
+
     if (callBackMode === "id") {
       onChange(option.id);
     } else {
@@ -462,6 +465,7 @@ export function Many2one<T extends Many2OneOption>({
                     active={
                       index === highlightedIndex
                     }
+                    disabled={!!option.disabled}
                     className="text-wrap border-bottom"
                   >
                     {getOptionLabel(option)}

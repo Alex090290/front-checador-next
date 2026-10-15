@@ -86,14 +86,28 @@ export default function DepartmentsTableList({
       ),
     },
     {
+      key: "subManager",
+      label: "Subgerente",
+      accessor: (u) => u.subManager?.name,
+      filterable: true,
+      type: "string",
+      render: (u) => (
+        <div className="text-uppercase">
+          {u.subManager
+            ? `${u.subManager.lastName ?? ""} ${u.subManager.name ?? ""}`.trim()
+            : <span className="text-muted">Sin subgerente</span>}
+        </div>
+      ),
+    },
+    {
       key: "positions",
       label: "Puestos",
       align: "right",
-      accessor: (u) => u.positions.length,
+      accessor: (u) => u.positions?.length ?? 0,
       filterable: false,
       type: "number",
       render: (u) => (
-        <div className="ms-3">{u.positions.length}</div>
+        <div className="ms-3">{u.positions?.length ?? 0}</div>
         // <div onClick={(e) => e.stopPropagation()}>
         //   <Form.Select
         //     size="sm"
