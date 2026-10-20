@@ -673,6 +673,7 @@ export default function EmployeeDetailsView({
                             </span>
                           </div>
 
+                          {/* Aviso de privacidad: ya no se captura
                           <div className="d-flex align-items-center justify-content-between border-bottom pb-2">
                             <div className="d-flex align-items-center gap-2">
                               <i className="bi bi-speedometer2 text-warning" />
@@ -705,6 +706,7 @@ export default function EmployeeDetailsView({
                               {formatText(employee?.constitution)}
                             </span>
                           </div>
+                          */}
 
                           <div className="d-flex align-items-center justify-content-between">
                             <div className="d-flex align-items-center gap-2">

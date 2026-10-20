@@ -43,10 +43,13 @@ export type TInputsEmployee = {
   socialSecurityNumber: string;
   rfc: string;
   curp: string;
-  weight: number | null;
-  height: number | null;
+  /** @deprecated ya no se captura (Aviso de privacidad) */
+  weight?: number | null;
+  /** @deprecated ya no se captura (Aviso de privacidad) */
+  height?: number | null;
   bloodType: string;
-  constitution: string;
+  /** @deprecated ya no se captura (Aviso de privacidad) */
+  constitution?: string;
   healthStatus: string;
   education: string;
   skills: string;

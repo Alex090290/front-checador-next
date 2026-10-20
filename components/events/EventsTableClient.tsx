@@ -22,6 +22,7 @@ import SuccessOverlay from "../SuccessOverlay";
 import ErrorOverlay from "../ErrorOverlay";
 import { formatCreatedAtOnlyHours, formatDateMx } from "@/lib/helpers";
 import { es } from "date-fns/locale";
+import EventsTabs from "./EventsTabs";
 
 registerLocale("es", es);
 
@@ -96,6 +97,7 @@ export default function EvenstsTableClient({
     search = "",
     events,
     users,
+    pendingTab = null,
 }: {
     total: number;
     page: number;
@@ -106,6 +108,7 @@ export default function EvenstsTableClient({
     employees: Employee[];
     idUser?: string;
     date?: string;
+    pendingTab?: { count: number } | null;
 }) {
 
     const {
@@ -590,6 +593,18 @@ export default function EvenstsTableClient({
             </ConditionalRender>
 
             <Container className="py-3" style={{ maxWidth: "1600px" }}>
+
+                <ConditionalRender cond={!!pendingTab}>
+                    <EventsTabs
+                        active="registros"
+                        pendingCount={pendingTab?.count ?? 0}
+                        onNavigate={(url) => {
+                            setFeedback("loading");
+                            setFeedbackMsg("Cargando...");
+                            router.push(url);
+                        }}
+                    />
+                </ConditionalRender>
 
                 {/* <ConditionalRender cond={!isLeader}> */}
                 <Button

@@ -87,10 +87,10 @@ const DEFAULT_VALUES: TInputsEmployee = {
   socialSecurityNumber: "",
   rfc: "",
   curp: "",
-  weight: null,
-  height: null,
+  // weight: null, // Aviso de privacidad: ya no se captura
+  // height: null, // Aviso de privacidad: ya no se captura
   bloodType: "",
-  constitution: "",
+  // constitution: "", // Aviso de privacidad: ya no se captura
   healthStatus: "",
   education: "",
   skills: "",
@@ -574,6 +574,7 @@ export default function CreateEmployeeComponent({
                                 />
                               </Col>
 
+                              {/* Aviso de privacidad: ya no se captura
                               <Col md={6}>
                                 <Entry register={register("weight", { setValueAs: (v) => (v === "" ? null : Number(v)) })} label="Peso:" className="border text-uppercase" />
                               </Col>
@@ -585,6 +586,7 @@ export default function CreateEmployeeComponent({
                               <Col md={6}>
                                 <Entry register={register("constitution")} label="Complexión:" className="border text-uppercase" />
                               </Col>
+                              */}
 
                               <Col md={6}>
                                 <Entry register={register("healthStatus")} label="Estado de salud:" className="border text-uppercase" />

@@ -172,10 +172,10 @@ function EmployeeFormView({
         socialSecurityNumber: "",
         rfc: "",
         curp: "",
-        weight: null,
-        height: null,
+        // weight: null, // Aviso de privacidad: ya no se captura
+        // height: null, // Aviso de privacidad: ya no se captura
         bloodType: "",
-        constitution: "",
+        // constitution: "", // Aviso de privacidad: ya no se captura
         healthStatus: "",
         education: "",
         skills: "",
@@ -242,10 +242,10 @@ function EmployeeFormView({
         socialSecurityNumber: employee.socialSecurityNumber,
         rfc: employee.rfc,
         curp: employee.curp,
-        weight: employee.weight,
-        height: employee.height,
+        // weight: employee.weight, // Aviso de privacidad: ya no se captura
+        // height: employee.height, // Aviso de privacidad: ya no se captura
         bloodType: employee.bloodType,
-        constitution: employee.constitution,
+        // constitution: employee.constitution, // Aviso de privacidad: ya no se captura
         healthStatus: employee.healthStatus,
         education: employee.education,
         skills: employee.skills,
@@ -472,6 +472,7 @@ function EmployeeFormView({
                       invalid={!!errors.bloodType}
                     />
                   </FieldGroup.Stack>
+                  {/* Aviso de privacidad: ya no se captura
                   <FieldGroup.Stack>
                     <Entry register={register("weight")} label="Peso:" />
                     <Entry register={register("height")} label="Altura:" />
@@ -480,6 +481,7 @@ function EmployeeFormView({
                     register={register("constitution")}
                     label="Constitución:"
                   />
+                  */}
                   <Entry
                     register={register("healthStatus")}
                     label="Estado de salud:"

@@ -413,10 +413,10 @@ export async function createEmployee({
         socialSecurityNumber: data.socialSecurityNumber,
         rfc: data.rfc,
         curp: data.curp,
-        weight: Number(data.weight) || 0,
-        height: Number(data.height) || 0,
+        // weight: Number(data.weight) || 0, // Aviso de privacidad: ya no se captura
+        // height: Number(data.height) || 0, // Aviso de privacidad: ya no se captura
         bloodType: data.bloodType.toUpperCase(),
-        constitution: data.constitution,
+        // constitution: data.constitution, // Aviso de privacidad: ya no se captura
         healthStatus: data.healthStatus,
         education: data.education,
         skills: data.skills,
@@ -539,10 +539,10 @@ export async function updateEmploye({
           socialSecurityNumber: data.socialSecurityNumber,
           rfc: data.rfc,
           curp: data.curp,
-          weight: Number(data.weight) || 0,
-          height: Number(data.height) || 0,
+          // weight: Number(data.weight) || 0, // Aviso de privacidad: ya no se captura
+          // height: Number(data.height) || 0, // Aviso de privacidad: ya no se captura
           bloodType: data.bloodType,
-          constitution: data.constitution,
+          // constitution: data.constitution, // Aviso de privacidad: ya no se captura
           healthStatus: data.healthStatus,
           education: data.education,
           skills: data.skills,

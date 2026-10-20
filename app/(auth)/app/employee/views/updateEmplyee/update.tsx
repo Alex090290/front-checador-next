@@ -89,10 +89,10 @@ function formatEmployeeValues(employee?: Employee | null): TInputsEmployee {
     socialSecurityNumber: employee?.socialSecurityNumber || "",
     rfc: employee?.rfc || "",
     curp: employee?.curp || "",
-    weight: employee?.weight || null,
-    height: employee?.height || null,
+    // weight: employee?.weight || null, // Aviso de privacidad: ya no se captura
+    // height: employee?.height || null, // Aviso de privacidad: ya no se captura
     bloodType: employee?.bloodType || "",
-    constitution: employee?.constitution || "",
+    // constitution: employee?.constitution || "", // Aviso de privacidad: ya no se captura
     healthStatus: employee?.healthStatus || "",
     education: employee?.education || "",
     skills: employee?.skills || "",
@@ -615,6 +615,7 @@ export default function FormUpdateEmployee({
                       <Col md={4}>
                         <Entry register={register("bloodType")} label="Grupo sanguíneo:" className="border text-uppercase" />
                       </Col>
+                      {/* Aviso de privacidad: ya no se captura
                       <Col md={4}>
                         <Entry register={register("weight")} label="Peso:" className="border" />
                       </Col>
@@ -624,6 +625,7 @@ export default function FormUpdateEmployee({
                       <Col md={6}>
                         <Entry register={register("constitution")} label="Complexión:" className="border text-uppercase" />
                       </Col>
+                      */}
                       <Col md={6}>
                         <Entry register={register("healthStatus")} label="Estado de salud:" className="border text-uppercase" />
                       </Col>
