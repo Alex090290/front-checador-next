@@ -16,16 +16,14 @@ type SearchParams = {
 export default async function UserProfilePage({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const id = searchParams?.id ?? "null";
+  const params = await searchParams;
+  const id = params?.id ?? "null";
 
   const { apiToken } = await storeAction();
 
-  const [user, me] = await Promise.all([
-    findUserById({ id: Number(id) }),
-    getUserData({ apiToken: apiToken ?? "" }),
-  ]);
+  const me = await getUserData({ apiToken: apiToken ?? "" });
 
   const meData = (me.data as unknown as User) ?? null;
 
@@ -38,10 +36,14 @@ export default async function UserProfilePage({
     );
   }
 
+  // El perfil propio sale de /me: GET /user exige el permiso "listar_usuarios" y sin él el perfil salía vacío
+  const isOwnProfile = !!meData && (id === "null" || Number(id) === Number(meData.id));
+  const user = isOwnProfile ? meData : await findUserById({ id: Number(id) });
+
   return (
     <>
       <Suspense fallback={<Loading message="Cargando datos..." />}>
-        <UserProfileView user={user} me={meData} />;
+        <UserProfileView user={user} me={meData} />
       </Suspense>
     </>
   )

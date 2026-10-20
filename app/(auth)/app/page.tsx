@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import DashboardView from "./dashboard/dashboardView";
 import { auth } from "@/lib/auth";
 import DashboardViewE from "./dashboard/dashboarEmployees";
+import { getUserData } from "@/app/actions/user-actions";
+import { User } from "@/lib/definitions";
 
 type SearchParams = {
   view_type?: string;
@@ -24,8 +26,18 @@ async function PageApp({
   const session = await auth();
   const roles = session?.user?.roles;
 
-  const isEmployee = [roles?.isApproverDoh, roles?.isApproverLeaders, roles?.isDoh, roles?.isExtra, roles?.isLeader].every((value) => value === false);
-  const isLeader = [roles?.isApproverDoh, roles?.isApproverLeaders, roles?.isDoh, roles?.isExtra].every((value) => value === false);
+  // El dashboard se decide con sessionType de /me (igual que el perfil): un usuario del sistema enlazado a un
+  // empleado trae roles de empleado, pero debe ver el dashboard de admin. Solo las sesiones de empleado ven el suyo
+  const me = await getUserData({ apiToken: session?.user?.apiToken ?? "" });
+  const sessionType = me.success ? (me.data as unknown as User)?.sessionType : undefined;
+
+  // Respaldo por roles solo si /me no regresó sessionType
+  const isEmployee = sessionType
+    ? sessionType === "employee"
+    : [roles?.isApproverDoh, roles?.isApproverLeaders, roles?.isDoh, roles?.isExtra, roles?.isLeader].every((value) => value === false);
+  const isLeader = sessionType
+    ? false
+    : [roles?.isApproverDoh, roles?.isApproverLeaders, roles?.isDoh, roles?.isExtra].every((value) => value === false);
 
 
   if (!isEmployee && !isLeader) {
