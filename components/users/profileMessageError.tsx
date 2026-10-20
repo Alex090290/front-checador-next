@@ -4,7 +4,8 @@ import { Button } from "react-bootstrap";
 import { useState } from "react";
 
 
-export default function ProfileError() {
+// message: el motivo real (ej. el back no respondió /me) en lugar del texto genérico de "no encontrado"
+export default function ProfileError({ title, message }: { title?: string; message?: string } = {}) {
 
     const router = useRouter();
     const [, setLoading] = useState(false);
@@ -36,12 +37,11 @@ export default function ProfileError() {
                                 </div>
 
                                 <h2 className="fw-bold mb-3">
-                                    Perfil no encontrado
+                                    {title ?? "Perfil no encontrado"}
                                 </h2>
 
                                 <p className="text-muted mb-4">
-                                    El perfil que intentas consultar no existe,
-                                    fue eliminada o no se encuentra disponible.
+                                    {message ?? "El perfil que intentas consultar no existe, fue eliminado o no se encuentra disponible."}
                                 </p>
 
                                 <div className="justify-content-center gap-2">
