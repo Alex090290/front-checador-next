@@ -52,7 +52,8 @@ export default function PublicTermsView({
                     {terms.title}
                   </h1>
                   <p className="text-muted small mb-4">
-                    Versión {terms.version} · Publicado el {terms.publishedAt ?? "-"}
+                    {/* publishedAt es cuando se activó el documento y no cambia al editar el texto (sube de versión); la versión vigente rige desde su última actualización */}
+                    Versión {terms.version} · Vigente desde {terms.updatedAt || terms.publishedAt || "-"}
                   </p>
 
                   {/* El contenido se muestra como TEXTO (nunca como HTML) */}
