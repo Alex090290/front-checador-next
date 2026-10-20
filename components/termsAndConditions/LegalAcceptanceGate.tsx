@@ -26,8 +26,9 @@ const CHECK_LABELS: Record<TLegalDocumentType, string> = {
   PRIVACIDAD: "He leído el Aviso de privacidad y otorgo mi consentimiento para el tratamiento de mis datos personales, incluidos mis datos biométricos (reconocimiento facial).",
 };
 
-// Revisa una vez por carga del layout de /app si hay documentos legales por aceptar
-export default function LegalAcceptanceGate() {
+// Revisa una vez por carga del layout de /app si hay documentos legales por aceptar.
+// onResolved avisa cuando ya no hay nada por aceptar (o no se pudo consultar), para mostrar lo que sigue después
+export default function LegalAcceptanceGate({ onResolved }: { onResolved?: () => void } = {}) {
   const { data: session, status: sessionStatus } = useSession();
   const { modalConfirm } = useModals();
 
@@ -46,15 +47,21 @@ export default function LegalAcceptanceGate() {
 
       if (!res.success || !res.data) {
         console.log("No se pudo consultar la aceptación de documentos legales:", res.message);
+        onResolved?.();
         return;
       }
 
+      const hasPending = res.data.mustAccept &&
+        LEGAL_TYPES.some((type) => res.data?.documents[type]?.mustAccept && res.data?.documents[type]?.active);
+
       setStatus(res.data.mustAccept ? res.data : null);
       setChecked({ TERMINOS: false, PRIVACIDAD: false });
+      if (!hasPending) onResolved?.();
     } catch (error) {
       console.log("No se pudo consultar la aceptación de documentos legales:", error);
+      onResolved?.();
     }
-  }, []);
+  }, [onResolved]);
 
   useEffect(() => {
     if (requested.current || sessionStatus !== "authenticated") return;
@@ -92,6 +99,7 @@ export default function LegalAcceptanceGate() {
       }
 
       setStatus(null);
+      onResolved?.();
     } catch {
       setFeedbackMsg("Error inesperado, intenta de nuevo");
       setFeedback("error");

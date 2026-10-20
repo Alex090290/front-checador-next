@@ -125,10 +125,12 @@ function FormLogin() {
                 </Form.FloatingLabel>
 
                 <div className="position-relative mb-3">
-                  <Form.FloatingLabel label="Contraseña">
+                  {/* Empleados: su NIP del checador o su contraseña del sistema (letras y números, hasta 64) */}
+                  <Form.FloatingLabel label="Contraseña o NIP">
                     <Form.Control
                       {...register("password", { required: "Este campo es requerido" })}
-                      placeholder="Contraseña"
+                      placeholder="Contraseña o NIP"
+                      maxLength={128}
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
                       isInvalid={!!errors.password}

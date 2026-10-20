@@ -15,6 +15,7 @@ import { loadAvatar } from "@/app/actions/user-actions";
 import { createUserImage, deleteUserImage } from "@/app/actions/image-field-actions";
 import ProfileError from "./profileMessageError";
 import TwoFactorCard from "./TwoFactorCard";
+import PasswordSystemModal from "./PasswordSystemModal";
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -46,6 +47,9 @@ export default function EmployeeProfileView({
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const { modalConfirm } = useModals();
   const router = useRouter();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  // La primera vez se confirma con el NIP; ya creada, con la contraseña actual
+  const [passwordPending, setPasswordPending] = useState(me?.passwordSystemPending === true);
 
   useEffect(() => {
     let active = true;
@@ -134,6 +138,17 @@ export default function EmployeeProfileView({
       </ConditionalRender>
 
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
+
+        <div className="d-flex flex-nowrap gap-2 mb-4">
+          <Button
+            className="d-inline-flex align-items-center fw-semibold px-3"
+            variant="secondary"
+            onClick={() => setShowPasswordModal(true)}
+          >
+            <i className="bi bi-key me-2" />
+            Cambiar contraseña
+          </Button>
+        </div>
 
         <div>
           <h1 className="ms-1">
@@ -246,6 +261,19 @@ export default function EmployeeProfileView({
           </Card.Body>
         </Card>
       </Container>
+
+      {showPasswordModal && (
+        <PasswordSystemModal
+          firstTime={passwordPending}
+          idCheck={me.idCheck ?? null}
+          onClose={() => setShowPasswordModal(false)}
+          onSaved={() => {
+            setShowPasswordModal(false);
+            setPasswordPending(false);
+            router.refresh();
+          }}
+        />
+      )}
     </>
   );
 }

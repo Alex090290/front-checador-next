@@ -42,6 +42,7 @@ import { IUpdateVacation, Vacations } from "@/lib/vactions/interface";
 import UpdateHolidayModal from "./UpdateHolidayModal";
 import { useModals } from "@/context/ModalContext";
 import { resetEmployeeTwoFactor } from "@/app/actions/twoFactor-actions";
+import { resetPasswordSystem } from "@/app/actions/employeePasswordSystem-actions";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -171,6 +172,8 @@ export default function EmployeeDetailsView({
   const [sendIdPeriod, setSendIdPeriod] = useState<number | null>(null);
   const [sendHolidayName, setSendHolidayName] = useState<string | null>(null);
   const { modalConfirm } = useModals();
+  // Reiniciar contraseña del sistema: con actualizar_empleados; si el back lo niega por permisos se oculta
+  const [passwordResetDenied, setPasswordResetDenied] = useState(false);
 
 
   const department =
@@ -242,6 +245,33 @@ export default function EmployeeDetailsView({
     });
   }
 
+
+  const handleResetPasswordSystem = () => {
+    modalConfirm("El empleado volverá a entrar con su NIP del checador y se le pedirá crear una contraseña nueva.", async () => {
+      try {
+        setFeedback("loading");
+        setFeedbackMsg("Reiniciando contraseña...");
+
+        const res = await resetPasswordSystem(Number(employee?.id));
+
+        if (!res.success) {
+          if (/permiso/i.test(res.message)) setPasswordResetDenied(true);
+          setFeedbackMsg(res.message || "No se pudo reiniciar la contraseña");
+          setFeedback("error");
+          return;
+        }
+
+        setFeedbackMsg(res.message || "Contraseña reiniciada");
+        setFeedback("success");
+      } catch {
+        setFeedbackMsg("Error inesperado, intenta de nuevo");
+        setFeedback("error");
+      }
+    });
+  }
+
+  const canResetPasswordSystem = !passwordResetDenied &&
+    !!session?.user?.permissions?.some((p) => p.text === "actualizar_empleados");
 
   if (!employee) {
     return (
@@ -361,6 +391,22 @@ export default function EmployeeDetailsView({
                 </span>
               </Button>
             </OverLay>
+
+            <ConditionalRender cond={canResetPasswordSystem}>
+              <OverLay string="Reiniciar contraseña del sistema">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  variant="outline-danger"
+                  onClick={handleResetPasswordSystem}
+                >
+                  <i className="bi bi-key" />
+
+                  <span className="d-none d-md-inline ms-2">
+                    Reiniciar contraseña del sistema
+                  </span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
           </div>
 
           <div className=" d-md-flex flex-wrap">

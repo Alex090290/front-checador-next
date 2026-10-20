@@ -46,6 +46,8 @@ export interface User {
   twoFactorPending?: boolean;
   sessionType?: 'user' | 'employee';
   idCheck?: number | null;
+  // Empleado que aún entra con su NIP: se le ofrece crear su contraseña del sistema
+  passwordSystemPending?: boolean;
 }
 
 export interface ITwoFactorSetup {
@@ -158,7 +160,8 @@ export interface Employee {
   emailPersonal: string;
   idCheck: number | null;
   passwordCheck: number | null;
-  passwordSystem: string;
+  /** @deprecated el back ya no lo regresa (era el hash); no se debe mostrar */
+  passwordSystem?: string;
   entryOffice: string;
   entrySaturdayOffice: string | null;
   exitOffice: string | null;
