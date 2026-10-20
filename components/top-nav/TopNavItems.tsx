@@ -1,45 +1,13 @@
 "use client";
 
-import useSWR from "swr";
-import { useEffect } from "react";
 import { Accordion, Nav } from "react-bootstrap";
 import { usePathname } from "next/navigation";
 import NextLinkRef from "@/components/NextLinkRef";
 import NavGroup from "@/components/NavGroup";
-import { MENU_STORAGE_KEY } from "@/lib/menuCache";
-
-type MenuItem = {
-  className: string;
-  href?: string;
-  span: string;
-  eventKey?: string;
-  children?: MenuItem[];
-};
+import { MenuItem, useMenu } from "./useMenu";
 
 type TopNavItemsProps = {
   onNavigate?: () => void;
-};
-
-// const fetcher = (url: string) => fetch(url).then((r) => r.json());
-
-const fetcher = async (url: string) => {
-  // 1. Busca en localStorage primero
-  try {
-    const cached = localStorage.getItem(MENU_STORAGE_KEY);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-  } catch {}
-
-  // 2. Si no hay caché, llama a /api/menu y guarda el resultado
-  const res = await fetch(url);
-  const data = await res.json();
-
-  try {
-    localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(data));
-  } catch {}
-
-  return data;
 };
 
 function stableKey(item: MenuItem) {
@@ -54,25 +22,9 @@ function cleanHref(href?: string) {
 export default function TopNavItems({ onNavigate }: TopNavItemsProps) {
   const pathname = usePathname();
 
-  const { data, error, isLoading, mutate } = useSWR("/api/menu", fetcher, {
-    revalidateOnFocus: false,
-    dedupingInterval: 60_000,
-  });
+  // El menú ya viene precargado desde el Sidebar (useMenuRefresh); aquí solo se lee
+  const { data, error, isLoading } = useMenu();
 
-  // El caché solo sirve para pintar rápido: al cargar, siempre se trae el menú actual
-  // (permisos o menú cambiados) y se reemplaza lo guardado.
-  useEffect(() => {
-    fetch("/api/menu", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((fresh) => {
-        if (!fresh || !Array.isArray(fresh.data)) return;
-        try { localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(fresh)); } catch {}
-        mutate(fresh, { revalidate: false });
-      })
-      .catch(() => {});
-  }, [mutate]);
-
-  
   const items: MenuItem[] = data?.data ?? [];
 
   if (isLoading && items.length === 0) return null;

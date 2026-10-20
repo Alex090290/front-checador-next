@@ -3,8 +3,10 @@
 import { Card, Col, Container, Row } from "react-bootstrap"
 // import GraphicOne from "../graphics/graphic_1"
 // import GraphicTwo from "../graphics/graphic_2"
-import GraphicThree from "../graphics/graphic_3"
-import GraphicFour from "../graphics/graphic_4"
+// import GraphicThree from "../graphics/graphic_3" // Reemplazada por la gráfica de exceso de comida con datos reales
+// import GraphicFour from "../graphics/graphic_4" // Reemplazada por la gráfica de incidencias por trimestre con datos reales
+import LunchExcessChart from "../graphics/LunchExcessChart"
+import IncidencesByQuarterChart from "../graphics/IncidencesByQuarterChart"
 import ConditionalRender from "../ConditionalRender"
 import Loading from "../LoadingSpinner"
 import { useState } from "react"
@@ -69,6 +71,7 @@ export default function DashboardViewClient({
                                 </div>
                             </Col> */}
 
+                            {/* Reemplazadas por las gráficas con datos reales (LunchExcessChart e IncidencesByQuarterChart)
                             <Col xs={12} md={6} className="h-50">
                                 <div className="border rounded-3" style={{ height: "350px" }}>
                                     <GraphicThree />
@@ -80,6 +83,11 @@ export default function DashboardViewClient({
                                     <GraphicFour />
                                 </div>
                             </Col>
+                            */}
+
+                            <LunchExcessChart />
+
+                            <IncidencesByQuarterChart />
                         </Row>
                     </Card.Body>
                 </Card>

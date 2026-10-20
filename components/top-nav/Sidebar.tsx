@@ -6,10 +6,14 @@ import { useSession } from "next-auth/react";
 import TopNavItems from "../top-nav/TopNavItems";
 import ConditionalRender from "../ConditionalRender";
 import Image from "next/image";
+import { useMenuRefresh } from "./useMenu";
 
 export default function Sidebar() {
   const { data: session } = useSession();
   const userRole = session?.user?.role;
+
+  // Precarga el menú al entrar (después del login) para que al abrirlo ya esté listo
+  useMenuRefresh(!!userRole && userRole !== "CHECADOR");
 
   const [show, setShow] = useState(false);
   const [collapsed] = useState(false);
