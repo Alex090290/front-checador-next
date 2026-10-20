@@ -6,7 +6,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "Checador Digital",
+  title: "Portal Gama",
   description: "Checador digital para GAMA",
 };
 

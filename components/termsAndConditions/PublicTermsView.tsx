@@ -41,7 +41,7 @@ export default function PublicTermsView({
               height={56}
               style={{ objectFit: "contain" }}
             />
-            <p className="text-muted small mb-0">Checador Digital</p>
+            <p className="text-muted small mb-0">Portal Gama</p>
           </div>
 
           <Card className="shadow-lg border-0 rounded-4">

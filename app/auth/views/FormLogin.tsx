@@ -100,7 +100,7 @@ function FormLogin() {
                 style={{ objectFit: "contain" }}
               />
               {/* <i className="bi bi-shield-lock-fill fs-3" /> */}
-              <h4 className="fw-bold mb-0">Checador Digital</h4>
+              <h4 className="fw-bold mb-0">Portal Gama</h4>
               <p className="text-muted small mb-0">Inicia sesión para continuar</p>
             </div>
 
