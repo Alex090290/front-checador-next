@@ -22,6 +22,8 @@ type Props = {
   disabled?: boolean;
   onBack: () => void;
   onHide: () => void;
+  // Checador "solo NIP": sin el botón para regresar a validar por rostro
+  allowFace?: boolean;
 };
 
 function ChecadorEntryForm({
@@ -29,6 +31,7 @@ function ChecadorEntryForm({
   disabled = false,
   onBack,
   onHide,
+  allowFace = true,
 }: Props) {
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -163,18 +166,20 @@ function ChecadorEntryForm({
                   </Button>
                 </div>
 
-                <div className=" d-md-flex flex-wrap">
+                <ConditionalRender cond={allowFace}>
+                  <div className=" d-md-flex flex-wrap">
 
-                  <Button
-                    type="button"
-                    variant="outline-secondary"
-                    className="mt-2"
-                    onClick={handleBack}
-                  >
-                    <i className="bi bi-arrow-left me-2" />
-                    Validar por rostro
-                  </Button>
-                </div>
+                    <Button
+                      type="button"
+                      variant="outline-secondary"
+                      className="mt-2"
+                      onClick={handleBack}
+                    >
+                      <i className="bi bi-arrow-left me-2" />
+                      Validar por rostro
+                    </Button>
+                  </div>
+                </ConditionalRender>
               </div>
             </fieldset>
           </Form>

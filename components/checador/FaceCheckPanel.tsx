@@ -21,6 +21,10 @@ type Props = {
   lng?: number;
   onEnableManual: () => void;
   onFaceSuccess: (message: string) => void;
+  // Checador "solo rostro": sin la opción de código y contraseña
+  allowManual?: boolean;
+  // Checada rechazada (ej. el administrador cambió el tipo de validación): el kiosco vuelve a consultar /me
+  onCheckError?: () => void;
 };
 
 export default function FaceCheckPanel({
@@ -28,6 +32,8 @@ export default function FaceCheckPanel({
   lng = 0,
   onEnableManual,
   onFaceSuccess,
+  allowManual = true,
+  onCheckError,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -207,6 +213,7 @@ const handleOpenCamera = useCallback(async () => {
         setMessage(res.message || "No se pudo validar por rostro");
         setFeedback("error");
         setFeedbackMsg(res.message || "No se pudo validar por rostro");
+        onCheckError?.();
         return;
       }
 
@@ -248,7 +255,7 @@ const handleOpenCamera = useCallback(async () => {
           message={feedbackMsg}
           onDone={() => {
             setFeedback(null);
-            onEnableManual();
+            if (allowManual) onEnableManual();
           }}
         />
       </ConditionalRender>
@@ -305,13 +312,15 @@ const handleOpenCamera = useCallback(async () => {
                   </ConditionalRender>
                 </Button>
 
-                <Button
-                  variant="outline-secondary"
-                  onClick={onEnableManual}
-                  disabled={processing || startingCamera}
-                >
-                  Usar código y contraseña
-                </Button>
+                <ConditionalRender cond={allowManual}>
+                  <Button
+                    variant="outline-secondary"
+                    onClick={onEnableManual}
+                    disabled={processing || startingCamera}
+                  >
+                    Usar código y contraseña
+                  </Button>
+                </ConditionalRender>
               </div>
             </div>
           </ConditionalRender>
@@ -336,13 +345,15 @@ const handleOpenCamera = useCallback(async () => {
 
               </Button>
 
-              <Button
-                variant="outline-secondary"
-                onClick={onEnableManual}
-                disabled={startingCamera || processing}
-              >
-                Usar código y contraseña
-              </Button>
+              <ConditionalRender cond={allowManual}>
+                <Button
+                  variant="outline-secondary"
+                  onClick={onEnableManual}
+                  disabled={startingCamera || processing}
+                >
+                  Usar código y contraseña
+                </Button>
+              </ConditionalRender>
             </div>
           </ConditionalRender>
 

@@ -2,6 +2,7 @@
 
 import { FetchUsersArgs } from "@/lib/constancy/interface";
 import { ActionResponse, ICheckInFeedback } from "@/lib/definitions";
+import { CheckMethods } from "@/lib/checadores/interface";
 import { storeToken } from "@/lib/useToken";
 import axios, { AxiosResponse } from "axios";
 import { redirect } from "next/navigation";
@@ -179,5 +180,30 @@ export async function fetchCheckInFeedback(args: FetchUsersArgs): Promise<
       success: false,
       message: err.message,
     };
+  }
+}
+
+//Tipo de validación del checador con sesión (rostro, NIP o ambos), de /me. Si no viene, como siempre: ambos
+export async function getCheckMethods(): Promise<{ success: boolean; checkMethods: CheckMethods }> {
+  try {
+    const { apiToken, apiUrl } = await storeToken();
+
+    const me = await axios
+      .get(`${apiUrl}/me`, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+        timeout: 15000,
+      })
+      .then((res) => res.data?.data);
+
+    const value = me?.checkMethods;
+    return {
+      success: true,
+      checkMethods: value === "rostro" || value === "pin" ? value : "ambos",
+    };
+  } catch (error: unknown) {
+    console.log(error);
+    return { success: false, checkMethods: "ambos" };
   }
 }

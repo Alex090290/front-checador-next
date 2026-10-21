@@ -1,11 +1,12 @@
 "use client";
 
-import { checkIn } from "@/app/actions/entry-actions";
+import { checkIn, getCheckMethods } from "@/app/actions/entry-actions";
+import { CheckMethods } from "@/lib/checadores/interface";
 import ChecadorEntryForm from "@/components/forms/ChecadorEntryForm";
 import FaceCheckPanel from "@/components/checador/FaceCheckPanel";
 import Clock from "@/components/top-nav/Clock";
 import { signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { formatDate } from "date-fns";
 import { Alert, Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { formatDatelocal } from "@/lib/helpers";
@@ -47,6 +48,12 @@ export default function ChecadorFormView({
   const [message, setMessage] = useState<string>("");
 
   const [manualEnabled, setManualEnabled] = useState(false);
+  // Tipo de validación del checador (de /me): null mientras se consulta, para no abrir la cámara en un checador "solo NIP"
+  const [checkMethods, setCheckMethods] = useState<CheckMethods | null>(null);
+  const allowFace = checkMethods === "ambos" || checkMethods === "rostro";
+  const allowPin = checkMethods === "ambos" || checkMethods === "pin";
+  const showFace = allowFace && (!manualEnabled || !allowPin);
+  const showManual = allowPin && (manualEnabled || !allowFace);
   const [, setSwitchingToFace] = useState(false);
 
 
@@ -70,7 +77,23 @@ export default function ChecadorFormView({
   // Solo se espera mientras la consulta sigue en curso: con error (o aviso vacío) se muestra la pantalla
   const pageLoading =
     (activeNotice === undefined && !noticeError) ||
-    (checkData === undefined && !checkError);
+    (checkData === undefined && !checkError) ||
+    checkMethods === null;
+
+  // Se vuelve a consultar al cargar y cada vez que el kiosco regresa a su pantalla inicial o una checada es rechazada
+  // (el administrador pudo cambiar el tipo de validación mientras estaba abierto). Si falla, se queda el tipo anterior.
+  const refreshCheckMethods = useCallback(async () => {
+    try {
+      const res = await getCheckMethods();
+      setCheckMethods((prev) => (res.success ? res.checkMethods : prev ?? "ambos"));
+    } catch {
+      setCheckMethods((prev) => prev ?? "ambos");
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshCheckMethods();
+  }, [refreshCheckMethods]);
 
   useEffect(() => {
 
@@ -96,6 +119,7 @@ export default function ChecadorFormView({
       return { success: false, message: "No se pudo registrar, revisa la conexión e intenta de nuevo" };
     }
     mutate();
+    refreshCheckMethods();
     // toast.dismiss(toastIdRef.current);
 
     if (!res.success) {
@@ -156,6 +180,7 @@ export default function ChecadorFormView({
   }, []);
 
   const handleEnableManual = () => {
+    if (!allowPin) return;
     setManualEnabled(true);
     setMessage("No fue posible validar por rostro. Puedes continuar con código y contraseña.");
   };
@@ -164,6 +189,7 @@ export default function ChecadorFormView({
     mutate()
     setManualEnabled(false);
     setMessage(faceMessage);
+    refreshCheckMethods();
     // await handleFetchFeedback();
   };
 
@@ -345,21 +371,24 @@ export default function ChecadorFormView({
                     >
                       {/* Cámara / formulario manual */}
                       <div className="border rounded shadow p-3 flex-shrink-0">
-                        <ConditionalRender cond={!manualEnabled}>
+                        {/* Solo se monta si el checador permite rostro: al montarse abre la cámara */}
+                        {showFace && (
                           <FaceCheckPanel
                             lat={location?.lat}
                             lng={location?.lon}
                             onEnableManual={handleEnableManual}
                             onFaceSuccess={handleFaceSuccess}
+                            allowManual={allowPin}
+                            onCheckError={refreshCheckMethods}
                           />
-                        </ConditionalRender>
+                        )}
 
-                        <ConditionalRender cond={manualEnabled}>
+                        <ConditionalRender cond={showManual}>
                           <Alert
                             variant="none"
                             className="rounded-pill py-2 fw-semibold bg-warning-subtle text-warning-emphasis border border-warning-subtle text-center fs-6"
                           >
-                            {message}
+                            {message || "Captura tu código y contraseña para registrar tu checada."}
                           </Alert>
                           <div className="d-flex justify-content-center">
                             <ChecadorEntryForm
@@ -367,6 +396,7 @@ export default function ChecadorFormView({
                               disabled={false}
                               onBack={handleDisableManual}
                               onHide={handleDisableManual}
+                              allowFace={allowFace}
                             />
                           </div>
                         </ConditionalRender>
