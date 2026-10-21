@@ -3,6 +3,7 @@
 import moment from "moment-timezone";
 import { Col, Form } from "react-bootstrap";
 import { ReactNode } from "react";
+import Loading from "../LoadingSpinner";
 
 const FIRST_YEAR = 2026;
 
@@ -69,10 +70,9 @@ export default function ChartCard({
                 </div>
 
                 <div className="position-relative flex-grow-1" style={{ height: 300 }}>
+                    {/* Mientras carga se usa el loading del sistema (pantalla completa), no un texto propio */}
                     {loading ? (
-                        <div className="h-100 d-flex align-items-center justify-content-center text-muted small">
-                            Cargando...
-                        </div>
+                        <Loading message="Cargando gráficas..." />
                     ) : message ? (
                         <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted small text-center px-3">
                             <i className="bi bi-bar-chart fs-3 mb-2" />

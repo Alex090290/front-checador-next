@@ -44,6 +44,7 @@ export const authOptions = {
           roles: userData.roles,
           twoFactorEnabled: userData.twoFactorEnabled === true,
           twoFactorPending: userData.twoFactorPending === true,
+          sessionType: userData.sessionType,
         };
       },
     }),
@@ -81,6 +82,7 @@ export const authOptions = {
           token.roles = userData.roles;
           token.twoFactorEnabled = userData.twoFactorEnabled === true;
           token.twoFactorPending = userData.twoFactorPending === true;
+          token.sessionType = userData.sessionType;
         }
       }
 
@@ -98,6 +100,7 @@ export const authOptions = {
         token.roles = user.roles;
         token.twoFactorEnabled = user.twoFactorEnabled;
         token.twoFactorPending = user.twoFactorPending;
+        token.sessionType = user.sessionType;
       }
       return token;
     },
@@ -116,6 +119,7 @@ export const authOptions = {
         session.user.roles = token.roles as IRolesMe;
         session.user.twoFactorEnabled = token.twoFactorEnabled === true;
         session.user.twoFactorPending = token.twoFactorPending === true;
+        session.user.sessionType = token.sessionType as "user" | "employee" | undefined;
       }
       return session;
     },

@@ -13,5 +13,7 @@ declare module "next-auth" {
     roles:IRolesMe
     twoFactorEnabled?: boolean;
     twoFactorPending?: boolean;
+    // "employee": entró con número de empleado y NIP/contraseña; "user": usuario del sistema
+    sessionType?: "user" | "employee";
   }
 }

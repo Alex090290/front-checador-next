@@ -43,6 +43,7 @@ import UpdateHolidayModal from "./UpdateHolidayModal";
 import { useModals } from "@/context/ModalContext";
 import { resetEmployeeTwoFactor } from "@/app/actions/twoFactor-actions";
 import { resetPasswordSystem } from "@/app/actions/employeePasswordSystem-actions";
+import EmployeePermissionsModal from "../employeePermissions/EmployeePermissionsModal";
 
 
 type FeedbackState = "loading" | "success" | "error" | null;
@@ -174,6 +175,8 @@ export default function EmployeeDetailsView({
   const { modalConfirm } = useModals();
   // Reiniciar contraseña del sistema: con actualizar_empleados; si el back lo niega por permisos se oculta
   const [passwordResetDenied, setPasswordResetDenied] = useState(false);
+  // Permisos individuales del empleado: se ven con listar_permisos_empleados y se editan con actualizar_permisos_empleados
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
 
 
   const department =
@@ -270,6 +273,9 @@ export default function EmployeeDetailsView({
     });
   }
 
+  const canListEmployeePermissions = !!session?.user?.permissions?.some((p) => p.text === "listar_permisos_empleados");
+  const canUpdateEmployeePermissions = !!session?.user?.permissions?.some((p) => p.text === "actualizar_permisos_empleados");
+
   const canResetPasswordSystem = !passwordResetDenied &&
     !!session?.user?.permissions?.some((p) => p.text === "actualizar_empleados");
 
@@ -284,6 +290,18 @@ export default function EmployeeDetailsView({
       <ConditionalRender cond={!hasBiometricPhotos && !hideBiometricAlert}>
         <AlertBiometrics onClose={() => setHideBiometricAlert(true)} />
       </ConditionalRender>
+
+      {showPermissionsModal && employee?.id && (
+        <EmployeePermissionsModal
+          idEmployee={Number(employee.id)}
+          canUpdate={canUpdateEmployeePermissions}
+          onClose={() => setShowPermissionsModal(false)}
+          onResult={(success, message) => {
+            setFeedbackMsg(message);
+            setFeedback(success ? "success" : "error");
+          }}
+        />
+      )}
 
       <ConditionalRender cond={feedback === "loading"}>
         <Loading message={feedbackMsg || "Guardando..."} />
@@ -391,6 +409,22 @@ export default function EmployeeDetailsView({
                 </span>
               </Button>
             </OverLay>
+
+            <ConditionalRender cond={canListEmployeePermissions}>
+              <OverLay string="Permisos del empleado">
+                <Button
+                  className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
+                  variant="outline-primary"
+                  onClick={() => setShowPermissionsModal(true)}
+                >
+                  <i className="bi bi-shield-lock" />
+
+                  <span className="d-none d-md-inline ms-2">
+                    Permisos
+                  </span>
+                </Button>
+              </OverLay>
+            </ConditionalRender>
 
             <ConditionalRender cond={canResetPasswordSystem}>
               <OverLay string="Reiniciar contraseña del sistema">
@@ -1491,7 +1525,7 @@ export default function EmployeeDetailsView({
                           {documents.map((period, index) => (
                             <Accordion.Item
                               eventKey={String(period.idPeriod)}
-                              key={`${period.idPeriod}-docs`}
+                              key={`${period.idPeriod}-docs-${index}`}
                               className="border rounded-3 mb-3 overflow-hidden"
                             >
                               <Accordion.Header>
@@ -1506,9 +1540,9 @@ export default function EmployeeDetailsView({
                               <Accordion.Body className="">
                                 <Row className="g-3">
                                   {period.documents?.length ? (
-                                    period.documents.map((doc) => (
+                                    period.documents.map((doc, docIndex) => (
                                       <DocumentsGrid
-                                        key={doc.title}
+                                        key={`${doc.id ?? doc.title}-${docIndex}`}
                                         doc={doc}
                                         idEmployee={Number(id)}
                                       />

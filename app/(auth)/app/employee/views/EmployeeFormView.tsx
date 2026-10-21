@@ -882,14 +882,14 @@ function EmployeeFormView({
                 {documents.map((period, index) => (
                   <Accordion.Item
                     eventKey={String(period.idPeriod)}
-                    key={`${period.idPeriod}-docs`}
+                    key={`${period.idPeriod}-docs-${index}`}
                   >
                     <Accordion.Header>Periodo {index + 1}</Accordion.Header>
                     <Accordion.Body>
                       <Row className="g-2">
-                        {period.documents.map((doc) => (
+                        {period.documents.map((doc, docIndex) => (
                           <DocumentsGrid
-                            key={doc.title}
+                            key={`${doc.id ?? doc.title}-${docIndex}`}
                             doc={doc}
                             idEmployee={Number(id)}
                           />
