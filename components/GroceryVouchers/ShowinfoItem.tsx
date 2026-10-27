@@ -5,7 +5,7 @@ import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ICurrentPeriod } from "@/lib/definitions";
-import moment from "moment";
+import moment from "moment-timezone";
 import { formatCreatedAt } from "@/lib/helpers";
 import { formatLabel } from "../devices/DevicesTableClient";
 
@@ -19,6 +19,10 @@ const money = (n: number | null | undefined) =>
 // utc() evita que una fecha ISO a medianoche se muestre un día antes en México (UTC-6)
 const fmtDate = (d?: string | null, f = "ddd D MMM YYYY") =>
     d ? moment.utc(d).format(f) : "—";
+
+// Registros de faltas/retardos guardan el momento real en UTC: se muestran en el día de Ciudad de México
+const fmtDateMx = (d?: string | null, f = "ddd D MMM YYYY") =>
+    d ? moment.utc(d).tz("America/Mexico_City").format(f) : "—";
 
 function StatBox({ icon, label, value, accent }: { icon: string; label: string; value: string; accent: string }) {
     return (
@@ -205,7 +209,7 @@ return (
 
                                             {discounts.map((d) => (
                                                 <tr key={d._id ?? d.id}>
-                                                    <td className="text-capitalize text-nowrap">{d.dateOfAbsence ? fmtDate(d.dateOfAbsence) : fmtDate(d.createdAt)}</td>
+                                                    <td className="text-capitalize text-nowrap">{fmtDateMx(d.dateOfAbsence || d.createdAt)}</td>
                                                     <td className="text-center">
                                                         <div className="fw-semibold text-uppercase">{d.category}</div>
                                                         <div className="text-muted">{d.subCategory}</div>
@@ -302,7 +306,7 @@ return (
 
                                             {dailyBreakingDown.map((d) => (
                                                 <tr key={d.id}>
-                                                    <td className="text-capitalize text-nowrap">{fmtDate(d.dateOfAbsence)}</td>
+                                                    <td className="text-capitalize text-nowrap">{fmtDateMx(d.dateOfAbsence)}</td>
 
                                                     <td className="text-end text-nowrap">{money(d.amountPayment)}</td>
                                                     <td className={`text-end text-nowrap text-capitalize ${d.amountPayment ? "text-success fw-semibold" : "text-muted"}`}>

@@ -22,7 +22,7 @@ export default function VisitorExitModal({
         defaultValues: { signature: "" },
     });
 
-    const { modalError } = useModals();
+    const { modalError, modalConfirm } = useModals();
 
     // La firma se revisa al guardar, como en los demás módulos con firma
     const submit: SubmitHandler<{ signature: string }> = (data) => {
@@ -30,7 +30,7 @@ export default function VisitorExitModal({
             modalError("La firma de salida es obligatoria");
             return;
         }
-        onSubmit(data.signature);
+        modalConfirm(`¿Seguro que quieres registrar la salida de ${visitor.name.toUpperCase()}?`, () => onSubmit(data.signature));
     };
 
     return (

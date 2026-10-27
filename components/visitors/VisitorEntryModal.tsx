@@ -44,7 +44,7 @@ export default function VisitorEntryModal({
         defaultValues: { name: "", company: "", reason: "", signature: "" },
     });
 
-    const { modalError } = useModals();
+    const { modalError, modalConfirm } = useModals();
 
     // Igual que en permisos y vacaciones: la firma se revisa al guardar (el input oculto de SignatureInput
     // siempre vale "" y una regla "required" ahí bloqueaba el envío sin avisar)
@@ -53,7 +53,7 @@ export default function VisitorEntryModal({
             modalError("La firma de entrada es obligatoria");
             return;
         }
-        onSubmit(data);
+        modalConfirm(`¿Seguro que quieres registrar la entrada de ${data.name.trim().toUpperCase()}?`, () => onSubmit(data));
     };
 
     // Si falta algún dato se avisa con el modal de error, además del texto bajo el campo

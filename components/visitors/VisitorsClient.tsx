@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Card, Col, Container, Dropdown, Form, InputGroup, Pagination, Row } from "react-bootstrap";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button, Card, Col, Container, Dropdown, InputGroup, Overlay, Pagination, Row } from "react-bootstrap";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { es } from "date-fns/locale";
 import { useRouter, useSearchParams } from "next/navigation";
 import moment from "moment-timezone";
 import ConditionalRender from "../ConditionalRender";
@@ -15,6 +17,8 @@ import VisitorSignaturesModal, { VisitorSignatureImages } from "./VisitorSignatu
 import { getVisitorSignature, registerVisitorEntry, registerVisitorExit } from "@/app/actions/visitors-actions";
 import { IVisitor, VisitorStatusFilter } from "@/lib/visitors/interface";
 import { formatCreatedAtOnlyHours, formatDateHours } from "@/lib/helpers";
+
+registerLocale("es", es);
 
 type FeedbackState = "loading" | "success" | "error" | null;
 
@@ -81,6 +85,32 @@ export default function VisitorsClient({
     const [exitVisitor, setExitVisitor] = useState<IVisitor | null>(null);
     const [signatures, setSignatures] = useState<{ visitor: IVisitor; images: VisitorSignatureImages } | null>(null);
 
+    // Calendario de rango (mismo patrón que Horas extra): se elige el rango y se aplica con "Filtrar fechas"
+    const [dateFromValue, setDateFromValue] = useState(dateFrom);
+    const [dateToValue, setDateToValue] = useState(dateTo);
+    const [dateError, setDateError] = useState("");
+    const [showCalendar, setShowCalendar] = useState(false);
+    const dateButtonRef = useRef(null);
+    const parsedStart = dateFromValue ? moment(dateFromValue, "YYYY-MM-DD").toDate() : null;
+    const parsedEnd = dateToValue ? moment(dateToValue, "YYYY-MM-DD").toDate() : null;
+
+    useEffect(() => {
+        setDateFromValue(dateFrom);
+        setDateToValue(dateTo);
+    }, [dateFrom, dateTo]);
+
+    const rangeLabel =
+        parsedStart && parsedEnd
+            ? `${moment(parsedStart).format("DD/MM/YYYY")} - ${moment(parsedEnd).format("DD/MM/YYYY")}`
+            : "Selecciona un rango de fechas";
+
+    const handleRangeChange = (dates: [Date | null, Date | null]) => {
+        const [start, end] = dates;
+        setDateFromValue(start ? moment(start).format("YYYY-MM-DD") : "");
+        setDateToValue(end ? moment(end).format("YYYY-MM-DD") : "");
+        setDateError("");
+    };
+
     const totalPages = Math.max(Math.ceil(total / limit), 1);
     const MAX_VISIBLE = 5;
 
@@ -142,6 +172,32 @@ export default function VisitorsClient({
         params.set("limit", String(limit));
         showLoading("Cargando...");
         router.push(`/app/visitors?${params.toString()}`);
+    };
+
+    const handleDateFilter = () => {
+        if (!dateFromValue || !dateToValue) {
+            setDateError("Ambas fechas son requeridas");
+            return;
+        }
+        if (dateToValue < dateFromValue) {
+            setDateError("'Hasta' debe ser posterior a 'Desde'");
+            return;
+        }
+        setDateError("");
+        setShowCalendar(false);
+
+        if (dateFromValue === dateFrom && dateToValue === dateTo) return;
+        pushParams({ dateFrom: dateFromValue, dateTo: dateToValue });
+    };
+
+    const handleDateClear = () => {
+        setDateFromValue("");
+        setDateToValue("");
+        setDateError("");
+        setShowCalendar(false);
+
+        if (!dateFrom && !dateTo) return;
+        pushParams({ dateFrom: "", dateTo: "" }, "Cargando...");
     };
 
     const handleSearch = useCallback((value: string) => {
@@ -352,51 +408,66 @@ export default function VisitorsClient({
                                     <Card.Body className="p-3">
                                         <div className="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
                                             <div className="d-flex align-items-center gap-2">
-                                                <i className="bi bi-calendar3 text-primary" />
-                                                <span className="fw-semibold small">Fecha de entrada</span>
+                                                <i className="bi bi-calendar-range text-primary" />
+                                                <span className="fw-semibold small">Filtrar por fecha de entrada</span>
                                             </div>
-                                            <div className="d-flex gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline-secondary"
-                                                    disabled={isToday}
-                                                    onClick={() => pushParams({ dateFrom: todayMx(), dateTo: todayMx() })}
-                                                >
-                                                    Hoy
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline-secondary"
-                                                    disabled={!dateFrom && !dateTo}
-                                                    onClick={() => pushParams({ dateFrom: "", dateTo: "" })}
-                                                >
-                                                    <i className="bi bi-arrow-counterclockwise" />
-                                                </Button>
-                                            </div>
+                                            <Button
+                                                size="sm"
+                                                variant="outline-secondary"
+                                                disabled={isToday}
+                                                onClick={() => pushParams({ dateFrom: todayMx(), dateTo: todayMx() })}
+                                            >
+                                                Hoy
+                                            </Button>
                                         </div>
 
-                                        <Row className="g-2">
-                                            <Col xs={6}>
-                                                <Form.Control
-                                                    id="visitors-date-from"
-                                                    type="date"
-                                                    aria-label="Desde"
-                                                    value={dateFrom}
-                                                    max={dateTo || undefined}
-                                                    onChange={(e) => e.target.value !== dateFrom && pushParams({ dateFrom: e.target.value })}
-                                                />
-                                            </Col>
-                                            <Col xs={6}>
-                                                <Form.Control
-                                                    id="visitors-date-to"
-                                                    type="date"
-                                                    aria-label="Hasta"
-                                                    value={dateTo}
-                                                    min={dateFrom || undefined}
-                                                    onChange={(e) => e.target.value !== dateTo && pushParams({ dateTo: e.target.value })}
-                                                />
-                                            </Col>
-                                        </Row>
+                                        <Button
+                                            ref={dateButtonRef}
+                                            variant="outline-secondary"
+                                            className={`w-100 d-flex align-items-center justify-content-between ${dateError ? "border-danger text-danger" : ""}`}
+                                            onClick={() => setShowCalendar((v) => !v)}
+                                        >
+                                            <span className="text-truncate">{rangeLabel}</span>
+                                            <i className="bi bi-calendar3 flex-shrink-0" />
+                                        </Button>
+
+                                        {dateError && (
+                                            <small className="text-danger d-block mt-1">{dateError}</small>
+                                        )}
+
+                                        <Overlay
+                                            target={dateButtonRef.current}
+                                            show={showCalendar}
+                                            placement="bottom-start"
+                                            rootClose
+                                            onHide={() => setShowCalendar(false)}
+                                        >
+                                            {({ ref, style }) => (
+                                                <div ref={ref} style={style} className="mt-2 shadow-lg rounded-4 overflow-hidden bg-light text-capitalize">
+                                                    <DatePicker
+                                                        selectsRange
+                                                        inline
+                                                        startDate={parsedStart}
+                                                        endDate={parsedEnd}
+                                                        onChange={handleRangeChange}
+                                                        monthsShown={1}
+                                                        locale="es"
+                                                    />
+                                                    <Row className="g-2 m-2">
+                                                        <Col xs={12} md={6}>
+                                                            <Button variant="primary" className="w-100" onClick={handleDateFilter}>
+                                                                Filtrar fechas
+                                                            </Button>
+                                                        </Col>
+                                                        <Col xs={12} md={6}>
+                                                            <Button variant="secondary" className="w-100" onClick={handleDateClear}>
+                                                                <i className="bi bi-arrow-counterclockwise" />
+                                                            </Button>
+                                                        </Col>
+                                                    </Row>
+                                                </div>
+                                            )}
+                                        </Overlay>
                                     </Card.Body>
                                 </Card>
                             </Col>
