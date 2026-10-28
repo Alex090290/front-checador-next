@@ -409,7 +409,7 @@ export function DeviceOne({
                                                                                 <div>
                                                                                     <div className="small fw-bold">Descripción:
                                                                                         <span className="fw-semibold text-capitalize text-muted ms-1">
-                                                                                            {activeCheck?.description || "NO HAY DESCRIPCION"}
+                                                                                            {activeCheck?.description || "NO HAY DESCRIPCIÓN"}
                                                                                         </span>
                                                                                     </div>
                                                                                 </div>

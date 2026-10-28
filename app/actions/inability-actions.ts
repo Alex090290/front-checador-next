@@ -437,7 +437,7 @@ export async function uploadDocuments({
         throw new Error(
           err.response.data.message
             ? err.response.data.message
-            : "Error desconhecido"
+            : "Error desconocido"
         );
       });
 
@@ -454,7 +454,7 @@ export async function uploadDocuments({
 
     return {
       success: true,
-      message: "Docuemento cargado",
+      message: "Documento cargado",
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

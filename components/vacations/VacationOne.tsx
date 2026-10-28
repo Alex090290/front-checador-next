@@ -463,7 +463,7 @@ export default function ShowInfoVacation({
                           <span className="text-muted fw-semibold">Notas adicionales</span>
                         </div>
                         <div className="text-uppercase">
-                          {vacation.notes ? vacation.notes : "No hay notas adicionaless"}
+                          {vacation.notes ? vacation.notes : "No hay notas adicionales"}
                         </div>
                       </div>
 

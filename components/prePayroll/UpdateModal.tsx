@@ -142,7 +142,7 @@ export default function UpdateModal({
 
             <div className="p-2 mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 mt-2">
-                    <h4 className="mb-0 fw-bold">Actualizar Fecha Nomina</h4>
+                    <h4 className="mb-0 fw-bold">Actualizar Fecha Nómina</h4>
 
                     <Badge
                         bg="info-subtle"
@@ -159,7 +159,7 @@ export default function UpdateModal({
                         <Card.Body>
                             <div className="d-flex align-items-center gap-2 mb-3">
                                 <i className="bi bi-calendar-event text-primary fs-5 ms-1" />
-                                <h6 className="mb-0 fw-bold">Fecha Nomina</h6>
+                                <h6 className="mb-0 fw-bold">Fecha Nómina</h6>
                             </div>
                             <Col md={12}>
                                 <Form.Group>

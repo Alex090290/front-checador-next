@@ -81,7 +81,7 @@ function DepartmentsFormView({
   };
 
   const handleDeletePuesto = async (activeId: number) => {
-    modalConfirm("Confirmar accion", () => deletePuesto(activeId));
+    modalConfirm("Confirmar acción", () => deletePuesto(activeId));
   };
 
   const deletePuesto = async (activeId: number) => {

@@ -140,7 +140,7 @@ function BranchesFormView({
           />
           <Entry
             register={register("municipality", {
-              required: "Municicpio es requerido",
+              required: "Municipio es requerido",
             })}
             label="Municipio:"
             invalid={!!errors.municipality}

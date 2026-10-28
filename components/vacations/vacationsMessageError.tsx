@@ -38,7 +38,7 @@ export default function VacationsOneError() {
                                 </div>
 
                                 <h2 className="fw-bold mb-3">
-                                    Solicituda de vacaciones no encontrada
+                                    Solicitud de vacaciones no encontrada
                                 </h2>
 
                                 <p className="text-muted mb-4">

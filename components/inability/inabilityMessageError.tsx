@@ -48,7 +48,7 @@ export default function InabilityOneError() {
                                 </h2>
 
                                 <p className="text-muted mb-4">
-                                    La incapacdad que intentas consultar no existe,
+                                    La incapacidad que intentas consultar no existe,
                                     fue eliminada o no se encuentra disponible.
                                 </p>
 

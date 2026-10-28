@@ -383,7 +383,7 @@ export default function ShowInfoPermissionRequest({
                           <span className="text-muted fw-semibold">Notas adicionales</span>
                         </div>
                         <div className="text-uppercase">
-                          {permission.notes ? permission.notes : "No hay notas adicionaless"}
+                          {permission.notes ? permission.notes : "No hay notas adicionales"}
                         </div>
                       </div>
 

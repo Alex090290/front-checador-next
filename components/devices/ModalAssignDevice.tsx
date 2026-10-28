@@ -164,7 +164,7 @@ export default function ModalAssignDevice({
                     <div>
                         <h4 className="mb-1 fw-bold">Asignación de Empleado</h4>
                         <p className="text-muted mb-0">
-                            Asigna éste dispositivo al empleado correspondiente.
+                            Asigna este dispositivo al empleado correspondiente.
                         </p>
                     </div>
 

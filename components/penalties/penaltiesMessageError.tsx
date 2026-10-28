@@ -46,7 +46,7 @@ export default function PenaltyOneError() {
                                 </h2>
 
                                 <p className="text-muted mb-4">
-                                    La penalizacióm que intentas consultar no existe,
+                                    La penalización que intentas consultar no existe,
                                     fue eliminada o no se encuentra disponible.
                                 </p>
 

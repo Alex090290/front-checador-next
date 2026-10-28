@@ -293,7 +293,7 @@ export function PenaltyOne({
                                                         <span className="text-muted fw-semibold">Notas adicionales</span>
                                                     </div>
                                                     <div className="text-uppercase">
-                                                        {penalty.notes ? penalty.notes : "No hay notas adicionaless"}
+                                                        {penalty.notes ? penalty.notes : "No hay notas adicionales"}
                                                     </div>
                                                 </div>
 
