@@ -1,16 +1,21 @@
 name: Deploy frontend
 
+# master -> producción (127.0.0.1:3003)
+# staging -> staging (127.0.0.1:3004)
 on:
   push:
-    branches: [master]
+    branches: [master, staging]
 
 concurrency:
-  group: deploy-frontend
+  group: deploy-frontend-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Deploy
-        run: /home/servidor/Documents/scripts/githubActions/frontEnd.sh
+        run: bash docker/deploy.sh ${{ github.ref_name == 'master' && 'prod' || 'staging' }}

@@ -1,0 +1,17 @@
+# Lo usa docker/deploy.sh, que lo copia a /opt/checador-front/<env>/ y define:
+#   IMAGE_TAG  tag de la imagen (commit corto + ambiente)
+#   HOST_PORT  3003 en prod, 3004 en staging
+#   ENV_FILE   /opt/checador-front/<env>.env
+services:
+  web:
+    image: checador-front:${IMAGE_TAG:?falta IMAGE_TAG}
+    env_file:
+      - ${ENV_FILE:?falta ENV_FILE}
+    ports:
+      - "127.0.0.1:${HOST_PORT:?falta HOST_PORT}:3000"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"

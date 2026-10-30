@@ -1,0 +1,31 @@
+# Dependencias y builds locales (se generan dentro de la imagen)
+node_modules
+.next
+out
+build
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# Variables de entorno: nunca entran a la imagen.
+# Las de compilación llegan como --build-arg y las de ejecución con env_file.
+.env
+.env.*
+
+# Git, CI y archivos de despliegue
+.git
+.github
+.gitattributes
+.gitignore
+.dockerignore
+Dockerfile
+docker
+
+# Editor, sistema y logs
+.vscode
+.idea
+.DS_Store
+*.log
+npm-debug.log*
+.xml
+README.md

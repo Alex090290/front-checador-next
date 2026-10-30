@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Se ejecutan en Linux: siempre con saltos de línea LF
+*.sh text eol=lf
+docker/** text eol=lf
+Dockerfile text eol=lf
