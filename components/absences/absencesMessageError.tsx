@@ -40,7 +40,7 @@ export default function AbsenceOneError() {
                                 </div>
 
                                 <h2 className="fw-bold mb-3">
-                                    Registo de faltas y asistencias no encontrado
+                                    Registro de faltas y asistencias no encontrado
                                 </h2>
 
                                 <p className="text-muted mb-4">

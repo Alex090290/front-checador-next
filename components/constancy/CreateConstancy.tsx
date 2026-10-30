@@ -117,7 +117,7 @@ export default function CreateConstancyComponent({
                 setAvailablePenalties(result ?? []);
 
             } catch (error) {
-                console.log("Error al cargar penalizasciones:", error);
+                console.log("Error al cargar penalizaciones:", error);
                 toast.error("No se pudieron cargar las penalizaciones")
             }
         }; loadPenalties();

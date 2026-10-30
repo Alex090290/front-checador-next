@@ -743,7 +743,7 @@ export async function deleteVacations({
 
     return {
       success: true,
-      message: "Vacación correctamene eliminada",
+      message: "Vacación eliminada correctamente",
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

@@ -697,7 +697,7 @@ function EmployeeFormView({
                   <thead>
                     <tr className="border-bottom table-active">
                       <th className="border-end">Name</th>
-                      <th className="border-end">Parentezco</th>
+                      <th className="border-end">Parentesco</th>
                       <th className="border-end">Contacto</th>
                       <th className="border-end text-center">
                         <i className="bi bi-trash"></i>

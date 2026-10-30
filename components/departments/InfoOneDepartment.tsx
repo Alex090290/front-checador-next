@@ -321,7 +321,7 @@ export default function InfoOneDepartment({
 
                   <Button variant="success" onClick={() => setShowCreatePositionModal(true)}>
                     <i className="bi bi-person me-2" />
-                    Craer nuevo puesto
+                    Crear nuevo puesto
                   </Button>
                 </div>
 

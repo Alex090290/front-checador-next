@@ -569,7 +569,7 @@ export default function PrePayrollTableClient({
             },
             {
                 key: "fechaNomina",
-                label: "Fecha Nomina",
+                label: "Fecha Nómina",
                 align: "center",
                 accessor: (row) => row.fechaNomina,
                 filterable: true,
@@ -674,13 +674,13 @@ export default function PrePayrollTableClient({
                         disabled={!prepayroll[0]?.idPrePayRoll}
                     >
                         <i className="bi bi-file-earmark-excel" />
-                        Desacargar documento
+                        Descargar documento
                     </Button>
                 </ConditionalRender>
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-4">
                     <div>
-                        <h1 className="mb-0">Prenomina</h1>
+                        <h1 className="mb-0">Prenómina</h1>
 
                         <span className="text-muted">
                             {total} registro{total !== 1 ? "s" : ""}

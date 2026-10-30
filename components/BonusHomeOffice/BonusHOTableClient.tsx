@@ -344,7 +344,7 @@ export default function TableBonusHO({
                                                                 />
                                                                 <span className="fw-semibold">
                                                                     {search
-                                                                        ? "No se encontro ningun bono con los filtros aplicados"
+                                                                        ? "No se encontró ningún bono con los filtros aplicados"
                                                                         : "No hay bonos registrados"}
                                                                 </span>
                                                             </td>

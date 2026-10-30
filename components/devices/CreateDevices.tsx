@@ -368,8 +368,8 @@ export default function CreateDeviceComponent({
                                                                 { value: "servidor", label: "SERVIDOR" },
                                                                 { value: "switch", label: "SWITCH" },
                                                                 { value: "router", label: "ROUTER" },
-                                                                { value: "telefono_ip", label: "TELEFONO IP" },
-                                                                { value: "camara", label: "CAMARA" },
+                                                                { value: "telefono_ip", label: "TELÉFONO IP" },
+                                                                { value: "camara", label: "CÁMARA" },
                                                                 { value: "access_point", label: "ACCESS POINT" },
                                                                 { value: "celular", label: "CELULAR" },
                                                                 { value: "television", label: "TELEVISIÓN" },
@@ -1069,7 +1069,7 @@ export default function CreateDeviceComponent({
                                                             <Col md={6} className="mt-4">
                                                                 <Entry
                                                                     register={register("currentAssignment.extentionNumber", { required: false })}
-                                                                    label="Numero De Extensión:"
+                                                                    label="Número de extensión:"
                                                                     invalid={!!errors.currentAssignment?.extentionNumber}
                                                                     className="border text-uppercase"
                                                                 />
@@ -1129,7 +1129,7 @@ export default function CreateDeviceComponent({
                                                     </div>
 
                                                     <p className="text-muted small mb-0 text-center">
-                                                        La asignación de emplpeado quedará pendiente.
+                                                        La asignación de empleado quedará pendiente.
                                                     </p>
                                                 </ConditionalRender>
                                             </Card.Body>

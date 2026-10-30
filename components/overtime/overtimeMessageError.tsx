@@ -47,7 +47,7 @@ export default function OvertimeOneError() {
                                 </div>
 
                                 <h2 className="fw-bold mb-3">
-                                    Registo de horas extra no encontrado
+                                    Registro de horas extra no encontrado
                                 </h2>
 
                                 <p className="text-muted mb-4">

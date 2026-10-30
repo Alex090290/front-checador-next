@@ -325,7 +325,7 @@ export default function InfoOneInability({
                           <span className="text-muted fw-semibold">Notas adicionales</span>
                         </div>
                         <div className="text-uppercase">
-                          {inhability.notes ? inhability.notes : "No hay notas adicionaless"}
+                          {inhability.notes ? inhability.notes : "No hay notas adicionales"}
                         </div>
                       </div>
 

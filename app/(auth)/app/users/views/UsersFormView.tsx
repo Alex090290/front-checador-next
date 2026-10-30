@@ -178,7 +178,7 @@ function UsersFormView({
         <FieldGroup readonly={profile === "true"}>
           <Entry
             register={register("name", {
-              required: "Nombre de usuario es requerido, honey!",
+              required: "Nombre de usuario es requerido",
             })}
             label="Nombre:"
             invalid={!!errors.name}

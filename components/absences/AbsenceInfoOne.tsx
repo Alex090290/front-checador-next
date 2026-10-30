@@ -182,7 +182,7 @@ export function AbsenceOne({
     // Cambia la firma para aceptar null cuando no hay doc existente
     const handleReplaceFile = async (docId: number | null, e: React.ChangeEvent<HTMLInputElement>) => {
 
-        modalConfirm("¿Deseasn agregar este documento?", async () => {
+        modalConfirm("¿Deseas agregar este documento?", async () => {
             const file = e.target.files?.[0];
             if (!file) return;
 

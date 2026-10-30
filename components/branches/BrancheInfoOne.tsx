@@ -116,7 +116,7 @@ export default function BrancheOne({
       <Container className="py-3 overflow-x: auto" style={{ maxWidth: "1600px" }}>
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div className="d-flex gap-2 flex-wrap">
-            <OverLay string="Craer sucursal">
+            <OverLay string="Crear sucursal">
               <Button
                 className="d-inline-flex align-items-center justify-content-center fw-semibold px-2 px-md-3"
                 variant="primary"
